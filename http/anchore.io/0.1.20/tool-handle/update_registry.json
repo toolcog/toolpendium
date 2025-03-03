@@ -1,0 +1,147 @@
+{
+  "name": "update_registry",
+  "description": "Replaces an existing registry record with the given record",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "registry": {
+        "format": "path",
+        "type": "string"
+      },
+      "validate": {
+        "type": "boolean",
+        "description": "flag to determine whether or not to validate registry/credential at registry update time"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      },
+      "body": {
+        "$ref": "#/$defs/RegistryConfigurationRequest"
+      }
+    },
+    "required": [
+      "registry",
+      "body"
+    ],
+    "$defs": {
+      "RegistryConfigurationRequest": {
+        "description": "A registry record describing the endpoint and credentials for a registry",
+        "properties": {
+          "registry": {
+            "description": "hostname:port string for accessing the registry, as would be used in a docker pull operation. May include some or all of a repository and wildcards (e.g. docker.io/library/* or gcr.io/myproject/myrepository)",
+            "type": "string"
+          },
+          "registry_name": {
+            "description": "human readable name associated with registry record",
+            "type": "string"
+          },
+          "registry_pass": {
+            "description": "Password portion of credential to use for this registry",
+            "type": "string"
+          },
+          "registry_type": {
+            "description": "Type of registry",
+            "type": "string"
+          },
+          "registry_user": {
+            "description": "Username portion of credential to use for this registry",
+            "type": "string"
+          },
+          "registry_verify": {
+            "description": "Use TLS/SSL verification for the registry URL",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "//registries/{registry}{?validate}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List of registry configurations",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**",
+            "**last_upated**",
+            "**registry**: hostname:port string for accessing the registry, as would be used in a docker pull operation",
+            "**registry_name**: human readable name associated with registry record",
+            "**registry_type**: Type of registry",
+            "**registry_user**: Username portion of credential to use for this registry",
+            "**registry_verify**: Use TLS/SSL verification for the registry URL",
+            "**userId**: Engine user that owns this registry entry"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

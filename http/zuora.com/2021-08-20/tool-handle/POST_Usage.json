@@ -1,0 +1,81 @@
+{
+  "name": "POST_Usage",
+  "description": "This REST API reference describes how to post or import usage data for one or more accounts in the CSV format. There are no path or query parameters. The data is uploaded using the HTTP multipart/form-data POST method and applied to the user's tenant. \n\nFor a use case of this operation, see [Upload usage records](https://www.zuora.com/developer/api-guides/#Upload-usage-records).\n\n## How this REST API Call Works\nThe content of the uploaded usage file must follow the format used by the UI import tool. It must be a comma-separated (CSV) file with a corresponding .csv extension. The length of the file name must not exceed 50 characters. The file size must not exceed 4MB. See [Downloading the Usage Template](https://knowledgecenter.zuora.com/CB_Billing/J_Billing_Operations/Usage/C_Import_Usage_Data#Downloading_the_Usage_Template) to learn about how to download the usage file template.\n\nAt the completion of the upload, before the file contents are actually being processed, the API returns a response containing the byte count of the received file and a URL for checking the status of the import process.  Of the five possible results displayed at that URL (Pending, Processing, Completed, Canceled, and Failed) only a Completed status indicates that the import was successful.  The operation is atomic; if any record fails, the file is rejected. In that case, the entire import is rolled back and all stored data is returned to its original state.\n\nTo view the actual import status, enter the resulting status URL from the checkImportStatus response using a tool such as POSTMAN. This additional step provides more information about why the import has failed.\n\nTo manage the information after a successful upload, use the web-based UI.\n\n## Usage File Format\nThe usage file uses the following headings: \n\n| Heading         | Description   | Required |\n|-----------------|--------|----------|\n| ACCOUNT_ID      | Enter the account number, e.g., the default account number, such as A00000001, or your custom account number. Although this field is labeled as Account_Id, it is not the actual Account ID nor Account Name.  | Yes      |\n| UOM             | Enter the unit of measure. This must match the UOM for the usage. | Yes      |\n| QTY             | Enter the quantity.  | Yes      |\n| STARTDATE       | Enter the start date of the usage. This date determines the invoice item service period the associated usage is billed to. Date format is based on locale of the current user. Default date format: `MM/DD/YYYY`. | Yes |\n| ENDDATE         | Enter the end date of the usage. This is not used in calculations for usage billing and is optional. Date format is based on locale of the current user. Default date format: `MM/DD/YYYY`. <p>**Note:** The value of this column is optional, but the column header is required.</p> | No |\n| SUBSCRIPTION_ID | Enter the subscription number or subscription name. If you created the subscription in the Zuora application, Zuora created a number automatically in a format similar to A-S00000001. If you do not provide a value for this field, the associated usage will be added to all subscriptions for the specified Account that use this Unit Of Measure. If your Accounts can have multiple subscriptions and you do not want double or triple counting of usage, you must specify the Subscription or Charge ID in each usage record.  <p>**Note:** The value of this column is optional, but the column header is required.</p>  | No   |\n| CHARGE_ID       | Enter the charge number (not the charge name). You can see the charge ID, e.g., C-00000001, when you add your rate plan to your subscription and view your individual charges. If your Accounts can have multiple subscriptions and you do not want double or triple counting of usage, you must specify the specific Subscription or Charge ID in each usage record. This field is related to the Charge Number on the subscription rate plan.  <p>**Note:** The value of this column is optional, but the column header is required.</p>  | No      |\n| DESCRIPTION     | Enter a description for the charge. | No       |\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Zuora-Track-Id": {
+        "maxLength": 64,
+        "type": "string",
+        "description": "A custom identifier for tracing the API call. If you set a value for this header, Zuora returns the same value in the response headers. This header enables you to associate your system process identifiers with Zuora API calls, to assist with troubleshooting in the event of an issue.\n\nThe value of this field must use the US-ASCII character set and must not include any of the following characters: colon (`:`), semicolon (`;`), double quote (`\"`), and quote (`'`).\n"
+      },
+      "Zuora-Entity-Ids": {
+        "type": "string",
+        "description": "An entity ID. If you have [Zuora Multi-entity](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Multi-entity) enabled and the OAuth token is valid for more than one entity, you must use this header to specify which entity to perform the operation in. If the OAuth token is only valid for a single entity, or you do not have Zuora Multi-entity enabled, you do not need to set this header.\n"
+      },
+      "body": {
+        "properties": {
+          "file": {
+            "description": "The usage data to import.\n",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rest.zuora.com/v1/usage"
+    },
+    "headers": {
+      "Zuora-Track-Id": {
+        "$": "Zuora-Track-Id"
+      },
+      "Zuora-Entity-Ids": {
+        "$": "Zuora-Entity-Ids"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**checkImportStatus**: The path for checking the status of the import.",
+            "**size**: The size of the uploaded file in bytes.",
+            "**success**: Indicates whether the call succeeded."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

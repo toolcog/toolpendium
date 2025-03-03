@@ -1,0 +1,417 @@
+{
+  "name": "BatchPutAssetPropertyValue",
+  "description": "<p>Sends a list of asset property values to IoT SiteWise. Each value is a timestamp-quality-value (TQV) data point. For more information, see <a href=\"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/ingest-api.html\">Ingesting data using the API</a> in the <i>IoT SiteWise User Guide</i>.</p> <p>To identify an asset property, you must specify one of the following:</p> <ul> <li> <p>The <code>assetId</code> and <code>propertyId</code> of an asset property.</p> </li> <li> <p>A <code>propertyAlias</code>, which is a data stream alias (for example, <code>/company/windfarm/3/turbine/7/temperature</code>). To define an asset property's alias, see <a href=\"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html\">UpdateAssetProperty</a>.</p> </li> </ul> <important> <p>With respect to Unix epoch time, IoT SiteWise accepts only TQVs that have a timestamp of no more than 7 days in the past and no more than 10 minutes in the future. IoT SiteWise rejects timestamps outside of the inclusive range of [-7 days, +10 minutes] and returns a <code>TimestampOutOfRangeException</code> error.</p> <p>For each asset property, IoT SiteWise overwrites TQVs with duplicate timestamps unless the newer TQV has a different quality. For example, if you store a TQV <code>{T1, GOOD, V1}</code>, then storing <code>{T1, GOOD, V2}</code> replaces the existing TQV.</p> </important> <p>IoT SiteWise authorizes access to each <code>BatchPutAssetPropertyValue</code> entry individually. For more information, see <a href=\"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/security_iam_service-with-iam.html#security_iam_service-with-iam-id-based-policies-batchputassetpropertyvalue-action\">BatchPutAssetPropertyValue authorization</a> in the <i>IoT SiteWise User Guide</i>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "entries"
+        ],
+        "properties": {
+          "entries": {
+            "description": "The list of asset property value entries for the batch put request. You can specify up to 10 entries per request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PutAssetPropertyValueEntry"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PutAssetPropertyValueEntry": {
+        "type": "object",
+        "required": [
+          "entryId",
+          "propertyValues"
+        ],
+        "properties": {
+          "entryId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryId"
+              },
+              {
+                "description": "The user specified ID for the entry. You can use this ID to identify which entries failed."
+              }
+            ]
+          },
+          "assetId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ID"
+              },
+              {
+                "description": "The ID of the asset to update."
+              }
+            ]
+          },
+          "propertyId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ID"
+              },
+              {
+                "description": "The ID of the asset property for this entry."
+              }
+            ]
+          },
+          "propertyAlias": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssetPropertyAlias"
+              },
+              {
+                "description": "The alias that identifies the property, such as an OPC-UA server data stream path (for example, <code>/company/windfarm/3/turbine/7/temperature</code>). For more information, see <a href=\"https://docs.aws.amazon.com/iot-sitewise/latest/userguide/connect-data-streams.html\">Mapping industrial data streams to asset properties</a> in the <i>IoT SiteWise User Guide</i>."
+              }
+            ]
+          },
+          "propertyValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssetPropertyValues"
+              },
+              {
+                "description": "The list of property values to upload. You can specify up to 10 <code>propertyValues</code> array elements. "
+              }
+            ]
+          }
+        },
+        "description": "Contains a list of value updates for an asset property in the list of asset entries consumed by the <a href=\"https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_BatchPutAssetPropertyValue.html\">BatchPutAssetPropertyValue</a> API operation."
+      },
+      "EntryId": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "ID": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "AssetPropertyAlias": {
+        "type": "string",
+        "pattern": "[^\\u0000-\\u001F\\u007F]+",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "AssetPropertyValues": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AssetPropertyValue"
+        }
+      },
+      "AssetPropertyValue": {
+        "type": "object",
+        "required": [
+          "value",
+          "timestamp"
+        ],
+        "properties": {
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Variant"
+              },
+              {
+                "description": "The value of the asset property (see <code>Variant</code>)."
+              }
+            ]
+          },
+          "timestamp": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimeInNanos"
+              },
+              {
+                "description": "The timestamp of the asset property value."
+              }
+            ]
+          },
+          "quality": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Quality"
+              },
+              {
+                "description": "The quality of the asset property value."
+              }
+            ]
+          }
+        },
+        "description": "Contains asset property value information."
+      },
+      "Variant": {
+        "type": "object",
+        "properties": {
+          "stringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyValueStringValue"
+              },
+              {
+                "description": "Asset property data of type string (sequence of characters)."
+              }
+            ]
+          },
+          "integerValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyValueIntegerValue"
+              },
+              {
+                "description": "Asset property data of type integer (whole number)."
+              }
+            ]
+          },
+          "doubleValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyValueDoubleValue"
+              },
+              {
+                "description": "Asset property data of type double (floating point number)."
+              }
+            ]
+          },
+          "booleanValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyValueBooleanValue"
+              },
+              {
+                "description": "Asset property data of type Boolean (true or false)."
+              }
+            ]
+          }
+        },
+        "description": "Contains an asset property value (of a single type only)."
+      },
+      "PropertyValueStringValue": {
+        "type": "string"
+      },
+      "PropertyValueIntegerValue": {
+        "type": "integer"
+      },
+      "PropertyValueDoubleValue": {
+        "type": "number",
+        "format": "double"
+      },
+      "PropertyValueBooleanValue": {
+        "type": "boolean"
+      },
+      "TimeInNanos": {
+        "type": "object",
+        "required": [
+          "timeInSeconds"
+        ],
+        "properties": {
+          "timeInSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimeInSeconds"
+              },
+              {
+                "description": "The timestamp date, in seconds, in the Unix epoch format. Fractional nanosecond data is provided by <code>offsetInNanos</code>."
+              }
+            ]
+          },
+          "offsetInNanos": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OffsetInNanos"
+              },
+              {
+                "description": "The nanosecond offset from <code>timeInSeconds</code>."
+              }
+            ]
+          }
+        },
+        "description": "Contains a timestamp with optional nanosecond granularity."
+      },
+      "TimeInSeconds": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9223372036854774
+      },
+      "OffsetInNanos": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999999999
+      },
+      "Quality": {
+        "type": "string",
+        "enum": [
+          "GOOD",
+          "BAD",
+          "UNCERTAIN"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://iotsitewise.us-east-1.amazonaws.com/properties"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorEntries**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

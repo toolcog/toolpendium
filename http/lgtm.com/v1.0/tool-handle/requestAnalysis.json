@@ -1,0 +1,68 @@
+{
+  "name": "requestAnalysis",
+  "description": "Trigger the analysis of a specific commit to a project. If a previous attempt to analyze that commit failed, this triggers a fresh analysis.  This is supported for all LGTM projects, regardless of repository type or host. The commit must be available in the main repository, but can be on a branch that isn't tracked by LGTM. For both LGTM.com and LGTM Enterprise, you must include an access token with the `analyses:write` scope.\n\nWhen you request the analysis of a commit, the API returns:\n- `operation-id`: used to track the status of the task using the `/operations` endpoint. For more information, see [Get operation status](https://lgtm.com/help/lgtm/api/api-v1#opIdgetOperation).\n- `status`: initially pending.\n- `task-result`: containing information about the progress and results of the analysis.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project-id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The numeric project identifier."
+      },
+      "commit": {
+        "type": "string",
+        "description": "The identifier of the commit to analyze."
+      },
+      "language": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10,
+        "type": "array",
+        "description": "The language codes of the languages to analyze.\nFor a list of available languages, see [Supported languages](https://lgtm.com/help/lgtm/analysis-faqs#which-languages-are-supported). To specify more than one language, this parameter can be repeated. If no language is specified, all the project's languages will be analyzed.\n"
+      }
+    },
+    "required": [
+      "project-id",
+      "commit"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://lgtm.com/api/v1.0/analyses/{project-id}{?commit,language}"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The identifier for the operation.",
+            "**status**: Status of the operation.",
+            "**task-result**",
+            "**task-result-url**: The URL for the result of the task. For some operations, included only on completion.",
+            "**task-type**",
+            "**uploads**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "name": "post_files_upload_sessions_id_commit",
+  "description": "Close an upload session and create a file from the\nuploaded chunks.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "upload_session_id": {
+        "type": "string",
+        "description": "The ID of the upload session."
+      },
+      "digest": {
+        "type": "string",
+        "description": "The [RFC3230][1] message digest of the whole file.\n\nOnly SHA1 is supported. The SHA1 digest must be Base64\nencoded. The format of this header is as\n`sha=BASE64_ENCODED_DIGEST`.\n\n[1]: https://tools.ietf.org/html/rfc3230"
+      },
+      "if-match": {
+        "type": "string",
+        "description": "Ensures this item hasn't recently changed before\nmaking changes.\n\nPass in the item's last observed `etag` value\ninto this header and the endpoint will fail\nwith a `412 Precondition Failed` if it\nhas changed since."
+      },
+      "if-none-match": {
+        "type": "string",
+        "description": "Ensures an item is only returned if it has changed.\n\nPass in the item's last observed `etag` value\ninto this header and the endpoint will fail\nwith a `304 Not Modified` if the item has not\nchanged since."
+      },
+      "body": {
+        "properties": {
+          "parts": {
+            "description": "The list details for the uploaded parts",
+            "items": {
+              "$ref": "#/$defs/UploadPart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "upload_session_id",
+      "digest"
+    ],
+    "$defs": {
+      "UploadPart": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/UploadPart--Mini"
+          },
+          {
+            "properties": {
+              "sha1": {
+                "description": "The SHA1 hash of the chunk.",
+                "example": "134b65991ed521fcfe4724b7d814ab8ded5185dc",
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "description": "The representation of an upload\nsession chunk.",
+        "title": "Upload part",
+        "type": "object",
+        "x-box-resource-id": "upload_part",
+        "x-box-variant": "standard"
+      },
+      "UploadPart--Mini": {
+        "description": "The basic representation of an upload\nsession chunk.",
+        "properties": {
+          "offset": {
+            "description": "The offset of the chunk within the file\nin bytes. The lower bound of the position\nof the chunk within the file.",
+            "example": 16777216,
+            "format": "int64",
+            "type": "integer"
+          },
+          "part_id": {
+            "description": "The unique ID of the chunk.",
+            "example": "6F2D3486",
+            "type": "string"
+          },
+          "size": {
+            "description": "The size of the chunk in bytes.",
+            "example": 3222784,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "title": "Upload part (Mini)",
+        "type": "object",
+        "x-box-resource-id": "upload_part--mini",
+        "x-box-tag": "chunked_uploads",
+        "x-box-variant": "mini",
+        "x-box-variants": [
+          "mini",
+          "standard"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://upload.box.com/api/2.0/files/upload_sessions/{upload_session_id}/commit"
+    },
+    "headers": {
+      "digest": {
+        "$": "digest"
+      },
+      "if-match": {
+        "$": "if-match"
+      },
+      "if-none-match": {
+        "$": "if-none-match"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Files"
+        },
+        "A list of files",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**entries**: A list of files",
+            "**total_count**: The number of files."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

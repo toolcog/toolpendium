@@ -1,0 +1,319 @@
+{
+  "name": "postScoreComment",
+  "description": "Post a document or a contextualized comment on a document.\n\nPlease note that this method includes an anti-spam system for public scores. We don't guarantee that your comments will be accepted and displayed to end-user. Comments are be blocked by returning a `403` HTTP error and hidden from other users when the `spam` property is `true`.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "score": {
+        "type": "string",
+        "description": "Unique identifier of the score document. This can be a Flat Score unique identifier (i.e. `ScoreDetails.id`) or, if the score is also a Google Drive file, the Drive file unique identifier prefixed with `drive-` (e.g. `drive-0B000000000`).\n"
+      },
+      "sharingKey": {
+        "type": "string",
+        "description": "This sharing key must be specified to access to a score or collection with a `privacy` mode set to `privateLink` and the current user is not a collaborator of the document.\n"
+      },
+      "body": {
+        "$ref": "#/$defs/ScoreCommentCreation"
+      }
+    },
+    "required": [
+      "score",
+      "body"
+    ],
+    "$defs": {
+      "ScoreCommentCreation": {
+        "description": "Creation of a comment",
+        "example": {
+          "comment": "@[000000000000000000000000:flat] Great work!",
+          "context": {
+            "measureUuids": [
+              "e6a6a60b-8710-f819-9a49-e907b19c6f1f",
+              "da83d93c-e3a6-3c73-1bbe-15e5131d6437",
+              "056ec5eb-9213-df56-6ae8-d9b99673dc48"
+            ],
+            "partUuid": "91982db7-2e6d-285e-7a19-76b4bd005b8b",
+            "staffUuid": "9395d8f3-f42b-47b6-8c5d-6ba704961ec0",
+            "startDpq": 1,
+            "startTimePos": 2,
+            "stopDpq": 1,
+            "stopTimePos": 3
+          },
+          "mentions": [
+            "000000000000000000000000"
+          ],
+          "rawComment": "@flat: Great work!",
+          "replyTo": "000000000000000000000000",
+          "revision": "000000000000000000000010"
+        },
+        "properties": {
+          "comment": {
+            "description": "The comment text that can includes mentions using the following format: `@[id:username]`.\n",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/$defs/ScoreCommentContext"
+          },
+          "mentions": {
+            "description": "The list of user identifiers mentioned in this comment",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rawComment": {
+            "description": "A raw version of the comment, that can be displayed without the mentions. If you use mentions, this property must be set.\n",
+            "type": "string"
+          },
+          "replyTo": {
+            "description": "When the comment is a reply to another comment, the unique identifier of the parent comment\n",
+            "type": "string"
+          },
+          "revision": {
+            "description": "The unique indentifier of the revision of the score where the comment was added. If this property is unspecified or contains \"last\", the API will automatically take the last revision created.\n",
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment"
+        ],
+        "type": "object"
+      },
+      "ScoreCommentContext": {
+        "description": "The context of the comment (for inline/contextualized comments). A context will include all the information related to the location of the comment (i.e. score parts, range of measure, time position).\n",
+        "example": {
+          "measureUuids": [
+            "e6a6a60b-8710-f819-9a49-e907b19c6f1f",
+            "da83d93c-e3a6-3c73-1bbe-15e5131d6437",
+            "056ec5eb-9213-df56-6ae8-d9b99673dc48"
+          ],
+          "partUuid": "91982db7-2e6d-285e-7a19-76b4bd005b8b",
+          "staffUuid": "9395d8f3-f42b-47b6-8c5d-6ba704961ec0",
+          "startDpq": 1,
+          "startTimePos": 2,
+          "stopDpq": 1,
+          "stopTimePos": 3
+        },
+        "properties": {
+          "measureUuids": {
+            "description": "The list of measure UUIds",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "partUuid": {
+            "description": "The unique identifier (UUID) of the score part",
+            "type": "string"
+          },
+          "staffIdx": {
+            "description": "(Deprecated, use `staffUuid`) The identififer of the staff",
+            "type": "number"
+          },
+          "staffUuid": {
+            "description": "The unique identififer (UUID) of the staff",
+            "type": "string"
+          },
+          "startDpq": {
+            "type": "number"
+          },
+          "startTimePos": {
+            "type": "number"
+          },
+          "stopDpq": {
+            "type": "number"
+          },
+          "stopTimePos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "measureUuids",
+          "partUuid",
+          "startDpq",
+          "startTimePos",
+          "stopDpq",
+          "stopTimePos"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.flat.io/v2/scores/{score}/comments{?sharingKey}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Comment added on a sheet music",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**comment**: The comment text that can includes mentions using the following",
+            [
+              "**context**: The context of the comment (for inline/contextualized comments). A context will include all the information related to the location of the comment (i.e. score parts, range of measure, time position).",
+              {
+                "$ul": [
+                  "**measureUuids**: The list of measure UUIds",
+                  "**partUuid**: The unique identifier (UUID) of the score part",
+                  "**staffIdx**: (Deprecated, use `staffUuid`) The identififer of the staff",
+                  "**staffUuid**: The unique identififer (UUID) of the staff",
+                  "**startDpq**",
+                  "**startTimePos**",
+                  "**stopDpq**",
+                  "**stopTimePos**"
+                ]
+              }
+            ],
+            "**date**: The date when the comment was posted",
+            "**id**: The comment unique identifier",
+            "**mentions**: The list of user identifier mentioned on the score",
+            "**modificationDate**: The date of the last comment modification",
+            "**rawComment**: A raw version of the comment, that can be displayed without parsing",
+            "**replyTo**: When the comment is a reply to another comment, the unique identifier of the parent comment",
+            "**resolved**: For inline comments, the comment can be marked as resolved and will be hidden in the future responses",
+            "**resolvedBy**: If the user is marked as resolved, this will contain the unique identifier of the User who marked this comment as resolved",
+            "**revision**: The unique identifier of revision the comment was posted",
+            "**score**: The unique identifier of the score where the comment was posted",
+            "**spam**: `true  if the message has been detected as spam and hidden from other users",
+            "**type**: The type of the comment",
+            "**user**: The author unique identifier"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

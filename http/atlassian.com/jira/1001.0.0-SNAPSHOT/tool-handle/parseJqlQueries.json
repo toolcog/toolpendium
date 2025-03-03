@@ -1,0 +1,112 @@
+{
+  "name": "parseJqlQueries",
+  "description": "Parses and validates JQL queries.\n\nValidation is performed in context of the current user.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** None.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "validation": {
+        "default": "strict",
+        "enum": [
+          "strict",
+          "warn",
+          "none"
+        ],
+        "type": "string",
+        "description": "How to validate the JQL query and treat the validation results. Validation options include:\n\n *  `strict` Returns all errors. If validation fails, the query structure is not returned.\n *  `warn` Returns all errors. If validation fails but the JQL query is correctly formed, the query structure is returned.\n *  `none` No validation is performed. If JQL query is correctly formed, the query structure is returned."
+      },
+      "body": {
+        "$ref": "#/$defs/JqlQueriesToParse"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "JqlQueriesToParse": {
+        "additionalProperties": false,
+        "description": "A list of JQL queries to parse.",
+        "properties": {
+          "queries": {
+            "description": "A list of queries to parse.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minLength": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "queries"
+        ],
+        "type": "object",
+        "writeOnly": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/jql/parse{?validation}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A list of parsed JQL queries.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**queries**: A list of parsed JQL queries."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

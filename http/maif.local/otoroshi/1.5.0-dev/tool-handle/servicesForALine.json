@@ -1,0 +1,241 @@
+{
+  "name": "servicesForALine",
+  "description": "Get all services for an environment provided by the current Otoroshi instance",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "line": {
+        "type": "string",
+        "description": "The environment where to find services"
+      }
+    },
+    "required": [
+      "line"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://otoroshi-api.oto.tools//lines/{line}/services"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "An otoroshi service descriptor. Represent a forward HTTP call on a domain to another location with some optional api management mecanism",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**Canary**: The configuration of the canary mode for a service descriptor",
+              {
+                "$ul": [
+                  "**enabled**: Use canary mode for this service",
+                  "**root**: Otoroshi will append this root to any target choosen. If the specified root is '/api/foo', then a request to https://yyyyyyy/bar will actually hit https://xxxxxxxxx/api/foo/bar",
+                  "**targets**: The list of target that Otoroshi will proxy and expose through the subdomain defined before. Otoroshi will do round-robin load balancing between all those targets with circuit breaker mecanism to avoid cascading failures",
+                  "**traffic**: Ratio of traffic that will be sent to canary targets."
+                ]
+              }
+            ],
+            "**additionalHeaders**: Specify headers that will be added to each client request. Useful to add authentication",
+            [
+              "**api**: The Open API configuration for your service (if one)",
+              {
+                "$ul": [
+                  "**exposeApi**: Whether or not the current service expose an API with an Open API descriptor",
+                  "**openApiDescriptorUrl**: The URL of the Open API descriptor"
+                ]
+              }
+            ],
+            "**authConfigRef**: A reference to a global auth module config",
+            "**buildMode**: Display a construction page when a user try to use the service",
+            [
+              "**chaosConfig**: Configuration for the faults that can be injected in requests",
+              {
+                "$ul": [
+                  [
+                    "**badResponsesFaultConfig**: Config for bad requests injection fault",
+                    {
+                      "$ul": [
+                        "**ratio**: The percentage of requests affected by this fault. Value should be between 0.0 and 1.0",
+                        "**responses**: The possibles responses"
+                      ]
+                    }
+                  ],
+                  "**enabled**: Whether or not this config is enabled",
+                  [
+                    "**largeRequestFaultConfig**: Config for large request injection fault",
+                    {
+                      "$ul": [
+                        "**additionalRequestSize**: The size added to the request body in bytes. Added payload will be spaces only.",
+                        "**ratio**: The percentage of requests affected by this fault. Value should be between 0.0 and 1.0"
+                      ]
+                    }
+                  ],
+                  [
+                    "**largeResponseFaultConfig**: Config for large response injection fault",
+                    {
+                      "$ul": [
+                        "**additionalRequestSize**: The size added to the response body in bytes. Added payload will be spaces only.",
+                        "**ratio**: The percentage of requests affected by this fault. Value should be between 0.0 and 1.0"
+                      ]
+                    }
+                  ],
+                  [
+                    "**latencyInjectionFaultConfig**: Config for large latency injection fault",
+                    {
+                      "$ul": [
+                        "**from**: The start range of latency added to the request",
+                        "**ratio**: The percentage of requests affected by this fault. Value should be between 0.0 and 1.0",
+                        "**to**: The end range of latency added to the request"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**clientConfig**: The configuration of the circuit breaker for a service descriptor",
+              {
+                "$ul": [
+                  "**backoffFactor**: Specify the factor to multiply the delay for each retry",
+                  "**callTimeout**: Specify how long each call should last at most in milliseconds",
+                  "**globalTimeout**: Specify how long the global call (with retries) should last at most in milliseconds",
+                  "**maxErrors**: Specify how many errors can pass before opening the circuit breaker",
+                  "**retries**: Specify how many times the client will try to fetch the result of the request after an error before giving up.",
+                  "**retryInitialDelay**: Specify the delay between two retries. Each retry, the delay is multiplied by the backoff factor",
+                  "**sampleInterval**: Specify the sliding window time for the circuit breaker in milliseconds, after this time, error count will be reseted",
+                  "**useCircuitBreaker**: Use a circuit breaker to avoid cascading failure when calling chains of services. Highly recommended !"
+                ]
+              }
+            ],
+            "**clientValidatorRef**: A reference to validation authority",
+            [
+              "**cors**: The configuration for cors support",
+              {
+                "$ul": [
+                  "**allowCredentials**: Allow to pass credentials",
+                  "**allowHeaders**: The cors allowed headers",
+                  "**allowMethods**: The cors allowed methods",
+                  "**allowOrigin**: The cors allowed origin",
+                  "**enabled**: Whether or not cors is enabled",
+                  "**excludedPatterns**: The cors excluded patterns",
+                  "**exposeHeaders**: The cors exposed header",
+                  "**maxAge**: Cors max age"
+                ]
+              }
+            ],
+            "**domain**: The domain on which the service is available.",
+            "**enabled**: Activate or deactivate your service. Once disabled, users will get an error page saying the service does not exist",
+            "**enforceSecureCommunication**: When enabled, Otoroshi will try to exchange headers with downstream service to ensure no one else can use the service from outside",
+            "**env**: The line on which the service is available. Based on that value, the name of the line will be appended to the subdomain. For line prod, nothing will be appended. For example, if the subdomain is 'foo' and line is 'preprod', then the exposed service will be available at 'foo.preprod.mydomain'",
+            "**forceHttps**: Will force redirection to https:// if not present",
+            "**groups**: Each service descriptor is attached to groups. A group can have one or more services. Each API key is linked to a group and allow access to every service in the group",
+            [
+              "**gzip**: Configuration for gzip of service responses",
+              {
+                "$ul": [
+                  "**blackList**: Blacklisted mime types. Wildcard supported",
+                  "**bufferSize**: Size of the GZip buffer",
+                  "**chunkedThreshold**: Threshold for chunking data",
+                  "**compressionLevel**: Compression level. From 0 to 9",
+                  "**enabled**: Whether gzip compression is enabled or not",
+                  "**excludedPatterns**: Patterns that are excluded from gzipping",
+                  "**whiteList**: Whitelisted mime types. Wildcard supported"
+                ]
+              }
+            ],
+            "**headersVerification**: Specify headers that will be verified after routing.",
+            [
+              "**healthCheck**: The configuration for checking health of a service. Otoroshi will perform GET call on the URL to check if the service is still alive",
+              {
+                "$ul": [
+                  "**enabled**: Whether or not healthcheck is enabled on the current service descriptor",
+                  "**url**: The URL to check"
+                ]
+              }
+            ],
+            "**id**: A unique random string to identify your service",
+            [
+              "**ipFiltering**: The filtering configuration block for a service of globally.",
+              {
+                "$ul": [
+                  "**blacklist**: Blacklisted IP addresses",
+                  "**whitelist**: Whitelisted IP addresses"
+                ]
+              }
+            ],
+            "**jwtVerifier**",
+            "**localHost**: The host used localy, mainly localhost:xxxx",
+            "**localScheme**: The scheme used localy, mainly http",
+            "**maintenanceMode**: Display a maintainance page when a user try to use the service",
+            "**matchingHeaders**: Specify headers that MUST be present on client request to route it. Useful to implement versioning",
+            "**matchingRoot**: The root path on which the service is available",
+            "**metadata**: Just a bunch of random properties",
+            "**name**: The name of your service. Only for debug and human readability purposes",
+            "**overrideHost**: Host header will be overriden with Host of the target",
+            "**privateApp**: When enabled, user will be allowed to use the service (UI) only if they are registered users of the private apps domain",
+            "**privatePatterns**: If you define a public pattern that is a little bit too much, you can make some of public URL private again",
+            "**publicPatterns**: By default, every services are private only and you'll need an API key to access it. However, if you want to expose a public UI, you can define one or more public patterns (regex) to allow access to anybody. For example if you want to allow anybody on any URL, just use '/.*'",
+            "**redirectToLocal**: If you work locally with Otoroshi, you may want to use that feature to redirect one particuliar service to a local host. For example, you can relocate https://foo.preprod.bar.com to http://localhost:8080 to make some tests",
+            [
+              "**redirection**: The configuration for redirection per service",
+              {
+                "$ul": [
+                  "**code**: The http redirect code",
+                  "**enabled**: Whether or not redirection is enabled",
+                  "**to**: The location for redirection"
+                ]
+              }
+            ],
+            "**root**: Otoroshi will append this root to any target choosen. If the specified root is '/api/foo', then a request to https://yyyyyyy/bar will actually hit https://xxxxxxxxx/api/foo/bar",
+            "**secComExcludedPatterns**: URI patterns excluded from secured communications",
+            "**secComSettings**",
+            "**sendOtoroshiHeadersBack**: When enabled, Otoroshi will send headers to consumer like request id, client latency, overhead, etc ...",
+            [
+              "**statsdConfig**: The configuration for statsd metrics push",
+              {
+                "$ul": [
+                  "**datadog**: Datadog agent",
+                  "**host**: The host of the StatsD agent",
+                  "**port**: The port of the StatsD agent"
+                ]
+              }
+            ],
+            "**subdomain**: The subdomain on which the service is available",
+            "**targets**: The list of target that Otoroshi will proxy and expose through the subdomain defined before. Otoroshi will do round-robin load balancing between all those targets with circuit breaker mecanism to avoid cascading failures",
+            "**transformerRef**: A reference to a request transformer",
+            "**userFacing**: The fact that this service will be seen by users and cannot be impacted by the Snow Monkey",
+            "**xForwardedHeaders**: Send X-Forwarded-* headers"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

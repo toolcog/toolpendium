@@ -1,0 +1,331 @@
+{
+  "name": "enterprise-admin_provision-enterprise-user",
+  "description": "**Note:** The SCIM API endpoints for enterprise accounts are currently in *private* beta and are subject to change.\n\nCreates an external identity for a new SCIM enterprise user.\n\nSCIM does not authenticate users, it only provisions them. The authentication of users is done by SAML. However, when SCIM is enabled, all users need to be provisioned through SCIM before a user can sign in through SAML. The matching of a user to a SCIM provisioned user is done when the SAML assertion is consumed. The user will be matched on SAML response `NameID` to SCIM `userName`.\n\nWhen converting existing enterprise to use SCIM, the user handle (`userName`) from the SCIM payload will be used to match the provisioned user to an already existing user in the enterprise. Since the new identity record is created for newly provisioned users the matching for those records is done using a user's handle. Currently the matching will be performed to all of the users no matter if they were SAML JIT provisioned or created as local users.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/user"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "user": {
+        "properties": {
+          "active": {
+            "description": "Whether the user active in the IdP.",
+            "example": true,
+            "type": "boolean"
+          },
+          "displayName": {
+            "description": "A human-readable name for the user.",
+            "example": "Mona Lisa",
+            "type": "string"
+          },
+          "emails": {
+            "$ref": "#/$defs/user-emails"
+          },
+          "externalId": {
+            "description": "A unique identifier for the resource as defined by the provisioning client.",
+            "example": "E012345",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/$defs/user-name"
+          },
+          "roles": {
+            "$ref": "#/$defs/user-role"
+          },
+          "schemas": {
+            "description": "The URIs that are used to indicate the namespaces of the SCIM schemas.",
+            "example": [
+              "urn:ietf:params:scim:schemas:core:2.0:User"
+            ],
+            "items": {
+              "enum": [
+                "urn:ietf:params:scim:schemas:core:2.0:User"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "userName": {
+            "description": "The username for the user.",
+            "example": "E012345",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemas",
+          "externalId",
+          "userName",
+          "active",
+          "displayName",
+          "emails"
+        ],
+        "type": "object"
+      },
+      "user-emails": {
+        "description": "The emails for the user.",
+        "items": {
+          "properties": {
+            "primary": {
+              "description": "Whether this email address is the primary address.",
+              "example": true,
+              "type": "boolean"
+            },
+            "type": {
+              "description": "The type of email address.",
+              "example": "work",
+              "type": "string"
+            },
+            "value": {
+              "description": "The email address.",
+              "example": "mlisa@example.com",
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "type",
+            "primary"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "user-name": {
+        "properties": {
+          "familyName": {
+            "description": "The family name of the user.",
+            "example": "Octocat",
+            "type": "string"
+          },
+          "formatted": {
+            "description": "The full name, including all middle names, titles, and suffixes as appropriate, formatted for display.",
+            "example": "Ms. Mona Lisa Octocat",
+            "type": "string"
+          },
+          "givenName": {
+            "description": "The given name of the user.",
+            "example": "Mona",
+            "type": "string"
+          },
+          "middleName": {
+            "description": "The middle name(s) of the user.",
+            "example": "Lisa",
+            "type": "string"
+          }
+        },
+        "required": [
+          "familyName",
+          "givenName"
+        ],
+        "type": "object"
+      },
+      "user-role": {
+        "description": "The roles assigned to the user.",
+        "items": {
+          "properties": {
+            "display": {
+              "type": "string"
+            },
+            "primary": {
+              "description": "Is the role a primary role for the user.",
+              "example": false,
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "description": "The role value representing a user role in GitHub.",
+              "enum": [
+                "User",
+                "user",
+                "27d9891d-2c17-4f45-a262-781a0e55c80a",
+                "Restricted User",
+                "restricted_user",
+                "1ebc4a02-e56c-43a6-92a5-02ee09b90824",
+                "Enterprise Owner",
+                "enterprise_owner",
+                "981df190-8801-4618-a08a-d91f6206c954",
+                "ba4987ab-a1c3-412a-b58c-360fc407cb10",
+                "Billing Manager",
+                "billing_manager",
+                "0e338b8c-cc7f-498a-928d-ea3470d7e7e3",
+                "e6be2762-e4ad-4108-b72d-1bbe884a0f91"
+              ],
+              "example": "user",
+              "type": "string"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://github.com//scim/v2/Users"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: Whether the user active in the IdP.",
+            "**displayName**: A human-readable name for the user.",
+            "**emails**: The emails for the user.",
+            "**externalId**: A unique identifier for the resource as defined by the provisioning client.",
+            [
+              "**name**",
+              {
+                "$ul": [
+                  "**familyName**: The family name of the user.",
+                  "**formatted**: The full name, including all middle names, titles, and suffixes as appropriate, formatted for display.",
+                  "**givenName**: The given name of the user.",
+                  "**middleName**: The middle name(s) of the user."
+                ]
+              }
+            ],
+            "**roles**: The roles assigned to the user.",
+            "**schemas**: The URIs that are used to indicate the namespaces of the SCIM schemas.",
+            "**userName**: The username for the user.",
+            "**groups**: Provisioned SCIM groups that the user is a member of.",
+            "**id**: The internally generated id for the user object.",
+            [
+              "**meta**: The metadata associated with the creation/updates to the user.",
+              {
+                "$ul": [
+                  "**created**: A date and time when the user was created.",
+                  "**lastModified**: A data and time when the user was last modified.",
+                  "**location**: A URL location of an object",
+                  "**resourceType**: A type of a resource"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

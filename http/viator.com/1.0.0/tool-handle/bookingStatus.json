@@ -1,0 +1,146 @@
+{
+  "name": "bookingStatus",
+  "description": "Get the booking status for multiple items based on different criteria\n\nThis service: \n- is ideally be used in software for bulk updates of pending bookings\n- returns a maximum of 1000 bookings (narrow your search if you expect a greater number of results)\n- will return &lt;u&gt;both&lt;/u&gt; live &lt;u&gt;and&lt;/u&gt; test bookings\n- rate limited to &lt;u&gt;one request every 30 minutes&lt;/u&gt;\n- For more information, see: [Get the bookiing status for multiple items](#section/Common-workflows-and-data-validation/Get-the-booking-status-for-multiple-items)\n\n**Exceeding the rate limit**\n- You will receive the following error message if you exceed the rate limit allowed for this service. Set `test` to `true` to bypass this limit:\n```javascript\n{\n    \"data\": null\n    \"vmid\": 221002\n    \"errorMessage\": [\"Access allowed every 30 minutes\"]\n    \"errorType\": \"EXCEPTION\"\n    \"dateStamp\": \"2013-03-26T10:28:51+0000\"\n    \"errorReference\": 55315512721712161381352771\n    \"errorMessageText\": [\"Access allowed every 30 minutes\"]\n    \"success\": false\n    \"totalCount\": 1\n    \"errorName\": \"PollingDeniedException\"  \n}\n```\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Accept-Language": {
+        "example": "en-US",
+        "type": "string",
+        "description": "Specifies the language into which the natural-language fields in the response from this service will be translated (see [Accept-Language header](#section/Appendices/Accept-Language-header) for available langage codes)\n"
+      },
+      "body": {
+        "description": "**note**: all items are optional, but at least one needs to be included",
+        "properties": {
+          "bookingDateFrom": {
+            "description": "**earliest date** for *this* booking (must be in the future)",
+            "type": "string"
+          },
+          "bookingDateTo": {
+            "description": "**latest date** for *this* booking (must be in the future)",
+            "type": "string"
+          },
+          "distributorItemRefs": {
+            "description": "**array** of partner-defined distributor item reference identifiers e.g. `['refItem1','refItem2','refItem3']`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "distributorRefs": {
+            "description": "**array** of partner-defined distributor reference identifiers",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "itemIds": {
+            "description": "**array** of item identifiers to check",
+            "items": {
+              "description": "**numeric item identifier**",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "leadFirstName": {
+            "description": "**first name** of the lead traveler",
+            "type": "string"
+          },
+          "leadSurname": {
+            "description": "**surname** of the lead traveler",
+            "type": "string"
+          },
+          "test": {
+            "description": "**specifier**:\n- `true`: bypass the poll limit in the prelive environment only (recommended for testing)\n- `false`: (default)\n",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "Accept-Language"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://viatorapi.viator.com/service/booking/status"
+    },
+    "headers": {
+      "Accept-Language": {
+        "$": "Accept-Language"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**dateStamp**: **timestamp** of *this* response",
+            "**errorCodes**: **array** of error codes pertaining to *this* error",
+            "**errorMessage**: **array** of error message strings",
+            "**errorMessageText**: **array** of error message strings in plain text",
+            "**errorName**: **name** of *this* type of error",
+            "**errorReference**: **reference number** of *this* error",
+            "**errorType**: **code** specifying the type of error",
+            "**extraInfo**: ignore (Viator only)",
+            "**extraObject**: ignore (Viator only)",
+            "**success**: **boolean indicator** of *this* request's outcome",
+            "**totalCount**: **number** of results available for *this* service",
+            "**vmid**: **unique numeric id** of the server that processed *this* request",
+            [
+              "**data**: **object** containing booking status and details",
+              {
+                "$ul": [
+                  "**bookingDate**: **date**: of *this* booking",
+                  [
+                    "**bookingStatus**: **object** containing itinerary booking status information",
+                    {
+                      "$ul": [
+                        "**amended**: **indicator**: `true` if *this* itinerary's booking has been amended",
+                        "**cancelled**: **indicator**: `true` if *this* itinerary's booking has been cancelled",
+                        "**confirmed**: **indicator**: `true` if *this* itinerary's booking is confirmed",
+                        "**failed**: **indicator**: `true` if *this* itinerary's booking has failed",
+                        "**level**: **level** of *this* itinerary's booking status",
+                        "**pending**: **indicator**: `true` if *this* itinerary's booking is pending",
+                        "**status**: **numeric identifier** of *this* itinerary's booking status",
+                        "**text**: **natural-language description** of *this* itinerary's booking status",
+                        "**type**: **specifier** of *this* itinerary's booking status"
+                      ]
+                    }
+                  ],
+                  "**distributorRef**: **alphanumeric identifer** of the distributor for *this* booking",
+                  "**itemSummaries**: **array** of item summary objects",
+                  "**itineraryId**: ignore (Viator only)",
+                  "**sortOrder**: **sort order** for *this* response"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

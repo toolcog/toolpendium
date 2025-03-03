@@ -1,0 +1,126 @@
+{
+  "name": "search",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Szűrőfeltétel, amire illesztve vannak a zavarok, járatok és megállók."
+      },
+      "lat": {
+        "format": "float",
+        "type": "number",
+        "description": "A látható térkép középpontjának szélessgéi koordinátája."
+      },
+      "lon": {
+        "format": "float",
+        "type": "number",
+        "description": "A látható térkép középpontjának hosszúsági koordinátája."
+      },
+      "minResult": {
+        "default": 5,
+        "format": "int32",
+        "type": "integer",
+        "description": "A visszaadott elemek minimális száma."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/search{?query,lat,lon,minResult,appVersion,version,includeReferences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+                  [
+                    "**entry**: A lekért adat.",
+                    {
+                      "$ul": [
+                        "**alertIds**: Az illeszkedő zavarok azonosítói.",
+                        "**query**: A keresett kifejezés.",
+                        "**routeIds**: Az illeszkedő járatok azonosítói.",
+                        "**stopIds**: Az illeszkedő megállók azonosítói."
+                      ]
+                    }
+                  ],
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

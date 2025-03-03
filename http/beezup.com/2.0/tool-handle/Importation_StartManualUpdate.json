@@ -1,0 +1,439 @@
+{
+  "name": "Importation_StartManualUpdate",
+  "description": "Start Manual Import",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "storeId": {
+        "format": "guid",
+        "type": "string",
+        "description": "Your store identifier"
+      },
+      "body": {
+        "$ref": "#/$defs/startManualImportRequest"
+      }
+    },
+    "required": [
+      "storeId",
+      "body"
+    ],
+    "$defs": {
+      "startManualImportRequest": {
+        "description": "The message request start a manual importation process. Indicate the way to handle duplicate product. Can be null if you want to reuse the configuration of the previous importation succeed.",
+        "properties": {
+          "duplicateProductSkuConfiguration": {
+            "$ref": "#/$defs/duplicateProductValueConfiguration"
+          },
+          "input": {
+            "$ref": "#/$defs/inputConfiguration"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "duplicateProductValueConfiguration": {
+        "description": "Describe how you want to manage the duplication of the product value",
+        "properties": {
+          "compareOptions": {
+            "$ref": "#/$defs/compareOptions"
+          },
+          "strategy": {
+            "$ref": "#/$defs/duplicateProductValueStrategy"
+          }
+        },
+        "required": [
+          "strategy",
+          "compareOptions"
+        ],
+        "type": "object"
+      },
+      "compareOptions": {
+        "default": "None",
+        "description": "Indicate how the product sku are compared for the duplication check.",
+        "enum": [
+          "None",
+          "IgnoreCase",
+          "IgnoreNonSpace",
+          "IgnoreSymbols",
+          "OrdinalIgnoreCase",
+          "StringSort",
+          "Ordinal"
+        ],
+        "example": "IgnoreCase",
+        "type": "string"
+      },
+      "duplicateProductValueStrategy": {
+        "default": "None",
+        "description": "Indicate the duplicate product sku strategy.",
+        "enum": [
+          "None",
+          "SkipAllDuplicateProducts",
+          "KeepFirstDuplicateProductOnly",
+          "FailImportationIfAnyDuplicateProduct"
+        ],
+        "example": "KeepFirstDuplicateProductOnly",
+        "type": "string"
+      },
+      "inputConfiguration": {
+        "description": "Describe the input configuration",
+        "properties": {
+          "files": {
+            "description": "The list of files to get and read",
+            "items": {
+              "$ref": "#/$defs/inputFileConfiguration"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "transformFileUrl": {
+            "description": "Can be null. Use to transform multiple files with an XSLT file.",
+            "example": "http://beezupblob.com/Mytransformation.xslt",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "type": "object"
+      },
+      "inputFileConfiguration": {
+        "description": "Describe how to get and read a file",
+        "properties": {
+          "fetch": {
+            "$ref": "#/$defs/inputFileFetchConfiguration"
+          },
+          "fileNumber": {
+            "description": "The file number starting by 1",
+            "example": "1",
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "read": {
+            "$ref": "#/$defs/inputFileReadConfiguration"
+          }
+        },
+        "required": [
+          "fileNumber",
+          "fetch",
+          "read"
+        ],
+        "type": "object"
+      },
+      "inputFileFetchConfiguration": {
+        "description": "Describe the way to download the file",
+        "properties": {
+          "compressedRelativePath": {
+            "description": "Indicate the relative path in the compressed file",
+            "example": "folder/file.xxx",
+            "type": "string"
+          },
+          "compressionFormatStrategy": {
+            "$ref": "#/$defs/compressionFormatStrategy"
+          },
+          "credential": {
+            "$ref": "#/$defs/credential"
+          },
+          "downloadCatalogStrategy": {
+            "$ref": "#/$defs/downloadCatalogStrategy"
+          },
+          "downloadTimeout": {
+            "default": "30",
+            "description": "Indicate the download time out in second",
+            "example": "360",
+            "format": "int32",
+            "type": "integer"
+          },
+          "uri": {
+            "description": "Indicate the Uri of the file. (http, https, ftp, ftps, sftp are allowed)",
+            "example": "http://www.mywebsite.com/mycatalog.csv",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uri",
+          "downloadCatalogStrategy"
+        ],
+        "type": "object"
+      },
+      "compressionFormatStrategy": {
+        "description": "Indicate the compression type",
+        "enum": [
+          "None",
+          "Zip",
+          "TarGz",
+          "Gzip",
+          "Bzip2",
+          "Rar"
+        ],
+        "example": "None",
+        "type": "string"
+      },
+      "credential": {
+        "description": "Provides the credentials",
+        "properties": {
+          "password": {
+            "description": "The password",
+            "example": "MyPassword",
+            "format": "password",
+            "type": "string"
+          },
+          "userName": {
+            "description": "The user name",
+            "example": "MyLogin",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userName"
+        ],
+        "type": "object"
+      },
+      "downloadCatalogStrategy": {
+        "description": "Indicate the download strategy (simple uri, ftps, ftplatest file, etc...)",
+        "enum": [
+          "SimpleUri",
+          "FtpLatest",
+          "Sftp",
+          "SftpLatest",
+          "Ftps",
+          "FtpsLatest",
+          "Local"
+        ],
+        "example": "SimpleUri",
+        "type": "string"
+      },
+      "inputFileReadConfiguration": {
+        "description": "Describe how to read the file. If FileFormatStrategy is CSV, csvFileReadProperties is required. Otherwise the xmlFileReadProperties is required.\n",
+        "properties": {
+          "csvFileReadProperties": {
+            "$ref": "#/$defs/inputFileReadCsvConfiguration"
+          },
+          "cultureName": {
+            "default": "",
+            "description": "The culture name of the file.  (i.e. fr-FR). If null then Invariant culture will be used.",
+            "example": "fr-FR",
+            "type": "string"
+          },
+          "encodingTypeName": {
+            "default": "UTF-8",
+            "description": "The encoding type. UTF-8 by default.",
+            "example": "UTF-8",
+            "type": "string"
+          },
+          "format": {
+            "$ref": "#/$defs/fileFormatStrategy"
+          },
+          "xmlFileReadProperties": {
+            "$ref": "#/$defs/inputFileReadXmlConfiguration"
+          }
+        },
+        "required": [
+          "format"
+        ],
+        "type": "object"
+      },
+      "inputFileReadCsvConfiguration": {
+        "description": "The CSV file description",
+        "properties": {
+          "csvSeparator": {
+            "$ref": "#/$defs/csvSeparator"
+          },
+          "csvTextQualifier": {
+            "default": "\"",
+            "description": "Indicate the text qualifier of the CSV file. Generally the value is \"",
+            "example": "\"",
+            "type": "string"
+          },
+          "hasHeaderRecord": {
+            "default": "true",
+            "description": "Indicate if the csv file contains the column name at the first row",
+            "example": "true",
+            "type": "boolean"
+          },
+          "ignoreHeaderRecord": {
+            "default": "false",
+            "description": "Indicate if the importation should not use the csv column name from the file",
+            "example": "true",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hasHeaderRecord",
+          "ignoreHeaderRecord",
+          "csvSeparator"
+        ],
+        "type": "object"
+      },
+      "csvSeparator": {
+        "default": ";",
+        "description": "Indicate the separator of the values in the CSV file. Generally \";\"",
+        "example": ";",
+        "type": "string"
+      },
+      "fileFormatStrategy": {
+        "description": "CSV or XML",
+        "enum": [
+          "Unknown",
+          "Csv",
+          "Xml",
+          "Json"
+        ],
+        "example": "Csv",
+        "type": "string"
+      },
+      "inputFileReadXmlConfiguration": {
+        "description": "The XML file description",
+        "properties": {
+          "flattenXmlChildElements": {
+            "description": "Indicate if the children xml nodes should be flatten with there parent to take in account the sub node values.",
+            "example": "true",
+            "type": "boolean"
+          },
+          "useXmlAttributes": {
+            "description": "Indicate if the importation should take in account the attribute in the xml nodes.",
+            "example": "true",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "useXmlAttributes",
+          "flattenXmlChildElements"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.beezup.com/v2/user/catalogs/{storeId}/importations/start"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**: The error message list",
+            [
+              "**links**: The action links",
+              {
+                "$ul": [
+                  "**cancelCurrentImportation**",
+                  "**currentImportation**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

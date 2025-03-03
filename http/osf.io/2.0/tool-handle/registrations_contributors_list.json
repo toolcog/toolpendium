@@ -1,0 +1,89 @@
+{
+  "name": "registrations_contributors_list",
+  "description": "A paginated list of all contributors on this registration.\nThe returned contributors are sorted by their index.\n\nContributors are users who can make changes to the registration or, in the case of private registration, have read access to the registration.\n\nContributors are categorized as either \"bibliographic\" or \"non-bibliographic\". From a permissions standpoint, both are the same, but bibliographic contributors are included in citations and are listed in the contributors list on the OSF, while non-bibliographic contributors are not.\n\nNote that if an anonymous view_only key is being used to view the list of contributors, the user relationship will not be exposed and the contributor ID will be an empty string.\n\n#### Returns\nReturns a JSON object containing `data` and `links` keys.\n\nThe `data` key contains an array of up to 10 contributors. Each resource in the array contains the full representation of the contributor. Additionally, the full representation of the user this contributor represents is automatically embedded within the `data` key of the response.\n\nThe `links` key contains a dictionary of links that can be used for [pagination](#tag/Pagination).\n#### Filtering\nYou can optionally request that the response only include contributors that match your filters by utilizing the `filter` query parameter, e.g. https://api.osf.io/v2/registrations/wu3a4/contributors/?filter[bibliographic]=true.\n\nContributors may be filtered by their `bibliographic` and `permission` attributes.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "registration_id": {
+        "type": "string",
+        "description": "The unique identifier of the registration."
+      }
+    },
+    "required": [
+      "registration_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.test.osf.io/v2/registrations/{registration_id}/contributors/"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Contributor list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**attributes**: The properties of the contributor entity.",
+              {
+                "$ul": [
+                  "**bibliographic**: Whether or not the contributor will be included in citations for the node. The default value is true.",
+                  "**index**: The position of this contributor in the list of project contributors and in project citations.",
+                  "**permission**: The permission level of the contributor. The default value is 'write'.",
+                  "**unregistered_contributor**: The assigned name of the contributor if the contributor has not yet claimed their account."
+                ]
+              }
+            ],
+            "**id**: The identifier of the contributor entity. Contributor identifiers have the form {node_id}-{user_id}.",
+            [
+              "**links**: URLs to alternative representations of the contributor entity.",
+              {
+                "$ul": [
+                  "**self**: A link to the the canonical API endpoint for the contributor."
+                ]
+              }
+            ],
+            [
+              "**relationships**: URLs to other entities or entity collections that have a relationship to the contributor entity.",
+              {
+                "$ul": [
+                  "**node**: A relationship to the node that was created for the preprint, or from which the preprint was created.",
+                  "**user**: A relationship to the file that is designated as the preprint's primary file, or the manuscript of the preprint."
+                ]
+              }
+            ],
+            "**type**: The type identifier of the contributor entity (`contributors`)."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

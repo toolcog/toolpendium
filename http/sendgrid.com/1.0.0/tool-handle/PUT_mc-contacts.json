@@ -1,0 +1,271 @@
+{
+  "name": "PUT_mc-contacts",
+  "description": "**This endpoint allows the [upsert](https://en.wiktionary.org/wiki/upsert) (insert or update) of up to 30,000 contacts, or 6MB of data, whichever is lower**. \n\nBecause the creation and update of contacts is an asynchronous process, the response will not contain immediate feedback on the processing of your upserted contacts. Rather, it will contain an HTTP 202 response indicating the contacts are queued for processing or an HTTP 4XX error containing validation errors. Should you wish to get the resulting contact's ID or confirm your contacts have been updated or added, you can use the \"Get Contacts by Emails\" endpoint. \n\nPlease note that custom fields need to have been already created if you wish to set their values for the contacts being upserted. To do this, please use the \"Create Custom Field Definition\" endpoint.\n\nYou will see a `job_id` in the response to your request. This can be used to check the status of your upsert job. To do so, please use the \"Import Contacts Status\" endpoint.\n\nIf the contact already exists in the system, any entries submitted via this endpoint will update the existing contact. The contact to update will be determined only by the `email` field and any fields omitted from the request will remain as they were. A contact's ID cannot be used to update the contact.\n\nThe email field will be changed to all lower-case. If a contact is added with an email that exists but contains capital letters, the existing contact with the all lower-case email will be updated.\n\nTwilio SendGrid recommends exporting your contacts regularly as a backup to avoid issues or lost data.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "contacts": {
+            "description": "One or more contacts objects that you intend to upsert. The available fields for a contact, including the required `email` field are described below.",
+            "items": {
+              "$ref": "#/$defs/contact-request"
+            },
+            "maxItems": 30000,
+            "minItems": 1,
+            "type": "array"
+          },
+          "list_ids": {
+            "description": "An array of List ID strings that this contact will be added to.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "contacts"
+        ],
+        "type": "object"
+      }
+    },
+    "$defs": {
+      "contact-request": {
+        "properties": {
+          "address_line_1": {
+            "description": "The first line of the address.",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "address_line_2": {
+            "description": "An optional second line for the address.",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "alternate_emails": {
+            "description": "Additional emails associated with the contact.",
+            "items": {
+              "maxLength": 254,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 0,
+            "type": "array"
+          },
+          "city": {
+            "description": "The contact's city.",
+            "maxLength": 60,
+            "type": "string"
+          },
+          "country": {
+            "description": "The contact's country. Can be a full name or an abbreviation.",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "custom_fields": {
+            "$ref": "#/$defs/custom-fields-by-id"
+          },
+          "email": {
+            "description": "The contact's primary email. This is required to be a valid email.",
+            "maxLength": 254,
+            "type": "string"
+          },
+          "first_name": {
+            "description": "The contact's personal name.",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "The contact's family name.",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "The contact's ZIP code or other postal code.",
+            "type": "string"
+          },
+          "state_province_region": {
+            "description": "The contact's state, province, or region.",
+            "maxLength": 50,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "contact-request",
+        "type": "object"
+      },
+      "custom-fields-by-id": {
+        "example": {
+          "e2": "Coffee is a beverage that puts one to sleep when not drank.",
+          "w1": "2002-10-02T15:00:00Z",
+          "w33": 9.5
+        },
+        "title": "custom-fields-by-id",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/contacts"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**job_id**: Indicates that the contacts are queued for processing. Check the job status with the \"Import Contacts Status\" endpoint."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

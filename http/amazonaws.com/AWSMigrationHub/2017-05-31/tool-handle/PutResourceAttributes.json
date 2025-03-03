@@ -1,0 +1,326 @@
+{
+  "name": "PutResourceAttributes",
+  "description": "<p>Provides identifying details of the resource being migrated so that it can be associated in the Application Discovery Service repository. This association occurs asynchronously after <code>PutResourceAttributes</code> returns.</p> <important> <ul> <li> <p>Keep in mind that subsequent calls to PutResourceAttributes will override previously stored attributes. For example, if it is first called with a MAC address, but later, it is desired to <i>add</i> an IP address, it will then be required to call it with <i>both</i> the IP and MAC addresses to prevent overriding the MAC address.</p> </li> <li> <p>Note the instructions regarding the special use case of the <a href=\"https://docs.aws.amazon.com/migrationhub/latest/ug/API_PutResourceAttributes.html#migrationhub-PutResourceAttributes-request-ResourceAttributeList\"> <code>ResourceAttributeList</code> </a> parameter when specifying any \"VM\" related value.</p> </li> </ul> </important> <note> <p>Because this is an asynchronous call, it will always return 200, whether an association occurs or not. To confirm if an association was found based on the provided details, call <code>ListDiscoveredResources</code>.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "AWSMigrationHub.PutResourceAttributes"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/PutResourceAttributesRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "PutResourceAttributesRequest": {
+        "type": "object",
+        "required": [
+          "ProgressUpdateStream",
+          "MigrationTaskName",
+          "ResourceAttributeList"
+        ],
+        "title": "PutResourceAttributesRequest",
+        "properties": {
+          "ProgressUpdateStream": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProgressUpdateStream"
+              },
+              {
+                "description": "The name of the ProgressUpdateStream. "
+              }
+            ]
+          },
+          "MigrationTaskName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MigrationTaskName"
+              },
+              {
+                "description": "Unique identifier that references the migration task. <i>Do not store personal data in this field.</i> "
+              }
+            ]
+          },
+          "ResourceAttributeList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceAttributeList"
+              },
+              {
+                "description": "<p>Information about the resource that is being migrated. This data will be used to map the task to a resource in the Application Discovery Service repository.</p> <note> <p>Takes the object array of <code>ResourceAttribute</code> where the <code>Type</code> field is reserved for the following values: <code>IPV4_ADDRESS | IPV6_ADDRESS | MAC_ADDRESS | FQDN | VM_MANAGER_ID | VM_MANAGED_OBJECT_REFERENCE | VM_NAME | VM_PATH | BIOS_ID | MOTHERBOARD_SERIAL_NUMBER</code> where the identifying value can be a string up to 256 characters.</p> </note> <important> <ul> <li> <p>If any \"VM\" related value is set for a <code>ResourceAttribute</code> object, it is required that <code>VM_MANAGER_ID</code>, as a minimum, is always set. If <code>VM_MANAGER_ID</code> is not set, then all \"VM\" fields will be discarded and \"VM\" fields will not be used for matching the migration task to a server in Application Discovery Service repository. See the <a href=\"https://docs.aws.amazon.com/migrationhub/latest/ug/API_PutResourceAttributes.html#API_PutResourceAttributes_Examples\">Example</a> section below for a use case of specifying \"VM\" related values.</p> </li> <li> <p> If a server you are trying to match has multiple IP or MAC addresses, you should provide as many as you know in separate type/value pairs passed to the <code>ResourceAttributeList</code> parameter to maximize the chances of matching.</p> </li> </ul> </important>"
+              }
+            ]
+          },
+          "DryRun": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DryRun"
+              },
+              {
+                "description": "Optional boolean flag to indicate whether any effect should take place. Used to test if the caller has permission to make the call."
+              }
+            ]
+          }
+        }
+      },
+      "ProgressUpdateStream": {
+        "type": "string",
+        "pattern": "[^/:|\\000-\\037]+",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "MigrationTaskName": {
+        "type": "string",
+        "pattern": "[^:|]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ResourceAttributeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ResourceAttribute"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "ResourceAttribute": {
+        "type": "object",
+        "required": [
+          "Type",
+          "Value"
+        ],
+        "properties": {
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceAttributeType"
+              },
+              {
+                "description": "Type of resource."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceAttributeValue"
+              },
+              {
+                "description": "Value of the resource type."
+              }
+            ]
+          }
+        },
+        "description": "<p>Attribute associated with a resource.</p> <p>Note the corresponding format required per type listed below:</p> <dl> <dt>IPV4</dt> <dd> <p> <code>x.x.x.x</code> </p> <p> <i>where x is an integer in the range [0,255]</i> </p> </dd> <dt>IPV6</dt> <dd> <p> <code>y : y : y : y : y : y : y : y</code> </p> <p> <i>where y is a hexadecimal between 0 and FFFF. [0, FFFF]</i> </p> </dd> <dt>MAC_ADDRESS</dt> <dd> <p> <code>^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$</code> </p> </dd> <dt>FQDN</dt> <dd> <p> <code>^[^&lt;&gt;{}\\\\\\\\/?,=\\\\p{Cntrl}]{1,256}$</code> </p> </dd> </dl>"
+      },
+      "ResourceAttributeType": {
+        "type": "string",
+        "enum": [
+          "IPV4_ADDRESS",
+          "IPV6_ADDRESS",
+          "MAC_ADDRESS",
+          "FQDN",
+          "VM_MANAGER_ID",
+          "VM_MANAGED_OBJECT_REFERENCE",
+          "VM_NAME",
+          "VM_PATH",
+          "BIOS_ID",
+          "MOTHERBOARD_SERIAL_NUMBER"
+        ]
+      },
+      "ResourceAttributeValue": {
+        "type": "string",
+        "pattern": "^.{1,256}$",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "DryRun": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://mgh.us-east-1.amazonaws.com/#X-Amz-Target=AWSMigrationHub.PutResourceAttributes"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

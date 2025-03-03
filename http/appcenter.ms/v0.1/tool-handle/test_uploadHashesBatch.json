@@ -1,0 +1,118 @@
+{
+  "name": "test_uploadHashesBatch",
+  "description": "Adds file with the given hash to a test run",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "test_run_id": {
+        "type": "string",
+        "description": "The ID of the test run"
+      },
+      "owner_name": {
+        "type": "string",
+        "description": "The name of the owner"
+      },
+      "app_name": {
+        "type": "string",
+        "description": "The name of the application"
+      },
+      "body": {
+        "items": {
+          "description": "Hash, type, path and byte range of a file that is required in test run",
+          "properties": {
+            "checksum": {
+              "description": "SHA256 hash of the file",
+              "type": "string"
+            },
+            "fileType": {
+              "description": "Type of the file",
+              "enum": [
+                "dsym-file",
+                "app-file",
+                "test-file"
+              ],
+              "type": "string"
+            },
+            "relativePath": {
+              "description": "Relative path of the file",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileType",
+            "checksum",
+            "relativePath"
+          ],
+          "title": "Test Cloud File Hash",
+          "type": "object"
+        },
+        "type": "array",
+        "description": "File hash information"
+      }
+    },
+    "required": [
+      "test_run_id",
+      "owner_name",
+      "app_name",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/test_runs/{test_run_id}/hashes/batch"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Test Cloud File Hash Response list"
+        },
+        "Response message for single uploaded file hash",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**checksum**: SHA256 hash of the file",
+            "**fileType**: Type of the file",
+            "**relativePath**: Relative path of the file",
+            [
+              "**uploadStatus**: Status of the upload",
+              {
+                "$ul": [
+                  "**location**: URI that should be used to make POST request if file with given hash doesn't exist. This is set when status_code is equal to 412",
+                  "**statusCode**: HTTP status code that represent result of upload"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

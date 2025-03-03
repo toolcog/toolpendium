@@ -1,0 +1,122 @@
+{
+  "name": "createOrUpdateReport",
+  "description": "Creates or updates a report for the specified commit.\nTo upload a report, make sure to generate an ID that is unique across all reports for that commit. If you want to use an existing id from your own system, we recommend prefixing it with your system's name to avoid collisions, for example, mySystem-001.\n\n### Sample cURL request:\n```\ncurl --request PUT 'https://api.bitbucket.org/2.0/repositories/<username>/<reposity-name>/commit/<commit-hash>/reports/mysystem-001' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    \"title\": \"Security scan report\",\n    \"details\": \"This pull request introduces 10 new dependency vulnerabilities.\",\n    \"report_type\": \"SECURITY\",\n    \"reporter\": \"mySystem\",\n    \"link\": \"http://www.mysystem.com/reports/001\",\n    \"result\": \"FAILED\",\n    \"data\": [\n        {\n            \"title\": \"Duration (seconds)\",\n            \"type\": \"DURATION\",\n            \"value\": 14\n        },\n        {\n            \"title\": \"Safe to merge?\",\n            \"type\": \"BOOLEAN\",\n            \"value\": false\n        }\n    ]\n}'\n```\n\n### Possible field values:\nreport_type: SECURITY, COVERAGE, TEST, BUG\nresult: PASSED, FAILED, PENDING\ndata.type: BOOLEAN, DATE, DURATION, LINK, NUMBER, PERCENTAGE, TEXT\n\n#### Data field formats\n| Type  Field   | Value Field Type  | Value Field Display |\n|:--------------|:------------------|:--------------------|\n| None/ Omitted | Number, String or Boolean (not an array or object) | Plain text |\n| BOOLEAN\t| Boolean | The value will be read as a JSON boolean and displayed as 'Yes' or 'No'. |\n| DATE  | Number | The value will be read as a JSON number in the form of a Unix timestamp (milliseconds) and will be displayed as a relative date if the date is less than one week ago, otherwise  it will be displayed as an absolute date. |\n| DURATION | Number | The value will be read as a JSON number in milliseconds and will be displayed in a human readable duration format. |\n| LINK | Object: `{\"text\": \"Link text here\", \"href\": \"https://link.to.annotation/in/external/tool\"}` | The value will be read as a JSON object containing the fields \"text\" and \"href\" and will be displayed as a clickable link on the report. |\n| NUMBER | Number | The value will be read as a JSON number and large numbers will be  displayed in a human readable format (e.g. 14.3k). |\n| PERCENTAGE | Number (between 0 and 100) | The value will be read as a JSON number between 0 and 100 and will be displayed with a percentage sign. |\n| TEXT | String | The value will be read as a JSON string and will be displayed as-is |\n\nPlease refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workspace": {
+        "type": "string",
+        "description": "This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`."
+      },
+      "repo_slug": {
+        "type": "string",
+        "description": "The repository."
+      },
+      "commit": {
+        "type": "string",
+        "description": "The commit the report belongs to."
+      },
+      "reportId": {
+        "type": "string",
+        "description": "Either the uuid or external-id of the report."
+      },
+      "body": {
+        "$ref": "#/components/schemas/report",
+        "description": "The report to create or update"
+      }
+    },
+    "required": [
+      "workspace",
+      "repo_slug",
+      "commit",
+      "reportId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Commit Report"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**",
+            "**created_on**: The timestamp when the report was created.",
+            "**data**: An array of data fields to display information on the report. Maximum 10.",
+            "**details**: A string to describe the purpose of the report.",
+            "**external_id**: ID of the report provided by the report creator. It can be used to identify the report as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the report creator for updating or deleting this specific report. Needs to be unique.",
+            "**link**: A URL linking to the results of the report in an external tool.",
+            "**logo_url**: A URL to the report logo. If none is provided, the default insights logo will be used.",
+            "**remote_link_enabled**: If enabled, a remote link is created in Jira for the issue associated with the commit the report belongs to.",
+            "**report_type**: The type of the report.",
+            "**reporter**: A string to describe the tool or company who created the report.",
+            "**result**: The state of the report. May be set to PENDING and later updated.",
+            "**title**: The title of the report.",
+            "**updated_on**: The timestamp when the report was updated.",
+            "**uuid**: The UUID that can be used to identify the report."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**data**: Optional structured data that is endpoint-specific.",
+                  "**detail**",
+                  "**message**"
+                ]
+              }
+            ],
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

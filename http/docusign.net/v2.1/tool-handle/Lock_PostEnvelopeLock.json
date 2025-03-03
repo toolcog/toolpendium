@@ -1,0 +1,161 @@
+{
+  "name": "Lock_PostEnvelopeLock",
+  "description": "This method locks the specified envelope and sets the time until\nthe lock expires to prevent other users or recipients from\nchanging the envelope.\n\nThe response to this request includes a `lockToken` parameter\nthat you must use in the `X-DocuSign-Edit` header for\nevery PUT method (typically a method that updates an envelope)\nwhile the envelope is locked.\n\n\nIf you do not provide the `lockToken` when accessing\na locked envelope, you will get the following\nerror:\n\n```\n{\n   \"errorCode\": \"EDIT_LOCK_NOT_LOCK_OWNER\",\n   \"message\": \"The user is not the owner of the lock. The template is locked by another user or in another application\"\n}\n```\n\n\n### The X-DocuSign-Edit header\n\nThe `X-DocuSign-Edit` header looks like this\nand can be specified in either JSON or XML.\n\n**JSON**\n```\n{\n  \"LockToken\": \"token-from-response\",\n  \"LockDurationInSeconds\": \"600\"\n}\n```\n\n**XML**\n```\n<DocuSignEdit>\n  <LockToken>token-from-response</LockToken>\n  <LockDurationInSeconds>600</LockDurationInSeconds>\n</DocuSignEdit>\n```\n\nIn the actual HTTP header, you would remove the linebreaks:\n\n```\nX-DocuSign-Edit: {\"LockToken\": \"token-from-response\", \"LockDurationInSeconds\": \"600\" }\n    or\nX-DocuSign-Edit:<DocuSignEdit><LockToken>token-from-response</LockToken><LockDurationInSeconds>600</LockDurationInSeconds></DocuSignEdit>\n```\n\n\n### Related topics\n\n- [Common API Tasks: Locking and unlocking envelopes](https://www.docusign.com/blog/dsdev-common-api-tasks-locking-and-unlocking-envelopes)\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "envelopeId": {
+        "type": "string",
+        "description": "The envelope's GUID. \n\nExample: `93be49ab-xxxx-xxxx-xxxx-f752070d71ec`\n"
+      },
+      "body": {
+        "$ref": "#/$defs/lockRequest"
+      }
+    },
+    "required": [
+      "accountId",
+      "envelopeId"
+    ],
+    "$defs": {
+      "lockRequest": {
+        "description": "This request object contains information about the lock that you want to create or update.",
+        "properties": {
+          "lockDurationInSeconds": {
+            "description": "The number of seconds to lock the envelope for editing.  Must be greater than 0 seconds.",
+            "type": "string"
+          },
+          "lockType": {
+            "description": "The type of lock.  Currently `edit` is the only supported type.",
+            "type": "string"
+          },
+          "lockedByApp": {
+            "description": "A friendly name of the application used to lock the envelope.  Will be used in error messages to the user when lock conflicts occur.",
+            "type": "string"
+          },
+          "templatePassword": {
+            "description": "The [password for the template](https://support.docusign.com/en/guides/ndse-user-guide-template-passwords). If you are using a lock for a template that has a password or an envelope that is based on a template that has a password, you must enter the `templatePassword` to save the changes.",
+            "type": "string"
+          },
+          "useScratchPad": {
+            "description": "When **true,** a scratchpad is used to edit information.\n ",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "lockRequest",
+        "x-ms-summary": "This request object contains information about the lock that you want to create or update."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/lock"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Envelope locks let you lock an envelope to prevent any changes while you are updating an envelope.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**errorDetails**: This object describes errors that occur. It is only valid for responses and ignored in requests.",
+              {
+                "$ul": [
+                  "**errorCode**: The code associated with the error condition.",
+                  "**message**: A brief message describing the error condition."
+                ]
+              }
+            ],
+            "**lockDurationInSeconds**: ",
+            "**lockToken**: A unique identifier provided to the owner of the lock. You must use this token with subsequent calls to prove ownership of the lock.",
+            "**lockType**: The type of lock.  Currently `edit` is the only supported type.",
+            "**lockedByApp**: The human-readable name of the application that is locking the envelope or template. This value displays to the user in error messages when lock conflicts occur.",
+            [
+              "**lockedByUser**: ",
+              {
+                "$ul": [
+                  "**accountId**: The account ID associated with the envelope.",
+                  "**accountName**: The name on the account.",
+                  "**activationAccessCode**: Access code provided to the user to activate the account.",
+                  "**email**: The user's email address.",
+                  [
+                    "**errorDetails**: This object describes errors that occur. It is only valid for responses and ignored in requests.",
+                    {
+                      "$ul": [
+                        "**errorCode**: The code associated with the error condition.",
+                        "**message**: A brief message describing the error condition."
+                      ]
+                    }
+                  ],
+                  "**ipAddress**: ",
+                  "**loginStatus**: When **true,** indicates that the user is logged in. This is a read-only property.",
+                  "**membershipId**: The user's membership ID.",
+                  "**sendActivationEmail**: This field is no longer supported for most accounts. To create an eSignature user without sending an activation email, use the Admin API by following [these steps](/docs/admin-api/how-to/create-active-user/).",
+                  "**uri**: A URI containing the user ID.",
+                  "**userId**: The ID of the user to access.",
+                  "**userName**: The name of the user.",
+                  "**userStatus**: Status of the user's account. One of:",
+                  "**userType**: The type of user, for example `CompanyUser`."
+                ]
+              }
+            ],
+            "**lockedUntilDateTime**: The date and time that the lock expires.",
+            "**useScratchPad**: When **true,** a scratchpad is used to edit information."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

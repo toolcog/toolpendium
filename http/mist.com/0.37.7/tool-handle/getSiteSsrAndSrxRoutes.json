@@ -1,0 +1,200 @@
+{
+  "name": "getSiteSsrAndSrxRoutes",
+  "description": "Get routes from the Device. The output will be available through websocket. As there can be multiple command issued against the same device at the same time and the output all goes through the same websocket stream, `session` is introduced for demux.\n\n#### Subscribe to Device Command outputs\n`WS /api-ws/v1/stream`\n\n```json\n{\n    \"subscribe\": \"/sites/{site_id}/devices/{device_id}/cmd\"\n}\n```\n##### Example output from ws stream\n```\nadmin@labsystem1.fiedler# show bgp neighbors\nBGP neighbor is 192.168.4.1, remote AS 4200000001, local AS 4200000128, external\nlink\n  BGP version 4, remote router ID 1.1.1.1\n  BGP state = Established, up for 00:27:25\n  Last read 00:00:25, hold time is 90, keepalive interval is 30 seconds\n  Configured hold time is 90, keepalive interval is 30 seconds\n  Neighbor capabilities:\n    4 Byte AS: advertised and received\n    Route refresh: advertised and received(old &amp; new)\n    Address family IPv4 Unicast: advertised and received\n    Graceful Restart Capabilty: advertised and received\n      Remote Restart timer is 120 seconds\n      Address families by peer:\n        none\n        ...\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "device_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "body": {
+        "properties": {
+          "neighbor": {
+            "example": "192.168.4.1",
+            "type": "string"
+          },
+          "node": {
+            "description": "Only for HA",
+            "enum": [
+              "node0",
+              "node1"
+            ],
+            "type": "string"
+          },
+          "prefix": {
+            "description": "route prefix",
+            "example": "192.168.0.5/30",
+            "type": "string"
+          },
+          "protocol": {
+            "description": "only bgp is supported",
+            "example": "bgp",
+            "type": "string"
+          },
+          "route": {
+            "description": "if specified, dump both received and advertised\n* for SSR, show bgp neighbors 10.250.18.202 received-routes/advertised-routes\n* for SRX, show route receive-protocol/advertise-protocol bgp 192.168.255.12",
+            "enum": [
+              "received",
+              "advertised"
+            ],
+            "example": "advertised",
+            "type": "string"
+          },
+          "vrf_name": {
+            "example": "default",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "neighbor": "192.168.4.1",
+            "prefix": "192.168.0.5/30",
+            "protocol": "bgp",
+            "route": "advertised",
+            "vrf_name": "default"
+          }
+        },
+        "description": "all attributes are optional"
+      }
+    },
+    "required": [
+      "site_id",
+      "device_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.mist.com/api/v1/sites/{site_id}/devices/{device_id}/show_route"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**session**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

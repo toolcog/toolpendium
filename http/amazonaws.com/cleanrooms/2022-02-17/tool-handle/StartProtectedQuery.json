@@ -1,0 +1,333 @@
+{
+  "name": "StartProtectedQuery",
+  "description": "Creates a protected query that is started by Clean Rooms .",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "membershipIdentifier": {
+        "type": "string",
+        "pattern": ".*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "A unique identifier for the membership to run this query against. Currently accepts a membership ID."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "type",
+          "sqlParameters",
+          "resultConfiguration"
+        ],
+        "properties": {
+          "type": {
+            "description": "The type of the protected query to be started.",
+            "type": "string",
+            "enum": [
+              "SQL"
+            ]
+          },
+          "sqlParameters": {
+            "description": "The parameters for the SQL type Protected Query.",
+            "type": "object",
+            "properties": {
+              "queryString": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ProtectedQuerySQLParametersQueryStringString"
+                  },
+                  {
+                    "description": "The query string to be submitted."
+                  }
+                ]
+              },
+              "analysisTemplateArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AnalysisTemplateArn"
+                  },
+                  {
+                    "description": "The Amazon Resource Name (ARN) associated with the analysis template within a collaboration."
+                  }
+                ]
+              },
+              "parameters": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ParameterMap"
+                  },
+                  {
+                    "description": "The protected query SQL parameters."
+                  }
+                ]
+              }
+            }
+          },
+          "resultConfiguration": {
+            "description": "Contains configurations for protected query results.",
+            "type": "object",
+            "properties": {
+              "outputConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ProtectedQueryOutputConfiguration"
+                  },
+                  {
+                    "description": "Configuration for protected query results."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "membershipIdentifier",
+      "body"
+    ],
+    "$defs": {
+      "ProtectedQuerySQLParametersQueryStringString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 15000
+      },
+      "AnalysisTemplateArn": {
+        "type": "string",
+        "pattern": "arn:aws:cleanrooms:[\\w]{2}-[\\w]{4,9}-[\\d]:[\\d]{12}:membership/[\\d\\w-]+/analysistemplate/[\\d\\w-]+",
+        "minLength": 0,
+        "maxLength": 200
+      },
+      "ParameterMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/ParameterValue"
+        }
+      },
+      "ParameterValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 250
+      },
+      "ProtectedQueryOutputConfiguration": {
+        "type": "object",
+        "properties": {
+          "s3": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProtectedQueryS3OutputConfiguration"
+              },
+              {
+                "description": "Required configuration for a protected query with an `S3` output type."
+              }
+            ]
+          }
+        },
+        "description": "Contains configuration details for protected query output."
+      },
+      "ProtectedQueryS3OutputConfiguration": {
+        "type": "object",
+        "required": [
+          "resultFormat",
+          "bucket"
+        ],
+        "properties": {
+          "resultFormat": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResultFormat"
+              },
+              {
+                "description": "Intended file format of the result."
+              }
+            ]
+          },
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProtectedQueryS3OutputConfigurationBucketString"
+              },
+              {
+                "description": "The S3 bucket to unload the protected query results."
+              }
+            ]
+          },
+          "keyPrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KeyPrefix"
+              },
+              {
+                "description": "The S3 prefix to unload the protected query results."
+              }
+            ]
+          }
+        },
+        "description": "Contains the configuration to write the query results to S3."
+      },
+      "ResultFormat": {
+        "type": "string",
+        "enum": [
+          "CSV",
+          "PARQUET"
+        ]
+      },
+      "ProtectedQueryS3OutputConfigurationBucketString": {
+        "type": "string",
+        "pattern": ".*(?!^(\\d+\\.)+\\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])$).*",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "KeyPrefix": {
+        "type": "string",
+        "pattern": "[\\w!.*/-]*"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://cleanrooms.us-east-1.amazonaws.com/memberships/{membershipIdentifier}/protectedQueries"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**protectedQuery**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

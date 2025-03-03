@@ -1,0 +1,291 @@
+{
+  "name": "createWebhook",
+  "description": "Establishing a webhook is a two-part process. First, a simple HTTP POST\nrequest initiates the creation similar to creating any other resource.\n\nNext, in the middle of this request comes the confirmation handshake.\nWhen a webhook is created, we will send a test POST to the target with an\n`X-Hook-Secret` header. The target must respond with a `200 OK` or `204\nNo Content` and a matching `X-Hook-Secret` header to confirm that this\nwebhook subscription is indeed expected. We strongly recommend storing\nthis secret to be used to verify future webhook event signatures.\n\nThe POST request to create the webhook will then return with the status\nof the request. If you do not acknowledge the webhook’s confirmation\nhandshake it will fail to setup, and you will receive an error in\nresponse to your attempt to create it. This means you need to be able to\nreceive and complete the webhook *while* the POST request is in-flight\n(in other words, have a server that can handle requests asynchronously).\n\nInvalid hostnames like localhost will recieve a 403 Forbidden status code.\n\n```\n# Request\ncurl -H \"Authorization: Bearer <personal_access_token>\" \\\n-X POST https://app.asana.com/api/1.0/webhooks \\\n-d \"resource=8675309\" \\\n-d \"target=https://example.com/receive-webhook/7654\"\n```\n\n```\n# Handshake sent to https://example.com/\nPOST /receive-webhook/7654\nX-Hook-Secret: b537207f20cbfa02357cf448134da559e8bd39d61597dcd5631b8012eae53e81\n```\n\n```\n# Handshake response sent by example.com\nHTTP/1.1 200\nX-Hook-Secret: b537207f20cbfa02357cf448134da559e8bd39d61597dcd5631b8012eae53e81\n```\n\n```\n# Response\nHTTP/1.1 201\n{\n  \"data\": {\n    \"gid\": \"43214\",\n    \"resource\": {\n      \"gid\": \"8675309\",\n      \"name\": \"Bugs\"\n    },\n    \"target\": \"https://example.com/receive-webhook/7654\",\n    \"active\": false,\n    \"last_success_at\": null,\n    \"last_failure_at\": null,\n    \"last_failure_content\": null\n  }\n}\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "opt_pretty": {
+        "type": "boolean",
+        "description": "Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging."
+      },
+      "opt_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Defines fields to return.\nSome requests return *compact* representations of objects in order to conserve resources and complete the request more efficiently. Other times requests return more information than you may need. This option allows you to list the exact set of fields that the API should be sure to return for the objects. The field names should be provided as paths, described below.\nThe id of included objects will always be returned, regardless of the field options."
+      },
+      "body": {
+        "properties": {
+          "data": {
+            "$ref": "#/$defs/WebhookRequest"
+          }
+        },
+        "type": "object",
+        "description": "The webhook workspace and target."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "WebhookRequest": {
+        "properties": {
+          "filters": {
+            "description": "An array of WebhookFilter objects to specify a whitelist of filters to apply to events from this webhook. If a webhook event passes any of the filters the event will be delivered; otherwise no event will be sent to the receiving server.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/WebhookFilter"
+                },
+                {
+                  "description": "A set of filters to specify a whitelist for what types of events will be delivered."
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "resource": {
+            "description": "A resource ID to subscribe to. Many Asana resources are valid to create webhooks on, but higher-level resources require filters.",
+            "example": "12345",
+            "type": "string"
+          },
+          "target": {
+            "description": "The URL to receive the HTTP POST. The full URL will be used to deliver events from this webhook (including parameters) which allows encoding of application-specific state when the webhook is created.",
+            "example": "https://example.com/receive-webhook/7654?app_specific_param=app_specific_value",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource",
+          "target"
+        ],
+        "type": "object"
+      },
+      "WebhookFilter": {
+        "description": "A WebhookFilter can be passed on creation of a webhook in order to filter the types of actions that trigger delivery of an [Event](/docs/tocS_Event)",
+        "properties": {
+          "action": {
+            "description": "The type of change on the **resource** to pass through the filter. For more information refer to `Event.action` in the [Event](/docs/tocS_Event) schema. This can be one of `changed`, `added`, `removed`, `deleted`, and `undeleted` depending on the nature of what has occurred on the resource.",
+            "example": "changed",
+            "type": "string"
+          },
+          "fields": {
+            "description": "*Conditional.* A whitelist of fields for events which will pass the filter when the resource is changed. These can be any combination of the fields on the resources themselves. This field is only valid for `action` of type `changed`",
+            "example": [
+              "due_at",
+              "due_on",
+              "dependencies"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resource_subtype": {
+            "description": "The resource subtype of the resource that the filter applies to. This should be set to the same value as is returned on the `resource_subtype` field on the resources themselves.",
+            "example": "milestone",
+            "type": "string"
+          },
+          "resource_type": {
+            "description": "The type of the resource which created the event when modified; for example, to filter to changes on regular tasks this field should be set to `task`.",
+            "example": "task",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://app.asana.com/api/1.0/webhooks{?opt_pretty,opt_fields}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: A generic Asana Resource, containing a globally unique identifier.",
+              {
+                "$ul": [
+                  "**gid**: Globally unique identifier of the resource, as a string.",
+                  "**resource_type**: The base type of this resource.",
+                  "**active**: If true, the webhook will send events - if false it is considered inactive and will not generate events.",
+                  [
+                    "**resource**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: The name of the object."
+                      ]
+                    }
+                  ],
+                  "**target**: The URL to receive the HTTP POST.",
+                  "**created_at**: The time at which this resource was created.",
+                  "**filters**: Whitelist of filters to apply to events from this webhook. If a webhook event passes any of the filters the event will be delivered; otherwise no event will be sent to the receiving server.",
+                  "**last_failure_at**: The timestamp when the webhook last received an error when sending an event to the target.",
+                  "**last_failure_content**: The contents of the last error response sent to the webhook when attempting to deliver events to the target.",
+                  "**last_success_at**: The timestamp when the webhook last successfully sent an event to the target."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

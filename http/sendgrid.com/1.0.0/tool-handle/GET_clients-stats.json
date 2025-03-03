@@ -1,0 +1,81 @@
+{
+  "name": "GET_clients-stats",
+  "description": "**This endpoint allows you to retrieve your email statistics segmented by client type.**\n\n**We only store up to 7 days of email activity in our database.** By default, 500 items will be returned per request via the Advanced Stats API endpoints.\n\nAdvanced Stats provide a more in-depth view of your email statistics and the actions taken by your recipients. You can segment these statistics by geographic location, device type, client type, browser, and mailbox provider. For more information about statistics, please see our [Statistics Overview](https://sendgrid.com/docs/ui/analytics-and-reporting/stats-overview/).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The starting date of the statistics to retrieve. Must follow format YYYY-MM-DD."
+      },
+      "end_date": {
+        "type": "string",
+        "description": "The end date of the statistics to retrieve. Defaults to today. Must follow format YYYY-MM-DD."
+      },
+      "aggregated_by": {
+        "enum": [
+          "day",
+          "week",
+          "month"
+        ],
+        "type": "string",
+        "description": "How to group the statistics. Must be either \"day\", \"week\", or \"month\"."
+      }
+    },
+    "required": [
+      "start_date"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/clients/stats{?start_date,end_date,aggregated_by}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**date**: The date that the statistics were gathered.",
+            "**stats**: The list of statistics."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

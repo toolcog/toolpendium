@@ -1,0 +1,100 @@
+{
+  "name": "getRecruitingPlayers",
+  "description": "Get player recruiting rankings and data. Requires either a year or team to be specified.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "year": {
+        "minimum": 2000,
+        "type": "integer",
+        "description": "Recruiting class year (required if team no specified)"
+      },
+      "classification": {
+        "default": "HighSchool",
+        "type": "string",
+        "description": "Type of recruit (HighSchool, JUCO, PrepSchool)"
+      },
+      "position": {
+        "type": "string",
+        "description": "Position abbreviation filter"
+      },
+      "state": {
+        "type": "string",
+        "description": "State or province abbreviation filter"
+      },
+      "team": {
+        "type": "string",
+        "description": "Committed team filter (required if year not specified)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.collegefootballdata.com/recruiting/players{?year,classification,position,state,team}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**athleteId**",
+            "**city**",
+            "**committedTo**",
+            "**country**",
+            "**height**",
+            [
+              "**hometownInfo**",
+              {
+                "$ul": [
+                  "**countyFips**",
+                  "**latitude**",
+                  "**longitude**"
+                ]
+              }
+            ],
+            "**id**",
+            "**name**",
+            "**position**",
+            "**ranking**",
+            "**rating**",
+            "**recruitType**",
+            "**school**",
+            "**stars**",
+            "**stateProvince**",
+            "**weight**",
+            "**year**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "name": "getRender",
+  "description": "Get the rendering status, temporary asset url and details of a render by ID.\n\n**base URL:** https://api.shotstack.io/{version}",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        "type": "string",
+        "description": "The id of the timeline render task in UUID format"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.shotstack.io/v1/render/{id}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response received after a [render status request](#get-render-status) is submitted. The response includes  details about status of a render and the output URL.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: `OK` or an error message.",
+            [
+              "**response**: The response data returned with the [RenderResponse](#tocs_renderresponse) including status and URL.",
+              {
+                "$ul": [
+                  "**created**: The time the render task was initially queued.",
+                  [
+                    "**data**: An edit defines the arrangement of a video on a timeline, an audio edit or an image design and the output format.",
+                    {
+                      "$ul": [
+                        "**callback**: An optional webhook callback URL used to receive status notifications when a render completes or fails. See [webhooks](https://shotstack.gitbook.io/docs/guides/architecting-an-application/webhooks) for  more details.",
+                        "**disk**: The disk type to use for storing footage and assets for each render. See [disk types](https://shotstack.gitbook.io/docs/guides/architecting-an-application/disk-types) for more details. <ul> (default: local)",
+                        [
+                          "**output**: The output format, render range and type of media to generate.",
+                          {
+                            "$ul": [
+                              "**aspectRatio**: The aspect ratio (shape) of the video or image. Useful for social media output formats. Options are: <ul>",
+                              "**destinations**: A destination is a location where output files can be sent to for serving or hosting. By default all rendered assets are automatically sent to the Shotstack hosting destination. [DestinationShotstack](/#tocs_shotstackdestination) is currently the only option with plans to add more in the future such as S3, YouTube, Vimeo and Mux. If you do not require hosting you can opt-out using the  `exclude` property.",
+                              "**format**: The output format and type of media file to generate. <ul>",
+                              "**fps**: Override the default frames per second. Useful for when the source footage is recorded at 30fps, i.e. on  mobile devices. Lower frame rates can be used to add cinematic quality (24fps) or to create smaller file size/faster render times or animated gifs (12 or 15fps). Default is 25fps. <ul> (default: 25)",
+                              [
+                                "**poster**: Generate a poster image for the video at a specific point from the timeline. The poster image size will match the size of the output video.",
+                                {
+                                  "$ul": [
+                                    "**capture**: The point on the timeline in seconds to capture a single frame to use as the poster image."
+                                  ]
+                                }
+                              ],
+                              "**quality**: Adjust the output quality of the video, image or audio. Adjusting quality affects  render speed, download speeds and storage requirements due to file size. The default `medium` provides the most optimized choice for all three  factors. <ul> (default: medium)",
+                              [
+                                "**range**: Specify a time range to render, i.e. to render only a portion of a video or audio file. Omit this setting to  export the entire video. Range can also be used to render a frame at a specific time point - setting a range and output format as `jpg` will output a single frame image at the range `start` point.",
+                                {
+                                  "$ul": [
+                                    "**length**: The length of the portion of the video or audio to render - i.e. render 6 seconds of the video.",
+                                    "**start**: The point on the timeline, in seconds, to start the render from - i.e. start at second 3."
+                                  ]
+                                }
+                              ],
+                              "**resolution**: The output resolution of the video or image. <ul>",
+                              "**scaleTo**: Override the resolution and scale the video or image to render at a different size. When using scaleTo the asset should be edited at the resolution dimensions, i.e. use font sizes that look best at HD, then use scaleTo to output the file at SD and the text will be scaled to the correct size. This is useful if you want to create multiple asset sizes. <ul>",
+                              [
+                                "**size**: Set a custom size for a video or image. When using a custom size omit the `resolution` and `aspectRatio`. Custom sizes must be divisible by 2 based on the encoder specifications.",
+                                {
+                                  "$ul": [
+                                    "**height**: Set a custom height for the video or image file. Value must be divisible by 2. Maximum video height is 1920px, maximum image height is 4096px.",
+                                    "**width**: Set a custom width for the video or image file. Value must be divisible by 2. Maximum video width is 1920px, maximum image width is 4096px."
+                                  ]
+                                }
+                              ],
+                              [
+                                "**thumbnail**: Generate a thumbnail image for the video or image at a specific point from the timeline.",
+                                {
+                                  "$ul": [
+                                    "**capture**: The point on the timeline in seconds to capture a single frame to use as the thumbnail image.",
+                                    "**scale**: Scale the thumbnail size to a fraction of the viewport size - i.e. setting the scale to 0.5 will scale  the thumbnail to half the size of the viewport."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**timeline**: A timeline represents the contents of a video edit over time, an audio edit over time, in seconds, or an image layout. A timeline consists of layers called tracks. Tracks are composed of titles, images, audio, html or video segments referred to as clips which are placed along the track at specific starting point and lasting for a specific amount of time.",
+                          {
+                            "$ul": [
+                              "**background**: A hexadecimal value for the timeline background colour. Defaults to #000000 (black). (default: #000000)",
+                              "**cache**: Disable the caching of ingested source footage and assets. See  [caching](https://shotstack.gitbook.io/docs/guides/architecting-an-application/caching) for more details. (default: true)",
+                              "**fonts**: An array of custom fonts to be downloaded for use by the HTML assets.",
+                              [
+                                "**soundtrack**: A music or audio file in mp3 format that plays for the duration of the rendered video or the length of the audio file, which ever is shortest.",
+                                {
+                                  "$ul": [
+                                    "**effect**: The effect to apply to the audio file <ul>",
+                                    "**src**: The URL of the mp3 audio file. The URL must be publicly accessible or include credentials.",
+                                    "**volume**: Set the volume for the soundtrack between 0 and 1 where 0 is muted and 1 is full volume (defaults to 1). (default: 1)"
+                                  ]
+                                }
+                              ],
+                              "**tracks**: A timeline consists of an array of tracks, each track containing clips. Tracks are layered on top of each other in the same order they are added to the array with the top most track layered over the top of those below it. Ensure that a track containing titles is the top most track so that it is displayed above videos and images."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**duration**: The output video or audio length in seconds.",
+                  "**error**: An error message, only displayed if an error occurred.",
+                  "**id**: The id of the render task in UUID format.",
+                  "**owner**: The owner id of the render task.",
+                  "**plan**: The customer subscription plan.",
+                  "**poster**: The URL of the poster image if requested. This will only be available if status is done.",
+                  "**renderTime**: The time taken to render the asset in milliseconds.",
+                  "**status**: The status of the render task. <ul>",
+                  "**thumbnail**: The URL of the thumbnail image if requested. This will only be available if status is done.",
+                  "**updated**: The time the render status was last updated.",
+                  "**url**: The URL of the final asset. This will only be available if status is done. This is a temporary URL and will be deleted after 24 hours. By default all assets are copied to the Shotstack hosting and CDN destination."
+                ]
+              }
+            ],
+            "**success**: `true` if status available, else `false`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

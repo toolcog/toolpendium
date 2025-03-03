@@ -1,0 +1,345 @@
+{
+  "name": "createCall",
+  "description": "Create an outbound Call",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/CreateCallRequestNcco"
+          },
+          {
+            "$ref": "#/$defs/CreateCallRequestAnswerUrl"
+          }
+        ],
+        "description": "Call Details"
+      }
+    },
+    "$defs": {
+      "CreateCallRequestNcco": {
+        "allOf": [
+          {
+            "required": [
+              "ncco"
+            ],
+            "title": "With NCCO"
+          },
+          {
+            "properties": {
+              "ncco": {
+                "description": "The [Nexmo Call Control Object](/voice/voice-api/ncco-reference) to use for this call.\n",
+                "example": [
+                  {
+                    "action": "talk",
+                    "text": "Hello World"
+                  }
+                ],
+                "items": {
+                  "type": "object"
+                },
+                "type": "array",
+                "x-nexmo-developer-collection-description-shown": true
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/CreateCallRequestBase"
+          }
+        ]
+      },
+      "CreateCallRequestBase": {
+        "properties": {
+          "event_method": {
+            "default": "POST",
+            "description": "The HTTP method used to send event information to `event_url`.",
+            "enum": [
+              "POST",
+              "GET"
+            ],
+            "type": "string"
+          },
+          "event_url": {
+            "description": "**Required** unless `event_url` is configured at the application\nlevel, see [Create an Application](/api/application.v2#createApplication)\n\nThe webhook endpoint where call progress events are\nsent to. For more information about the values sent, see\n[Event webhook](/voice/voice-api/webhook-reference#event-webhook).\n",
+            "example": [
+              "https://example.com/event"
+            ],
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array",
+            "x-nexmo-developer-collection-description-shown": true
+          },
+          "from": {
+            "$ref": "#/$defs/EndpointPhoneFrom"
+          },
+          "length_timer": {
+            "default": 7200,
+            "description": "Set the number of seconds that elapse before Vonage hangs up after the call state changes to answered.",
+            "maximum": 7200,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "machine_detection": {
+            "description": "Configure the behavior when Vonage detects that the call is answered by voicemail. If `continue`, Vonage sends an HTTP request to `event_url` with the Call event machine. If `hangup`, Vonage ends the call.",
+            "enum": [
+              "continue",
+              "hangup"
+            ],
+            "example": "continue",
+            "type": "string"
+          },
+          "random_from_number": {
+            "default": false,
+            "description": "Set to `true` to use random phone number as `from`. The number will be selected from the list of the numbers assigned to the current application. `random_from_number: true` cannot be used together with `from`.",
+            "type": "boolean"
+          },
+          "ringing_timer": {
+            "default": 60,
+            "description": "Set the number of seconds that elapse before Vonage hangs up after the call state changes to ‘ringing’.",
+            "maximum": 120,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "to": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/EndpointPhoneTo"
+                },
+                {
+                  "$ref": "#/$defs/EndpointSip"
+                },
+                {
+                  "$ref": "#/$defs/EndpointWebsocket"
+                },
+                {
+                  "$ref": "#/$defs/EndpointVBCExtension"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "to",
+          "from"
+        ],
+        "type": "object"
+      },
+      "EndpointPhoneFrom": {
+        "description": "Connect to a Phone (PSTN) number",
+        "properties": {
+          "number": {
+            "$ref": "#/$defs/AddressE164"
+          },
+          "type": {
+            "description": "The type of connection. Must be `phone`",
+            "example": "phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "type"
+        ],
+        "type": "object"
+      },
+      "AddressE164": {
+        "description": "The phone number to connect to",
+        "example": "14155550100",
+        "maxLength": 15,
+        "minLength": 7,
+        "pattern": "\\d{7,15}",
+        "type": "string"
+      },
+      "EndpointPhoneTo": {
+        "description": "Connect to a Phone (PSTN) number",
+        "properties": {
+          "dtmfAnswer": {
+            "description": "Provide [DTMF digits](https://developer.nexmo.com/voice/voice-api/guides/dtmf) to send when the call is answered",
+            "example": "p*123#",
+            "type": "string"
+          },
+          "number": {
+            "$ref": "#/$defs/AddressE164"
+          },
+          "type": {
+            "description": "The type of connection. Must be `phone`",
+            "example": "phone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "type"
+        ],
+        "type": "object"
+      },
+      "EndpointSip": {
+        "description": "Connect to a SIP Endpoint",
+        "properties": {
+          "type": {
+            "description": "The type of connection. Must be `sip`",
+            "example": "sip",
+            "type": "string"
+          },
+          "uri": {
+            "$ref": "#/$defs/AddressSip"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "AddressSip": {
+        "description": "The SIP URI to connect to",
+        "example": "sip:rebekka@sip.example.com",
+        "maxLength": 50,
+        "minLength": 1,
+        "type": "string"
+      },
+      "EndpointWebsocket": {
+        "description": "Connect to a Websocket",
+        "properties": {
+          "content-type": {
+            "enum": [
+              "audio/l16;rate=8000",
+              "audio/l16;rate=16000"
+            ],
+            "example": "audio/l16;rate=16000",
+            "type": "string"
+          },
+          "headers": {
+            "description": "Details of the Websocket you want to connect to",
+            "properties": {
+              "customer_id": {
+                "description": "This is an example header. You can provide any headers you may need",
+                "example": "ABC123",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "description": "The type of connection. Must be `websocket`",
+            "example": "websocket",
+            "type": "string"
+          },
+          "uri": {
+            "$ref": "#/$defs/AddressWebsocket"
+          }
+        },
+        "required": [
+          "type",
+          "content-type"
+        ],
+        "type": "object"
+      },
+      "AddressWebsocket": {
+        "example": "wss://example.com/socket",
+        "maxLength": 50,
+        "minLength": 1,
+        "type": "string"
+      },
+      "EndpointVBCExtension": {
+        "description": "Connect to a VBC extension",
+        "properties": {
+          "extension": {
+            "example": "1234",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of connection. Must be `vbc`",
+            "example": "vbc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "extension"
+        ],
+        "type": "object"
+      },
+      "CreateCallRequestAnswerUrl": {
+        "allOf": [
+          {
+            "required": [
+              "answer_url"
+            ],
+            "title": "With Answer URL"
+          },
+          {
+            "properties": {
+              "answer_method": {
+                "default": "GET",
+                "description": "The HTTP method used to send event information to answer_url.",
+                "enum": [
+                  "POST",
+                  "GET"
+                ],
+                "type": "string"
+              },
+              "answer_url": {
+                "description": "The webhook endpoint where you provide the [Nexmo Call Control Object](/voice/voice-api/ncco-reference) that governs this call.\n",
+                "example": [
+                  "https://example.com/answer"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "x-nexmo-developer-collection-description-shown": true
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/CreateCallRequestBase"
+          }
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.nexmo.com/v1/calls/"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**conversation_uuid**: The unique identifier for the conversation this call leg is part of.",
+            "**direction**: Possible values are `outbound` or `inbound`",
+            "**status**: The status of the call. [See possible values](https://developer.nexmo.com/voice/voice-api/guides/call-flow#event-objects)",
+            "**uuid**: The unique identifier for this call leg. The UUID is created when your call request is accepted by Vonage. You use the UUID in all requests for individual live calls"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

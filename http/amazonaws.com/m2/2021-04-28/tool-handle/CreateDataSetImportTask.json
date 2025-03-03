@@ -1,0 +1,682 @@
+{
+  "name": "CreateDataSetImportTask",
+  "description": "Starts a data set import task for a specific application.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "applicationId": {
+        "type": "string",
+        "pattern": "^\\S{1,80}$",
+        "description": "The unique identifier of the application for which you want to import data sets."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "importConfig"
+        ],
+        "properties": {
+          "clientToken": {
+            "description": " Unique, case-sensitive identifier you provide to ensure the idempotency of the request to create a data set import. The service generates the clientToken when the API call is triggered. The token expires after one hour, so if you retry the API within this timeframe with the same clientToken, you will get the same response. The service also handles deleting the clientToken after it expires. ",
+            "type": "string"
+          },
+          "importConfig": {
+            "description": "Identifies one or more data sets you want to import with the <a>CreateDataSetImportTask</a> operation.",
+            "type": "object",
+            "properties": {
+              "dataSets": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DataSetImportList"
+                  },
+                  {
+                    "description": "The data sets."
+                  }
+                ]
+              },
+              "s3Location": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String2000"
+                  },
+                  {
+                    "description": "The Amazon S3 location of the data sets."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "applicationId",
+      "body"
+    ],
+    "$defs": {
+      "DataSetImportList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/DataSetImportItem"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "DataSetImportItem": {
+        "type": "object",
+        "required": [
+          "dataSet",
+          "externalLocation"
+        ],
+        "properties": {
+          "dataSet": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DataSet"
+              },
+              {
+                "description": "The data set."
+              }
+            ]
+          },
+          "externalLocation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExternalLocation"
+              },
+              {
+                "description": "The location of the data set."
+              }
+            ]
+          }
+        },
+        "description": "Identifies a specific data set to import from an external location."
+      },
+      "DataSet": {
+        "type": "object",
+        "required": [
+          "datasetName",
+          "datasetOrg",
+          "recordLength"
+        ],
+        "properties": {
+          "datasetName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The logical identifier for a specific data set (in mainframe format)."
+              }
+            ]
+          },
+          "datasetOrg": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetOrgAttributes"
+              },
+              {
+                "description": "The type of dataset. The only supported value is VSAM."
+              }
+            ]
+          },
+          "recordLength": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RecordLength"
+              },
+              {
+                "description": "The length of a record."
+              }
+            ]
+          },
+          "relativePath": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The relative location of the data set in the database or file system. "
+              }
+            ]
+          },
+          "storageType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The storage type of the data set: database or file system. For Micro Focus, database corresponds to datastore and file system corresponds to EFS/FSX. For Blu Age, there is no support of file system and database corresponds to Blusam. "
+              }
+            ]
+          }
+        },
+        "description": "Defines a data set."
+      },
+      "String": {
+        "type": "string"
+      },
+      "DatasetOrgAttributes": {
+        "type": "object",
+        "properties": {
+          "gdg": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GdgAttributes"
+              },
+              {
+                "description": "The generation data group of the data set."
+              }
+            ]
+          },
+          "po": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PoAttributes"
+              },
+              {
+                "description": "The details of a PO type data set."
+              }
+            ]
+          },
+          "ps": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PsAttributes"
+              },
+              {
+                "description": "The details of a PS type data set."
+              }
+            ]
+          },
+          "vsam": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VsamAttributes"
+              },
+              {
+                "description": "The details of a VSAM data set."
+              }
+            ]
+          }
+        },
+        "description": "Additional details about the data set. Different attributes correspond to different data set organizations. The values are populated based on datasetOrg, storageType and backend (Blu Age or Micro Focus)."
+      },
+      "GdgAttributes": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The maximum number of generation data sets, up to 255, in a GDG."
+              }
+            ]
+          },
+          "rollDisposition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The disposition of the data set in the catalog."
+              }
+            ]
+          }
+        },
+        "description": "The required attributes for a generation data group data set. A generation data set is one of a collection of successive, historically related, catalogued data sets that together are known as a generation data group (GDG). Use this structure when you want to import a GDG. For more information on GDG, see <a href=\"https://www.ibm.com/docs/en/zos/2.3.0?topic=guide-generation-data-sets\">Generation data sets</a>."
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "PoAttributes": {
+        "type": "object",
+        "required": [
+          "format",
+          "memberFileExtensions"
+        ],
+        "properties": {
+          "encoding": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The character set encoding of the data set."
+              }
+            ]
+          },
+          "format": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The format of the data set records."
+              }
+            ]
+          },
+          "memberFileExtensions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String20List"
+              },
+              {
+                "description": "An array containing one or more filename extensions, allowing you to specify which files to be included as PDS member."
+              }
+            ]
+          }
+        },
+        "description": "The supported properties for a PO type data set."
+      },
+      "String20List": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/String20"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "String20": {
+        "type": "string",
+        "pattern": "^\\S{1,20}$"
+      },
+      "PsAttributes": {
+        "type": "object",
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "encoding": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The character set encoding of the data set."
+              }
+            ]
+          },
+          "format": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The format of the data set records."
+              }
+            ]
+          }
+        },
+        "description": "The supported properties for a PS type data set."
+      },
+      "VsamAttributes": {
+        "type": "object",
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "alternateKeys": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AlternateKeyList"
+              },
+              {
+                "description": "The alternate key definitions, if any. A legacy dataset might not have any alternate key defined, but if those alternate keys definitions exist, provide them as some applications will make use of them."
+              }
+            ]
+          },
+          "compressed": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether indexes for this dataset are stored as compressed values. If you have a large data set (typically &gt; 100 Mb), consider setting this flag to True."
+              }
+            ]
+          },
+          "encoding": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The character set used by the data set. Can be ASCII, EBCDIC, or unknown."
+              }
+            ]
+          },
+          "format": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The record format of the data set."
+              }
+            ]
+          },
+          "primaryKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PrimaryKey"
+              },
+              {
+                "description": "The primary key of the data set."
+              }
+            ]
+          }
+        },
+        "description": "The attributes of a VSAM type data set."
+      },
+      "AlternateKeyList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AlternateKey"
+        }
+      },
+      "AlternateKey": {
+        "type": "object",
+        "required": [
+          "length",
+          "offset"
+        ],
+        "properties": {
+          "allowDuplicates": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether the alternate key values are supposed to be unique for the given data set."
+              }
+            ]
+          },
+          "length": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "A strictly positive integer value representing the length of the alternate key."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The name of the alternate key."
+              }
+            ]
+          },
+          "offset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "A positive integer value representing the offset to mark the start of the alternate key part in the record byte array."
+              }
+            ]
+          }
+        },
+        "description": "Defines an alternate key. This value is optional. A legacy data set might not have any alternate key defined but if those alternate keys definitions exist, provide them, as some applications will make use of them."
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "PrimaryKey": {
+        "type": "object",
+        "required": [
+          "length",
+          "offset"
+        ],
+        "properties": {
+          "length": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "A strictly positive integer value representing the length of the primary key. "
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "A name for the Primary Key."
+              }
+            ]
+          },
+          "offset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "A positive integer value representing the offset to mark the start of the primary key in the record byte array."
+              }
+            ]
+          }
+        },
+        "description": "The primary key for a KSDS data set."
+      },
+      "RecordLength": {
+        "type": "object",
+        "required": [
+          "max",
+          "min"
+        ],
+        "properties": {
+          "max": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The maximum record length. In case of fixed, both minimum and maximum are the same."
+              }
+            ]
+          },
+          "min": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The minimum record length of a record."
+              }
+            ]
+          }
+        },
+        "description": "The length of the records in the data set."
+      },
+      "ExternalLocation": {
+        "type": "object",
+        "properties": {
+          "s3Location": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String2000"
+              },
+              {
+                "description": "The URI of the Amazon S3 bucket."
+              }
+            ]
+          }
+        },
+        "description": "Defines an external storage location."
+      },
+      "String2000": {
+        "type": "string",
+        "pattern": "^\\S{1,2000}$"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://m2.us-east-1.amazonaws.com/applications/{applicationId}/dataset-import-task"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**taskId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

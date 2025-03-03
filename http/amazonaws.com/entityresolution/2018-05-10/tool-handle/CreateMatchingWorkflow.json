@@ -1,0 +1,527 @@
+{
+  "name": "CreateMatchingWorkflow",
+  "description": "Creates a <code>MatchingWorkflow</code> object which stores the configuration of the data processing job to be run. It is important to note that there should not be a pre-existing <code>MatchingWorkflow</code> with the same name. To modify an existing workflow, utilize the <code>UpdateMatchingWorkflow</code> API.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "inputSourceConfig",
+          "outputSourceConfig",
+          "resolutionTechniques",
+          "roleArn",
+          "workflowName"
+        ],
+        "properties": {
+          "description": {
+            "description": "A description of the workflow.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "incrementalRunConfig": {
+            "description": "An object which defines an incremental run type and has only <code>incrementalRunType</code> as a field.",
+            "type": "object",
+            "properties": {
+              "incrementalRunType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IncrementalRunType"
+                  },
+                  {
+                    "description": "The type of incremental run. It takes only one value: <code>IMMEDIATE</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "inputSourceConfig": {
+            "description": "A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/InputSource"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          },
+          "outputSourceConfig": {
+            "description": "A list of <code>OutputSource</code> objects, each of which contains fields <code>OutputS3Path</code>, <code>ApplyNormalization</code>, and <code>Output</code>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/OutputSource"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "resolutionTechniques": {
+            "description": "An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code> ",
+            "type": "object",
+            "properties": {
+              "resolutionType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResolutionType"
+                  },
+                  {
+                    "description": "There are two types of matching, <code>RULE_MATCHING</code> and <code>ML_MATCHING</code> "
+                  }
+                ]
+              },
+              "ruleBasedProperties": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RuleBasedProperties"
+                  },
+                  {
+                    "description": "An object which defines the list of matching rules to run and has a field <code>Rules</code>, which is a list of rule objects."
+                  }
+                ]
+              }
+            }
+          },
+          "roleArn": {
+            "description": "The Amazon Resource Name (ARN) of the IAM role. AWS Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "The tags used to organize, track, or control access for this resource.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 200,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "workflowName": {
+            "description": "The name of the workflow. There cannot be multiple <code>DataIntegrationWorkflows</code> with the same name.",
+            "type": "string",
+            "pattern": "^[a-zA-Z_0-9-]*$",
+            "minLength": 0,
+            "maxLength": 255
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "IncrementalRunType": {
+        "type": "string",
+        "enum": [
+          "IMMEDIATE"
+        ]
+      },
+      "InputSource": {
+        "type": "object",
+        "required": [
+          "inputSourceARN",
+          "schemaName"
+        ],
+        "properties": {
+          "applyNormalization": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Normalizes the attributes defined in the schema in the input data. For example, if an attribute has an <code>AttributeType</code> of <code>PHONE_NUMBER</code>, and the data in the input table is in a format of 1234567890, Entity Resolution will normalize this field in the output to (123)-456-7890."
+              }
+            ]
+          },
+          "inputSourceARN": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/InputSourceInputSourceARNString"
+              },
+              {
+                "description": "An Glue table ARN for the input source table."
+              }
+            ]
+          },
+          "schemaName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityName"
+              },
+              {
+                "description": "The name of the schema to be retrieved."
+              }
+            ]
+          }
+        },
+        "description": "An object containing <code>InputSourceARN</code>, <code>SchemaName</code>, and <code>ApplyNormalization</code>."
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "InputSourceInputSourceARNString": {
+        "type": "string",
+        "pattern": "^arn:aws:.*:.*:[0-9]+:.*$"
+      },
+      "EntityName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_0-9-]*$",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "OutputSource": {
+        "type": "object",
+        "required": [
+          "output",
+          "outputS3Path"
+        ],
+        "properties": {
+          "KMSArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KMSArn"
+              },
+              {
+                "description": "Customer KMS ARN for encryption at rest. If not provided, system will use an Entity Resolution managed KMS key."
+              }
+            ]
+          },
+          "applyNormalization": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Normalizes the attributes defined in the schema in the input data. For example, if an attribute has an <code>AttributeType</code> of <code>PHONE_NUMBER</code>, and the data in the input table is in a format of 1234567890, Entity Resolution will normalize this field in the output to (123)-456-7890."
+              }
+            ]
+          },
+          "output": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OutputSourceOutputList"
+              },
+              {
+                "description": "A list of <code>OutputAttribute</code> objects, each of which have the fields Name and Hashed. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed."
+              }
+            ]
+          },
+          "outputS3Path": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OutputSourceOutputS3PathString"
+              },
+              {
+                "description": "The S3 path to which Entity Resolution will write the output table."
+              }
+            ]
+          }
+        },
+        "description": "A list of <code>OutputAttribute</code> objects, each of which have the fields Name and Hashed. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed."
+      },
+      "KMSArn": {
+        "type": "string",
+        "pattern": "^arn:aws:kms:.*:[0-9]+:.*$"
+      },
+      "OutputSourceOutputList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/OutputAttribute"
+        },
+        "minItems": 0,
+        "maxItems": 750
+      },
+      "OutputAttribute": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "hashed": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Enables the ability to hash the column values in the output."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "A name of a column to be written to the output. This must be an <code>InputField</code> name in the schema mapping."
+              }
+            ]
+          }
+        },
+        "description": "A list of <code>OutputAttribute</code> objects, each of which have the fields Name and Hashed. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed."
+      },
+      "AttributeName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_0-9- \\t]*$",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "OutputSourceOutputS3PathString": {
+        "type": "string",
+        "pattern": "^s3://([^/]+)/?(.*?([^/]+)/?)$"
+      },
+      "ResolutionType": {
+        "type": "string",
+        "enum": [
+          "RULE_MATCHING",
+          "ML_MATCHING"
+        ]
+      },
+      "RuleBasedProperties": {
+        "type": "object",
+        "required": [
+          "attributeMatchingModel",
+          "rules"
+        ],
+        "properties": {
+          "attributeMatchingModel": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeMatchingModel"
+              },
+              {
+                "description": "You can either choose <code>ONE_TO_ONE</code> or <code>MANY_TO_MANY</code> as the AttributeMatchingModel. When choosing <code>MANY_TO_MANY</code>, the system can match attribute across the sub-types of an attribute type. For example, if the value of the Email field of Profile A and the value of BusinessEmail field of Profile B matches, the two profiles are matched on the Email type. When choosing <code>ONE_TO_ONE</code> the system can only match if the sub-types are exact matches. For example, only when the value of the Email field of Profile A and the value of the Email field of Profile B matches, the two profiles are matched on the Email type."
+              }
+            ]
+          },
+          "rules": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleBasedPropertiesRulesList"
+              },
+              {
+                "description": "A list of Rule objects, each of which have fields <code>RuleName</code> and <code>MatchingKeys</code>."
+              }
+            ]
+          }
+        },
+        "description": "An object which defines the list of matching rules to run and has a field <code>Rules</code>, which is a list of rule objects."
+      },
+      "AttributeMatchingModel": {
+        "type": "string",
+        "enum": [
+          "ONE_TO_ONE",
+          "MANY_TO_MANY"
+        ]
+      },
+      "RuleBasedPropertiesRulesList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Rule"
+        },
+        "minItems": 1,
+        "maxItems": 15
+      },
+      "Rule": {
+        "type": "object",
+        "required": [
+          "matchingKeys",
+          "ruleName"
+        ],
+        "properties": {
+          "matchingKeys": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleMatchingKeysList"
+              },
+              {
+                "description": "A list of <code>MatchingKeys</code>. The <code>MatchingKeys</code> must have been defined in the <code>SchemaMapping</code>. Two records are considered to match according to this rule if all of the <code>MatchingKeys</code> match."
+              }
+            ]
+          },
+          "ruleName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleRuleNameString"
+              },
+              {
+                "description": "A name for the matching rule."
+              }
+            ]
+          }
+        },
+        "description": "An object containing <code>RuleName</code>, and <code>MatchingKeys</code>."
+      },
+      "RuleMatchingKeysList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeName"
+        },
+        "minItems": 1,
+        "maxItems": 15
+      },
+      "RuleRuleNameString": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_0-9- \\t]*$",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://entityresolution.us-east-1.amazonaws.com/matchingworkflows"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**",
+            "**incrementalRunConfig**",
+            "**inputSourceConfig**",
+            "**outputSourceConfig**",
+            "**resolutionTechniques**",
+            "**roleArn**",
+            "**workflowArn**",
+            "**workflowName**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "name": "createLogDrain",
+  "description": "Creates an Integration log drain. This endpoint must be called with an OAuth2 client (integration), since log drains are tied to integrations. If it is called with a different token type it will produce a 400 error.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "teamId": {
+        "type": "string",
+        "description": "The Team identifier or slug to perform the request on behalf of."
+      },
+      "body": {
+        "properties": {
+          "branch": {
+            "description": "The branch regexp of log drain",
+            "examples": [
+              "feature/*"
+            ],
+            "type": "string"
+          },
+          "deliveryFormat": {
+            "description": "The delivery log format",
+            "enum": [
+              "json",
+              "ndjson",
+              "syslog"
+            ],
+            "examples": [
+              "json"
+            ]
+          },
+          "environment": {
+            "description": "The environment of log drain",
+            "enum": [
+              "preview",
+              "production"
+            ],
+            "examples": [
+              "production"
+            ]
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers to be sent together with the request",
+            "type": "object"
+          },
+          "name": {
+            "description": "The name of the log drain",
+            "examples": [
+              "My first log drain"
+            ],
+            "maxLength": 100,
+            "pattern": "^[A-z0-9_ -]+$",
+            "type": "string"
+          },
+          "projectIds": {
+            "items": {
+              "pattern": "^[a-zA-z0-9_]+$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          },
+          "secret": {
+            "description": "A secret to sign log drain notification headers so a consumer can verify their authenticity",
+            "examples": [
+              "a1Xsfd325fXcs"
+            ],
+            "maxLength": 100,
+            "pattern": "^[A-z0-9_ -]+$",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "enum": [
+                "static",
+                "lambda",
+                "build",
+                "edge",
+                "external"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "url": {
+            "description": "The url where you will receive logs. The protocol must be `https://` or `http://` when type is `json` and `ndjson`, and `syslog+tls:` or `syslog:` when the type is `syslog`.",
+            "examples": [
+              "https://example.com/log-drain"
+            ],
+            "format": "uri",
+            "pattern": "^(https?|syslog\\\\+tls|syslog)://",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.vercel.com/v2/integrations/log-drains{?teamId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**branch**: The branch regexp of log drain",
+            "**clientId**: The oauth2 client application id that created this log drain",
+            "**configurationId**: The client configuration this log drain was created with",
+            "**createdAt**: A timestamp that tells you when the log drain was created",
+            "**createdFrom**: Whether the log drain was created by an integration or by a user",
+            "**deliveryFormat**: The delivery log format",
+            "**environment**: The environment of log drain",
+            "**headers**: Construct a type with a set of properties K of type T",
+            "**id**: The unique identifier of the log drain. Always prefixed with `ld_`",
+            "**name**: The name of the log drain",
+            "**ownerId**: The identifier of the team or user whose events will trigger the log drain",
+            "**projectId**",
+            "**projectIds**: The identifier of the projects this log drain is associated with",
+            "**sources**: The sources from which logs are currently being delivered to this log drain.",
+            "**url**: The URL to call when logs are generated"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "name": "listResources",
+  "description": "Returns a list of files and folders in the account. Use the `resource` query parameter to indicate the folder you wish to search in (which can be /). \n\n**Searching for Files and Folders**\n\nUsing the `name` parameter triggers search mode, which will search the entire directory structure under the provided `resource` for files or folders with names matching the provided `name`. This supports wildcard matching such as:\n\n- \\*Report\\* would find any files or folders with \"Report\" in the name.\n- Data\\_202?-09-30.xlsx would match items such as \"Data\\_2020-09-30.xlsx\", \"DATA\\_2021-09-30.xlsx\", \"data\\_2022-09-30.xlsx\" etc.\n- sales\\* would find any files or folders starting with the word \"Sales\"\n- \\*.csv would locate any files ending in \".csv\"\n- \\* matches everything within the directory tree starting at your given `resource`\n\nThe search is not case-sensitive. Searching for Clients\\* or clients\\* or CLIENTS\\*, etc. will provide identical results\n\nIf you are using the `name` parameter to run a search, the `type` parameter will be ignored by the server.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "type": "string",
+        "description": "API Key required to make the API call."
+      },
+      "ev-access-token": {
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "resource": {
+        "type": "string",
+        "description": "Resource identifier to get resources for. Can be path/id/name."
+      },
+      "sort": {
+        "example": "name",
+        "type": "string",
+        "description": "Endpoint support multiple sort fields by allowing array of sort params. Sort fields should be applied in the order specified. The sort order for each sort field is ascending unless it is prefixed with a minus (“-“), in which case it will be descending."
+      },
+      "offset": {
+        "default": 0,
+        "format": "int32",
+        "type": "integer",
+        "description": "Determines which item to start on for pagination. Use zero (0) to start at the beginning of the list. e.g, setting `offset=200` would trigger the server to skip the first 200 matching entries when returning the results."
+      },
+      "limit": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The number of files to limit the result. If you have more files in your directory than this limit, make multiple calls, incrementing the `offset` parameter, above."
+      },
+      "type": {
+        "type": "string",
+        "description": "Limit types of resources returned to \"file\" or \"dir\" only. This is ignored if you are using the `name` parameter to trigger a search."
+      },
+      "name": {
+        "type": "string",
+        "description": "Text to match resource names. This allows you to filter the results returned. For example, to locate only zip archive files, you can enter `*zip` and only resources ending in \"zip\" will be included in the list of results."
+      },
+      "include": {
+        "type": "string",
+        "description": "Comma separated list of relationships to include in response. Possible values are **share**, **notifications**, **directFile**, **parentResource**, **ownerUser**, **ownerAccount**."
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token",
+      "resource"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/resources/list{?resource,sort,offset,limit,type,name,include}"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ResourceCollectionResponse"
+        },
+        "Response object for collection of resources.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**included**",
+            "**responseStatus**: Http status code of the response.",
+            "**returnedResults**: Count of returned results.",
+            "**totalResults**: Total count of results found."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

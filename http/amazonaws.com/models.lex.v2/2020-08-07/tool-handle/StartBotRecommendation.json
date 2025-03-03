@@ -1,0 +1,450 @@
+{
+  "name": "StartBotRecommendation",
+  "description": "Use this to provide your transcript data, and to start the bot recommendation process.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "botId": {
+        "type": "string",
+        "pattern": "^[0-9a-zA-Z]+$",
+        "minLength": 10,
+        "maxLength": 10,
+        "description": "The unique identifier of the bot containing the bot recommendation."
+      },
+      "botVersion": {
+        "type": "string",
+        "pattern": "^DRAFT$",
+        "minLength": 5,
+        "maxLength": 5,
+        "description": "The version of the bot containing the bot recommendation."
+      },
+      "localeId": {
+        "type": "string",
+        "description": "The identifier of the language and locale of the bot recommendation to start. The string must match one of the supported locales. For more information, see <a href=\"https://docs.aws.amazon.com/lexv2/latest/dg/how-languages.html\">Supported languages</a> "
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "transcriptSourceSetting"
+        ],
+        "properties": {
+          "transcriptSourceSetting": {
+            "description": "Indicates the setting of the location where the transcript is stored.",
+            "type": "object",
+            "properties": {
+              "s3BucketTranscriptSource": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3BucketTranscriptSource"
+                  },
+                  {
+                    "description": "Indicates the setting of the Amazon S3 bucket where the transcript is stored."
+                  }
+                ]
+              }
+            }
+          },
+          "encryptionSetting": {
+            "description": "The object representing the passwords that were used to encrypt the data related to the bot recommendation, as well as the KMS key ARN used to encrypt the associated metadata.",
+            "type": "object",
+            "properties": {
+              "kmsKeyArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/KmsKeyArn"
+                  },
+                  {
+                    "description": "The KMS key ARN used to encrypt the metadata associated with the bot recommendation."
+                  }
+                ]
+              },
+              "botLocaleExportPassword": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FilePassword"
+                  },
+                  {
+                    "description": "The password used to encrypt the recommended bot recommendation file."
+                  }
+                ]
+              },
+              "associatedTranscriptsPassword": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FilePassword"
+                  },
+                  {
+                    "description": "The password used to encrypt the associated transcript file."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "botId",
+      "botVersion",
+      "localeId",
+      "body"
+    ],
+    "$defs": {
+      "S3BucketTranscriptSource": {
+        "type": "object",
+        "required": [
+          "s3BucketName",
+          "transcriptFormat"
+        ],
+        "properties": {
+          "s3BucketName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3BucketName"
+              },
+              {
+                "description": "The name of the bucket containing the transcript and the associated metadata."
+              }
+            ]
+          },
+          "pathFormat": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathFormat"
+              },
+              {
+                "description": "The object that contains a path format that will be applied when Amazon Lex reads the transcript file in the bucket you provide. Specify this object if you only want Lex to read a subset of files in your Amazon S3 bucket."
+              }
+            ]
+          },
+          "transcriptFormat": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TranscriptFormat"
+              },
+              {
+                "description": "The format of the transcript content. Currently, Genie only supports the Amazon Lex transcript format."
+              }
+            ]
+          },
+          "transcriptFilter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TranscriptFilter"
+              },
+              {
+                "description": "The object that contains the filter which will be applied when Amazon Lex reads through the Amazon S3 bucket. Specify this object if you want Amazon Lex to read only a subset of the Amazon S3 bucket based on the filter you provide."
+              }
+            ]
+          },
+          "kmsKeyArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KmsKeyArn"
+              },
+              {
+                "description": "The ARN of the KMS key that customer use to encrypt their Amazon S3 bucket. Only use this field if your bucket is encrypted using a customer managed KMS key."
+              }
+            ]
+          }
+        },
+        "description": "The object representing the Amazon S3 bucket containing the transcript, as well as the associated metadata."
+      },
+      "S3BucketName": {
+        "type": "string",
+        "pattern": "^[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9]$",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "PathFormat": {
+        "type": "object",
+        "properties": {
+          "objectPrefixes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ObjectPrefixes"
+              },
+              {
+                "description": "A list of Amazon S3 prefixes that points to sub-folders in the Amazon S3 bucket. Specify this list if you only want Lex to read the files under this set of sub-folders."
+              }
+            ]
+          }
+        },
+        "description": "The object that contains a path format that will be applied when Amazon Lex reads the transcript file in the bucket you provide. Specify this object if you only want Lex to read a subset of files in your Amazon S3 bucket."
+      },
+      "ObjectPrefixes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ObjectPrefix"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "ObjectPrefix": {
+        "type": "string",
+        "pattern": "^[\\/]\\?\\+[a-zA-Z0-9!_.*'\\(\\)-]\\+\\(\\/[a-zA-Z0-9!_.*'\\(\\)-]\\+\\)*$",
+        "minLength": 1
+      },
+      "TranscriptFormat": {
+        "type": "string",
+        "enum": [
+          "Lex"
+        ]
+      },
+      "TranscriptFilter": {
+        "type": "object",
+        "properties": {
+          "lexTranscriptFilter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LexTranscriptFilter"
+              },
+              {
+                "description": "The object representing the filter that Amazon Lex will use to select the appropriate transcript when the transcript format is the Amazon Lex format."
+              }
+            ]
+          }
+        },
+        "description": "The object representing the filter that Amazon Lex will use to select the appropriate transcript."
+      },
+      "LexTranscriptFilter": {
+        "type": "object",
+        "properties": {
+          "dateRangeFilter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DateRangeFilter"
+              },
+              {
+                "description": "The object that contains a date range filter that will be applied to the transcript. Specify this object if you want Amazon Lex to only read the files that are within the date range."
+              }
+            ]
+          }
+        },
+        "description": "The object that contains transcript filter details that are associated with a bot recommendation."
+      },
+      "DateRangeFilter": {
+        "type": "object",
+        "required": [
+          "startDateTime",
+          "endDateTime"
+        ],
+        "properties": {
+          "startDateTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "A timestamp indicating the start date for the date range filter."
+              }
+            ]
+          },
+          "endDateTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "A timestamp indicating the end date for the date range filter."
+              }
+            ]
+          }
+        },
+        "description": "The object used for specifying the data range that the customer wants Amazon Lex to read through in the input transcripts."
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "KmsKeyArn": {
+        "type": "string",
+        "pattern": "^arn:[\\w\\-]+:kms:[\\w\\-]+:[\\d]{12}:(?:key\\/[\\w\\-]+|alias\\/[a-zA-Z0-9:\\/_\\-]{1,256})$",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "FilePassword": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024,
+        "format": "password"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://models-v2-lex.us-east-1.amazonaws.com/bots/{botId}/botversions/{botVersion}/botlocales/{localeId}/botrecommendations/"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**botId**",
+            "**botVersion**",
+            "**localeId**",
+            "**botRecommendationStatus**",
+            "**botRecommendationId**",
+            "**creationDateTime**",
+            "**transcriptSourceSetting**",
+            "**encryptionSetting**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

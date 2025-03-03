@@ -1,0 +1,395 @@
+{
+  "name": "GET_IncreaseReplicaCount",
+  "description": "Dynamically increases the number of replicas in a Redis (cluster mode disabled) replication group or the number of replica nodes in one or more node groups (shards) of a Redis (cluster mode enabled) replication group. This operation is performed with no cluster down time.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ReplicationGroupId": {
+        "type": "string",
+        "description": "The id of the replication group to which you want to add replica nodes."
+      },
+      "NewReplicaCount": {
+        "type": "integer",
+        "description": "The number of read replica nodes you want at the completion of this operation. For Redis (cluster mode disabled) replication groups, this is the number of replica nodes in the replication group. For Redis (cluster mode enabled) replication groups, this is the number of replica nodes in each of the replication group's node groups."
+      },
+      "ReplicaConfiguration": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ConfigureShard"
+            },
+            {
+              "xml": {
+                "name": "ConfigureShard"
+              }
+            }
+          ]
+        },
+        "description": "A list of <code>ConfigureShard</code> objects that can be used to configure each shard in a Redis (cluster mode enabled) replication group. The <code>ConfigureShard</code> has three members: <code>NewReplicaCount</code>, <code>NodeGroupId</code>, and <code>PreferredAvailabilityZones</code>."
+      },
+      "ApplyImmediately": {
+        "type": "boolean",
+        "description": "If <code>True</code>, the number of replica nodes is increased immediately. <code>ApplyImmediately=False</code> is not currently supported."
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "IncreaseReplicaCount"
+        ]
+      },
+      "Version": {
+        "type": "string",
+        "enum": [
+          "2015-02-02"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "ReplicationGroupId",
+      "ApplyImmediately",
+      "Action",
+      "Version"
+    ],
+    "$defs": {
+      "ConfigureShard": {
+        "type": "object",
+        "required": [
+          "NodeGroupId",
+          "NewReplicaCount"
+        ],
+        "properties": {
+          "NodeGroupId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AllowedNodeGroupId"
+              },
+              {
+                "description": "The 4-digit id for the node group you are configuring. For Redis (cluster mode disabled) replication groups, the node group id is always 0001. To find a Redis (cluster mode enabled)'s node group's (shard's) id, see <a href=\"https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/shard-find-id.html\">Finding a Shard's Id</a>."
+              }
+            ]
+          },
+          "NewReplicaCount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "<p>The number of replicas you want in this node group at the end of this operation. The maximum value for <code>NewReplicaCount</code> is 5. The minimum value depends upon the type of Redis replication group you are working with.</p> <p>The minimum number of replicas in a shard or replication group is:</p> <ul> <li> <p>Redis (cluster mode disabled)</p> <ul> <li> <p>If Multi-AZ: 1</p> </li> <li> <p>If Multi-AZ: 0</p> </li> </ul> </li> <li> <p>Redis (cluster mode enabled): 0 (though you will not be able to failover to a replica if your primary node fails)</p> </li> </ul>"
+              }
+            ]
+          },
+          "PreferredAvailabilityZones": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PreferredAvailabilityZoneList"
+              },
+              {
+                "description": "A list of <code>PreferredAvailabilityZone</code> strings that specify which availability zones the replication group's nodes are to be in. The nummber of <code>PreferredAvailabilityZone</code> values must equal the value of <code>NewReplicaCount</code> plus 1 to account for the primary node. If this member of <code>ReplicaConfiguration</code> is omitted, ElastiCache for Redis selects the availability zone for each of the replicas."
+              }
+            ]
+          },
+          "PreferredOutpostArns": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PreferredOutpostArnList"
+              },
+              {
+                "description": "The outpost ARNs in which the cache cluster is created."
+              }
+            ]
+          }
+        },
+        "description": "Node group (shard) configuration options when adding or removing replicas. Each node group (shard) configuration has the following members: NodeGroupId, NewReplicaCount, and PreferredAvailabilityZones. "
+      },
+      "AllowedNodeGroupId": {
+        "type": "string",
+        "pattern": "\\d+",
+        "minLength": 1,
+        "maxLength": 4
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "PreferredAvailabilityZoneList": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/String"
+            },
+            {
+              "xml": {
+                "name": "PreferredAvailabilityZone"
+              }
+            }
+          ]
+        }
+      },
+      "String": {
+        "type": "string"
+      },
+      "PreferredOutpostArnList": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/String"
+            },
+            {
+              "xml": {
+                "name": "PreferredOutpostArn"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://elasticache.us-east-1.amazonaws.com/#Action=IncreaseReplicaCount{?ReplicationGroupId,NewReplicaCount,ReplicaConfiguration,ApplyImmediately,Action,Version}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**ReplicationGroup**: Contains all of the attributes of a specific Redis replication group.",
+              {
+                "$ul": [
+                  "**ReplicationGroupId**",
+                  "**Description**",
+                  "**GlobalReplicationGroupInfo**",
+                  "**Status**",
+                  "**PendingModifiedValues**",
+                  "**MemberClusters**",
+                  "**NodeGroups**",
+                  "**SnapshottingClusterId**",
+                  "**AutomaticFailover**",
+                  "**MultiAZ**",
+                  "**ConfigurationEndpoint**",
+                  "**SnapshotRetentionLimit**",
+                  "**SnapshotWindow**",
+                  "**ClusterEnabled**",
+                  "**CacheNodeType**",
+                  "**AuthTokenEnabled**",
+                  "**AuthTokenLastModifiedDate**",
+                  "**TransitEncryptionEnabled**",
+                  "**AtRestEncryptionEnabled**",
+                  "**MemberClustersOutpostArns**",
+                  "**KmsKeyId**",
+                  "**ARN**",
+                  "**UserGroupIds**",
+                  "**LogDeliveryConfigurations**",
+                  "**ReplicationGroupCreateTime**",
+                  "**DataTiering**",
+                  "**AutoMinorVersionUpgrade**",
+                  "**NetworkType**",
+                  "**IpDiscovery**",
+                  "**TransitEncryptionMode**",
+                  "**ClusterMode**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "489": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "490": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "491": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

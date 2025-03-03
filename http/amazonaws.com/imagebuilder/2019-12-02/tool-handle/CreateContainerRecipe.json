@@ -1,0 +1,648 @@
+{
+  "name": "CreateContainerRecipe",
+  "description": "Creates a new container recipe. Container recipes define how images are configured, tested, and assessed.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "containerType",
+          "name",
+          "semanticVersion",
+          "components",
+          "parentImage",
+          "targetRepository",
+          "clientToken"
+        ],
+        "properties": {
+          "containerType": {
+            "description": "The type of container to create.",
+            "type": "string",
+            "enum": [
+              "DOCKER"
+            ]
+          },
+          "name": {
+            "description": "The name of the container recipe.",
+            "type": "string",
+            "pattern": "^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$"
+          },
+          "description": {
+            "description": "The description of the container recipe.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "semanticVersion": {
+            "description": "<p>The semantic version of the container recipe. This version follows the semantic version syntax.</p> <note> <p>The semantic version has four nodes: &lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;/&lt;build&gt;. You can assign values for the first three, and can filter on all of them.</p> <p> <b>Assignment:</b> For the first three nodes you can assign any positive integer value, including zero, with an upper limit of 2^30-1, or 1073741823 for each node. Image Builder automatically assigns the build number to the fourth node.</p> <p> <b>Patterns:</b> You can use any numeric pattern that adheres to the assignment requirements for the nodes that you can assign. For example, you might choose a software version pattern, such as 1.0.0, or a date, such as 2021.01.01.</p> </note>",
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "components": {
+            "description": "Components for build and test that are included in the container recipe. Recipes require a minimum of one build component, and can have a maximum of 20 build and test components in any combination.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ComponentConfiguration"
+            },
+            "minItems": 1
+          },
+          "instanceConfiguration": {
+            "description": "Defines a custom base AMI and block device mapping configurations of an instance used for building and testing container images.",
+            "type": "object",
+            "properties": {
+              "image": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NonEmptyString"
+                  },
+                  {
+                    "description": "The AMI ID to use as the base image for a container build and test instance. If not specified, Image Builder will use the appropriate ECS-optimized AMI as a base image."
+                  }
+                ]
+              },
+              "blockDeviceMappings": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/InstanceBlockDeviceMappings"
+                  },
+                  {
+                    "description": "Defines the block devices to attach for building an instance from this Image Builder AMI."
+                  }
+                ]
+              }
+            }
+          },
+          "dockerfileTemplateData": {
+            "description": "The Dockerfile template used to build your image as an inline data blob.",
+            "type": "string",
+            "pattern": "[^\\x00]+",
+            "minLength": 1,
+            "maxLength": 16000
+          },
+          "dockerfileTemplateUri": {
+            "description": "The Amazon S3 URI for the Dockerfile that will be used to build your container image.",
+            "type": "string"
+          },
+          "platformOverride": {
+            "description": "Specifies the operating system platform when you use a custom base image.",
+            "type": "string",
+            "enum": [
+              "Windows",
+              "Linux"
+            ]
+          },
+          "imageOsVersionOverride": {
+            "description": "Specifies the operating system version for the base image.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "parentImage": {
+            "description": "The base image for the container recipe.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "tags": {
+            "description": "Tags that are attached to the container recipe.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "workingDirectory": {
+            "description": "The working directory for use during build and test workflows.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "targetRepository": {
+            "description": "The container repository where the output container image is stored.",
+            "type": "object",
+            "properties": {
+              "service": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ContainerRepositoryService"
+                  },
+                  {
+                    "description": "Specifies the service in which this image was registered."
+                  }
+                ]
+              },
+              "repositoryName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NonEmptyString"
+                  },
+                  {
+                    "description": "The name of the container repository where the output container image is stored. This name is prefixed by the repository location."
+                  }
+                ]
+              }
+            }
+          },
+          "kmsKeyId": {
+            "description": "Identifies which KMS key is used to encrypt the container image.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "clientToken": {
+            "description": "The client token used to make this request idempotent.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ComponentConfiguration": {
+        "type": "object",
+        "required": [
+          "componentArn"
+        ],
+        "properties": {
+          "componentArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentVersionArnOrBuildVersionArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the component."
+              }
+            ]
+          },
+          "parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterList"
+              },
+              {
+                "description": "A group of parameter settings that Image Builder uses to configure the component for a specific recipe."
+              }
+            ]
+          }
+        },
+        "description": "Configuration details of the component."
+      },
+      "ComponentVersionArnOrBuildVersionArn": {
+        "type": "string",
+        "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):component/[a-z0-9-_]+/(?:(?:([0-9]+|x)\\.([0-9]+|x)\\.([0-9]+|x))|(?:[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+))$"
+      },
+      "ComponentParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ComponentParameter"
+        },
+        "minItems": 1
+      },
+      "ComponentParameter": {
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterName"
+              },
+              {
+                "description": "The name of the component parameter to set."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterValueList"
+              },
+              {
+                "description": "Sets the value for the named component parameter."
+              }
+            ]
+          }
+        },
+        "description": "Contains a key/value pair that sets the named component parameter."
+      },
+      "ComponentParameterName": {
+        "type": "string",
+        "pattern": "[^\\x00]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ComponentParameterValueList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ComponentParameterValue"
+        }
+      },
+      "ComponentParameterValue": {
+        "type": "string",
+        "pattern": "[^\\x00]*",
+        "minLength": 0
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "InstanceBlockDeviceMappings": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/InstanceBlockDeviceMapping"
+        }
+      },
+      "InstanceBlockDeviceMapping": {
+        "type": "object",
+        "properties": {
+          "deviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The device to which these mappings apply."
+              }
+            ]
+          },
+          "ebs": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsInstanceBlockDeviceSpecification"
+              },
+              {
+                "description": "Use to manage Amazon EBS-specific configuration for this mapping."
+              }
+            ]
+          },
+          "virtualName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "Use to manage instance ephemeral devices."
+              }
+            ]
+          },
+          "noDevice": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EmptyString"
+              },
+              {
+                "description": "Use to remove a mapping from the base image."
+              }
+            ]
+          }
+        },
+        "description": "Defines block device mappings for the instance used to configure your image."
+      },
+      "EbsInstanceBlockDeviceSpecification": {
+        "type": "object",
+        "properties": {
+          "encrypted": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullableBoolean"
+              },
+              {
+                "description": "Use to configure device encryption."
+              }
+            ]
+          },
+          "deleteOnTermination": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullableBoolean"
+              },
+              {
+                "description": "Use to configure delete on termination of the associated device."
+              }
+            ]
+          },
+          "iops": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsIopsInteger"
+              },
+              {
+                "description": "Use to configure device IOPS."
+              }
+            ]
+          },
+          "kmsKeyId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "Use to configure the KMS key to use when encrypting the device."
+              }
+            ]
+          },
+          "snapshotId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The snapshot that defines the device contents."
+              }
+            ]
+          },
+          "volumeSize": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeSizeInteger"
+              },
+              {
+                "description": "Use to override the device's volume size."
+              }
+            ]
+          },
+          "volumeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeType"
+              },
+              {
+                "description": "Use to override the device's volume type."
+              }
+            ]
+          },
+          "throughput": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeThroughput"
+              },
+              {
+                "description": " <b>For GP3 volumes only</b> – The throughput in MiB/s that the volume supports."
+              }
+            ]
+          }
+        },
+        "description": "Amazon EBS-specific block device mapping specifications."
+      },
+      "NullableBoolean": {
+        "type": "boolean"
+      },
+      "EbsIopsInteger": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 64000
+      },
+      "EbsVolumeSizeInteger": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 16000
+      },
+      "EbsVolumeType": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "io1",
+          "io2",
+          "gp2",
+          "gp3",
+          "sc1",
+          "st1"
+        ]
+      },
+      "EbsVolumeThroughput": {
+        "type": "integer",
+        "minimum": 125,
+        "maximum": 1000
+      },
+      "EmptyString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 0
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "ContainerRepositoryService": {
+        "type": "string",
+        "enum": [
+          "ECR"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://imagebuilder.us-east-1.amazonaws.com/CreateContainerRecipe"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**requestId**",
+            "**clientToken**",
+            "**containerRecipeArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "489": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "490": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

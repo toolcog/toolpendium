@@ -1,0 +1,84 @@
+{
+  "name": "videos",
+  "description": "This endpoint allows the client to retrieve a list of articles that are uploaded with a video.\n\nIt will only return published video articles ordered by descending popularity.\n\nIt supports pagination, each page will contain 24 articles by default.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "page": {
+        "default": 1,
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Pagination page"
+      },
+      "per_page": {
+        "default": 24,
+        "format": "int32",
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Page size (the number of items to return per page). The default maximum value can be overridden by \"API_PER_PAGE_MAX\" environment variable."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://dev.to/api/api/videos{?page,per_page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Representation of an Article with video",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**cloudinary_video_url**",
+            "**id**",
+            "**path**",
+            "**title**",
+            "**type_of**",
+            [
+              "**user**: Author of the article",
+              {
+                "$ul": [
+                  "**name**"
+                ]
+              }
+            ],
+            "**user_id**",
+            "**video_duration_in_minutes**",
+            "**video_source_url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

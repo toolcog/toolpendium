@@ -1,0 +1,345 @@
+{
+  "name": "CreateImage",
+  "description": "Creates a new image. This request will create a new image along with all of the configured output resources defined in the distribution configuration. You must specify exactly one recipe for your image, using either a ContainerRecipeArn or an ImageRecipeArn.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "infrastructureConfigurationArn",
+          "clientToken"
+        ],
+        "properties": {
+          "imageRecipeArn": {
+            "description": "The Amazon Resource Name (ARN) of the image recipe that defines how images are configured, tested, and assessed.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):image-recipe/[a-z0-9-_]+/[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "containerRecipeArn": {
+            "description": "The Amazon Resource Name (ARN) of the container recipe that defines how images are configured and tested.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):container-recipe/[a-z0-9-_]+/[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "distributionConfigurationArn": {
+            "description": "The Amazon Resource Name (ARN) of the distribution configuration that defines and configures the outputs of your pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):distribution-configuration/[a-z0-9-_]+$"
+          },
+          "infrastructureConfigurationArn": {
+            "description": "The Amazon Resource Name (ARN) of the infrastructure configuration that defines the environment in which your image will be built and tested.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):infrastructure-configuration/[a-z0-9-_]+$"
+          },
+          "imageTestsConfiguration": {
+            "description": "Configure image tests for your pipeline build. Tests run after building the image, to verify that the AMI or container image is valid before distributing it.",
+            "type": "object",
+            "properties": {
+              "imageTestsEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NullableBoolean"
+                  },
+                  {
+                    "description": "Determines if tests should run after building the image. Image Builder defaults to enable tests to run following the image build, before image distribution."
+                  }
+                ]
+              },
+              "timeoutMinutes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ImageTestsTimeoutMinutes"
+                  },
+                  {
+                    "description": "<p>The maximum time in minutes that tests are permitted to run.</p> <note> <p>The timeoutMinutes attribute is not currently active. This value is ignored.</p> </note>"
+                  }
+                ]
+              }
+            }
+          },
+          "enhancedImageMetadataEnabled": {
+            "description": "Collects additional information about the image being created, including the operating system (OS) version and package list. This information is used to enhance the overall experience of using EC2 Image Builder. Enabled by default.",
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "The tags of the image.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "clientToken": {
+            "description": "The idempotency token used to make this request idempotent.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          },
+          "imageScanningConfiguration": {
+            "description": "Contains settings for Image Builder image resource and container image scans.",
+            "type": "object",
+            "properties": {
+              "imageScanningEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NullableBoolean"
+                  },
+                  {
+                    "description": "A setting that indicates whether Image Builder keeps a snapshot of the vulnerability scans that Amazon Inspector runs against the build instance when you create a new image."
+                  }
+                ]
+              },
+              "ecrConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EcrConfiguration"
+                  },
+                  {
+                    "description": "Contains Amazon ECR settings for vulnerability scans."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "NullableBoolean": {
+        "type": "boolean"
+      },
+      "ImageTestsTimeoutMinutes": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 1440
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "EcrConfiguration": {
+        "type": "object",
+        "properties": {
+          "repositoryName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The name of the container repository that Amazon Inspector scans to identify findings for your container images. The name includes the path for the repository location. If you don’t provide this information, Image Builder creates a repository in your account named <code>image-builder-image-scanning-repository</code> for vulnerability scans of your output container images."
+              }
+            ]
+          },
+          "containerTags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "Tags for Image Builder to apply to the output container image that &amp;INS; scans. Tags can help you identify and manage your scanned images."
+              }
+            ]
+          }
+        },
+        "description": "Settings that Image Builder uses to configure the ECR repository and the output container images that Amazon Inspector scans."
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "StringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NonEmptyString"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://imagebuilder.us-east-1.amazonaws.com/CreateImage"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**requestId**",
+            "**clientToken**",
+            "**imageBuildVersionArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

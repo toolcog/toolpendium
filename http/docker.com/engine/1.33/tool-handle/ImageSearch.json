@@ -1,0 +1,97 @@
+{
+  "name": "ImageSearch",
+  "description": "Search for an image on Docker Hub.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "term": {
+        "type": "string",
+        "description": "Term to search"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of results to return"
+      },
+      "filters": {
+        "type": "string",
+        "description": "A JSON encoded value of the filters (a `map[string][]string`) to process on the images list. Available filters:\n\n- `is-automated=(true|false)`\n- `is-official=(true|false)`\n- `stars=<number>` Matches images that has at least 'number' stars.\n"
+      }
+    },
+    "required": [
+      "term"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/v1.33/images/search{?term,limit,filters}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**",
+            "**is_automated**",
+            "**is_official**",
+            "**name**",
+            "**star_count**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents an error.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: The error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "name": "executeAction",
+  "description": "Executes a registered service action and returns any output from the action.\nThe data returned in the POST response body may be: \n* the raw action output, \n* a URL encapsulating the action request which executes the action when dereferenced  (only for actions using GET), \n* RDF generated from the action output,\n* a URL to an RDF viewer's display of the generated RDF.\n\nAny parameters required by the action are supplied as a JSON object in the POST body. The parameter types supported are: \"query\", \"header\", \"uri\", \"path\" and \"body\".  The parameter type determines where a supplied parameter value is inserted into the HTTP request constructed by OSDB to invoke the target service action. In addition to native parameters required by the service action, 'Execute action' accepts some OSDB-specific parameters.<br/><br/>\n\n**Examples**\n* ```curl -ik -X POST -d '{ \"latitude\":\"37.7759792\", \"longitude\":\"-122.41823\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/uber/products/exec```  \n* ```curl -ikL -X POST -d '{ \"latitude\":\"37.7759792\", \"longitude\":\"-122.41823\", \"osdb:output_type\":\"generate_rdf\", \"osdb:response_format\":\"application/rdf+xml\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/uber/products/exec``` \n* ```curl -ikL -X POST -d '{ \"latitude\":\"37.7759792\", \"longitude\":\"-122.41823\", \"osdb:output_type\":\"display_rdf\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/uber/products/exec``` \n* ```curl -ik -X POST -d '{ \"q\":\"skiing\", \"osdb:response_format\": \"application/rdf+xml\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/facet/search/exec``` \n* ```curl -ik -X POST -d '{ \"q\":\"skiing\", \"osdb:output_type\": \"url_only\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/facet/search/exec``` \n* ```curl -ik -X POST -d '{ \"Content-Location\": \"http://demo.openlinksw.co.uk/pubs\", \"osdb:body_data_src_url\": \"http://ods-qa.openlinksw.com/DAV/home/osdb/pubs.csv\", \"extractor\": \"csv\", \"osdb:response_format\": \"application/rdf+xml\", \"osdb:body_data_encoding\": \"text/csv\" }' -H 'Content-Type: application/json' https://osdb.openlinksw.com/osdb/api/v1/actions/csv_transformer/transform/exec```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "serviceId": {
+        "type": "string",
+        "description": "Service ID of the service supporting the action."
+      },
+      "actionId": {
+        "type": "string",
+        "description": "Action ID of the action to execute."
+      },
+      "body": {
+        "$ref": "#/components/schemas/ExecBody",
+        "description": "Any parameters required by the action are supplied as a JSON object in the request body. The properties of this object depend on the service action being invoked."
+      }
+    },
+    "required": [
+      "serviceId",
+      "actionId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://osdb.openlinksw.com/osdb/api/v1/actions/{serviceId}/{actionId}/exec"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**api**: The path of the REST API method reporting the error",
+            "**method**: The name of the REST API method reporting the error",
+            "**response**: A message describing the error",
+            "**status** (default: error)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

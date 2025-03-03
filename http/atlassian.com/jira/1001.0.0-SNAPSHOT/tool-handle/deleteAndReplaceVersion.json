@@ -1,0 +1,86 @@
+{
+  "name": "deleteAndReplaceVersion",
+  "description": "Deletes a project version.\n\nAlternative versions can be provided to update issues that use the deleted version in `fixVersion`, `affectedVersion`, or any version picker custom fields. If alternatives are not provided, occurrences of `fixVersion`, `affectedVersion`, and any version picker custom field, that contain the deleted version, are cleared. Any replacement version must be in the same project as the version being deleted and cannot be the version being deleted.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg) or *Administer Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that contains the version.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The ID of the version."
+      },
+      "body": {
+        "$ref": "#/$defs/DeleteAndReplaceVersionBean"
+      }
+    },
+    "required": [
+      "id",
+      "body"
+    ],
+    "$defs": {
+      "DeleteAndReplaceVersionBean": {
+        "additionalProperties": false,
+        "properties": {
+          "customFieldReplacementList": {
+            "description": "An array of custom field IDs (`customFieldId`) and version IDs (`moveTo`) to update when the fields contain the deleted version.",
+            "items": {
+              "$ref": "#/$defs/CustomFieldReplacement"
+            },
+            "type": "array"
+          },
+          "moveAffectedIssuesTo": {
+            "description": "The ID of the version to update `affectedVersion` to when the field contains the deleted version.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "moveFixIssuesTo": {
+            "description": "The ID of the version to update `fixVersion` to when the field contains the deleted version.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CustomFieldReplacement": {
+        "additionalProperties": false,
+        "description": "Details about the replacement for a deleted version.",
+        "properties": {
+          "customFieldId": {
+            "description": "The ID of the custom field in which to replace the version number.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "moveTo": {
+            "description": "The version number to use as a replacement for the deleted version.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/version/{id}/removeAndSwap"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

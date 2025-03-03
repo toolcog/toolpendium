@@ -1,0 +1,227 @@
+{
+  "name": "commentanalyzer_comments_analyze",
+  "description": "Analyzes the provided text and returns scores for requested attributes.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/AnalyzeCommentRequest"
+      }
+    },
+    "$defs": {
+      "AnalyzeCommentRequest": {
+        "description": "The comment analysis request message. Next ID: 11",
+        "properties": {
+          "clientToken": {
+            "description": "Opaque token that is echoed from the request to the response.",
+            "type": "string"
+          },
+          "comment": {
+            "$ref": "#/$defs/TextEntry"
+          },
+          "communityId": {
+            "description": "Optional identifier associating this AnalyzeCommentRequest with a particular client's community. Different communities may have different norms and rules. Specifying this value enables us to explore building community-specific models for clients.",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/$defs/Context"
+          },
+          "doNotStore": {
+            "description": "Do not store the comment or context sent in this request. By default, the service may store comments/context for debugging purposes.",
+            "type": "boolean"
+          },
+          "dropUnsupportedAttributes": {
+            "description": "If specified, any requested attribute that is requested but not supported for the language detected will be dropped from the returned scores instead of returning an error.",
+            "type": "boolean"
+          },
+          "languages": {
+            "description": "The language(s) of the comment and context. If none are specified, we attempt to automatically detect the language. Specifying multiple languages means the text contains multiple lanugages. Both ISO and BCP-47 language codes are accepted. The server returns an error if no language was specified and language detection fails. The server also returns an error if the languages (either specified by the caller, or auto-detected) are not *all* supported by the service.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requestedAttributes": {
+            "additionalProperties": {
+              "$ref": "#/$defs/AttributeParameters"
+            },
+            "description": "Specification of requested attributes. The AttributeParameters serve as configuration for each associated attribute. The map keys are attribute names. The available attributes may be different on each RFE installation, and can be seen by calling ListAttributes (see above). For the prod installation, known as Perspective API, see https://developers.perspectiveapi.com/s/about-the-api-model-cards.",
+            "type": "object"
+          },
+          "sessionId": {
+            "description": "Session ID. Used to join related RPCs into a single session. For example, an interactive tool that calls both the AnalyzeComment and SuggestCommentScore RPCs should set all invocations of both RPCs to the same Session ID, typically a random 64-bit integer.",
+            "type": "string"
+          },
+          "spanAnnotations": {
+            "description": "An advisory parameter that will return span annotations if the model is capable of providing scores with sub-comment resolution. This will likely increase the size of the returned message.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "TextEntry": {
+        "description": "Represents a body of text.",
+        "properties": {
+          "text": {
+            "description": "UTF-8 encoded text.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of the text field.",
+            "enum": [
+              "TEXT_TYPE_UNSPECIFIED",
+              "PLAIN_TEXT",
+              "HTML"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Context": {
+        "description": "Context is typically something that a Comment is referencing or replying to (such as an article, or previous comment). Note: Populate only ONE OF the following fields. The oneof syntax cannot be used because that would require nesting entries inside another message and breaking backwards compatibility. The server will return an error if more than one of the following fields is present.",
+        "properties": {
+          "articleAndParentComment": {
+            "$ref": "#/$defs/ArticleAndParentComment"
+          },
+          "entries": {
+            "description": "A list of messages. For example, a linear comments section or forum thread.",
+            "items": {
+              "$ref": "#/$defs/TextEntry"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ArticleAndParentComment": {
+        "description": "A type of context specific to a comment left on a single-threaded comment message board, where comments are either a top level comment or the child of a top level comment.",
+        "properties": {
+          "article": {
+            "$ref": "#/$defs/TextEntry"
+          },
+          "parentComment": {
+            "$ref": "#/$defs/TextEntry"
+          }
+        },
+        "type": "object"
+      },
+      "AttributeParameters": {
+        "description": "Configurable parameters for attribute scoring.",
+        "properties": {
+          "scoreThreshold": {
+            "description": "Don't return scores for this attribute that are below this threshold. If unset, a default threshold will be applied. A FloatValue wrapper is used to distinguish between 0 vs. default/unset.",
+            "format": "float",
+            "type": "number"
+          },
+          "scoreType": {
+            "description": "What type of scores to return. If unset, defaults to probability scores.",
+            "enum": [
+              "SCORE_TYPE_UNSPECIFIED",
+              "PROBABILITY",
+              "STD_DEV_SCORE",
+              "PERCENTILE",
+              "RAW"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://commentanalyzer.googleapis.com//v1alpha1/comments:analyze{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The comment analysis response message.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**attributeScores**: Scores for the requested attributes. The map keys are attribute names (same as the requested_attribute field in AnalyzeCommentRequest, for example \"ATTACK_ON_AUTHOR\", \"INFLAMMATORY\", etc).",
+            "**clientToken**: Same token from the original AnalyzeCommentRequest.",
+            "**detectedLanguages**: Contains the languages detected from the text content, sorted in order of likelihood.",
+            "**languages**: The language(s) used by CommentAnalyzer service to choose which Model to use when analyzing the comment. Might better be called \"effective_languages\". The logic used to make the choice is as follows: if !Request.languages.empty() effective_languages = Request.languages else effective_languages = detected_languages[0]"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

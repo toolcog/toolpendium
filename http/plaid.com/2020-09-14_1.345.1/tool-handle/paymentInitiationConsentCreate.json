@@ -1,0 +1,314 @@
+{
+  "name": "paymentInitiationConsentCreate",
+  "description": "The `/payment_initiation/consent/create` endpoint is used to create a payment consent, which can be used to initiate payments on behalf of the user. Payment consents are created with `UNAUTHORISED` status by default and must be authorised by the user before payments can be initiated.\n\nConsents can be limited in time and scope, and have constraints that describe limitations for payments.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/PaymentInitiationConsentCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PaymentInitiationConsentCreateRequest": {
+        "description": "PaymentInitiationConsentCreateRequest defines the request schema for `/payment_initiation/consent/create`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "constraints": {
+            "$ref": "#/$defs/PaymentInitiationConsentConstraints"
+          },
+          "options": {
+            "$ref": "#/$defs/ExternalPaymentInitiationConsentOptions"
+          },
+          "recipient_id": {
+            "description": "The ID of the recipient the payment consent is for. The created consent can be used to transfer funds to this recipient only.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "A reference for the payment consent. This must be an alphanumeric string with at most 18 characters and must not contain any special characters.",
+            "maxLength": 18,
+            "minLength": 1,
+            "type": "string"
+          },
+          "scopes": {
+            "description": "An array of payment consent scopes.",
+            "items": {
+              "$ref": "#/$defs/PaymentInitiationConsentScope"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "recipient_id",
+          "reference",
+          "scopes",
+          "constraints"
+        ],
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "PaymentInitiationConsentConstraints": {
+        "additionalProperties": true,
+        "description": "Limitations that will be applied to payments initiated using the payment consent.",
+        "properties": {
+          "max_payment_amount": {
+            "$ref": "#/$defs/PaymentConsentMaxPaymentAmount"
+          },
+          "periodic_amounts": {
+            "description": "A list of amount limitations per period of time.",
+            "items": {
+              "$ref": "#/$defs/PaymentConsentPeriodicAmount"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "valid_date_time": {
+            "$ref": "#/$defs/PaymentConsentValidDateTime"
+          }
+        },
+        "required": [
+          "max_payment_amount",
+          "periodic_amounts"
+        ],
+        "title": "PaymentInitiationConsentConstraints",
+        "type": "object"
+      },
+      "PaymentConsentMaxPaymentAmount": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/PaymentAmount"
+          }
+        ],
+        "description": "Maximum amount of a single payment initiated using the payment consent."
+      },
+      "PaymentAmount": {
+        "additionalProperties": true,
+        "description": "The amount and currency of a payment",
+        "properties": {
+          "currency": {
+            "$ref": "#/$defs/PaymentAmountCurrency"
+          },
+          "value": {
+            "description": "The amount of the payment. Must contain at most two digits of precision e.g. `1.23`. Minimum accepted value is `1`.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "currency",
+          "value"
+        ],
+        "title": "PaymentAmount",
+        "type": "object"
+      },
+      "PaymentAmountCurrency": {
+        "description": "The ISO-4217 currency code of the payment. For standing orders and payment consents, `\"GBP\"` must be used.",
+        "enum": [
+          "GBP",
+          "EUR",
+          "PLN",
+          "SEK",
+          "DKK",
+          "NOK"
+        ],
+        "maxLength": 3,
+        "minLength": 3,
+        "type": "string"
+      },
+      "PaymentConsentPeriodicAmount": {
+        "additionalProperties": true,
+        "description": "Defines consent payments limitations per period.",
+        "properties": {
+          "alignment": {
+            "$ref": "#/$defs/PaymentConsentPeriodicAlignment"
+          },
+          "amount": {
+            "$ref": "#/$defs/PaymentConsentPeriodicAmountAmount"
+          },
+          "interval": {
+            "$ref": "#/$defs/PaymentConsentPeriodicInterval"
+          }
+        },
+        "required": [
+          "amount",
+          "interval",
+          "alignment"
+        ],
+        "title": "PaymentConsentPeriodicAmount",
+        "type": "object"
+      },
+      "PaymentConsentPeriodicAlignment": {
+        "description": "Where the payment consent period should start.\n\n`CALENDAR`: line up with a calendar.\n\n`CONSENT`: on the date of consent creation.",
+        "enum": [
+          "CALENDAR",
+          "CONSENT"
+        ],
+        "type": "string"
+      },
+      "PaymentConsentPeriodicAmountAmount": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/PaymentAmount"
+          }
+        ],
+        "description": "Maximum cumulative amount for all payments in the specified interval."
+      },
+      "PaymentConsentPeriodicInterval": {
+        "description": "Payment consent periodic interval.",
+        "enum": [
+          "DAY",
+          "WEEK",
+          "MONTH",
+          "YEAR"
+        ],
+        "type": "string"
+      },
+      "PaymentConsentValidDateTime": {
+        "additionalProperties": true,
+        "description": "Life span for the payment consent. After the `to` date the payment consent expires and can no longer be used for payment initiation.",
+        "nullable": true,
+        "properties": {
+          "from": {
+            "description": "The date and time from which the consent should be active, in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "to": {
+            "description": "The date and time at which the consent expires, in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "title": "PaymentConsentValidDateTime",
+        "type": "object"
+      },
+      "ExternalPaymentInitiationConsentOptions": {
+        "additionalProperties": true,
+        "description": "Additional payment consent options",
+        "nullable": true,
+        "properties": {
+          "bacs": {
+            "$ref": "#/$defs/PaymentInitiationOptionalRestrictionBacs"
+          },
+          "iban": {
+            "description": "The International Bank Account Number (IBAN) for the payer's account. Where possible, the end user will be able to set up payment consent using only the specified bank account if provided.",
+            "maxLength": 34,
+            "minLength": 15,
+            "nullable": true,
+            "type": "string"
+          },
+          "request_refund_details": {
+            "description": "When `true`, Plaid will attempt to request refund details from the payee's financial institution.  Support varies between financial institutions and will not always be available.  If refund details could be retrieved, they will be available in the `/payment_initiation/payment/get` response.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "title": "ExternalPaymentInitiationConsentOptions",
+        "type": "object"
+      },
+      "PaymentInitiationOptionalRestrictionBacs": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/RecipientBACS"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        ],
+        "description": "An optional object used to restrict the accounts used for payments. If provided, the end user will be able to send payments only from the specified bank account.",
+        "nullable": true
+      },
+      "RecipientBACS": {
+        "additionalProperties": true,
+        "description": "An object containing a BACS account number and sort code. If an IBAN is not provided or if you need to accept domestic GBP-denominated payments, BACS data is required.",
+        "nullable": true,
+        "properties": {
+          "account": {
+            "description": "The account number of the account. Maximum of 10 characters.",
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sort_code": {
+            "description": "The 6-character sort code of the account.",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "title": "RecipientBACS",
+        "type": "object"
+      },
+      "PaymentInitiationConsentScope": {
+        "description": "Payment consent scope. Defines possible directions for payments made with the given consent.\n\n`ME_TO_ME`: Allows moving money between accounts owned by the same user.\n\n`EXTERNAL`: Allows initiating payments from the user's account to third parties.",
+        "enum": [
+          "ME_TO_ME",
+          "EXTERNAL"
+        ],
+        "title": "PaymentInitiationConsentScope",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/payment_initiation/consent/create"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "PaymentInitiationConsentCreateResponse defines the response schema for `/payment_initiation/consent/create`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**consent_id**: A unique ID identifying the payment consent.",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**status**: The status of the payment consent."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

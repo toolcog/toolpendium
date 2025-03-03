@@ -1,0 +1,1321 @@
+{
+  "name": "UpdateRoute",
+  "description": "Updates an existing route for a specified service mesh and virtual router.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "meshName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the service mesh that the route resides in."
+      },
+      "meshOwner": {
+        "type": "string",
+        "minLength": 12,
+        "maxLength": 12,
+        "description": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see <a href=\"https://docs.aws.amazon.com/app-mesh/latest/userguide/sharing.html\">Working with shared meshes</a>."
+      },
+      "routeName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the route to update."
+      },
+      "virtualRouterName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the virtual router that the route is associated with."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "spec"
+        ],
+        "properties": {
+          "clientToken": {
+            "description": "Unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Up to 36 letters, numbers, hyphens, and underscores are allowed.",
+            "type": "string"
+          },
+          "spec": {
+            "description": "An object that represents a route specification. Specify one route type.",
+            "type": "object",
+            "properties": {
+              "grpcRoute": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/GrpcRoute"
+                  },
+                  {
+                    "description": "An object that represents the specification of a gRPC route."
+                  }
+                ]
+              },
+              "http2Route": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HttpRoute"
+                  },
+                  {
+                    "description": "An object that represents the specification of an HTTP/2 route."
+                  }
+                ]
+              },
+              "httpRoute": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HttpRoute"
+                  },
+                  {
+                    "description": "An object that represents the specification of an HTTP route."
+                  }
+                ]
+              },
+              "priority": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RoutePriority"
+                  },
+                  {
+                    "description": "The priority for the route. Routes are matched based on the specified value, where 0 is the highest priority."
+                  }
+                ]
+              },
+              "tcpRoute": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TcpRoute"
+                  },
+                  {
+                    "description": "An object that represents the specification of a TCP route."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "meshName",
+      "routeName",
+      "virtualRouterName",
+      "body"
+    ],
+    "$defs": {
+      "GrpcRoute": {
+        "type": "object",
+        "required": [
+          "action",
+          "match"
+        ],
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRouteAction"
+              },
+              {
+                "description": "An object that represents the action to take if a match is determined."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRouteMatch"
+              },
+              {
+                "description": "An object that represents the criteria for determining a request match."
+              }
+            ]
+          },
+          "retryPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRetryPolicy"
+              },
+              {
+                "description": "An object that represents a retry policy."
+              }
+            ]
+          },
+          "timeout": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcTimeout"
+              },
+              {
+                "description": "An object that represents types of timeouts. "
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a gRPC route type."
+      },
+      "GrpcRouteAction": {
+        "type": "object",
+        "required": [
+          "weightedTargets"
+        ],
+        "properties": {
+          "weightedTargets": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WeightedTargets"
+              },
+              {
+                "description": "An object that represents the targets that traffic is routed to when a request matches the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the action to take if a match is determined."
+      },
+      "WeightedTargets": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/WeightedTarget"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "WeightedTarget": {
+        "type": "object",
+        "required": [
+          "virtualNode",
+          "weight"
+        ],
+        "properties": {
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListenerPort"
+              },
+              {
+                "description": "The targeted port of the weighted object."
+              }
+            ]
+          },
+          "virtualNode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceName"
+              },
+              {
+                "description": "The virtual node to associate with the weighted target."
+              }
+            ]
+          },
+          "weight": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PercentInt"
+              },
+              {
+                "description": "The relative weight of the weighted target."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a target and its relative weight. Traffic is distributed across targets according to their relative weight. For example, a weighted target with a relative weight of 50 receives five times as much traffic as one with a relative weight of 10. The total weight for all targets combined must be less than or equal to 100."
+      },
+      "ListenerPort": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "ResourceName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "PercentInt": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "GrpcRouteMatch": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRouteMetadataList"
+              },
+              {
+                "description": "An object that represents the data to match from the request."
+              }
+            ]
+          },
+          "methodName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MethodName"
+              },
+              {
+                "description": "The method name to match from the request. If you specify a name, you must also specify a <code>serviceName</code>."
+              }
+            ]
+          },
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListenerPort"
+              },
+              {
+                "description": "The port number to match on."
+              }
+            ]
+          },
+          "serviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServiceName"
+              },
+              {
+                "description": "The fully qualified domain name for the service to match from the request."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the criteria for determining a request match."
+      },
+      "GrpcRouteMetadataList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/GrpcRouteMetadata"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "GrpcRouteMetadata": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "invert": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Specify <code>True</code> to match anything except the match criteria. The default value is <code>False</code>."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRouteMetadataMatchMethod"
+              },
+              {
+                "description": "An object that represents the data to match from the request."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderName"
+              },
+              {
+                "description": "The name of the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the match metadata for the route."
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "GrpcRouteMetadataMatchMethod": {
+        "type": "object",
+        "properties": {
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must match the specified value exactly."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must begin with the specified characters."
+              }
+            ]
+          },
+          "range": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MatchRange"
+              },
+              {
+                "description": "An object that represents the range of values to match on."
+              }
+            ]
+          },
+          "regex": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must include the specified characters."
+              }
+            ]
+          },
+          "suffix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must end with the specified characters."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the match method. Specify one of the match values."
+      },
+      "HeaderMatch": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "MatchRange": {
+        "type": "object",
+        "required": [
+          "end",
+          "start"
+        ],
+        "properties": {
+          "end": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "The end of the range."
+              }
+            ]
+          },
+          "start": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "The start of the range."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the range of values to match on. The first character of the range is included in the range, though the last character is not. For example, if the range specified were 1-100, only values 1-99 would be matched."
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "HeaderName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "MethodName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "ServiceName": {
+        "type": "string"
+      },
+      "GrpcRetryPolicy": {
+        "type": "object",
+        "required": [
+          "maxRetries",
+          "perRetryTimeout"
+        ],
+        "properties": {
+          "grpcRetryEvents": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GrpcRetryPolicyEvents"
+              },
+              {
+                "description": "Specify at least one of the valid values."
+              }
+            ]
+          },
+          "httpRetryEvents": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRetryPolicyEvents"
+              },
+              {
+                "description": "<p>Specify at least one of the following values.</p> <ul> <li> <p> <b>server-error</b> – HTTP status codes 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, and 511</p> </li> <li> <p> <b>gateway-error</b> – HTTP status codes 502, 503, and 504</p> </li> <li> <p> <b>client-error</b> – HTTP status code 409</p> </li> <li> <p> <b>stream-error</b> – Retry on refused stream</p> </li> </ul>"
+              }
+            ]
+          },
+          "maxRetries": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxRetries"
+              },
+              {
+                "description": "The maximum number of retry attempts."
+              }
+            ]
+          },
+          "perRetryTimeout": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "The timeout for each retry attempt."
+              }
+            ]
+          },
+          "tcpRetryEvents": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TcpRetryPolicyEvents"
+              },
+              {
+                "description": "Specify a valid value. The event occurs before any processing of a request has started and is encountered when the upstream is temporarily or permanently unavailable."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a retry policy. Specify at least one value for at least one of the types of <code>RetryEvents</code>, a value for <code>maxRetries</code>, and a value for <code>perRetryTimeout</code>. Both <code>server-error</code> and <code>gateway-error</code> under <code>httpRetryEvents</code> include the Envoy <code>reset</code> policy. For more information on the <code>reset</code> policy, see the <a href=\"https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-on\">Envoy documentation</a>."
+      },
+      "GrpcRetryPolicyEvents": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/GrpcRetryPolicyEvent"
+        },
+        "minItems": 1,
+        "maxItems": 5
+      },
+      "GrpcRetryPolicyEvent": {
+        "type": "string",
+        "enum": [
+          "cancelled",
+          "deadline-exceeded",
+          "internal",
+          "resource-exhausted",
+          "unavailable"
+        ]
+      },
+      "HttpRetryPolicyEvents": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HttpRetryPolicyEvent"
+        },
+        "minItems": 1,
+        "maxItems": 25
+      },
+      "HttpRetryPolicyEvent": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 25
+      },
+      "MaxRetries": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "Duration": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DurationUnit"
+              },
+              {
+                "description": "A unit of time."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DurationValue"
+              },
+              {
+                "description": "A number of time units."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a duration of time."
+      },
+      "DurationUnit": {
+        "type": "string",
+        "enum": [
+          "s",
+          "ms"
+        ]
+      },
+      "DurationValue": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "TcpRetryPolicyEvents": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/TcpRetryPolicyEvent"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "TcpRetryPolicyEvent": {
+        "type": "string",
+        "enum": [
+          "connection-error"
+        ]
+      },
+      "GrpcTimeout": {
+        "type": "object",
+        "properties": {
+          "idle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none."
+              }
+            ]
+          },
+          "perRequest": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "An object that represents a per request timeout. The default value is 15 seconds. If you set a higher timeout, then make sure that the higher value is set for each App Mesh resource in a conversation. For example, if a virtual node backend uses a virtual router provider to route to another virtual node, then the timeout should be greater than 15 seconds for the source and destination virtual node and the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents types of timeouts. "
+      },
+      "HttpRoute": {
+        "type": "object",
+        "required": [
+          "action",
+          "match"
+        ],
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRouteAction"
+              },
+              {
+                "description": "An object that represents the action to take if a match is determined."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRouteMatch"
+              },
+              {
+                "description": "An object that represents the criteria for determining a request match."
+              }
+            ]
+          },
+          "retryPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRetryPolicy"
+              },
+              {
+                "description": "An object that represents a retry policy."
+              }
+            ]
+          },
+          "timeout": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpTimeout"
+              },
+              {
+                "description": "An object that represents types of timeouts. "
+              }
+            ]
+          }
+        },
+        "description": "An object that represents an HTTP or HTTP/2 route type."
+      },
+      "HttpRouteAction": {
+        "type": "object",
+        "required": [
+          "weightedTargets"
+        ],
+        "properties": {
+          "weightedTargets": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WeightedTargets"
+              },
+              {
+                "description": "An object that represents the targets that traffic is routed to when a request matches the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the action to take if a match is determined."
+      },
+      "HttpRouteMatch": {
+        "type": "object",
+        "properties": {
+          "headers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRouteHeaders"
+              },
+              {
+                "description": "The client request headers to match on."
+              }
+            ]
+          },
+          "method": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpMethod"
+              },
+              {
+                "description": "The client request method to match on. Specify only one."
+              }
+            ]
+          },
+          "path": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpPathMatch"
+              },
+              {
+                "description": "The client request path to match on."
+              }
+            ]
+          },
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListenerPort"
+              },
+              {
+                "description": "The port number to match on."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "Specifies the path to match requests with. This parameter must always start with <code>/</code>, which by itself matches all requests to the virtual service name. You can also match for path-based routing of requests. For example, if your virtual service name is <code>my-service.local</code> and you want the route to match requests to <code>my-service.local/metrics</code>, your prefix should be <code>/metrics</code>."
+              }
+            ]
+          },
+          "queryParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpQueryParameters"
+              },
+              {
+                "description": "The client request query parameters to match on."
+              }
+            ]
+          },
+          "scheme": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpScheme"
+              },
+              {
+                "description": "The client request scheme to match on. Specify only one. Applicable only for HTTP2 routes."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the requirements for a route to match HTTP requests for a virtual router."
+      },
+      "HttpRouteHeaders": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HttpRouteHeader"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "HttpRouteHeader": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "invert": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Specify <code>True</code> to match anything except the match criteria. The default value is <code>False</code>."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchMethod"
+              },
+              {
+                "description": "The <code>HeaderMatchMethod</code> object."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderName"
+              },
+              {
+                "description": "A name for the HTTP header in the client request that will be matched on."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the HTTP header in the request."
+      },
+      "HeaderMatchMethod": {
+        "type": "object",
+        "properties": {
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must match the specified value exactly."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must begin with the specified characters."
+              }
+            ]
+          },
+          "range": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MatchRange"
+              },
+              {
+                "description": "An object that represents the range of values to match on."
+              }
+            ]
+          },
+          "regex": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must include the specified characters."
+              }
+            ]
+          },
+          "suffix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatch"
+              },
+              {
+                "description": "The value sent by the client must end with the specified characters."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the method and value to match with the header value sent in a request. Specify one match method."
+      },
+      "HttpMethod": {
+        "type": "string",
+        "enum": [
+          "GET",
+          "HEAD",
+          "POST",
+          "PUT",
+          "DELETE",
+          "CONNECT",
+          "OPTIONS",
+          "TRACE",
+          "PATCH"
+        ]
+      },
+      "HttpPathMatch": {
+        "type": "object",
+        "properties": {
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpPathExact"
+              },
+              {
+                "description": "The exact path to match on."
+              }
+            ]
+          },
+          "regex": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpPathRegex"
+              },
+              {
+                "description": "The regex used to match the path."
+              }
+            ]
+          }
+        },
+        "description": "An object representing the path to match in the request."
+      },
+      "HttpPathExact": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "HttpPathRegex": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "String": {
+        "type": "string"
+      },
+      "HttpQueryParameters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HttpQueryParameter"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "HttpQueryParameter": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueryParameterMatch"
+              },
+              {
+                "description": "The query parameter to match on."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueryParameterName"
+              },
+              {
+                "description": "A name for the query parameter that will be matched on."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the query parameter in the request."
+      },
+      "QueryParameterMatch": {
+        "type": "object",
+        "properties": {
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The exact query parameter to match on."
+              }
+            ]
+          }
+        },
+        "description": "An object representing the query parameter to match."
+      },
+      "QueryParameterName": {
+        "type": "string"
+      },
+      "HttpScheme": {
+        "type": "string",
+        "enum": [
+          "http",
+          "https"
+        ]
+      },
+      "HttpRetryPolicy": {
+        "type": "object",
+        "required": [
+          "maxRetries",
+          "perRetryTimeout"
+        ],
+        "properties": {
+          "httpRetryEvents": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpRetryPolicyEvents"
+              },
+              {
+                "description": "<p>Specify at least one of the following values.</p> <ul> <li> <p> <b>server-error</b> – HTTP status codes 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, and 511</p> </li> <li> <p> <b>gateway-error</b> – HTTP status codes 502, 503, and 504</p> </li> <li> <p> <b>client-error</b> – HTTP status code 409</p> </li> <li> <p> <b>stream-error</b> – Retry on refused stream</p> </li> </ul>"
+              }
+            ]
+          },
+          "maxRetries": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxRetries"
+              },
+              {
+                "description": "The maximum number of retry attempts."
+              }
+            ]
+          },
+          "perRetryTimeout": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "The timeout for each retry attempt."
+              }
+            ]
+          },
+          "tcpRetryEvents": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TcpRetryPolicyEvents"
+              },
+              {
+                "description": "Specify a valid value. The event occurs before any processing of a request has started and is encountered when the upstream is temporarily or permanently unavailable."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a retry policy. Specify at least one value for at least one of the types of <code>RetryEvents</code>, a value for <code>maxRetries</code>, and a value for <code>perRetryTimeout</code>. Both <code>server-error</code> and <code>gateway-error</code> under <code>httpRetryEvents</code> include the Envoy <code>reset</code> policy. For more information on the <code>reset</code> policy, see the <a href=\"https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-on\">Envoy documentation</a>."
+      },
+      "HttpTimeout": {
+        "type": "object",
+        "properties": {
+          "idle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none."
+              }
+            ]
+          },
+          "perRequest": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "An object that represents a per request timeout. The default value is 15 seconds. If you set a higher timeout, then make sure that the higher value is set for each App Mesh resource in a conversation. For example, if a virtual node backend uses a virtual router provider to route to another virtual node, then the timeout should be greater than 15 seconds for the source and destination virtual node and the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents types of timeouts. "
+      },
+      "RoutePriority": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000
+      },
+      "TcpRoute": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TcpRouteAction"
+              },
+              {
+                "description": "The action to take if a match is determined."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TcpRouteMatch"
+              },
+              {
+                "description": "An object that represents the criteria for determining a request match."
+              }
+            ]
+          },
+          "timeout": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TcpTimeout"
+              },
+              {
+                "description": "An object that represents types of timeouts. "
+              }
+            ]
+          }
+        },
+        "description": "An object that represents a TCP route type."
+      },
+      "TcpRouteAction": {
+        "type": "object",
+        "required": [
+          "weightedTargets"
+        ],
+        "properties": {
+          "weightedTargets": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WeightedTargets"
+              },
+              {
+                "description": "An object that represents the targets that traffic is routed to when a request matches the route."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents the action to take if a match is determined."
+      },
+      "TcpRouteMatch": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListenerPort"
+              },
+              {
+                "description": "The port number to match on."
+              }
+            ]
+          }
+        },
+        "description": "An object representing the TCP route to match."
+      },
+      "TcpTimeout": {
+        "type": "object",
+        "properties": {
+          "idle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Duration"
+              },
+              {
+                "description": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents types of timeouts. "
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://appmesh.us-east-1.amazonaws.com/v20190125/meshes/{meshName}/virtualRouter/{virtualRouterName}/routes/{routeName}{?meshOwner}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "<zonbook></zonbook><xhtml></xhtml>",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**route**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "name": "commits_listByShaList",
+  "description": "Returns commit information for a batch of shas",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "hashes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A collection of commit SHAs comma-delimited"
+      },
+      "owner_name": {
+        "type": "string",
+        "description": "The name of the owner"
+      },
+      "app_name": {
+        "type": "string",
+        "description": "The name of the application"
+      }
+    },
+    "required": [
+      "hashes",
+      "owner_name",
+      "app_name"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/commits/batch{?hashes}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A list of commits",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**sha**: The commit SHA",
+            "**url**: The URL to the commit",
+            [
+              "**commit**",
+              {
+                "$ul": [
+                  [
+                    "**author**",
+                    {
+                      "$ul": [
+                        "**date**: Date and time of the commit",
+                        "**email**: Author's email",
+                        "**name**: Author name"
+                      ]
+                    }
+                  ],
+                  "**message**: Commit message"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

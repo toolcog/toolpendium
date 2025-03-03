@@ -1,0 +1,141 @@
+{
+  "name": "post_comments",
+  "description": "Adds a comment by the user to a specific file, or\nas a reply to an other comment.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma-separated list of attributes to include in the\nresponse. This can be used to request fields that are\nnot normally returned in a standard response.\n\nBe aware that specifying this parameter will have the\neffect that none of the standard fields are returned in\nthe response unless explicitly specified, instead only\nfields for the mini representation are returned, additional\nto the fields requested."
+      },
+      "body": {
+        "properties": {
+          "item": {
+            "description": "The item to attach the comment to.",
+            "properties": {
+              "id": {
+                "description": "The ID of the item",
+                "example": "11446498",
+                "type": "string"
+              },
+              "type": {
+                "description": "The type of the item that this comment will be placed on.",
+                "enum": [
+                  "file",
+                  "comment"
+                ],
+                "example": "file",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "type"
+            ],
+            "type": "object"
+          },
+          "message": {
+            "description": "The text of the comment.\n\nTo mention a user, use the `tagged_message`\nparameter instead.",
+            "example": "Review completed!",
+            "type": "string"
+          },
+          "tagged_message": {
+            "description": "The text of the comment, including `@[user_id:name]`\nsomewhere in the message to mention another user, which\nwill send them an email notification, letting them know\nthey have been mentioned.\n\nThe `user_id` is the target user's ID, where the `name`\ncan be any custom phrase. In the Box UI this name will\nlink to the user's profile.\n\nIf you are not mentioning another user, use `message`\ninstead.",
+            "example": "@[1234:John] Review completed!",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.box.com/2.0/comments{?fields}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Comment (Base)"
+        },
+        "Base representation of a comment.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The unique identifier for this comment.",
+            "**type**: `comment`",
+            "**created_at**: The time this comment was created",
+            "**created_by**",
+            "**is_reply_comment**: Whether or not this comment is a reply to another",
+            "**item**",
+            "**message**: The text of the comment, as provided by the user",
+            "**modified_at**: The time this comment was last modified"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,2018 @@
+{
+  "name": "cancelPayment",
+  "description": "This method initiates the cancellation of a payment. \nDepending on the payment-service, the payment-product and the ASPSP's implementation, \nthis TPP call might be sufficient to cancel a payment. \nIf an authorisation of the payment cancellation is mandated by the ASPSP, \na corresponding hyperlink will be contained in the response message.\n\nCancels the addressed payment with resource identification paymentId if applicable to the payment-service, payment-product and received in product related timelines (e.g. before end of business day for scheduled payments of the last business day before the scheduled execution day). \n\nThe response to this DELETE command will tell the TPP whether the\n  * access method was rejected,\n  * access method was successful, or\n  * access method is generally applicable, but further authorisation processes are needed.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "payment-service": {
+        "enum": [
+          "payments",
+          "bulk-payments",
+          "periodic-payments"
+        ],
+        "type": "string",
+        "description": "Payment service:\n\nPossible values are:\n* payments\n* bulk-payments\n* periodic-payments\n"
+      },
+      "payment-product": {
+        "enum": [
+          "domestic-swiss-credit-transfers-isr",
+          "domestic-swiss-credit-transfers",
+          "domestic-swiss-credit-transfers-qr",
+          "domestic-swiss-foreign-credit-transfers",
+          "swiss-sepa-credit-transfers",
+          "swiss-cross-border-credit-transfers",
+          "pain.001-sepa-credit-transfers",
+          "pain.001-cross-border-credit-transfers",
+          "pain.001-swiss-six-credit-transfers"
+        ],
+        "type": "string",
+        "description": "The addressed payment product endpoint, e.g. for SEPA Credit Transfers (SCT).\nThe ASPSP will publish which of the payment products/endpoints will be supported.\n\nThe following payment products are supported:\n  - domestic-swiss-credit-transfers-isr\n  - domestic-swiss-credit-transfers\n  - domestic-swiss-credit-transfers-qr\n  - domestic-swiss-foreign-credit-transfers\n  - swiss-sepa-credit-transfers\n  - swiss-cross-border-credit-transfers\n  - pain.001-sepa-credit-transfers\n  - pain.001-cross-border-credit-transfers\n  - pain.001-swiss-six-credit-transfers\n\n**Remark:** For all SEPA Credit Transfer based endpoints which accept XML encoding,\nthe XML pain.001 schemes provided by EPC are supported by the ASPSP as a minimum for the body content.\nFurther XML schemes might be supported by some communities.\n\n**Remark:** For cross-border and TARGET-2 payments only community wide pain.001 schemes do exist.\nThere are plenty of country specificic scheme variants.\n"
+      },
+      "paymentId": {
+        "$ref": "#/components/schemas/paymentId",
+        "description": "Resource identification of the generated payment initiation resource."
+      },
+      "X-Request-ID": {
+        "type": "string",
+        "description": "ID of the request, unique to the call, as determined by the initiating party."
+      },
+      "Digest": {
+        "type": "string",
+        "description": "Is contained if and only if the \"Signature\" element is contained in the header of the request."
+      },
+      "Signature": {
+        "type": "string",
+        "description": "A signature of the request by the TPP on application level. This might be mandated by ASPSP.\n"
+      },
+      "TPP-Signature-Certificate": {
+        "format": "byte",
+        "type": "string",
+        "description": "The certificate used for signing the request, in base64 encoding.\nMust be contained if a signature is contained.\n"
+      },
+      "TPP-Redirect-Preferred": {
+        "type": "boolean",
+        "description": "If it equals \"true\", the TPP prefers a redirect over an embedded SCA approach.\nIf it equals \"false\", the TPP prefers not to be redirected for SCA. The ASPSP will then choose between the Embedded or the Decoupled\nSCA approach, depending on the choice of the SCA procedure by the TPP/PSU.\nIf the parameter is not used, the ASPSP will choose the SCA approach to be applied depending on the SCA method chosen by the\nTPP/PSU.\n"
+      },
+      "TPP-Nok-Redirect-URI": {
+        "format": "uri",
+        "type": "string",
+        "description": "If this URI is contained, the TPP is asking to redirect the transaction flow to this address instead of the TPP-Redirect-URI in case\nof a negative result of the redirect SCA method. This might be ignored by the ASPSP.\n"
+      },
+      "TPP-Redirect-URI": {
+        "format": "uri",
+        "type": "string",
+        "description": "URI of the TPP, where the transaction flow shall be redirected to after a Redirect.\n\nMandated for the Redirect SCA Approach, specifically\nwhen TPP-Redirect-Preferred equals \"true\".\nIt is recommended to always use this header field.\n\n**Remark for Future:**\nThis field might be changed to mandatory in the next version of the specification.\n"
+      },
+      "TPP-Explicit-Authorisation-Preferred": {
+        "type": "boolean",
+        "description": "If it equals \"true\", the TPP prefers to start the authorisation process separately,\ne.g. because of the usage of a signing basket.\nThis preference might be ignored by the ASPSP, if a signing basket is not supported as functionality.\n\nIf it equals \"false\" or if the parameter is not used, there is no preference of the TPP.\nThis especially indicates that the TPP assumes a direct authorisation of the transaction in the next step,\nwithout using a signing basket.\n"
+      },
+      "PSU-IP-Address": {
+        "format": "ipv4",
+        "type": "string",
+        "description": "The forwarded IP Address header field consists of the corresponding http request IP Address field between PSU and TPP.\n"
+      },
+      "PSU-IP-Port": {
+        "type": "string",
+        "description": "The forwarded IP Port header field consists of the corresponding HTTP request IP Port field between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Charset": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Encoding": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Language": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-User-Agent": {
+        "type": "string",
+        "description": "The forwarded Agent header field of the HTTP request between PSU and TPP, if available.\n"
+      },
+      "PSU-Http-Method": {
+        "enum": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "type": "string",
+        "description": "HTTP method used at the PSU ? TPP interface, if available.\nValid values are:\n* GET\n* POST\n* PUT\n* PATCH\n* DELETE\n"
+      },
+      "PSU-Device-ID": {
+        "type": "string",
+        "description": "UUID (Universally Unique Identifier) for a device, which is used by the PSU, if available.\nUUID identifies either a device or a device dependant application installation.\nIn case of an installation identification this ID needs to be unaltered until removal from device.\n"
+      },
+      "PSU-Geo-Location": {
+        "pattern": "GEO:-?[0-9]{1,2}\\.[0-9]{6};-?[0-9]{1,3}\\.[0-9]{6}",
+        "type": "string",
+        "description": "The forwarded Geo Location of the corresponding http request between PSU and TPP if available.\n"
+      }
+    },
+    "required": [
+      "payment-service",
+      "payment-product",
+      "paymentId",
+      "X-Request-ID"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "https://api.dev.openbankingproject.ch/v1/{payment-service}/{payment-product}/{paymentId}"
+    },
+    "headers": {
+      "X-Request-ID": {
+        "$": "X-Request-ID"
+      },
+      "Digest": {
+        "$": "Digest"
+      },
+      "Signature": {
+        "$": "Signature"
+      },
+      "TPP-Signature-Certificate": {
+        "$": "TPP-Signature-Certificate"
+      },
+      "TPP-Redirect-Preferred": {
+        "$": "TPP-Redirect-Preferred"
+      },
+      "TPP-Nok-Redirect-URI": {
+        "$": "TPP-Nok-Redirect-URI"
+      },
+      "TPP-Redirect-URI": {
+        "$": "TPP-Redirect-URI"
+      },
+      "TPP-Explicit-Authorisation-Preferred": {
+        "$": "TPP-Explicit-Authorisation-Preferred"
+      },
+      "PSU-IP-Address": {
+        "$": "PSU-IP-Address"
+      },
+      "PSU-IP-Port": {
+        "$": "PSU-IP-Port"
+      },
+      "PSU-Accept": {
+        "$": "PSU-Accept"
+      },
+      "PSU-Accept-Charset": {
+        "$": "PSU-Accept-Charset"
+      },
+      "PSU-Accept-Encoding": {
+        "$": "PSU-Accept-Encoding"
+      },
+      "PSU-Accept-Language": {
+        "$": "PSU-Accept-Language"
+      },
+      "PSU-User-Agent": {
+        "$": "PSU-User-Agent"
+      },
+      "PSU-Http-Method": {
+        "$": "PSU-Http-Method"
+      },
+      "PSU-Device-ID": {
+        "$": "PSU-Device-ID"
+      },
+      "PSU-Geo-Location": {
+        "$": "PSU-Geo-Location"
+      }
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Body of the response for a successful cancel payment request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A list of hyperlinks to be recognised by the TPP. The actual hyperlinks used in the response depend on the",
+              {
+                "$ul": [
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**challengeData**: It is contained in addition to the data element 'chosenScaMethod' if challenge data is needed for SCA.",
+              {
+                "$ul": [
+                  "**additionalInformation**: Additional explanation for the PSU to explain",
+                  "**data**: A collection of strings as challenge data.",
+                  "**image**: PNG data (max. 512 kilobyte) to be displayed to the PSU,",
+                  "**imageLink**: A link where the ASPSP will provides the challenge image for the TPP.",
+                  "**otpFormat**: The format type of the OTP to be typed in. The admitted values are \"characters\" or \"integer\".",
+                  "**otpMaxLength**: The maximal length for the OTP to be typed in by the PSU."
+                ]
+              }
+            ],
+            [
+              "**chosenScaMethod**: Authentication object.",
+              {
+                "$ul": [
+                  "**authenticationMethodId**: An identification provided by the ASPSP for the later identification of the authentication method selection.",
+                  "**authenticationType**: Type of the authentication method.",
+                  "**authenticationVersion**: Depending on the \"authenticationType\".",
+                  "**explanation**: Detailed information about the SCA method for the PSU.",
+                  "**name**: This is the name of the authentication method defined by the PSU in the Online Banking frontend of the ASPSP."
+                ]
+              }
+            ],
+            "**scaMethods**: This data element might be contained, if SCA is required and if the PSU has a choice between different",
+            "**transactionStatus**: The transaction status is filled with codes of the ISO 20022 data table:"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 400.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 401.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 403.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 404.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "405": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 401.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 409.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,477 @@
+{
+  "name": "CreateDeploymentJob",
+  "description": "<p>Deploys a specific version of a robot application to robots in a fleet.</p> <important> <p>This API is no longer supported and will throw an error if used.</p> </important> <p>The robot application must have a numbered <code>applicationVersion</code> for consistency reasons. To create a new version, use <code>CreateRobotApplicationVersion</code> or see <a href=\"https://docs.aws.amazon.com/robomaker/latest/dg/create-robot-application-version.html\">Creating a Robot Application Version</a>. </p> <note> <p>After 90 days, deployment jobs expire and will be deleted. They will no longer be accessible. </p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "clientRequestToken",
+          "fleet",
+          "deploymentApplicationConfigs"
+        ],
+        "properties": {
+          "deploymentConfig": {
+            "description": "Information about a deployment configuration.",
+            "type": "object",
+            "properties": {
+              "concurrentDeploymentPercentage": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Percentage"
+                  },
+                  {
+                    "description": "The percentage of robots receiving the deployment at the same time."
+                  }
+                ]
+              },
+              "failureThresholdPercentage": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Percentage"
+                  },
+                  {
+                    "description": "The percentage of deployments that need to fail before stopping deployment."
+                  }
+                ]
+              },
+              "robotDeploymentTimeoutInSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeploymentTimeout"
+                  },
+                  {
+                    "description": "The amount of time, in seconds, to wait for deployment to a single robot to complete. Choose a time between 1 minute and 7 days. The default is 5 hours."
+                  }
+                ]
+              },
+              "downloadConditionFile": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Object"
+                  },
+                  {
+                    "description": "The download condition file."
+                  }
+                ]
+              }
+            }
+          },
+          "clientRequestToken": {
+            "description": "Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9_\\-=]*",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "fleet": {
+            "description": "The Amazon Resource Name (ARN) of the fleet to deploy.",
+            "type": "string",
+            "pattern": "arn:.*",
+            "minLength": 1,
+            "maxLength": 1224
+          },
+          "deploymentApplicationConfigs": {
+            "description": "The deployment application configuration.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DeploymentApplicationConfig"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "tags": {
+            "description": "A map that contains tag keys and tag values that are attached to the deployment job.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Percentage": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "DeploymentTimeout": {
+        "type": "integer"
+      },
+      "S3Object": {
+        "type": "object",
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Bucket"
+              },
+              {
+                "description": "The bucket containing the object."
+              }
+            ]
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Key"
+              },
+              {
+                "description": "The key of the object."
+              }
+            ]
+          },
+          "etag": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Etag"
+              },
+              {
+                "description": "The etag of the object."
+              }
+            ]
+          }
+        },
+        "description": "Information about an S3 object."
+      },
+      "S3Bucket": {
+        "type": "string",
+        "pattern": "[a-z0-9][a-z0-9.\\-]*[a-z0-9]",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "S3Key": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "S3Etag": {
+        "type": "string"
+      },
+      "DeploymentApplicationConfig": {
+        "type": "object",
+        "required": [
+          "application",
+          "applicationVersion",
+          "launchConfig"
+        ],
+        "properties": {
+          "application": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the robot application."
+              }
+            ]
+          },
+          "applicationVersion": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeploymentVersion"
+              },
+              {
+                "description": "The version of the application."
+              }
+            ]
+          },
+          "launchConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeploymentLaunchConfig"
+              },
+              {
+                "description": "The launch configuration."
+              }
+            ]
+          }
+        },
+        "description": "Information about a deployment application configuration."
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:.*",
+        "minLength": 1,
+        "maxLength": 1224
+      },
+      "DeploymentVersion": {
+        "type": "string",
+        "pattern": "[0-9]*",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DeploymentLaunchConfig": {
+        "type": "object",
+        "required": [
+          "packageName",
+          "launchFile"
+        ],
+        "properties": {
+          "packageName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Command"
+              },
+              {
+                "description": "The package name."
+              }
+            ]
+          },
+          "preLaunchFile": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Path"
+              },
+              {
+                "description": "The deployment pre-launch file. This file will be executed prior to the launch file."
+              }
+            ]
+          },
+          "launchFile": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Command"
+              },
+              {
+                "description": "The launch file name."
+              }
+            ]
+          },
+          "postLaunchFile": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Path"
+              },
+              {
+                "description": "The deployment post-launch file. This file will be executed after the launch file."
+              }
+            ]
+          },
+          "environmentVariables": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EnvironmentVariableMap"
+              },
+              {
+                "description": "An array of key/value pairs specifying environment variables for the robot application"
+              }
+            ]
+          }
+        },
+        "description": "Configuration information for a deployment launch."
+      },
+      "Command": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.\\-]*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "Path": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "EnvironmentVariableMap": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 20,
+        "additionalProperties": {
+          "$ref": "#/$defs/EnvironmentVariableValue"
+        }
+      },
+      "EnvironmentVariableValue": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9 _.\\-\\/+=:]*",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://robomaker.us-east-1.amazonaws.com/createDeploymentJob"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "AWS RoboMaker is unable to process this request as the support for the AWS RoboMaker application deployment feature has ended. For additional information, see https://docs.aws.amazon.com/robomaker/latest/dg/fleets.html.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**arn**",
+            "**fleet**",
+            "**status**",
+            "**deploymentApplicationConfigs**",
+            "**failureReason**",
+            "**failureCode**",
+            "**createdAt**",
+            "**deploymentConfig**",
+            "**tags**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "name": "get-monitoring-breakdown",
+  "description": "Gets breakdown information for a specific dimension and metric along with the number of concurrent viewers and negative impact score.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "MONITORING_METRIC_ID": {
+        "enum": [
+          "current-concurrent-viewers",
+          "current-rebuffering-percentage",
+          "exits-before-video-start",
+          "playback-failure-percentage",
+          "current-average-bitrate",
+          "video-startup-failure-percentage"
+        ],
+        "type": "string",
+        "description": "ID of the Monitoring Metric"
+      },
+      "dimension": {
+        "enum": [
+          "asn",
+          "cdn",
+          "country",
+          "operating_system",
+          "player_name",
+          "region",
+          "stream_type",
+          "sub_property_id",
+          "video_series",
+          "video_title",
+          "view_has_ad"
+        ],
+        "type": "string",
+        "description": "Dimension the specified value belongs to"
+      },
+      "timestamp": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Timestamp to limit results by. This value must be provided as a unix timestamp. Defaults to the current unix timestamp."
+      },
+      "filters[]": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Limit the results to rows that match conditions from provided key:value pairs. Must be provided as an array query string parameter.\n\nTo exclude rows that match a certain condition, prepend a `!` character to the dimension.\n\nPossible filter names are the same as returned by the List Monitoring Dimensions endpoint.\n\nExample:\n\n  * `filters[]=operating_system:windows&filters[]=!country:US`\n"
+      },
+      "order_by": {
+        "enum": [
+          "negative_impact",
+          "value",
+          "views",
+          "field"
+        ],
+        "type": "string",
+        "description": "Value to order the results by"
+      },
+      "order_direction": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "Sort order."
+      }
+    },
+    "required": [
+      "MONITORING_METRIC_ID"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.mux.com/data/v1/monitoring/metrics/{MONITORING_METRIC_ID}/breakdown{?dimension,timestamp,filters[],order_by,order_direction}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**timeframe**",
+            "**total_row_count**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

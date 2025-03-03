@@ -1,0 +1,316 @@
+{
+  "name": "planAccess",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      },
+      "date": {
+        "type": "string",
+        "description": "A dátum, amikor a tervezés indul (`arriveBy` esetén érkezik)."
+      },
+      "time": {
+        "type": "string",
+        "description": "Az idő, amikor a tervezés indul (`arriveBy` esetén érkezik)."
+      },
+      "fromPlace": {
+        "type": "string",
+        "description": "Az indulási hely adatai `név::hely` formában. A `név` az adott hely tetszőleges neve, amely az útiterv kiindulási pontjának lesz a neve (`leg.from.name`). A `hely` lehet koordináta `lat,lon` formában, vagy a geocoder API által visszaadott `vertex` azonosítója."
+      },
+      "toPlace": {
+        "type": "string",
+        "description": "Az érkezési hely adatai `név::hely` formában. A `név` az adott hely tetszőleges neve, amely az útiterv érkezési pontjának lesz a neve (`leg.to.name`). A `hely` lehet koordináta `lat,lon` formában, vagy a geocoder API által visszaadott `vertex` azonosítója."
+      },
+      "mode": {
+        "items": {
+          "$ref": "#/$defs/TraverseMode"
+        },
+        "type": "array",
+        "description": "A tervező milyen közlekedési módokat használjon. A kerékpár kölcsönzés a `BICYCLE,WALK` paraméterekkel kapcsolható be."
+      },
+      "shouldBuyTickets": {
+        "type": "boolean",
+        "description": "Az első járműre szállás előtt történjen-e jegyvásárlás."
+      },
+      "showIntermediateStops": {
+        "type": "boolean",
+        "description": "A válasz tartalmazza-e a járatok által érintett köztes megállókat is."
+      },
+      "arriveBy": {
+        "type": "boolean",
+        "description": "Érkezési időre tervezzünk-e a megadott `date` és `time` paraméterrel."
+      },
+      "wheelchair": {
+        "type": "boolean",
+        "description": "Az összes járat alacsonypadlós legyen-e."
+      },
+      "triangleSafetyFactor": {
+        "format": "double",
+        "type": "number",
+        "description": "Kerékpáros háromszög módú tervezés esetén mennyire számít a biztonság. 0 és 1 közötti szám, és 1-et kell kiadnia a másik két faktor összegével."
+      },
+      "triangleSlopeFactor": {
+        "format": "double",
+        "type": "number",
+        "description": "Kerékpáros háromszög módú tervezés esetén mennyire számít az útvonal síksága. 0 és 1 közötti szám, és 1-et kell kiadnia a másik két faktor összegével."
+      },
+      "triangleTimeFactor": {
+        "format": "double",
+        "type": "number",
+        "description": "Kerékpáros háromszög módú tervezés esetén mennyire számít a gyorsaság. 0 és 1 közötti szám, és 1-et kell kiadnia a másik két faktor összegével."
+      },
+      "optimize": {
+        "default": "BEST",
+        "enum": [
+          "BEST",
+          "WALK",
+          "TRANSFERS"
+        ],
+        "type": "string",
+        "description": "A kereső mire optimalizálja az útvonalakat."
+      },
+      "walkProfile": {
+        "$ref": "#/components/schemas/WalkProfile",
+        "description": "A séta sebességét meghatározó profil."
+      },
+      "numItineraries": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Legfeljebb hány útvonal szerepeljen a válaszban."
+      }
+    },
+    "required": [
+      "dialect",
+      "fromPlace",
+      "toPlace",
+      "mode"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      },
+      "TraverseMode": {
+        "enum": [
+          "WALK",
+          "BICYCLE",
+          "CAR",
+          "TRAM",
+          "SUBWAY",
+          "RAIL",
+          "BUS",
+          "FERRY",
+          "CABLE_CAR",
+          "GONDOLA",
+          "FUNICULAR",
+          "TRANSIT",
+          "AIRPLANE",
+          "TROLLEYBUS",
+          "MONORAIL",
+          "SUBURBAN_RAILWAY",
+          "COACH"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/plan-access{?version,appVersion,includeReferences,date,time,fromPlace,toPlace,mode,shouldBuyTickets,showIntermediateStops,arriveBy,wheelchair,triangleSafetyFactor,triangleSlopeFactor,triangleTimeFactor,optimize,walkProfile,numItineraries}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+                  [
+                    "**entry**: A lekért adat.",
+                    {
+                      "$ul": [
+                        [
+                          "**error**: A hibát tartalmazza, ha nem sikerült a tervezés.",
+                          {
+                            "$ul": [
+                              "**id**: A hibaüzenet azonosítója.",
+                              "**message**: A hibaüzenet kódja.",
+                              "**missing**: A rossz paraméterek listája.",
+                              "**msgFromMessage**",
+                              "**noPath**: Igaz, ha nem sikerült útvonalat találni."
+                            ]
+                          }
+                        ],
+                        [
+                          "**metadata**: A tervezés metaadatai. Tartalmazza a következő és az előző tervezési időablakot a lapozás megvalósításához ezred másodpercben.",
+                          {
+                            "$ul": [
+                              "**nextDateTime**",
+                              "**prevDateTime**",
+                              "**searchWindowUsed**"
+                            ]
+                          }
+                        ],
+                        [
+                          "**plan**: A tervezett útvonalak.",
+                          {
+                            "$ul": [
+                              "**date**: Az útvonal kezdete ezredmásodpercben.",
+                              [
+                                "**from**: Tranzit láb esetén a köztes megállók a láb kezdete és végződése között.",
+                                {
+                                  "$ul": [
+                                    "**arrival**: A helyre érkezés időpontja ezredmásodpercben.",
+                                    "**departure**: A helyről való indulás időpontja ezredmásodpercben.",
+                                    "**lat**: A hely szélességi koordinátája.",
+                                    "**lon**: A hely hosszúsági koordinátája.",
+                                    "**name**: Megálló esetén a megálló neve, POI-nál a POI neve.",
+                                    "**orig**: Az indulási és az érkezési hely címkéje. Az első és az utolsó útvonal lábon van kitöltve.",
+                                    "**platformCode**: A megálló peron-kódja, ha a hely egy megálló.",
+                                    "**stopCode**: A megálló kódja, ha a hely egy megálló.",
+                                    "**stopId**: A megálló azonosítója, ha a hely egy megálló.",
+                                    "**stopIndex**: A megálló indexe, ha a hely egy megálló.",
+                                    "**stopSequence**: A megálló sorszáma a meneten, ha a hely egy megálló.",
+                                    [
+                                      "**ticketingLocation**: A jegyértékesítési pontok listája.",
+                                      {
+                                        "$ul": [
+                                          "**address**: A jegyértékesítési hely címe.",
+                                          "**cashAccepted**: Jelzi, hogy a jegyértékesítési helyen elfogadnak készpénzt.",
+                                          "**creditCardsAccepted**: Jelzi, hogy a jegyértékesítési helyen elfogadnak bankkártyát.",
+                                          "**description**: A jegyértékesítési hely leírása.",
+                                          "**id**: A jegyértékesítési hely azonosítója.",
+                                          "**lastModified**: A jegyértékesítési hely utolsó frissítésének időpontja ezredmásodpercben.",
+                                          "**lat**: A jegyértékesítési hely szélességi koordinátája.",
+                                          "**lon**: A jegyértékesítési hely hosszúsági koordinátája.",
+                                          "**openingPeriods**: A jegyértékesítési hely nyitvatartása.",
+                                          "**operator**: A jegyértékesítési hely üzemeltetője.",
+                                          "**passIdCreation**: Lehet-e a helyszínen igazolványt csináltatni.",
+                                          "**place**: A jegyértékesítési hely helye.",
+                                          "**products**: Az árusított termékek azonosítói.",
+                                          "**state**: A jegyértékesítési hely állapota.",
+                                          "**ticketPassExchange**: Be lehet-e váltani a helyszínen jegyet.",
+                                          "**type**: A jegyértékesítési hely típusa.",
+                                          "**visible**: Ha `false`, akkor hibás az adat, így a felületen elrejtésre kerül."
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ],
+                              "**itineraries**: A talált útvonalak listája.",
+                              [
+                                "**to**: Tranzit láb esetén a köztes megállók a láb kezdete és végződése között.",
+                                {
+                                  "$ul": [
+                                    "**arrival**: A helyre érkezés időpontja ezredmásodpercben.",
+                                    "**departure**: A helyről való indulás időpontja ezredmásodpercben.",
+                                    "**lat**: A hely szélességi koordinátája.",
+                                    "**lon**: A hely hosszúsági koordinátája.",
+                                    "**name**: Megálló esetén a megálló neve, POI-nál a POI neve.",
+                                    "**orig**: Az indulási és az érkezési hely címkéje. Az első és az utolsó útvonal lábon van kitöltve.",
+                                    "**platformCode**: A megálló peron-kódja, ha a hely egy megálló.",
+                                    "**stopCode**: A megálló kódja, ha a hely egy megálló.",
+                                    "**stopId**: A megálló azonosítója, ha a hely egy megálló.",
+                                    "**stopIndex**: A megálló indexe, ha a hely egy megálló.",
+                                    "**stopSequence**: A megálló sorszáma a meneten, ha a hely egy megálló.",
+                                    [
+                                      "**ticketingLocation**: A jegyértékesítési pontok listája.",
+                                      {
+                                        "$ul": [
+                                          "**address**: A jegyértékesítési hely címe.",
+                                          "**cashAccepted**: Jelzi, hogy a jegyértékesítési helyen elfogadnak készpénzt.",
+                                          "**creditCardsAccepted**: Jelzi, hogy a jegyértékesítési helyen elfogadnak bankkártyát.",
+                                          "**description**: A jegyértékesítési hely leírása.",
+                                          "**id**: A jegyértékesítési hely azonosítója.",
+                                          "**lastModified**: A jegyértékesítési hely utolsó frissítésének időpontja ezredmásodpercben.",
+                                          "**lat**: A jegyértékesítési hely szélességi koordinátája.",
+                                          "**lon**: A jegyértékesítési hely hosszúsági koordinátája.",
+                                          "**openingPeriods**: A jegyértékesítési hely nyitvatartása.",
+                                          "**operator**: A jegyértékesítési hely üzemeltetője.",
+                                          "**passIdCreation**: Lehet-e a helyszínen igazolványt csináltatni.",
+                                          "**place**: A jegyértékesítési hely helye.",
+                                          "**products**: Az árusított termékek azonosítói.",
+                                          "**state**: A jegyértékesítési hely állapota.",
+                                          "**ticketPassExchange**: Be lehet-e váltani a helyszínen jegyet.",
+                                          "**type**: A jegyértékesítési hely típusa.",
+                                          "**visible**: Ha `false`, akkor hibás az adat, így a felületen elrejtésre kerül."
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**requestParameters**: A tervezési paraméterek."
+                      ]
+                    }
+                  ],
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

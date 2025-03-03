@@ -1,0 +1,140 @@
+{
+  "name": "updateFirewall",
+  "description": "Updates information for a Firewall. Some parts of a Firewall's configuration cannot\nbe manipulated by this endpoint:\n\n- A Firewall's Devices cannot be set with this endpoint. Instead, use the\n[Create Firewall Device](/docs/api/networking/#firewall-device-create)\nand [Delete Firewall Device](/docs/api/networking/#firewall-device-delete)\nendpoints to assign and remove this Firewall from Linode services.\n\n- A Firewall's Rules cannot be changed with this endpoint. Instead, use the\n[Update Firewall Rules](/docs/api/networking/#firewall-rules-update)\nendpoint to update your Rules.\n\n- A Firewall's status can be set to `enabled` or `disabled` by this endpoint, but it cannot be\nset to `deleted`. Instead, use the\n[Delete Firewall](/docs/api/networking/#firewall-delete)\nendpoint to delete a Firewall.\n\nIf a Firewall's status is changed with this endpoint, a corresponding `firewall_enable` or\n`firewall_disable` Event will be generated.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "firewallId": {
+        "type": "integer",
+        "description": "ID of the Firewall to access.\n"
+      },
+      "body": {
+        "properties": {
+          "label": {
+            "$ref": "#/$defs/label"
+          },
+          "status": {
+            "description": "The status to be applied to this Firewall.\n \n * When a Firewall is first created its status is `enabled`.\n * Use the [Delete Firewall](/docs/api/networking/#firewall-delete) endpoint to delete a Firewall.\n",
+            "enum": [
+              "enabled",
+              "disabled"
+            ],
+            "example": "enabled",
+            "type": "string",
+            "x-linode-cli-display": 3
+          },
+          "tags": {
+            "$ref": "#/$defs/tags"
+          }
+        },
+        "type": "object",
+        "description": "The Firewall information to update."
+      }
+    },
+    "required": [
+      "firewallId"
+    ],
+    "$defs": {
+      "label": {
+        "description": "The Firewall's label, for display purposes only.\n\nFirewall labels have the following constraints:\n\n  * Must begin and end with an alphanumeric character.\n  * May only consist of alphanumeric characters, dashes (`-`), underscores (`_`) or periods (`.`).\n  * Cannot have two dashes (`--`), underscores (`__`) or periods (`..`) in a row.\n  * Must be between 3 and 32 characters.\n  * Must be unique.\n",
+        "example": "firewall123",
+        "maxLength": 32,
+        "minLength": 3,
+        "pattern": "^[a-zA-Z]((?!--|__|..)[a-zA-Z0-9-_.])+$",
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      },
+      "tags": {
+        "description": "An array of tags applied to this object. Tags are for organizational purposes only.\n",
+        "example": [
+          "example tag",
+          "another example"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.linode.com/v4/networking/firewalls/{firewallId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A resource that controls incoming and outgoing network traffic to a Linode service. Only one Firewall can be attached to a Linode at any given time. [Create a Firewall Device](/docs/api/networking/#firewall-create) to assign a Firewall to a Linode service. Currently, Firewalls can only be assigned to Linode instances.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: When this Firewall was created.",
+            "**id**: The Firewall's unique ID.",
+            "**label**: The Firewall's label, for display purposes only.",
+            [
+              "**rules**: The inbound and outbound access rules to apply to the Firewall.",
+              {
+                "$ul": [
+                  "**inbound**: The inbound rules for the firewall, as a JSON array.",
+                  "**inbound_policy**: The default behavior for inbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `inbound.action` property of the Firewall Rule.",
+                  "**outbound**: The outbound rules for the firewall, as a JSON array.",
+                  "**outbound_policy**: The default behavior for outbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `outbound.action` property of the Firewall Rule."
+                ]
+              }
+            ],
+            "**status**: The status of this Firewall.",
+            "**tags**: An array of tags applied to this object. Tags are for organizational purposes only.",
+            "**updated**: When this Firewall was last updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

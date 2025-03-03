@@ -1,0 +1,131 @@
+{
+  "name": "authGet",
+  "description": "The `/auth/get` endpoint returns the bank account and bank identification numbers (such as routing numbers, for US accounts) associated with an Item's checking and savings accounts, along with high-level account data and balances when available.\n\nNote: This request may take some time to complete if `auth` was not specified as an initial product when creating the Item. This is because Plaid must communicate directly with the institution to retrieve the data.\n\nVersioning note: In API version 2017-03-08, the schema of the `numbers` object returned by this endpoint is substantially different. For details, see [Plaid API versioning](https://plaid.com/docs/api/versioning/#version-2018-05-22).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/components/schemas/AuthGetRequest",
+        "description": ""
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/auth/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "AuthGetResponse defines the response schema for `/auth/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accounts**: The `accounts` for which numbers are being retrieved.",
+            [
+              "**item**: Metadata about the Item.",
+              {
+                "$ul": [
+                  "**available_products**: A list of products available for the Item that have not yet been accessed. The contents of this array will be mutually exclusive with `billed_products`.",
+                  "**billed_products**: A list of products that have been billed for the Item. The contents of this array will be mutually exclusive with `available_products`. Note - `billed_products` is populated in all environments but only requests in Production are billed. Also note that products that are billed on a pay-per-call basis rather than a pay-per-Item basis, such as `balance`, will not appear here.",
+                  "**consent_expiration_time**: The RFC 3339 timestamp after which the consent provided by the end user will expire. Upon consent expiration, the item will enter the `ITEM_LOGIN_REQUIRED` error state. To circumvent the `ITEM_LOGIN_REQUIRED` error and maintain continuous consent, the end user can reauthenticate via Link’s update mode in advance of the consent expiration time.",
+                  "**consented_products**: Beta: A list of products that have gone through consent collection for the Item. Only present for those enabled in the beta.",
+                  [
+                    "**error**: We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+                    {
+                      "$ul": [
+                        "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+                        "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+                        "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+                        "**error_code**: The particular error code. Safe for programmatic use.",
+                        "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+                        "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+                        "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+                        "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+                        "**suggested_action**: Suggested steps for resolving the error"
+                      ]
+                    }
+                  ],
+                  "**institution_id**: The Plaid Institution ID associated with the Item. Field is `null` for Items created via Same Day Micro-deposits.",
+                  "**item_id**: The Plaid Item ID. The `item_id` is always unique; linking the same account at the same institution twice will result in two Items with different `item_id` values. Like all Plaid identifiers, the `item_id` is case-sensitive.",
+                  "**products**: A list of authorized products for the Item.",
+                  "**update_type**: Indicates whether an Item requires user interaction to be updated, which can be the case for Items with some forms of two-factor authentication.",
+                  "**webhook**: The URL registered to receive webhooks for the Item."
+                ]
+              }
+            ],
+            [
+              "**numbers**: An object containing identifying numbers used for making electronic transfers to and from the `accounts`. The identifying number type (ACH, EFT, IBAN, or BACS) used will depend on the country of the account. An account may have more than one number type. If a particular identifying number type is not used by any `accounts` for which data has been requested, the array for that type will be empty.",
+              {
+                "$ul": [
+                  "**ach**: An array of ACH numbers identifying accounts.",
+                  "**bacs**: An array of BACS numbers identifying accounts.",
+                  "**eft**: An array of EFT numbers identifying accounts.",
+                  "**international**: An array of IBAN numbers identifying accounts."
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

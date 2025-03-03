@@ -1,0 +1,141 @@
+{
+  "name": "ProjectWorkTypes_GetProjectWorktypes",
+  "description": "This is the same as organization's list of work types, unless the project has some specific work types and \"UseWorktypesFromSetting\" in project model is set to false.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectGuid": {
+        "type": "string",
+        "description": "GUID of the project."
+      },
+      "includeWorktypesFromRegistry": {
+        "default": false,
+        "type": "boolean",
+        "description": "Include work types also from registry. If false, returns only project specific work types. Default false."
+      },
+      "firstRow": {
+        "default": 0,
+        "format": "int32",
+        "nullable": true,
+        "type": "integer",
+        "description": "Optional: first row to fetch. Default 0 = first row."
+      },
+      "rowCount": {
+        "format": "int32",
+        "nullable": true,
+        "type": "integer",
+        "description": "Optional: How many rows to fetch, Default 20, maximum 100."
+      },
+      "active": {
+        "nullable": true,
+        "type": "boolean",
+        "description": "If not given, return all work types, if given as true return only active work types, if given as false returns only inactive work types."
+      },
+      "textToSearch": {
+        "default": "",
+        "nullable": true,
+        "type": "string",
+        "description": "Optional: Text to search from work type name."
+      },
+      "changedSince": {
+        "format": "date-time",
+        "nullable": true,
+        "type": "string",
+        "description": "Optional: Get project work types that have been added or changed after this date time (greater or equal)."
+      }
+    },
+    "required": [
+      "projectGuid"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.severa.visma.com/rest-api/v1/projects/{projectGuid}/projectworktypes{?includeWorktypesFromRegistry,firstRow,rowCount,active,textToSearch,changedSince}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**guid**",
+            "**isDefault**",
+            "**projectGuid**",
+            [
+              "**worktype**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**guid**",
+                  "**isActive** (default: true)",
+                  "**isProductive**",
+                  "**name**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**details**",
+                  "**httpStatusCode**",
+                  "**stack**",
+                  "**type**: "
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "name": "updateRemoteIssueLink",
+  "description": "Updates a remote issue link for an issue.\n\nNote: Fields without values in the request are set to null.\n\nThis operation requires [issue linking to be active](https://confluence.atlassian.com/x/yoXKM).\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:**\n\n *  *Browse projects* and *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "issueIdOrKey": {
+        "example": "10000",
+        "type": "string",
+        "description": "The ID or key of the issue."
+      },
+      "linkId": {
+        "example": "10000",
+        "type": "string",
+        "description": "The ID of the remote issue link."
+      },
+      "body": {
+        "$ref": "#/$defs/RemoteIssueLinkRequest"
+      }
+    },
+    "required": [
+      "issueIdOrKey",
+      "linkId",
+      "body"
+    ],
+    "$defs": {
+      "RemoteIssueLinkRequest": {
+        "additionalProperties": true,
+        "description": "Details of a remote issue link.",
+        "properties": {
+          "application": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Application"
+              }
+            ],
+            "description": "Details of the remote application the linked item is in. For example, trello."
+          },
+          "globalId": {
+            "description": "An identifier for the remote item in the remote system. For example, the global ID for a remote item in Confluence would consist of the app ID and page ID, like this: `appId=456&pageId=123`.\n\nSetting this field enables the remote issue link details to be updated or deleted using remote system and item details as the record identifier, rather than using the record's Jira ID.\n\nThe maximum length is 255 characters.",
+            "type": "string"
+          },
+          "object": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RemoteObject"
+              }
+            ],
+            "description": "Details of the item linked to."
+          },
+          "relationship": {
+            "description": "Description of the relationship between the issue and the linked item. If not set, the relationship description \"links to\" is used in Jira.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "object"
+        ],
+        "type": "object"
+      },
+      "Application": {
+        "additionalProperties": true,
+        "description": "The application the linked item is in.",
+        "properties": {
+          "name": {
+            "description": "The name of the application. Used in conjunction with the (remote) object icon title to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank items are excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\". Grouping and sorting of links may place links without an application name last.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The name-spaced type of the application, used by registered rendering apps.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RemoteObject": {
+        "additionalProperties": true,
+        "description": "The linked item.",
+        "properties": {
+          "icon": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Icon"
+              }
+            ],
+            "description": "Details of the icon for the item. If no icon is defined, the default link icon is used in Jira."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Status"
+              }
+            ],
+            "description": "The status of the item."
+          },
+          "summary": {
+            "description": "The summary details of the item.",
+            "type": "string"
+          },
+          "title": {
+            "description": "The title of the item.",
+            "type": "string"
+          },
+          "url": {
+            "description": "The URL of the item.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "url"
+        ],
+        "type": "object"
+      },
+      "Icon": {
+        "additionalProperties": true,
+        "description": "An icon. If no icon is defined:\n\n *  for a status icon, no status icon displays in Jira.\n *  for the remote object icon, the default link icon displays in Jira.",
+        "properties": {
+          "link": {
+            "description": "The URL of the tooltip, used only for a status icon. If not set, the status icon in Jira is not clickable.",
+            "type": "string"
+          },
+          "title": {
+            "description": "The title of the icon. This is used as follows:\n\n *  For a status icon it is used as a tooltip on the icon. If not set, the status icon doesn't display a tooltip in Jira.\n *  For the remote object icon it is used in conjunction with the application name to display a tooltip for the link's icon. The tooltip takes the format \"\\[application name\\] icon title\". Blank itemsare excluded from the tooltip title. If both items are blank, the icon tooltop displays as \"Web Link\".",
+            "type": "string"
+          },
+          "url16x16": {
+            "description": "The URL of an icon that displays at 16x16 pixel in Jira.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Status": {
+        "additionalProperties": true,
+        "description": "The status of the item.",
+        "properties": {
+          "icon": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Icon"
+              }
+            ],
+            "description": "Details of the icon representing the status. If not provided, no status icon displays in Jira."
+          },
+          "resolved": {
+            "description": "Whether the item is resolved. If set to \"true\", the link to the issue is displayed in a strikethrough font, otherwise the link displays in normal font.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/issue/{issueIdOrKey}/remotelink/{linkId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

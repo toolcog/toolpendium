@@ -1,0 +1,693 @@
+{
+  "name": "patch-paymentInstruments-id",
+  "description": "Updates a payment instrument. Once a payment instrument is already active, you can only update its status. However, for cards created with **inactive** status, you can still update the balance account associated with the card.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The unique identifier of the payment instrument."
+      },
+      "body": {
+        "$ref": "#/$defs/PaymentInstrumentUpdateRequest"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$defs": {
+      "PaymentInstrumentUpdateRequest": {
+        "properties": {
+          "balanceAccountId": {
+            "description": "The unique identifier of the balance account associated with this payment instrument.\n>You can only change the balance account ID if the payment instrument has **inactive** status.",
+            "type": "string"
+          },
+          "card": {
+            "$ref": "#/$defs/CardInfo"
+          },
+          "status": {
+            "description": "The status of the payment instrument. If a status is not specified when creating a payment instrument, it is set to **active** by default. However, there can be exceptions for cards based on the `card.formFactor` and the `issuingCountryCode`. For example, when issuing physical cards in the US, the default status is **inactive**.\n\nPossible values: \n\n * **active**:  The payment instrument is active and can be used to make payments. \n\n * **inactive**: The payment instrument is inactive and cannot be used to make payments. \n\n * **suspended**: The payment instrument is suspended, either because it was stolen or lost. \n\n * **closed**: The payment instrument is permanently closed. This action cannot be undone. \n\n",
+            "enum": [
+              "active",
+              "closed",
+              "inactive",
+              "suspended"
+            ],
+            "type": "string"
+          },
+          "statusComment": {
+            "description": "Comment for the status of the payment instrument.\n\nRequired if `statusReason` is **other**.",
+            "type": "string"
+          },
+          "statusReason": {
+            "description": "The reason for updating the status of the payment instrument.\n\nPossible values: **lost**, **stolen**, **damaged**, **suspectedFraud**, **expired**, **endOfLife**, **accountClosure**, **other**.\nIf the reason is **other**, you must also send the `statusComment` parameter describing the status change.",
+            "enum": [
+              "accountClosure",
+              "damaged",
+              "endOfLife",
+              "expired",
+              "lost",
+              "other",
+              "stolen",
+              "suspectedFraud",
+              "transactionRule"
+            ],
+            "type": "string",
+            "x-addedInVersion": "2"
+          }
+        },
+        "type": "object"
+      },
+      "CardInfo": {
+        "properties": {
+          "authentication": {
+            "$ref": "#/$defs/Authentication"
+          },
+          "brand": {
+            "description": "The brand of the physical or the virtual card.\nPossible values: **visa**, **mc**.",
+            "type": "string"
+          },
+          "brandVariant": {
+            "description": "The brand variant of the physical or the virtual card. For example, **visadebit** or **mcprepaid**.\n>Reach out to your Adyen contact to get the values relevant for your integration.",
+            "type": "string"
+          },
+          "cardholderName": {
+            "description": "The name of the cardholder.\n Maximum length: 26 characters.",
+            "maxLength": 26,
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/$defs/CardConfiguration"
+          },
+          "deliveryContact": {
+            "$ref": "#/$defs/DeliveryContact"
+          },
+          "formFactor": {
+            "description": "The form factor of the card.\nPossible values: **virtual**, **physical**.",
+            "enum": [
+              "physical",
+              "unknown",
+              "virtual"
+            ],
+            "type": "string"
+          },
+          "threeDSecure": {
+            "description": "Allocates a specific product range for either a physical or a virtual card. Possible values: **fullySupported**, **secureCorporate**.\n>Reach out to your Adyen contact to get the values relevant for your integration.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "formFactor",
+          "cardholderName",
+          "brand",
+          "brandVariant"
+        ],
+        "type": "object"
+      },
+      "Authentication": {
+        "properties": {
+          "email": {
+            "description": "The email address where the one-time password (OTP) is sent.",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password used for 3D Secure password-based authentication. The value must be between 1 to 30 characters and must only contain the following supported characters.\n\n* Characters between **a-z**, **A-Z**, and **0-9**\n\n* Special characters: **äöüßÄÖÜ+-*/ç%()=?!~#'\",;:$&àùòâôûáúó**",
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "phone": {
+            "$ref": "#/$defs/Phone"
+          }
+        },
+        "type": "object"
+      },
+      "Phone": {
+        "properties": {
+          "number": {
+            "description": "The full phone number provided as a single string. \nFor example, **\"0031 6 11 22 33 44\"**, **\"+316/1122-3344\"**, \n\n or **\"(0031) 611223344\"**.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of phone number.\nPossible values: \n**Landline**, **Mobile**.\n",
+            "enum": [
+              "landline",
+              "mobile"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "type"
+        ],
+        "type": "object"
+      },
+      "CardConfiguration": {
+        "properties": {
+          "activation": {
+            "description": "Overrides the activation label design ID defined in the `configurationProfileId`. The activation label is attached to the card and contains the activation instructions.",
+            "type": "string"
+          },
+          "activationUrl": {
+            "description": "Your app's URL, if you want to activate cards through your app. For example, **my-app://ref1236a7d**. A QR code is created based on this URL, and is included in the carrier. Before you use this field, reach out to your Adyen contact to set up the QR code process. \n\nMaximum length: 255 characters.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "bulkAddress": {
+            "$ref": "#/$defs/BulkAddress"
+          },
+          "cardImageId": {
+            "description": "The ID of the card image. This is the image that will be printed on the full front of the card.",
+            "type": "string"
+          },
+          "carrier": {
+            "description": "Overrides the carrier design ID defined in the `configurationProfileId`. The carrier is the letter or packaging to which the card is attached.",
+            "type": "string"
+          },
+          "carrierImageId": {
+            "description": "The ID of the carrier image. This is the image that will printed on the letter to which the card is attached.",
+            "type": "string"
+          },
+          "configurationProfileId": {
+            "description": "The ID of the card configuration profile that contains the settings of the card. For example, the envelope and PIN mailer designs or the logistics company handling the shipment. All the settings in the profile are applied to the card, unless you provide other fields to override them.\n\nFor example, send the `shipmentMethod` to override the logistics company defined in the card configuration profile.",
+            "type": "string"
+          },
+          "currency": {
+            "description": "The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217) currency code of the card. For example, **EUR**.",
+            "type": "string"
+          },
+          "envelope": {
+            "description": "Overrides the envelope design ID defined in the `configurationProfileId`. ",
+            "type": "string"
+          },
+          "insert": {
+            "description": "Overrides the insert design ID defined in the `configurationProfileId`. An insert is any additional material, such as marketing materials, that are shipped together with the card.",
+            "type": "string"
+          },
+          "language": {
+            "description": "The two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code of the card. For example, **en**.",
+            "type": "string"
+          },
+          "logoImageId": {
+            "description": "The ID of the logo image. This is the image that will be printed on the partial front of the card, such as a logo on the upper right corner.",
+            "type": "string"
+          },
+          "pinMailer": {
+            "description": "Overrides the PIN mailer design ID defined in the `configurationProfileId`. The PIN mailer is the letter on which the PIN is printed.",
+            "type": "string"
+          },
+          "shipmentMethod": {
+            "description": "Overrides the logistics company defined in the `configurationProfileId`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "configurationProfileId"
+        ],
+        "type": "object"
+      },
+      "BulkAddress": {
+        "properties": {
+          "city": {
+            "description": "The name of the city.",
+            "type": "string"
+          },
+          "company": {
+            "description": "The name of the company.",
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+            "type": "string"
+          },
+          "email": {
+            "description": "The email address.",
+            "type": "string"
+          },
+          "houseNumberOrName": {
+            "description": "The house number or name.",
+            "type": "string"
+          },
+          "mobile": {
+            "description": "The full telephone number.",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The postal code.\n\nMaximum length:\n\n* 5 digits for addresses in the US.\n\n* 10 characters for all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-letter ISO 3166-2 state or province code.\n\nMaximum length: 2 characters for addresses in the US.",
+            "type": "string"
+          },
+          "street": {
+            "description": "The streetname of the house.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "type": "object"
+      },
+      "DeliveryContact": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/DeliveryAddress"
+          },
+          "email": {
+            "description": "The email address of the contact.",
+            "type": "string"
+          },
+          "fullPhoneNumber": {
+            "description": "The full phone number of the contact provided as a single string. It will be handled as a landline phone.\n**Examples:** \"0031 6 11 22 33 44\", \"+316/1122-3344\", \"(0031) 611223344\"",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/$defs/Name"
+          },
+          "phoneNumber": {
+            "$ref": "#/$defs/PhoneNumber"
+          },
+          "webAddress": {
+            "description": "The URL of the contact's website.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ],
+        "type": "object"
+      },
+      "DeliveryAddress": {
+        "properties": {
+          "city": {
+            "description": "The name of the city.",
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n>If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+            "type": "string"
+          },
+          "line1": {
+            "description": "The street name. For example, if the address is \"Rokin 49\", provide \"Rokin\".",
+            "type": "string"
+          },
+          "line2": {
+            "description": "The house number or name. For example, if the address is \"Rokin 49\", provide \"49\".",
+            "type": "string"
+          },
+          "line3": {
+            "description": "Optional information about the address.",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The postal code.\nMaximum length:\n* 5 digits for an address in the US.\n* 10 characters for an address in all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-letterISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "type": "object"
+      },
+      "Name": {
+        "properties": {
+          "firstName": {
+            "description": "The first name.",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The last name.",
+            "maxLength": 80,
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object"
+      },
+      "PhoneNumber": {
+        "properties": {
+          "phoneCountryCode": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code of the phone number.\nFor example, **US** or **NL**.",
+            "type": "string"
+          },
+          "phoneNumber": {
+            "description": "The phone number.\nThe inclusion of the phone number country code is not necessary.",
+            "type": "string"
+          },
+          "phoneType": {
+            "description": "The type of the phone number.\nPossible values: **Landline**, **Mobile**, **SIP**, **Fax**.",
+            "enum": [
+              "Fax",
+              "Landline",
+              "Mobile",
+              "SIP"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://balanceplatform-api-test.adyen.com/bcl/v2/paymentInstruments/{id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**balanceAccountId**: The unique identifier of the [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/balanceAccounts__resParam_id) associated with the payment instrument.",
+            "**bankAccount**: Contains the business account details. Returned when you create a payment instrument with `type` **bankAccount**.",
+            [
+              "**card**",
+              {
+                "$ul": [
+                  [
+                    "**authentication**",
+                    {
+                      "$ul": [
+                        "**email**: The email address where the one-time password (OTP) is sent.",
+                        "**password**: The password used for 3D Secure password-based authentication. The value must be between 1 to 30 characters and must only contain the following supported characters.",
+                        [
+                          "**phone**",
+                          {
+                            "$ul": [
+                              "**number**: The full phone number provided as a single string. ",
+                              "**type**: Type of phone number."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**bin**: The bank identification number (BIN) of the card number.",
+                  "**brand**: The brand of the physical or the virtual card.",
+                  "**brandVariant**: The brand variant of the physical or the virtual card. For example, **visadebit** or **mcprepaid**.",
+                  "**cardholderName**: The name of the cardholder.",
+                  [
+                    "**configuration**",
+                    {
+                      "$ul": [
+                        "**activation**: Overrides the activation label design ID defined in the `configurationProfileId`. The activation label is attached to the card and contains the activation instructions.",
+                        "**activationUrl**: Your app's URL, if you want to activate cards through your app. For example, **my-app://ref1236a7d**. A QR code is created based on this URL, and is included in the carrier. Before you use this field, reach out to your Adyen contact to set up the QR code process. ",
+                        [
+                          "**bulkAddress**",
+                          {
+                            "$ul": [
+                              "**city**: The name of the city.",
+                              "**company**: The name of the company.",
+                              "**country**: The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+                              "**email**: The email address.",
+                              "**houseNumberOrName**: The house number or name.",
+                              "**mobile**: The full telephone number.",
+                              "**postalCode**: The postal code.",
+                              "**stateOrProvince**: The two-letter ISO 3166-2 state or province code.",
+                              "**street**: The streetname of the house."
+                            ]
+                          }
+                        ],
+                        "**cardImageId**: The ID of the card image. This is the image that will be printed on the full front of the card.",
+                        "**carrier**: Overrides the carrier design ID defined in the `configurationProfileId`. The carrier is the letter or packaging to which the card is attached.",
+                        "**carrierImageId**: The ID of the carrier image. This is the image that will printed on the letter to which the card is attached.",
+                        "**configurationProfileId**: The ID of the card configuration profile that contains the settings of the card. For example, the envelope and PIN mailer designs or the logistics company handling the shipment. All the settings in the profile are applied to the card, unless you provide other fields to override them.",
+                        "**currency**: The three-letter [ISO-4217](https://en.wikipedia.org/wiki/ISO_4217) currency code of the card. For example, **EUR**.",
+                        "**envelope**: Overrides the envelope design ID defined in the `configurationProfileId`. ",
+                        "**insert**: Overrides the insert design ID defined in the `configurationProfileId`. An insert is any additional material, such as marketing materials, that are shipped together with the card.",
+                        "**language**: The two-letter [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) language code of the card. For example, **en**.",
+                        "**logoImageId**: The ID of the logo image. This is the image that will be printed on the partial front of the card, such as a logo on the upper right corner.",
+                        "**pinMailer**: Overrides the PIN mailer design ID defined in the `configurationProfileId`. The PIN mailer is the letter on which the PIN is printed.",
+                        "**shipmentMethod**: Overrides the logistics company defined in the `configurationProfileId`."
+                      ]
+                    }
+                  ],
+                  "**cvc**: The CVC2 value of the card.",
+                  [
+                    "**deliveryContact**",
+                    {
+                      "$ul": [
+                        [
+                          "**address**",
+                          {
+                            "$ul": [
+                              "**city**: The name of the city.",
+                              "**country**: The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+                              "**line1**: The street name. For example, if the address is \"Rokin 49\", provide \"Rokin\".",
+                              "**line2**: The house number or name. For example, if the address is \"Rokin 49\", provide \"49\".",
+                              "**line3**: Optional information about the address.",
+                              "**postalCode**: The postal code.",
+                              "**stateOrProvince**: The two-letterISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada."
+                            ]
+                          }
+                        ],
+                        "**email**: The email address of the contact.",
+                        "**fullPhoneNumber**: The full phone number of the contact provided as a single string. It will be handled as a landline phone.",
+                        [
+                          "**name**",
+                          {
+                            "$ul": [
+                              "**firstName**: The first name.",
+                              "**lastName**: The last name."
+                            ]
+                          }
+                        ],
+                        [
+                          "**phoneNumber**",
+                          {
+                            "$ul": [
+                              "**phoneCountryCode**: The two-character ISO-3166-1 alpha-2 country code of the phone number.",
+                              "**phoneNumber**: The phone number.",
+                              "**phoneType**: The type of the phone number."
+                            ]
+                          }
+                        ],
+                        "**webAddress**: The URL of the contact's website."
+                      ]
+                    }
+                  ],
+                  [
+                    "**expiration**",
+                    {
+                      "$ul": [
+                        "**month**: The month in which the card will expire.",
+                        "**year**: The year in which the card will expire."
+                      ]
+                    }
+                  ],
+                  "**formFactor**: The form factor of the card.",
+                  "**lastFour**: Last last four digits of the card number.",
+                  "**number**: The primary account number (PAN) of the card.",
+                  "**threeDSecure**: Allocates a specific product range for either a physical or a virtual card. Possible values: **fullySupported**, **secureCorporate**."
+                ]
+              }
+            ],
+            "**description**: Your description for the payment instrument, maximum 300 characters.",
+            "**id**: The unique identifier of the payment instrument.",
+            "**issuingCountryCode**: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code where the payment instrument is issued. For example, **NL** or **US**.",
+            "**paymentInstrumentGroupId**: The unique identifier of the [payment instrument group](https://docs.adyen.com/api-explorer/#/balanceplatform/v1/post/paymentInstrumentGroups__resParam_id) to which the payment instrument belongs.",
+            "**reference**: Your reference for the payment instrument, maximum 150 characters.",
+            "**status**: The status of the payment instrument. If a status is not specified when creating a payment instrument, it is set to **active** by default. However, there can be exceptions for cards based on the `card.formFactor` and the `issuingCountryCode`. For example, when issuing physical cards in the US, the default status is **inactive**.",
+            "**statusComment**: Comment for the status of the payment instrument.",
+            "**statusReason**: The reason for the status of the payment instrument.",
+            "**type**: Type of payment instrument."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

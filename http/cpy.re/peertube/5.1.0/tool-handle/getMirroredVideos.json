@@ -1,0 +1,95 @@
+{
+  "name": "getMirroredVideos",
+  "description": "List videos being mirrored",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "target": {
+        "enum": [
+          "my-videos",
+          "remote-videos"
+        ],
+        "type": "string",
+        "description": "direction of the mirror"
+      },
+      "start": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "Offset used to paginate results"
+      },
+      "count": {
+        "default": 15,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Number of items to return"
+      },
+      "sort": {
+        "enum": [
+          "name"
+        ],
+        "type": "string",
+        "description": "Sort abuses by criteria"
+      }
+    },
+    "required": [
+      "target"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://peertube2.cpy.re/api/v1/server/redundancy/videos{?target,start,count,sort}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**name**",
+            [
+              "**redundancies**",
+              {
+                "$ul": [
+                  "**files**",
+                  "**streamingPlaylists**"
+                ]
+              }
+            ],
+            "**url**",
+            "**uuid**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

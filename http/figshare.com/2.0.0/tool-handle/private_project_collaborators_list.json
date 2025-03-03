@@ -1,0 +1,90 @@
+{
+  "name": "private_project_collaborators_list",
+  "description": "List Project collaborators and invited users",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project_id": {
+        "format": "int64",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Project unique identifier"
+      }
+    },
+    "required": [
+      "project_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.figshare.com/v2/account/projects/{project_id}/collaborators"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**name**: Collaborator name",
+            "**role_name**: Collaborator role",
+            "**status**: Status of collaborator invitation",
+            "**user_id**: Collaborator id"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A machine friendly error code, used by the dev team to identify the error.",
+            "**message**: A human friendly message explaining the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

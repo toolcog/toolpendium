@@ -1,0 +1,496 @@
+{
+  "name": "GET_CreateChangeSet",
+  "description": "<p>Creates a list of changes that will be applied to a stack so that you can review the changes before executing them. You can create a change set for a stack that doesn't exist or an existing stack. If you create a change set for a stack that doesn't exist, the change set shows all of the resources that CloudFormation will create. If you create a change set for an existing stack, CloudFormation compares the stack's information with the information that you submit in the change set and lists the differences. Use change sets to understand which resources CloudFormation will create or change, and how it will change resources in an existing stack, before you create or update a stack.</p> <p>To create a change set for a stack that doesn't exist, for the <code>ChangeSetType</code> parameter, specify <code>CREATE</code>. To create a change set for an existing stack, specify <code>UPDATE</code> for the <code>ChangeSetType</code> parameter. To create a change set for an import operation, specify <code>IMPORT</code> for the <code>ChangeSetType</code> parameter. After the <code>CreateChangeSet</code> call successfully completes, CloudFormation starts creating the change set. To check the status of the change set or to review it, use the <a>DescribeChangeSet</a> action.</p> <p>When you are satisfied with the changes the change set will make, execute the change set by using the <a>ExecuteChangeSet</a> action. CloudFormation doesn't make changes until you execute the change set.</p> <p>To create a change set for the entire stack hierarchy, set <code>IncludeNestedStacks</code> to <code>True</code>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "StackName": {
+        "type": "string",
+        "pattern": "([a-zA-Z][-a-zA-Z0-9]*)|(arn:\\b(aws|aws-us-gov|aws-cn)\\b:[-a-zA-Z0-9:/._+]*)",
+        "minLength": 1,
+        "description": "The name or the unique ID of the stack for which you are creating a change set. CloudFormation generates the change set by comparing this stack's information with the information that you submit, such as a modified template or different parameter input values."
+      },
+      "TemplateBody": {
+        "type": "string",
+        "minLength": 1,
+        "description": "<p>A structure that contains the body of the revised template, with a minimum length of 1 byte and a maximum length of 51,200 bytes. CloudFormation generates the change set by comparing this template with the template of the stack that you specified.</p> <p>Conditional: You must specify only <code>TemplateBody</code> or <code>TemplateURL</code>.</p>"
+      },
+      "TemplateURL": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "description": "<p>The location of the file that contains the revised template. The URL must point to a template (max size: 460,800 bytes) that's located in an Amazon S3 bucket or a Systems Manager document. CloudFormation generates the change set by comparing this template with the stack that you specified.</p> <p>Conditional: You must specify only <code>TemplateBody</code> or <code>TemplateURL</code>.</p>"
+      },
+      "UsePreviousTemplate": {
+        "type": "boolean",
+        "description": "Whether to reuse the template that's associated with the stack to create the change set."
+      },
+      "Parameters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Parameter"
+        },
+        "description": "A list of <code>Parameter</code> structures that specify input parameters for the change set. For more information, see the <a>Parameter</a> data type."
+      },
+      "Capabilities": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Capability"
+        },
+        "description": "<p>In some cases, you must explicitly acknowledge that your stack template contains certain capabilities in order for CloudFormation to create the stack.</p> <ul> <li> <p> <code>CAPABILITY_IAM</code> and <code>CAPABILITY_NAMED_IAM</code> </p> <p>Some stack templates might include resources that can affect permissions in your Amazon Web Services account; for example, by creating new Identity and Access Management (IAM) users. For those stacks, you must explicitly acknowledge this by specifying one of these capabilities.</p> <p>The following IAM resources require you to specify either the <code>CAPABILITY_IAM</code> or <code>CAPABILITY_NAMED_IAM</code> capability.</p> <ul> <li> <p>If you have IAM resources, you can specify either capability.</p> </li> <li> <p>If you have IAM resources with custom names, you <i>must</i> specify <code>CAPABILITY_NAMED_IAM</code>.</p> </li> <li> <p>If you don't specify either of these capabilities, CloudFormation returns an <code>InsufficientCapabilities</code> error.</p> </li> </ul> <p>If your stack template contains these resources, we suggest that you review all permissions associated with them and edit their permissions if necessary.</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-accesskey.html\"> AWS::IAM::AccessKey</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-group.html\"> AWS::IAM::Group</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-instanceprofile.html\">AWS::IAM::InstanceProfile</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-policy.html\"> AWS::IAM::Policy</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html\"> AWS::IAM::Role</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-user.html\"> AWS::IAM::User</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-iam-addusertogroup.html\">AWS::IAM::UserToGroupAddition</a> </p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities\">Acknowledging IAM resources in CloudFormation templates</a>.</p> </li> <li> <p> <code>CAPABILITY_AUTO_EXPAND</code> </p> <p>Some template contain macros. Macros perform custom processing on templates; this can include simple actions like find-and-replace operations, all the way to extensive transformations of entire templates. Because of this, users typically create a change set from the processed template, so that they can review the changes resulting from the macros before actually creating the stack. If your stack template contains one or more macros, and you choose to create a stack directly from the processed template, without first reviewing the resulting changes in a change set, you must acknowledge this capability. This includes the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/create-reusable-transform-function-snippets-and-add-to-your-template-with-aws-include-transform.html\">AWS::Include</a> and <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html\">AWS::Serverless</a> transforms, which are macros hosted by CloudFormation.</p> <note> <p>This capacity doesn't apply to creating change sets, and specifying it when creating change sets has no effect.</p> <p>If you want to create a stack from a stack template that contains macros <i>and</i> nested stacks, you must create or update the stack directly from the template using the <a>CreateStack</a> or <a>UpdateStack</a> action, and specifying this capability.</p> </note> <p>For more information about macros, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html\">Using CloudFormation macros to perform custom processing on templates</a>.</p> </li> </ul>"
+      },
+      "ResourceTypes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ResourceType"
+        },
+        "description": "<p>The template resource types that you have permissions to work with if you execute this change set, such as <code>AWS::EC2::Instance</code>, <code>AWS::EC2::*</code>, or <code>Custom::MyCustomInstance</code>.</p> <p>If the list of resource types doesn't include a resource type that you're updating, the stack update fails. By default, CloudFormation grants permissions to all resource types. Identity and Access Management (IAM) uses this parameter for condition keys in IAM policies for CloudFormation. For more information, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html\">Controlling access with Identity and Access Management</a> in the CloudFormation User Guide.</p>"
+      },
+      "RoleARN": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048,
+        "description": "<p>The Amazon Resource Name (ARN) of an Identity and Access Management (IAM) role that CloudFormation assumes when executing the change set. CloudFormation uses the role's credentials to make calls on your behalf. CloudFormation uses this role for all future operations on the stack. Provided that users have permission to operate on the stack, CloudFormation uses this role even if the users don't have permission to pass it. Ensure that the role grants least permission.</p> <p>If you don't specify a value, CloudFormation uses the role that was previously associated with the stack. If no role is available, CloudFormation uses a temporary session that is generated from your user credentials.</p>"
+      },
+      "RollbackConfiguration": {
+        "type": "object",
+        "properties": {
+          "RollbackTriggers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RollbackTriggers"
+              },
+              {
+                "description": "<p>The triggers to monitor during stack creation or update actions.</p> <p>By default, CloudFormation saves the rollback triggers specified for a stack and applies them to any subsequent update operations for the stack, unless you specify otherwise. If you do specify rollback triggers for this parameter, those triggers replace any list of triggers previously specified for the stack. This means:</p> <ul> <li> <p>To use the rollback triggers previously specified for this stack, if any, don't specify this parameter.</p> </li> <li> <p>To specify new or updated rollback triggers, you must specify <i>all</i> the triggers that you want used for this stack, even triggers you've specified before (for example, when creating the stack or during a previous stack update). Any triggers that you don't include in the updated list of triggers are no longer applied to the stack.</p> </li> <li> <p>To remove all currently specified triggers, specify an empty list for this parameter.</p> </li> </ul> <p>If a specified trigger is missing, the entire stack operation fails and is rolled back.</p>"
+              }
+            ]
+          },
+          "MonitoringTimeInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MonitoringTimeInMinutes"
+              },
+              {
+                "description": "<p>The amount of time, in minutes, during which CloudFormation should monitor all the rollback triggers after the stack creation or update operation deploys all necessary resources.</p> <p>The default is 0 minutes.</p> <p>If you specify a monitoring period but don't specify any rollback triggers, CloudFormation still waits the specified period of time before cleaning up old resources after update operations. You can use this monitoring period to perform any manual stack validation desired, and manually cancel the stack creation or update (using <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CancelUpdateStack.html\">CancelUpdateStack</a>, for example) as necessary.</p> <p>If you specify 0 for this parameter, CloudFormation still monitors the specified rollback triggers during stack creation and update operations. Then, for update operations, it begins disposing of old resources immediately once the operation completes.</p>"
+              }
+            ]
+          }
+        },
+        "description": "The rollback triggers for CloudFormation to monitor during stack creation and updating operations, and for the specified monitoring period afterwards."
+      },
+      "NotificationARNs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NotificationARN"
+        },
+        "maxItems": 5,
+        "description": "The Amazon Resource Names (ARNs) of Amazon Simple Notification Service (Amazon SNS) topics that CloudFormation associates with the stack. To remove all associated notification topics, specify an empty list."
+      },
+      "Tags": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Tag"
+        },
+        "maxItems": 50,
+        "description": "Key-value pairs to associate with this stack. CloudFormation also propagates these tags to resources in the stack. You can specify a maximum of 50 tags."
+      },
+      "ChangeSetName": {
+        "type": "string",
+        "pattern": "[a-zA-Z][-a-zA-Z0-9]*",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "<p>The name of the change set. The name must be unique among all change sets that are associated with the specified stack.</p> <p>A change set name can contain only alphanumeric, case sensitive characters, and hyphens. It must start with an alphabetical character and can't exceed 128 characters.</p>"
+      },
+      "ClientToken": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "A unique identifier for this <code>CreateChangeSet</code> request. Specify this token if you plan to retry requests so that CloudFormation knows that you're not attempting to create another change set with the same name. You might retry <code>CreateChangeSet</code> requests to ensure that CloudFormation successfully received them."
+      },
+      "Description": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "description": "A description to help you identify this change set."
+      },
+      "ChangeSetType": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "IMPORT"
+        ],
+        "description": "<p>The type of change set operation. To create a change set for a new stack, specify <code>CREATE</code>. To create a change set for an existing stack, specify <code>UPDATE</code>. To create a change set for an import operation, specify <code>IMPORT</code>.</p> <p>If you create a change set for a new stack, CloudFormation creates a stack with a unique stack ID, but no template or resources. The stack will be in the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html#d0e11995\">REVIEW_IN_PROGRESS</a> state until you execute the change set.</p> <p>By default, CloudFormation specifies <code>UPDATE</code>. You can't use the <code>UPDATE</code> type to create a change set for a new stack or the <code>CREATE</code> type to create a change set for an existing stack.</p>"
+      },
+      "ResourcesToImport": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ResourceToImport"
+        },
+        "maxItems": 200,
+        "description": "The resources to import into your stack."
+      },
+      "IncludeNestedStacks": {
+        "type": "boolean",
+        "description": "Creates a change set for the all nested stacks specified in the template. The default behavior of this action is set to <code>False</code>. To include nested sets in a change set, specify <code>True</code>."
+      },
+      "OnStackFailure": {
+        "type": "string",
+        "enum": [
+          "DO_NOTHING",
+          "ROLLBACK",
+          "DELETE"
+        ],
+        "description": "<p>Determines what action will be taken if stack creation fails. If this parameter is specified, the <code>DisableRollback</code> parameter to the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ExecuteChangeSet.html\">ExecuteChangeSet</a> API operation must not be specified. This must be one of these values:</p> <ul> <li> <p> <code>DELETE</code> - Deletes the change set if the stack creation fails. This is only valid when the <code>ChangeSetType</code> parameter is set to <code>CREATE</code>. If the deletion of the stack fails, the status of the stack is <code>DELETE_FAILED</code>.</p> </li> <li> <p> <code>DO_NOTHING</code> - if the stack creation fails, do nothing. This is equivalent to specifying <code>true</code> for the <code>DisableRollback</code> parameter to the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ExecuteChangeSet.html\">ExecuteChangeSet</a> API operation.</p> </li> <li> <p> <code>ROLLBACK</code> - if the stack creation fails, roll back the stack. This is equivalent to specifying <code>false</code> for the <code>DisableRollback</code> parameter to the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_ExecuteChangeSet.html\">ExecuteChangeSet</a> API operation.</p> </li> </ul> <p>For nested stacks, when the <code>OnStackFailure</code> parameter is set to <code>DELETE</code> for the change set for the parent stack, any failure in a child stack will cause the parent stack creation to fail and all stacks to be deleted.</p>"
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "CreateChangeSet"
+        ]
+      },
+      "Version": {
+        "type": "string",
+        "enum": [
+          "2010-05-15"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "StackName",
+      "ChangeSetName",
+      "Action",
+      "Version"
+    ],
+    "$defs": {
+      "Parameter": {
+        "type": "object",
+        "properties": {
+          "ParameterKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterKey"
+              },
+              {
+                "description": "The key associated with the parameter. If you don't specify a key and value for a particular parameter, CloudFormation uses the default value that's specified in your template."
+              }
+            ]
+          },
+          "ParameterValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterValue"
+              },
+              {
+                "description": "The input value associated with the parameter."
+              }
+            ]
+          },
+          "UsePreviousValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UsePreviousValue"
+              },
+              {
+                "description": "During a stack update, use the existing parameter value that the stack is using for a given parameter key. If you specify <code>true</code>, do not specify a parameter value."
+              }
+            ]
+          },
+          "ResolvedValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterValue"
+              },
+              {
+                "description": "Read-only. The value that corresponds to a SSM parameter key. This field is returned only for <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types\"> SSM</a> parameter types in the template."
+              }
+            ]
+          }
+        },
+        "description": "The Parameter data type."
+      },
+      "ParameterKey": {
+        "type": "string"
+      },
+      "ParameterValue": {
+        "type": "string"
+      },
+      "UsePreviousValue": {
+        "type": "boolean"
+      },
+      "Capability": {
+        "type": "string",
+        "enum": [
+          "CAPABILITY_IAM",
+          "CAPABILITY_NAMED_IAM",
+          "CAPABILITY_AUTO_EXPAND"
+        ]
+      },
+      "ResourceType": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "RollbackTriggers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/RollbackTrigger"
+        },
+        "maxItems": 5
+      },
+      "RollbackTrigger": {
+        "type": "object",
+        "required": [
+          "Arn",
+          "Type"
+        ],
+        "properties": {
+          "Arn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "<p>The Amazon Resource Name (ARN) of the rollback trigger.</p> <p>If a specified trigger is missing, the entire stack operation fails and is rolled back.</p>"
+              }
+            ]
+          },
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Type"
+              },
+              {
+                "description": "The resource type of the rollback trigger. Specify either <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cw-alarm.html\">AWS::CloudWatch::Alarm</a> or <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudwatch-compositealarm.html\">AWS::CloudWatch::CompositeAlarm</a> resource types."
+              }
+            ]
+          }
+        },
+        "description": "A rollback trigger CloudFormation monitors during creation and updating of stacks. If any of the alarms you specify goes to ALARM state during the stack operation or within the specified monitoring period afterwards, CloudFormation rolls back the entire stack operation."
+      },
+      "Arn": {
+        "type": "string"
+      },
+      "Type": {
+        "type": "string"
+      },
+      "MonitoringTimeInMinutes": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 180
+      },
+      "NotificationARN": {
+        "type": "string"
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": " <i>Required</i>. A string used to identify this tag. You can specify a maximum of 128 characters for a tag key. Tags owned by Amazon Web Services (Amazon Web Services) have the reserved prefix: <code>aws:</code>."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": " <i>Required</i>. A string containing the value for this tag. You can specify a maximum of 256 characters for a tag value."
+              }
+            ]
+          }
+        },
+        "description": "The Tag type enables you to specify a key-value pair that can be used to store information about an CloudFormation stack."
+      },
+      "TagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ResourceToImport": {
+        "type": "object",
+        "required": [
+          "ResourceType",
+          "LogicalResourceId",
+          "ResourceIdentifier"
+        ],
+        "properties": {
+          "ResourceType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceType"
+              },
+              {
+                "description": "The type of resource to import into your stack, such as <code>AWS::S3::Bucket</code>. For a list of supported resource types, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import-supported-resources.html\">Resources that support import operations</a> in the CloudFormation User Guide."
+              }
+            ]
+          },
+          "LogicalResourceId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LogicalResourceId"
+              },
+              {
+                "description": "The logical ID of the target resource as specified in the template."
+              }
+            ]
+          },
+          "ResourceIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceIdentifierProperties"
+              },
+              {
+                "description": "A key-value pair that identifies the target resource. The key is an identifier property (for example, <code>BucketName</code> for <code>AWS::S3::Bucket</code> resources) and the value is the actual property value (for example, <code>MyS3Bucket</code>)."
+              }
+            ]
+          }
+        },
+        "description": "Describes the target resource of an import operation."
+      },
+      "LogicalResourceId": {
+        "type": "string"
+      },
+      "ResourceIdentifierProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 256,
+        "additionalProperties": {
+          "$ref": "#/$defs/ResourceIdentifierPropertyValue"
+        }
+      },
+      "ResourceIdentifierPropertyValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://cloudformation.us-east-1.amazonaws.com/#Action=CreateChangeSet{?StackName,TemplateBody,TemplateURL,UsePreviousTemplate,Parameters,Capabilities,ResourceTypes,RoleARN,RollbackConfiguration,NotificationARNs,Tags,ChangeSetName,ClientToken,Description,ChangeSetType,ResourcesToImport,IncludeNestedStacks,OnStackFailure,Action,Version}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The output for the <a>CreateChangeSet</a> action.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Id**",
+            "**StackId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

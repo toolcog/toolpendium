@@ -1,0 +1,87 @@
+{
+  "name": "delete_events",
+  "description": "Delete all or a subset of events filtered using the optional query parameters",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "before": {
+        "type": "string",
+        "description": "Delete events that occurred before the timestamp"
+      },
+      "since": {
+        "type": "string",
+        "description": "Delete events that occurred after the timestamp"
+      },
+      "level": {
+        "type": "string",
+        "description": "Delete events that match the level - INFO or ERROR"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "//events{?before,since,level}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.item"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

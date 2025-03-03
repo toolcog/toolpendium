@@ -1,0 +1,174 @@
+{
+  "name": "rollbacksNetworkFirmwareUpgradesStagedEvents",
+  "description": "Rollback a Staged Upgrade Event for a network",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "body": {
+        "example": {
+          "reasons": [
+            {
+              "category": "performance",
+              "comment": "Network was slower with the upgrade"
+            }
+          ],
+          "stages": [
+            {
+              "group": {
+                "id": "1234"
+              },
+              "milestones": {
+                "scheduledFor": "2018-02-11T00:00:00Z"
+              }
+            }
+          ]
+        },
+        "properties": {
+          "reasons": {
+            "description": "The reason for rolling back the staged upgrade",
+            "items": {
+              "properties": {
+                "category": {
+                  "description": "Reason for the rollback",
+                  "enum": [
+                    "broke old features",
+                    "other",
+                    "performance",
+                    "stability",
+                    "testing",
+                    "unifying networks versions"
+                  ],
+                  "type": "string"
+                },
+                "comment": {
+                  "description": "Additional comment about the rollback",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category",
+                "comment"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "stages": {
+            "description": "All completed or in-progress stages in the network with their new start times. All pending stages will be canceled",
+            "items": {
+              "properties": {
+                "group": {
+                  "description": "The Staged Upgrade Group containing the name and ID",
+                  "properties": {
+                    "id": {
+                      "description": "ID of the Staged Upgrade Group",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "type": "object"
+                },
+                "milestones": {
+                  "description": "The Staged Upgrade Milestones for the specific stage",
+                  "properties": {
+                    "scheduledFor": {
+                      "description": "The start time of the staged upgrade stage. (In ISO-8601 format, in the time zone of the network.)",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "scheduledFor"
+                  ],
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "stages"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "networkId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/firmwareUpgrades/staged/events/rollbacks"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**products**: The network devices to be updated",
+              {
+                "$ul": [
+                  [
+                    "**switch**: The Switch network to be updated",
+                    {
+                      "$ul": [
+                        [
+                          "**nextUpgrade**: Details of the next firmware upgrade",
+                          {
+                            "$ul": [
+                              [
+                                "**toVersion**: Details of the version the device will upgrade to",
+                                {
+                                  "$ul": [
+                                    "**id**: Id of the Version being upgraded to",
+                                    "**shortName**: Firmware version short name"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**reasons**: Reasons for the rollback",
+            "**stages**: The ordered stages in the network"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

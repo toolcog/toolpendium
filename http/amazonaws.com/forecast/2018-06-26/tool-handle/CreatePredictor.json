@@ -1,0 +1,941 @@
+{
+  "name": "CreatePredictor",
+  "description": "<note> <p> This operation creates a legacy predictor that does not include all the predictor functionalities provided by Amazon Forecast. To create a predictor that is compatible with all aspects of Forecast, use <a>CreateAutoPredictor</a>.</p> </note> <p>Creates an Amazon Forecast predictor.</p> <p>In the request, provide a dataset group and either specify an algorithm or let Amazon Forecast choose an algorithm for you using AutoML. If you specify an algorithm, you also can override algorithm-specific hyperparameters.</p> <p>Amazon Forecast uses the algorithm to train a predictor using the latest version of the datasets in the specified dataset group. You can then generate a forecast using the <a>CreateForecast</a> operation.</p> <p> To see the evaluation metrics, use the <a>GetAccuracyMetrics</a> operation. </p> <p>You can specify a featurization configuration to fill and aggregate the data fields in the <code>TARGET_TIME_SERIES</code> dataset to improve model training. For more information, see <a>FeaturizationConfig</a>.</p> <p>For RELATED_TIME_SERIES datasets, <code>CreatePredictor</code> verifies that the <code>DataFrequency</code> specified when the dataset was created matches the <code>ForecastFrequency</code>. TARGET_TIME_SERIES datasets don't have this restriction. Amazon Forecast also verifies the delimiter and timestamp format. For more information, see <a>howitworks-datasets-groups</a>.</p> <p>By default, predictors are trained and evaluated at the 0.1 (P10), 0.5 (P50), and 0.9 (P90) quantiles. You can choose custom forecast types to train and evaluate your predictor by setting the <code>ForecastTypes</code>. </p> <p> <b>AutoML</b> </p> <p>If you want Amazon Forecast to evaluate each algorithm and choose the one that minimizes the <code>objective function</code>, set <code>PerformAutoML</code> to <code>true</code>. The <code>objective function</code> is defined as the mean of the weighted losses over the forecast types. By default, these are the p10, p50, and p90 quantile losses. For more information, see <a>EvaluationResult</a>.</p> <p>When AutoML is enabled, the following properties are disallowed:</p> <ul> <li> <p> <code>AlgorithmArn</code> </p> </li> <li> <p> <code>HPOConfig</code> </p> </li> <li> <p> <code>PerformHPO</code> </p> </li> <li> <p> <code>TrainingParameters</code> </p> </li> </ul> <p>To get a list of all of your predictors, use the <a>ListPredictors</a> operation.</p> <note> <p>Before you can use the predictor to create a forecast, the <code>Status</code> of the predictor must be <code>ACTIVE</code>, signifying that training has completed. To get the status, use the <a>DescribePredictor</a> operation.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "AmazonForecast.CreatePredictor"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreatePredictorRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreatePredictorRequest": {
+        "type": "object",
+        "required": [
+          "PredictorName",
+          "ForecastHorizon",
+          "InputDataConfig",
+          "FeaturizationConfig"
+        ],
+        "title": "CreatePredictorRequest",
+        "properties": {
+          "PredictorName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "A name for the predictor."
+              }
+            ]
+          },
+          "AlgorithmArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "<p>The Amazon Resource Name (ARN) of the algorithm to use for model training. Required if <code>PerformAutoML</code> is not set to <code>true</code>.</p> <p class=\"title\"> <b>Supported algorithms:</b> </p> <ul> <li> <p> <code>arn:aws:forecast:::algorithm/ARIMA</code> </p> </li> <li> <p> <code>arn:aws:forecast:::algorithm/CNN-QR</code> </p> </li> <li> <p> <code>arn:aws:forecast:::algorithm/Deep_AR_Plus</code> </p> </li> <li> <p> <code>arn:aws:forecast:::algorithm/ETS</code> </p> </li> <li> <p> <code>arn:aws:forecast:::algorithm/NPTS</code> </p> </li> <li> <p> <code>arn:aws:forecast:::algorithm/Prophet</code> </p> </li> </ul>"
+              }
+            ]
+          },
+          "ForecastHorizon": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "<p>Specifies the number of time-steps that the model is trained to predict. The forecast horizon is also called the prediction length.</p> <p>For example, if you configure a dataset for daily data collection (using the <code>DataFrequency</code> parameter of the <a>CreateDataset</a> operation) and set the forecast horizon to 10, the model returns predictions for 10 days.</p> <p>The maximum forecast horizon is the lesser of 500 time-steps or 1/3 of the TARGET_TIME_SERIES dataset length.</p>"
+              }
+            ]
+          },
+          "ForecastTypes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ForecastTypes"
+              },
+              {
+                "description": "<p>Specifies the forecast types used to train a predictor. You can specify up to five forecast types. Forecast types can be quantiles from 0.01 to 0.99, by increments of 0.01 or higher. You can also specify the mean forecast with <code>mean</code>. </p> <p>The default value is <code>[\"0.10\", \"0.50\", \"0.9\"]</code>.</p>"
+              }
+            ]
+          },
+          "PerformAutoML": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "<p>Whether to perform AutoML. When Amazon Forecast performs AutoML, it evaluates the algorithms it provides and chooses the best algorithm and configuration for your training dataset.</p> <p>The default value is <code>false</code>. In this case, you are required to specify an algorithm.</p> <p>Set <code>PerformAutoML</code> to <code>true</code> to have Amazon Forecast perform AutoML. This is a good option if you aren't sure which algorithm is suitable for your training data. In this case, <code>PerformHPO</code> must be false.</p>"
+              }
+            ]
+          },
+          "AutoMLOverrideStrategy": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AutoMLOverrideStrategy"
+              },
+              {
+                "description": "<note> <p> The <code>LatencyOptimized</code> AutoML override strategy is only available in private beta. Contact Amazon Web Services Support or your account manager to learn more about access privileges. </p> </note> <p>Used to overide the default AutoML strategy, which is to optimize predictor accuracy. To apply an AutoML strategy that minimizes training time, use <code>LatencyOptimized</code>.</p> <p>This parameter is only valid for predictors trained using AutoML.</p>"
+              }
+            ]
+          },
+          "PerformHPO": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "<p>Whether to perform hyperparameter optimization (HPO). HPO finds optimal hyperparameter values for your training data. The process of performing HPO is known as running a hyperparameter tuning job.</p> <p>The default value is <code>false</code>. In this case, Amazon Forecast uses default hyperparameter values from the chosen algorithm.</p> <p>To override the default values, set <code>PerformHPO</code> to <code>true</code> and, optionally, supply the <a>HyperParameterTuningJobConfig</a> object. The tuning job specifies a metric to optimize, which hyperparameters participate in tuning, and the valid range for each tunable hyperparameter. In this case, you are required to specify an algorithm and <code>PerformAutoML</code> must be false.</p> <p>The following algorithms support HPO:</p> <ul> <li> <p>DeepAR+</p> </li> <li> <p>CNN-QR</p> </li> </ul>"
+              }
+            ]
+          },
+          "TrainingParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TrainingParameters"
+              },
+              {
+                "description": "The hyperparameters to override for model training. The hyperparameters that you can override are listed in the individual algorithms. For the list of supported algorithms, see <a>aws-forecast-choosing-recipes</a>."
+              }
+            ]
+          },
+          "EvaluationParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EvaluationParameters"
+              },
+              {
+                "description": "Used to override the default evaluation parameters of the specified algorithm. Amazon Forecast evaluates a predictor by splitting a dataset into training data and testing data. The evaluation parameters define how to perform the split and the number of iterations."
+              }
+            ]
+          },
+          "HPOConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HyperParameterTuningJobConfig"
+              },
+              {
+                "description": "<p>Provides hyperparameter override values for the algorithm. If you don't provide this parameter, Amazon Forecast uses default values. The individual algorithms specify which hyperparameters support hyperparameter optimization (HPO). For more information, see <a>aws-forecast-choosing-recipes</a>.</p> <p>If you included the <code>HPOConfig</code> object, you must set <code>PerformHPO</code> to true.</p>"
+              }
+            ]
+          },
+          "InputDataConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/InputDataConfig"
+              },
+              {
+                "description": "Describes the dataset group that contains the data to use to train the predictor."
+              }
+            ]
+          },
+          "FeaturizationConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeaturizationConfig"
+              },
+              {
+                "description": "The featurization configuration."
+              }
+            ]
+          },
+          "EncryptionConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EncryptionConfig"
+              },
+              {
+                "description": "An Key Management Service (KMS) key and the Identity and Access Management (IAM) role that Amazon Forecast can assume to access the key."
+              }
+            ]
+          },
+          "Tags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Tags"
+              },
+              {
+                "description": "<p>The optional metadata that you apply to the predictor to help you categorize and organize them. Each tag consists of a key and an optional value, both of which you define.</p> <p>The following basic restrictions apply to tags:</p> <ul> <li> <p>Maximum number of tags per resource - 50.</p> </li> <li> <p>For each resource, each tag key must be unique, and each tag key can have only one value.</p> </li> <li> <p>Maximum key length - 128 Unicode characters in UTF-8.</p> </li> <li> <p>Maximum value length - 256 Unicode characters in UTF-8.</p> </li> <li> <p>If your tagging schema is used across multiple services and resources, remember that other services may have restrictions on allowed characters. Generally allowed characters are: letters, numbers, and spaces representable in UTF-8, and the following characters: + - = . _ : / @.</p> </li> <li> <p>Tag keys and values are case sensitive.</p> </li> <li> <p>Do not use <code>aws:</code>, <code>AWS:</code>, or any upper or lowercase combination of such as a prefix for keys as it is reserved for Amazon Web Services use. You cannot edit or delete tag keys with this prefix. Values can have this prefix. If a tag value has <code>aws</code> as its prefix but the key does not, then Forecast considers it to be a user tag and will count against the limit of 50 tags. Tags with only the key prefix of <code>aws</code> do not count against your tags per resource limit.</p> </li> </ul>"
+              }
+            ]
+          },
+          "OptimizationMetric": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OptimizationMetric"
+              },
+              {
+                "description": "The accuracy metric used to optimize the predictor."
+              }
+            ]
+          }
+        }
+      },
+      "Name": {
+        "type": "string",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:([a-z\\d-]+):forecast:.*:.*:.+",
+        "maxLength": 256
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "ForecastTypes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ForecastType"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "ForecastType": {
+        "type": "string",
+        "pattern": "(^0?\\.\\d\\d?$|^mean$)",
+        "minLength": 2,
+        "maxLength": 4
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "AutoMLOverrideStrategy": {
+        "type": "string",
+        "enum": [
+          "LatencyOptimized",
+          "AccuracyOptimized"
+        ]
+      },
+      "TrainingParameters": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 100,
+        "additionalProperties": {
+          "$ref": "#/$defs/ParameterValue"
+        }
+      },
+      "ParameterValue": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_\\.\\/\\[\\]\\,\\\"\\\\\\s]+$",
+        "maxLength": 256
+      },
+      "EvaluationParameters": {
+        "type": "object",
+        "properties": {
+          "NumberOfBacktestWindows": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The number of times to split the input data. The default is 1. Valid values are 1 through 5."
+              }
+            ]
+          },
+          "BackTestWindowOffset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "<p>The point from the end of the dataset where you want to split the data for model training and testing (evaluation). Specify the value as the number of data points. The default is the value of the forecast horizon. <code>BackTestWindowOffset</code> can be used to mimic a past virtual forecast start date. This value must be greater than or equal to the forecast horizon and less than half of the TARGET_TIME_SERIES dataset length.</p> <p> <code>ForecastHorizon</code> &lt;= <code>BackTestWindowOffset</code> &lt; 1/2 * TARGET_TIME_SERIES dataset length</p>"
+              }
+            ]
+          }
+        },
+        "description": "Parameters that define how to split a dataset into training data and testing data, and the number of iterations to perform. These parameters are specified in the predefined algorithms but you can override them in the <a>CreatePredictor</a> request."
+      },
+      "HyperParameterTuningJobConfig": {
+        "type": "object",
+        "properties": {
+          "ParameterRanges": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterRanges"
+              },
+              {
+                "description": "Specifies the ranges of valid values for the hyperparameters."
+              }
+            ]
+          }
+        },
+        "description": "<p>Configuration information for a hyperparameter tuning job. You specify this object in the <a>CreatePredictor</a> request.</p> <p>A <i>hyperparameter</i> is a parameter that governs the model training process. You set hyperparameters before training starts, unlike model parameters, which are determined during training. The values of the hyperparameters effect which values are chosen for the model parameters.</p> <p>In a <i>hyperparameter tuning job</i>, Amazon Forecast chooses the set of hyperparameter values that optimize a specified metric. Forecast accomplishes this by running many training jobs over a range of hyperparameter values. The optimum set of values depends on the algorithm, the training data, and the specified metric objective.</p>"
+      },
+      "ParameterRanges": {
+        "type": "object",
+        "properties": {
+          "CategoricalParameterRanges": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CategoricalParameterRanges"
+              },
+              {
+                "description": "Specifies the tunable range for each categorical hyperparameter."
+              }
+            ]
+          },
+          "ContinuousParameterRanges": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContinuousParameterRanges"
+              },
+              {
+                "description": "Specifies the tunable range for each continuous hyperparameter."
+              }
+            ]
+          },
+          "IntegerParameterRanges": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IntegerParameterRanges"
+              },
+              {
+                "description": "Specifies the tunable range for each integer hyperparameter."
+              }
+            ]
+          }
+        },
+        "description": "Specifies the categorical, continuous, and integer hyperparameters, and their ranges of tunable values. The range of tunable values determines which values that a hyperparameter tuning job can choose for the specified hyperparameter. This object is part of the <a>HyperParameterTuningJobConfig</a> object."
+      },
+      "CategoricalParameterRanges": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CategoricalParameterRange"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "CategoricalParameterRange": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Values"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the categorical hyperparameter to tune."
+              }
+            ]
+          },
+          "Values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Values"
+              },
+              {
+                "description": "A list of the tunable categories for the hyperparameter."
+              }
+            ]
+          }
+        },
+        "description": "Specifies a categorical hyperparameter and it's range of tunable values. This object is part of the <a>ParameterRanges</a> object."
+      },
+      "Values": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Value"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "Value": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\_\\-]+$",
+        "maxLength": 256
+      },
+      "ContinuousParameterRanges": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ContinuousParameterRange"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "ContinuousParameterRange": {
+        "type": "object",
+        "required": [
+          "Name",
+          "MaxValue",
+          "MinValue"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the hyperparameter to tune."
+              }
+            ]
+          },
+          "MaxValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Double"
+              },
+              {
+                "description": "The maximum tunable value of the hyperparameter."
+              }
+            ]
+          },
+          "MinValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Double"
+              },
+              {
+                "description": "The minimum tunable value of the hyperparameter."
+              }
+            ]
+          },
+          "ScalingType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScalingType"
+              },
+              {
+                "description": "<p>The scale that hyperparameter tuning uses to search the hyperparameter range. Valid values:</p> <dl> <dt>Auto</dt> <dd> <p>Amazon Forecast hyperparameter tuning chooses the best scale for the hyperparameter.</p> </dd> <dt>Linear</dt> <dd> <p>Hyperparameter tuning searches the values in the hyperparameter range by using a linear scale.</p> </dd> <dt>Logarithmic</dt> <dd> <p>Hyperparameter tuning searches the values in the hyperparameter range by using a logarithmic scale.</p> <p>Logarithmic scaling works only for ranges that have values greater than 0.</p> </dd> <dt>ReverseLogarithmic</dt> <dd> <p>hyperparameter tuning searches the values in the hyperparameter range by using a reverse logarithmic scale.</p> <p>Reverse logarithmic scaling works only for ranges that are entirely within the range 0 &lt;= x &lt; 1.0.</p> </dd> </dl> <p>For information about choosing a hyperparameter scale, see <a href=\"http://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning-define-ranges.html#scaling-type\">Hyperparameter Scaling</a>. One of the following values:</p>"
+              }
+            ]
+          }
+        },
+        "description": "Specifies a continuous hyperparameter and it's range of tunable values. This object is part of the <a>ParameterRanges</a> object."
+      },
+      "Double": {
+        "type": "number",
+        "format": "double"
+      },
+      "ScalingType": {
+        "type": "string",
+        "enum": [
+          "Auto",
+          "Linear",
+          "Logarithmic",
+          "ReverseLogarithmic"
+        ]
+      },
+      "IntegerParameterRanges": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/IntegerParameterRange"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "IntegerParameterRange": {
+        "type": "object",
+        "required": [
+          "Name",
+          "MaxValue",
+          "MinValue"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the hyperparameter to tune."
+              }
+            ]
+          },
+          "MaxValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The maximum tunable value of the hyperparameter."
+              }
+            ]
+          },
+          "MinValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The minimum tunable value of the hyperparameter."
+              }
+            ]
+          },
+          "ScalingType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScalingType"
+              },
+              {
+                "description": "<p>The scale that hyperparameter tuning uses to search the hyperparameter range. Valid values:</p> <dl> <dt>Auto</dt> <dd> <p>Amazon Forecast hyperparameter tuning chooses the best scale for the hyperparameter.</p> </dd> <dt>Linear</dt> <dd> <p>Hyperparameter tuning searches the values in the hyperparameter range by using a linear scale.</p> </dd> <dt>Logarithmic</dt> <dd> <p>Hyperparameter tuning searches the values in the hyperparameter range by using a logarithmic scale.</p> <p>Logarithmic scaling works only for ranges that have values greater than 0.</p> </dd> <dt>ReverseLogarithmic</dt> <dd> <p>Not supported for <code>IntegerParameterRange</code>.</p> <p>Reverse logarithmic scaling works only for ranges that are entirely within the range 0 &lt;= x &lt; 1.0.</p> </dd> </dl> <p>For information about choosing a hyperparameter scale, see <a href=\"http://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning-define-ranges.html#scaling-type\">Hyperparameter Scaling</a>. One of the following values:</p>"
+              }
+            ]
+          }
+        },
+        "description": "Specifies an integer hyperparameter and it's range of tunable values. This object is part of the <a>ParameterRanges</a> object."
+      },
+      "InputDataConfig": {
+        "type": "object",
+        "required": [
+          "DatasetGroupArn"
+        ],
+        "properties": {
+          "DatasetGroupArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the dataset group."
+              }
+            ]
+          },
+          "SupplementaryFeatures": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SupplementaryFeatures"
+              },
+              {
+                "description": "An array of supplementary features. The only supported feature is a holiday calendar."
+              }
+            ]
+          }
+        },
+        "description": "<note> <p>This object belongs to the <a>CreatePredictor</a> operation. If you created your predictor with <a>CreateAutoPredictor</a>, see <a>DataConfig</a>.</p> </note> <p>The data used to train a predictor. The data includes a dataset group and any supplementary features. You specify this object in the <a>CreatePredictor</a> request.</p>"
+      },
+      "SupplementaryFeatures": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SupplementaryFeature"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "SupplementaryFeature": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Value"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the feature. Valid values: <code>\"holiday\"</code> and <code>\"weather\"</code>."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Value"
+              },
+              {
+                "description": "<p> <b>Weather Index</b> </p> <p>To enable the Weather Index, set the value to <code>\"true\"</code> </p> <p> <b>Holidays</b> </p> <p>To enable Holidays, specify a country with one of the following two-letter country codes:</p> <ul> <li> <p>\"AL\" - ALBANIA</p> </li> <li> <p>\"AR\" - ARGENTINA</p> </li> <li> <p>\"AT\" - AUSTRIA</p> </li> <li> <p>\"AU\" - AUSTRALIA</p> </li> <li> <p>\"BA\" - BOSNIA HERZEGOVINA</p> </li> <li> <p>\"BE\" - BELGIUM</p> </li> <li> <p>\"BG\" - BULGARIA</p> </li> <li> <p>\"BO\" - BOLIVIA</p> </li> <li> <p>\"BR\" - BRAZIL</p> </li> <li> <p>\"BY\" - BELARUS</p> </li> <li> <p>\"CA\" - CANADA</p> </li> <li> <p>\"CL\" - CHILE</p> </li> <li> <p>\"CO\" - COLOMBIA</p> </li> <li> <p>\"CR\" - COSTA RICA</p> </li> <li> <p>\"HR\" - CROATIA</p> </li> <li> <p>\"CZ\" - CZECH REPUBLIC</p> </li> <li> <p>\"DK\" - DENMARK</p> </li> <li> <p>\"EC\" - ECUADOR</p> </li> <li> <p>\"EE\" - ESTONIA</p> </li> <li> <p>\"ET\" - ETHIOPIA</p> </li> <li> <p>\"FI\" - FINLAND</p> </li> <li> <p>\"FR\" - FRANCE</p> </li> <li> <p>\"DE\" - GERMANY</p> </li> <li> <p>\"GR\" - GREECE</p> </li> <li> <p>\"HU\" - HUNGARY</p> </li> <li> <p>\"IS\" - ICELAND</p> </li> <li> <p>\"IN\" - INDIA</p> </li> <li> <p>\"IE\" - IRELAND</p> </li> <li> <p>\"IT\" - ITALY</p> </li> <li> <p>\"JP\" - JAPAN</p> </li> <li> <p>\"KZ\" - KAZAKHSTAN</p> </li> <li> <p>\"KR\" - KOREA</p> </li> <li> <p>\"LV\" - LATVIA</p> </li> <li> <p>\"LI\" - LIECHTENSTEIN</p> </li> <li> <p>\"LT\" - LITHUANIA</p> </li> <li> <p>\"LU\" - LUXEMBOURG</p> </li> <li> <p>\"MK\" - MACEDONIA</p> </li> <li> <p>\"MT\" - MALTA</p> </li> <li> <p>\"MX\" - MEXICO</p> </li> <li> <p>\"MD\" - MOLDOVA</p> </li> <li> <p>\"ME\" - MONTENEGRO</p> </li> <li> <p>\"NL\" - NETHERLANDS</p> </li> <li> <p>\"NZ\" - NEW ZEALAND</p> </li> <li> <p>\"NI\" - NICARAGUA</p> </li> <li> <p>\"NG\" - NIGERIA</p> </li> <li> <p>\"NO\" - NORWAY</p> </li> <li> <p>\"PA\" - PANAMA</p> </li> <li> <p>\"PY\" - PARAGUAY</p> </li> <li> <p>\"PE\" - PERU</p> </li> <li> <p>\"PL\" - POLAND</p> </li> <li> <p>\"PT\" - PORTUGAL</p> </li> <li> <p>\"RO\" - ROMANIA</p> </li> <li> <p>\"RU\" - RUSSIA</p> </li> <li> <p>\"RS\" - SERBIA</p> </li> <li> <p>\"SK\" - SLOVAKIA</p> </li> <li> <p>\"SI\" - SLOVENIA</p> </li> <li> <p>\"ZA\" - SOUTH AFRICA</p> </li> <li> <p>\"ES\" - SPAIN</p> </li> <li> <p>\"SE\" - SWEDEN</p> </li> <li> <p>\"CH\" - SWITZERLAND</p> </li> <li> <p>\"UA\" - UKRAINE</p> </li> <li> <p>\"AE\" - UNITED ARAB EMIRATES</p> </li> <li> <p>\"US\" - UNITED STATES</p> </li> <li> <p>\"UK\" - UNITED KINGDOM</p> </li> <li> <p>\"UY\" - URUGUAY</p> </li> <li> <p>\"VE\" - VENEZUELA</p> </li> </ul>"
+              }
+            ]
+          }
+        },
+        "description": "<note> <p>This object belongs to the <a>CreatePredictor</a> operation. If you created your predictor with <a>CreateAutoPredictor</a>, see <a>AdditionalDataset</a>.</p> </note> <p>Describes a supplementary feature of a dataset group. This object is part of the <a>InputDataConfig</a> object. Forecast supports the Weather Index and Holidays built-in featurizations.</p> <p> <b>Weather Index</b> </p> <p>The Amazon Forecast Weather Index is a built-in featurization that incorporates historical and projected weather information into your model. The Weather Index supplements your datasets with over two years of historical weather data and up to 14 days of projected weather data. For more information, see <a href=\"https://docs.aws.amazon.com/forecast/latest/dg/weather.html\">Amazon Forecast Weather Index</a>.</p> <p> <b>Holidays</b> </p> <p>Holidays is a built-in featurization that incorporates a feature-engineered dataset of national holiday information into your model. It provides native support for the holiday calendars of 66 countries. To view the holiday calendars, refer to the <a href=\"http://jollyday.sourceforge.net/data.html\">Jollyday</a> library. For more information, see <a href=\"https://docs.aws.amazon.com/forecast/latest/dg/holidays.html\">Holidays Featurization</a>.</p>"
+      },
+      "FeaturizationConfig": {
+        "type": "object",
+        "required": [
+          "ForecastFrequency"
+        ],
+        "properties": {
+          "ForecastFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Frequency"
+              },
+              {
+                "description": "<p>The frequency of predictions in a forecast.</p> <p>Valid intervals are an integer followed by Y (Year), M (Month), W (Week), D (Day), H (Hour), and min (Minute). For example, \"1D\" indicates every day and \"15min\" indicates every 15 minutes. You cannot specify a value that would overlap with the next larger frequency. That means, for example, you cannot specify a frequency of 60 minutes, because that is equivalent to 1 hour. The valid values for each frequency are the following:</p> <ul> <li> <p>Minute - 1-59</p> </li> <li> <p>Hour - 1-23</p> </li> <li> <p>Day - 1-6</p> </li> <li> <p>Week - 1-4</p> </li> <li> <p>Month - 1-11</p> </li> <li> <p>Year - 1</p> </li> </ul> <p>Thus, if you want every other week forecasts, specify \"2W\". Or, if you want quarterly forecasts, you specify \"3M\".</p> <p>The frequency must be greater than or equal to the TARGET_TIME_SERIES dataset frequency.</p> <p>When a RELATED_TIME_SERIES dataset is provided, the frequency must be equal to the TARGET_TIME_SERIES dataset frequency.</p>"
+              }
+            ]
+          },
+          "ForecastDimensions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ForecastDimensions"
+              },
+              {
+                "description": "<p>An array of dimension (field) names that specify how to group the generated forecast.</p> <p>For example, suppose that you are generating a forecast for item sales across all of your stores, and your dataset contains a <code>store_id</code> field. If you want the sales forecast for each item by store, you would specify <code>store_id</code> as the dimension.</p> <p>All forecast dimensions specified in the <code>TARGET_TIME_SERIES</code> dataset don't need to be specified in the <code>CreatePredictor</code> request. All forecast dimensions specified in the <code>RELATED_TIME_SERIES</code> dataset must be specified in the <code>CreatePredictor</code> request.</p>"
+              }
+            ]
+          },
+          "Featurizations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Featurizations"
+              },
+              {
+                "description": "An array of featurization (transformation) information for the fields of a dataset."
+              }
+            ]
+          }
+        },
+        "description": "<note> <p>This object belongs to the <a>CreatePredictor</a> operation. If you created your predictor with <a>CreateAutoPredictor</a>, see <a>AttributeConfig</a>.</p> </note> <p>In a <a>CreatePredictor</a> operation, the specified algorithm trains a model using the specified dataset group. You can optionally tell the operation to modify data fields prior to training a model. These modifications are referred to as <i>featurization</i>.</p> <p>You define featurization using the <code>FeaturizationConfig</code> object. You specify an array of transformations, one for each field that you want to featurize. You then include the <code>FeaturizationConfig</code> object in your <code>CreatePredictor</code> request. Amazon Forecast applies the featurization to the <code>TARGET_TIME_SERIES</code> and <code>RELATED_TIME_SERIES</code> datasets before model training.</p> <p>You can create multiple featurization configurations. For example, you might call the <code>CreatePredictor</code> operation twice by specifying different featurization configurations.</p>"
+      },
+      "Frequency": {
+        "type": "string",
+        "pattern": "^Y|M|W|D|H|30min|15min|10min|5min|1min$",
+        "minLength": 1,
+        "maxLength": 5
+      },
+      "ForecastDimensions": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Name"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "Featurizations": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Featurization"
+        },
+        "minItems": 1,
+        "maxItems": 50
+      },
+      "Featurization": {
+        "type": "object",
+        "required": [
+          "AttributeName"
+        ],
+        "properties": {
+          "AttributeName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the schema attribute that specifies the data field to be featurized. Amazon Forecast supports the target field of the <code>TARGET_TIME_SERIES</code> and the <code>RELATED_TIME_SERIES</code> datasets. For example, for the <code>RETAIL</code> domain, the target is <code>demand</code>, and for the <code>CUSTOM</code> domain, the target is <code>target_value</code>. For more information, see <a>howitworks-missing-values</a>."
+              }
+            ]
+          },
+          "FeaturizationPipeline": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeaturizationPipeline"
+              },
+              {
+                "description": "An array of one <code>FeaturizationMethod</code> object that specifies the feature transformation method."
+              }
+            ]
+          }
+        },
+        "description": "<note> <p>This object belongs to the <a>CreatePredictor</a> operation. If you created your predictor with <a>CreateAutoPredictor</a>, see <a>AttributeConfig</a>.</p> </note> <p>Provides featurization (transformation) information for a dataset field. This object is part of the <a>FeaturizationConfig</a> object.</p> <p>For example:</p> <p> <code>{</code> </p> <p> <code>\"AttributeName\": \"demand\",</code> </p> <p> <code>FeaturizationPipeline [ {</code> </p> <p> <code>\"FeaturizationMethodName\": \"filling\",</code> </p> <p> <code>\"FeaturizationMethodParameters\": {\"aggregation\": \"avg\", \"backfill\": \"nan\"}</code> </p> <p> <code>} ]</code> </p> <p> <code>}</code> </p>"
+      },
+      "FeaturizationPipeline": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/FeaturizationMethod"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "FeaturizationMethod": {
+        "type": "object",
+        "required": [
+          "FeaturizationMethodName"
+        ],
+        "properties": {
+          "FeaturizationMethodName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeaturizationMethodName"
+              },
+              {
+                "description": "The name of the method. The \"filling\" method is the only supported method."
+              }
+            ]
+          },
+          "FeaturizationMethodParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeaturizationMethodParameters"
+              },
+              {
+                "description": "<p>The method parameters (key-value pairs), which are a map of override parameters. Specify these parameters to override the default values. Related Time Series attributes do not accept aggregation parameters.</p> <p>The following list shows the parameters and their valid values for the \"filling\" featurization method for a <b>Target Time Series</b> dataset. Bold signifies the default value.</p> <ul> <li> <p> <code>aggregation</code>: <b>sum</b>, <code>avg</code>, <code>first</code>, <code>min</code>, <code>max</code> </p> </li> <li> <p> <code>frontfill</code>: <b>none</b> </p> </li> <li> <p> <code>middlefill</code>: <b>zero</b>, <code>nan</code> (not a number), <code>value</code>, <code>median</code>, <code>mean</code>, <code>min</code>, <code>max</code> </p> </li> <li> <p> <code>backfill</code>: <b>zero</b>, <code>nan</code>, <code>value</code>, <code>median</code>, <code>mean</code>, <code>min</code>, <code>max</code> </p> </li> </ul> <p>The following list shows the parameters and their valid values for a <b>Related Time Series</b> featurization method (there are no defaults):</p> <ul> <li> <p> <code>middlefill</code>: <code>zero</code>, <code>value</code>, <code>median</code>, <code>mean</code>, <code>min</code>, <code>max</code> </p> </li> <li> <p> <code>backfill</code>: <code>zero</code>, <code>value</code>, <code>median</code>, <code>mean</code>, <code>min</code>, <code>max</code> </p> </li> <li> <p> <code>futurefill</code>: <code>zero</code>, <code>value</code>, <code>median</code>, <code>mean</code>, <code>min</code>, <code>max</code> </p> </li> </ul> <p>To set a filling method to a specific value, set the fill parameter to <code>value</code> and define the value in a corresponding <code>_value</code> parameter. For example, to set backfilling to a value of 2, include the following: <code>\"backfill\": \"value\"</code> and <code>\"backfill_value\":\"2\"</code>. </p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Provides information about the method that featurizes (transforms) a dataset field. The method is part of the <code>FeaturizationPipeline</code> of the <a>Featurization</a> object. </p> <p>The following is an example of how you specify a <code>FeaturizationMethod</code> object.</p> <p> <code>{</code> </p> <p> <code>\"FeaturizationMethodName\": \"filling\",</code> </p> <p> <code>\"FeaturizationMethodParameters\": {\"aggregation\": \"sum\", \"middlefill\": \"zero\", \"backfill\": \"zero\"}</code> </p> <p> <code>}</code> </p>"
+      },
+      "FeaturizationMethodName": {
+        "type": "string",
+        "enum": [
+          "filling"
+        ]
+      },
+      "FeaturizationMethodParameters": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 20,
+        "additionalProperties": {
+          "$ref": "#/$defs/ParameterValue"
+        }
+      },
+      "EncryptionConfig": {
+        "type": "object",
+        "required": [
+          "RoleArn",
+          "KMSKeyArn"
+        ],
+        "properties": {
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "<p>The ARN of the IAM role that Amazon Forecast can assume to access the KMS key.</p> <p>Passing a role across Amazon Web Services accounts is not allowed. If you pass a role that isn't in your account, you get an <code>InvalidInputException</code> error.</p>"
+              }
+            ]
+          },
+          "KMSKeyArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KMSKeyArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the KMS key."
+              }
+            ]
+          }
+        },
+        "description": "An Key Management Service (KMS) key and an Identity and Access Management (IAM) role that Amazon Forecast can assume to access the key. You can specify this optional object in the <a>CreateDataset</a> and <a>CreatePredictor</a> requests."
+      },
+      "KMSKeyArn": {
+        "type": "string",
+        "pattern": "arn:aws:kms:.*:key/.*",
+        "maxLength": 256
+      },
+      "Tags": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Tag"
+        },
+        "minItems": 0,
+        "maxItems": 200
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "One part of a key-value pair that makes up a tag. A <code>key</code> is a general label that acts like a category for more specific tag values."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The optional part of a key-value pair that makes up a tag. A <code>value</code> acts as a descriptor within a tag category (key)."
+              }
+            ]
+          }
+        },
+        "description": "<p>The optional metadata that you apply to a resource to help you categorize and organize them. Each tag consists of a key and an optional value, both of which you define.</p> <p>The following basic restrictions apply to tags:</p> <ul> <li> <p>Maximum number of tags per resource - 50.</p> </li> <li> <p>For each resource, each tag key must be unique, and each tag key can have only one value.</p> </li> <li> <p>Maximum key length - 128 Unicode characters in UTF-8.</p> </li> <li> <p>Maximum value length - 256 Unicode characters in UTF-8.</p> </li> <li> <p>If your tagging schema is used across multiple services and resources, remember that other services may have restrictions on allowed characters. Generally allowed characters are: letters, numbers, and spaces representable in UTF-8, and the following characters: + - = . _ : / @.</p> </li> <li> <p>Tag keys and values are case sensitive.</p> </li> <li> <p>Do not use <code>aws:</code>, <code>AWS:</code>, or any upper or lowercase combination of such as a prefix for keys as it is reserved for Amazon Web Services use. You cannot edit or delete tag keys with this prefix. Values can have this prefix. If a tag value has <code>aws</code> as its prefix but the key does not, then Forecast considers it to be a user tag and will count against the limit of 50 tags. Tags with only the key prefix of <code>aws</code> do not count against your tags per resource limit.</p> </li> </ul>"
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+        "minLength": 1,
+        "maxLength": 128,
+        "format": "password"
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+        "minLength": 0,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "OptimizationMetric": {
+        "type": "string",
+        "enum": [
+          "WAPE",
+          "RMSE",
+          "AverageWeightedQuantileLoss",
+          "MASE",
+          "MAPE"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://forecast.us-east-1.amazonaws.com/#X-Amz-Target=AmazonForecast.CreatePredictor"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**PredictorArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

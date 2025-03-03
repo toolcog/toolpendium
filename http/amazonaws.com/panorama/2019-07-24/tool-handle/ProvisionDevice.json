@@ -1,0 +1,378 @@
+{
+  "name": "ProvisionDevice",
+  "description": "Creates a device and returns a configuration archive. The configuration archive is a ZIP file that contains a provisioning certificate that is valid for 5 minutes. Name the configuration archive <code>certificates-omni_<i>device-name</i>.zip</code> and transfer it to the device within 5 minutes. Use the included USB storage device and connect it to the USB 3.0 port next to the HDMI output.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "Description": {
+            "description": "A description for the device.",
+            "type": "string",
+            "pattern": "^.*$",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "Name": {
+            "description": "A name for the device.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-\\_]+$",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "NetworkingConfiguration": {
+            "description": "The network configuration for a device.",
+            "type": "object",
+            "properties": {
+              "Ethernet0": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EthernetPayload"
+                  },
+                  {
+                    "description": "Settings for Ethernet port 0."
+                  }
+                ]
+              },
+              "Ethernet1": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EthernetPayload"
+                  },
+                  {
+                    "description": "Settings for Ethernet port 1."
+                  }
+                ]
+              },
+              "Ntp": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NtpPayload"
+                  },
+                  {
+                    "description": "Network time protocol (NTP) server settings."
+                  }
+                ]
+              }
+            }
+          },
+          "Tags": {
+            "description": "Tags for the device.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "EthernetPayload": {
+        "type": "object",
+        "required": [
+          "ConnectionType"
+        ],
+        "properties": {
+          "ConnectionType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConnectionType"
+              },
+              {
+                "description": "How the device gets an IP address."
+              }
+            ]
+          },
+          "StaticIpConnectionInfo": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StaticIpConnectionInfo"
+              },
+              {
+                "description": "Network configuration for a static IP connection."
+              }
+            ]
+          }
+        },
+        "description": "A device's network configuration."
+      },
+      "ConnectionType": {
+        "type": "string",
+        "enum": [
+          "STATIC_IP",
+          "DHCP"
+        ]
+      },
+      "StaticIpConnectionInfo": {
+        "type": "object",
+        "required": [
+          "DefaultGateway",
+          "Dns",
+          "IpAddress",
+          "Mask"
+        ],
+        "properties": {
+          "DefaultGateway": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DefaultGateway"
+              },
+              {
+                "description": "The connection's default gateway."
+              }
+            ]
+          },
+          "Dns": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DnsList"
+              },
+              {
+                "description": "The connection's DNS address."
+              }
+            ]
+          },
+          "IpAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IpAddress"
+              },
+              {
+                "description": "The connection's IP address."
+              }
+            ]
+          },
+          "Mask": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Mask"
+              },
+              {
+                "description": "The connection's DNS mask."
+              }
+            ]
+          }
+        },
+        "description": "A static IP configuration."
+      },
+      "DefaultGateway": {
+        "type": "string",
+        "pattern": "^.+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DnsList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Dns"
+        }
+      },
+      "Dns": {
+        "type": "string",
+        "pattern": "^.+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "IpAddress": {
+        "type": "string",
+        "pattern": "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d))(:(6553[0-5]|655[0-2]\\d|65[0-4]\\d{2}|6[0-4]\\d{3}|[1-5]\\d{4}|[1-9]\\d{0,3}))?$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "Mask": {
+        "type": "string",
+        "pattern": "^.+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "NtpPayload": {
+        "type": "object",
+        "required": [
+          "NtpServers"
+        ],
+        "properties": {
+          "NtpServers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NtpServerList"
+              },
+              {
+                "description": "NTP servers to use, in order of preference."
+              }
+            ]
+          }
+        },
+        "description": "Network time protocol (NTP) server settings. Use this option to connect to local NTP servers instead of <code>pool.ntp.org</code>."
+      },
+      "NtpServerList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/IpAddressOrServerName"
+        },
+        "minItems": 0,
+        "maxItems": 5
+      },
+      "IpAddressOrServerName": {
+        "type": "string",
+        "pattern": "(^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}$)|(^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d))(:(6553[0-5]|655[0-2]\\d|65[0-4]\\d{2}|6[0-4]\\d{3}|[1-5]\\d{4}|[1-9]\\d{0,3}))?$)",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^.*$",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://panorama.us-east-1.amazonaws.com/devices"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Arn**",
+            "**Certificates**",
+            "**DeviceId**",
+            "**IotThingName**",
+            "**Status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

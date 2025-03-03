@@ -1,0 +1,91 @@
+{
+  "name": "getSyndicatedComments",
+  "description": "List comments on videos",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "format": {
+        "enum": [
+          "xml",
+          "rss",
+          "rss2",
+          "atom",
+          "atom1",
+          "json",
+          "json1"
+        ],
+        "type": "string",
+        "description": "format expected (we focus on making `rss` the most featureful ; it serves [Media RSS](https://www.rssboard.org/media-rss))"
+      },
+      "videoId": {
+        "type": "string",
+        "description": "limit listing to a specific video"
+      },
+      "accountId": {
+        "type": "string",
+        "description": "limit listing to a specific account"
+      },
+      "accountName": {
+        "type": "string",
+        "description": "limit listing to a specific account"
+      },
+      "videoChannelId": {
+        "type": "string",
+        "description": "limit listing to a specific video channel"
+      },
+      "videoChannelName": {
+        "type": "string",
+        "description": "limit listing to a specific video channel"
+      }
+    },
+    "required": [
+      "format"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://peertube2.cpy.re/feeds/video-comments.{format}{?videoId,accountId,accountName,videoChannelId,videoChannelName}"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**content:encoded**",
+            "**dc:creator**",
+            "**guid**",
+            "**link**",
+            "**pubDate**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

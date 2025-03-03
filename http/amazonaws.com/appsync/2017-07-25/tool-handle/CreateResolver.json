@@ -1,0 +1,379 @@
+{
+  "name": "CreateResolver",
+  "description": "<p>Creates a <code>Resolver</code> object.</p> <p>A resolver converts incoming requests into a format that a data source can understand, and converts the data source's responses into GraphQL.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "apiId": {
+        "type": "string",
+        "description": "The ID for the GraphQL API for which the resolver is being created."
+      },
+      "typeName": {
+        "type": "string",
+        "pattern": "[_A-Za-z][_0-9A-Za-z]*",
+        "minLength": 1,
+        "maxLength": 65536,
+        "description": "The name of the <code>Type</code>."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "fieldName"
+        ],
+        "properties": {
+          "fieldName": {
+            "description": "The name of the field to attach the resolver to.",
+            "type": "string",
+            "pattern": "[_A-Za-z][_0-9A-Za-z]*",
+            "minLength": 1,
+            "maxLength": 65536
+          },
+          "dataSourceName": {
+            "description": "The name of the data source for which the resolver is being created.",
+            "type": "string",
+            "pattern": "[_A-Za-z][_0-9A-Za-z]*",
+            "minLength": 1,
+            "maxLength": 65536
+          },
+          "requestMappingTemplate": {
+            "description": "<p>The mapping template to use for requests.</p> <p>A resolver uses a request mapping template to convert a GraphQL expression into a format that a data source can understand. Mapping templates are written in Apache Velocity Template Language (VTL).</p> <p>VTL request mapping templates are optional when using an Lambda data source. For all other data sources, VTL request and response mapping templates are required.</p>",
+            "type": "string",
+            "pattern": "^.*$",
+            "minLength": 1,
+            "maxLength": 65536
+          },
+          "responseMappingTemplate": {
+            "description": "The mapping template to use for responses from the data source.",
+            "type": "string",
+            "pattern": "^.*$",
+            "minLength": 1,
+            "maxLength": 65536
+          },
+          "kind": {
+            "description": "<p>The resolver type.</p> <ul> <li> <p> <b>UNIT</b>: A UNIT resolver type. A UNIT resolver is the default resolver type. You can use a UNIT resolver to run a GraphQL query against a single data source.</p> </li> <li> <p> <b>PIPELINE</b>: A PIPELINE resolver type. You can use a PIPELINE resolver to invoke a series of <code>Function</code> objects in a serial manner. You can use a pipeline resolver to run a GraphQL query against multiple data sources.</p> </li> </ul>",
+            "type": "string",
+            "enum": [
+              "UNIT",
+              "PIPELINE"
+            ]
+          },
+          "pipelineConfig": {
+            "description": "The pipeline configuration for a resolver of kind <code>PIPELINE</code>.",
+            "type": "object",
+            "properties": {
+              "functions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FunctionsIds"
+                  },
+                  {
+                    "description": "A list of <code>Function</code> objects."
+                  }
+                ]
+              }
+            }
+          },
+          "syncConfig": {
+            "description": "<p>Describes a Sync configuration for a resolver.</p> <p>Specifies which Conflict Detection strategy and Resolution strategy to use when the resolver is invoked.</p>",
+            "type": "object",
+            "properties": {
+              "conflictHandler": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ConflictHandlerType"
+                  },
+                  {
+                    "description": "<p>The Conflict Resolution strategy to perform in the event of a conflict.</p> <ul> <li> <p> <b>OPTIMISTIC_CONCURRENCY</b>: Resolve conflicts by rejecting mutations when versions don't match the latest version at the server.</p> </li> <li> <p> <b>AUTOMERGE</b>: Resolve conflicts with the Automerge conflict resolution strategy.</p> </li> <li> <p> <b>LAMBDA</b>: Resolve conflicts with an Lambda function supplied in the <code>LambdaConflictHandlerConfig</code>.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "conflictDetection": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ConflictDetectionType"
+                  },
+                  {
+                    "description": "<p>The Conflict Detection strategy to use.</p> <ul> <li> <p> <b>VERSION</b>: Detect conflicts based on object versions for this resolver.</p> </li> <li> <p> <b>NONE</b>: Do not detect conflicts when invoking this resolver.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "lambdaConflictHandlerConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LambdaConflictHandlerConfig"
+                  },
+                  {
+                    "description": "The <code>LambdaConflictHandlerConfig</code> when configuring <code>LAMBDA</code> as the Conflict Handler."
+                  }
+                ]
+              }
+            }
+          },
+          "cachingConfig": {
+            "description": "The caching configuration for a resolver that has caching activated.",
+            "type": "object",
+            "properties": {
+              "ttl": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Long"
+                  },
+                  {
+                    "description": "<p>The TTL in seconds for a resolver that has caching activated.</p> <p>Valid values are 1–3,600 seconds.</p>"
+                  }
+                ]
+              },
+              "cachingKeys": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CachingKeys"
+                  },
+                  {
+                    "description": "<p>The caching keys for a resolver that has caching activated.</p> <p>Valid values are entries from the <code>$context.arguments</code>, <code>$context.source</code>, and <code>$context.identity</code> maps.</p>"
+                  }
+                ]
+              }
+            }
+          },
+          "maxBatchSize": {
+            "description": "The maximum batching size for a resolver.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "runtime": {
+            "description": "Describes a runtime used by an Amazon Web Services AppSync pipeline resolver or Amazon Web Services AppSync function. Specifies the name and version of the runtime to use. Note that if a runtime is specified, code must also be specified.",
+            "type": "object",
+            "properties": {
+              "name": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RuntimeName"
+                  },
+                  {
+                    "description": "The <code>name</code> of the runtime to use. Currently, the only allowed value is <code>APPSYNC_JS</code>."
+                  }
+                ]
+              },
+              "runtimeVersion": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "The <code>version</code> of the runtime to use. Currently, the only allowed version is <code>1.0.0</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "code": {
+            "description": "The <code>resolver</code> code that contains the request and response functions. When code is used, the <code>runtime</code> is required. The <code>runtime</code> value must be <code>APPSYNC_JS</code>.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32768
+          }
+        }
+      }
+    },
+    "required": [
+      "apiId",
+      "typeName",
+      "body"
+    ],
+    "$defs": {
+      "FunctionsIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/String"
+        }
+      },
+      "String": {
+        "type": "string"
+      },
+      "ConflictHandlerType": {
+        "type": "string",
+        "enum": [
+          "OPTIMISTIC_CONCURRENCY",
+          "LAMBDA",
+          "AUTOMERGE",
+          "NONE"
+        ]
+      },
+      "ConflictDetectionType": {
+        "type": "string",
+        "enum": [
+          "VERSION",
+          "NONE"
+        ]
+      },
+      "LambdaConflictHandlerConfig": {
+        "type": "object",
+        "properties": {
+          "lambdaConflictHandlerArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) for the Lambda function to use as the Conflict Handler."
+              }
+            ]
+          }
+        },
+        "description": "The <code>LambdaConflictHandlerConfig</code> object when configuring <code>LAMBDA</code> as the Conflict Handler."
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "CachingKeys": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/String"
+        }
+      },
+      "RuntimeName": {
+        "type": "string",
+        "enum": [
+          "APPSYNC_JS"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://appsync.us-east-1.amazonaws.com/v1/apis/{apiId}/types/{typeName}/resolvers"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**resolver**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

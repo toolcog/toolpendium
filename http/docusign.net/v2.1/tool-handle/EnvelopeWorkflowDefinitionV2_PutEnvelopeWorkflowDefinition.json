@@ -1,0 +1,404 @@
+{
+  "name": "EnvelopeWorkflowDefinitionV2_PutEnvelopeWorkflowDefinition",
+  "description": "Updates the specified envelope's workflow.\n\nYou can use this endpoint to add scheduled sending to a draft envelope. You can also update the scheduled sending for a sent envelope if the scheduled sending countdown is in progress. In that case, the envelope will be reset to a draft state.\n\nYou can also add delayed routing to a draft envelope or a sent envelope that has not started workflow processing.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "envelopeId": {
+        "type": "string",
+        "description": "The envelope's GUID. \n\nExample: `93be49ab-xxxx-xxxx-xxxx-f752070d71ec`\n"
+      },
+      "body": {
+        "$ref": "#/$defs/workflow"
+      }
+    },
+    "required": [
+      "accountId",
+      "envelopeId"
+    ],
+    "$defs": {
+      "workflow": {
+        "description": "Describes the workflow for an envelope.",
+        "properties": {
+          "currentWorkflowStepId": {
+            "description": "The `workflowStepId` of the current step.\nThis is not an index into the `workflowSteps` array in this object.\nSee the `workflowStep` object.",
+            "type": "string"
+          },
+          "resumeDate": {
+            "description": "The ISO 8601 timestamp of when the envelope is scheduled to be sent, if applicable. Its value is the maximum of the `resumeDate` property on `scheduledSending` and the `resumeDate` property on the current `workflowStep`.\n\nThis property is read-only.",
+            "type": "string"
+          },
+          "scheduledSending": {
+            "$ref": "#/$defs/scheduledSending"
+          },
+          "workflowStatus": {
+            "description": "The status of the workflow:\n\n- `paused` if the workflow is paused\n- `in_progress` if the workflow is in progress",
+            "type": "string"
+          },
+          "workflowSteps": {
+            "description": "An array of workflow steps.",
+            "items": {
+              "$ref": "#/$defs/workflowStep"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "workflow",
+        "x-ms-summary": "Describes the workflow for an envelope."
+      },
+      "scheduledSending": {
+        "description": "A complex element that specifies the scheduled sending settings for the envelope.",
+        "properties": {
+          "bulkListId": {
+            "description": "The ID of the bulk list. Set this optional value to use scheduled sending with a bulk send operation.",
+            "type": "string"
+          },
+          "resumeDate": {
+            "description": "The timestamp of when the envelope is scheduled to be sent in ISO 8601 format.\n\nThis property is read-only.\n",
+            "type": "string"
+          },
+          "rules": {
+            "description": "User-specified rules indicating how and when the envelope should be scheduled for sending. Only one rule may be specified.",
+            "items": {
+              "$ref": "#/$defs/envelopeDelayRule"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "Status of the scheduled sending job. Valid values:\n\n* `pending`: The envelope has not yet been sent and the scheduled sending delay has not been initiated.\n* `started`: The sender has initiated the sending process. The delay has not elapsed, so the envelope has not yet been sent to the first recipient.\n* `completed`: The delay has elapsed and the envelope has been sent to the first recipient.\n\nThis property is read-only.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "scheduledSending",
+        "x-ms-summary": "A complex element that specifies the scheduled sending settings for the envelope."
+      },
+      "envelopeDelayRule": {
+        "description": "A user-specified object that describes the envelope delay.\n\nTo indicate a relative delay, use `delay`. To indicate the exact datetime the envelope should be sent, use `resumeDate`. Only one of the two properties can be used.",
+        "properties": {
+          "delay": {
+            "description": "A string timespan representing the duration of the sending delay. The timespan is in the format `d.hh:mm:ss` where `d` is the number of days, `hh` is the number of hours (measured on a 24-hour clock), `mm` is minutes, and `ss` is seconds. The maximum delay is 30 days.",
+            "type": "string"
+          },
+          "resumeDate": {
+            "description": "An ISO 8601 formatted datetime string indicating the date and time that the envelope will be sent. The specified datetime must occur in the future. It must not exceed 30 days from the time that the request is made.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "envelopeDelayRule",
+        "x-ms-summary": "A user-specified object that describes the envelope delay.\n\nTo indicate a relative delay, use `delay`. To indicate the exact datetime the envelope should be sent, use `resumeDate`. Only one of the two properties can be used."
+      },
+      "workflowStep": {
+        "description": "Describes a single step in a workflow.",
+        "properties": {
+          "action": {
+            "description": "Indicates the action to perform. Valid values:\n\n- `pause_before`: The workflow should pause before the trigger described by `triggerOnItem` is reached.\n",
+            "type": "string"
+          },
+          "completedDate": {
+            "description": "The timestamp of when the workflow step transitioned to `completed` status.\n\nThis property is read-only.",
+            "type": "string"
+          },
+          "delayedRouting": {
+            "$ref": "#/$defs/delayedRouting"
+          },
+          "itemId": {
+            "description": "The unique ID of the item being triggered.",
+            "type": "string"
+          },
+          "recipientRouting": {
+            "$ref": "#/$defs/recipientRouting"
+          },
+          "status": {
+            "description": "The status of the step. Valid values:\n\n- `inactive`\n- `in_progress`\n- `paused`\n- `pending`\n- `completed`\n\nThis property is read-only.",
+            "type": "string"
+          },
+          "triggerOnItem": {
+            "description": "The type of item that triggers this workflow step. Valid values:\n\n* `routing_order`",
+            "type": "string"
+          },
+          "triggeredDate": {
+            "description": "The timestamp of when the workflow step transitioned to `in_progress` status.\n\nThis property is read-only.",
+            "type": "string"
+          },
+          "workflowStepId": {
+            "description": "A unique identifier for this workflow step.\n\nThis property is read-only.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "workflowStep",
+        "x-ms-summary": "Describes a single step in a workflow."
+      },
+      "delayedRouting": {
+        "description": "A complex element that specifies the delayed routing settings for the workflow step.",
+        "properties": {
+          "resumeDate": {
+            "description": "The ISO 8601 timestamp of when the envelope is scheduled to be sent to the recipients associated with the workflow step. This property is `null` if the workflow step has not been initiated.\n\nThis property is read-only.\n",
+            "type": "string"
+          },
+          "rules": {
+            "description": "User-specified rules indicating how and when the envelope should sent for the workflow step and its associated recipients. Only one rule may be specified.",
+            "items": {
+              "$ref": "#/$defs/envelopeDelayRule"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "Status of the delayed routing step. Valid values:\n\n* `pending`: The workflow step has not been reached and the delay has not been initiated.\n* `started`: The workflow step has begun and the delay is in progress. The envelope has not yet been sent to the workflow step's recipients.\n* `completed`: The delay has elapsed and the envelope has been sent to the workflow step's recipients.\n\nThis property is read-only.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "delayedRouting",
+        "x-ms-summary": "A complex element that specifies the delayed routing settings for the workflow step."
+      },
+      "recipientRouting": {
+        "description": "Describes the recipient routing rules.",
+        "properties": {
+          "rules": {
+            "$ref": "#/$defs/recipientRules"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientRouting",
+        "x-ms-summary": "Describes the recipient routing rules."
+      },
+      "recipientRules": {
+        "description": "",
+        "properties": {
+          "conditionalRecipients": {
+            "description": "",
+            "items": {
+              "$ref": "#/$defs/conditionalRecipientRule"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientRules",
+        "x-ms-summary": ""
+      },
+      "conditionalRecipientRule": {
+        "description": "A rule that defines a set of recipients and the conditions under which they will be used for the envelope.",
+        "properties": {
+          "conditions": {
+            "description": "An array of conditions that define when the recipients will be used.",
+            "items": {
+              "$ref": "#/$defs/conditionalRecipientRuleCondition"
+            },
+            "type": "array"
+          },
+          "order": {
+            "description": "An integer that specifies the order in which rules are processed.\nLower values are processed before higher values.",
+            "type": "string"
+          },
+          "recipientGroup": {
+            "$ref": "#/$defs/recipientGroup"
+          },
+          "recipientId": {
+            "description": "Unique for the recipient. It is used by the tab element to indicate which recipient is to sign the Document.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "conditionalRecipientRule",
+        "x-ms-summary": "A rule that defines a set of recipients and the conditions under which they will be used for the envelope."
+      },
+      "conditionalRecipientRuleCondition": {
+        "description": "",
+        "properties": {
+          "filters": {
+            "description": "",
+            "items": {
+              "$ref": "#/$defs/conditionalRecipientRuleFilter"
+            },
+            "type": "array"
+          },
+          "order": {
+            "description": "An integer that specifies the order in which rules are processed.\nLower values are processed before higher values.",
+            "type": "string"
+          },
+          "recipientLabel": {
+            "description": "An identifier for the recipient. After assigning this value in a `recipient` object, you can reference it in the `conditions` object to set the recipient as a conditional recipient. For an example, see [How to use conditional recipients](/docs/esign-rest-api/how-to/use-conditional-recipients/).\n",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "conditionalRecipientRuleCondition",
+        "x-ms-summary": ""
+      },
+      "conditionalRecipientRuleFilter": {
+        "description": "",
+        "properties": {
+          "operator": {
+            "description": "How the tab value is compared to the `value` property. Valid values:\n\n* `equals`\n* `greaterThan`\n* `greaterThanEquals`\n* `lessThan`\n* `lessThanEquals`\n* `filled`\n* `selected`",
+            "type": "string"
+          },
+          "recipientId": {
+            "description": "The ID of the recipient (as specified in the `recipients` object).",
+            "type": "string"
+          },
+          "scope": {
+            "description": "The scope under which the condition is evaluated. Valid values:\n\n* `tabs`",
+            "type": "string"
+          },
+          "tabId": {
+            "description": "The unique identifier for the tab.",
+            "type": "string"
+          },
+          "tabLabel": {
+            "description": "The label associated with the tab. This value may be an empty string.\nIf no value is provided, the tab type is used as the value.\n\nMaximum Length: 500 characters.\n",
+            "type": "string"
+          },
+          "tabType": {
+            "description": "Indicates the type of tab (for example, `signHere` or `initialHere`).",
+            "type": "string"
+          },
+          "value": {
+            "description": "A set value to which the tab's actual value is compared.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "conditionalRecipientRuleFilter",
+        "x-ms-summary": ""
+      },
+      "recipientGroup": {
+        "description": "Describes a group of recipients.",
+        "properties": {
+          "groupMessage": {
+            "description": "The group message, typically a description of the group.",
+            "type": "string"
+          },
+          "groupName": {
+            "description": "The name of the group.",
+            "type": "string"
+          },
+          "recipients": {
+            "description": "An array of recipient objects that provides details about the recipients of the envelope.",
+            "items": {
+              "$ref": "#/$defs/recipientOption"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientGroup",
+        "x-ms-summary": "Describes a group of recipients."
+      },
+      "recipientOption": {
+        "description": "Describes a recipient who is a member of a conditional group.",
+        "properties": {
+          "email": {
+            "description": "The email ID of the agent. This property is required. Maximum length: 100 characters.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The full legal name of the recipient. Maximum length: 100 characters.",
+            "type": "string"
+          },
+          "recipientLabel": {
+            "description": "An identifier for the recipient. After assigning this value in a `recipient` object, you can reference it in the `conditions` object to set the recipient as a conditional recipient. For an example, see [How to use conditional recipients](/docs/esign-rest-api/how-to/use-conditional-recipients/).\n",
+            "type": "string"
+          },
+          "roleName": {
+            "description": "Specifies the signing group role of the recipient. This property is required.",
+            "type": "string"
+          },
+          "signingGroupId": {
+            "description": "The ID of the [signing group](https://support.docusign.com/en/guides/ndse-user-guide-signing-groups).\n",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientOption",
+        "x-ms-summary": "Describes a recipient who is a member of a conditional group."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/workflow"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Describes the workflow for an envelope.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**currentWorkflowStepId**: The `workflowStepId` of the current step.",
+            "**resumeDate**: The ISO 8601 timestamp of when the envelope is scheduled to be sent, if applicable. Its value is the maximum of the `resumeDate` property on `scheduledSending` and the `resumeDate` property on the current `workflowStep`.",
+            [
+              "**scheduledSending**: A complex element that specifies the scheduled sending settings for the envelope.",
+              {
+                "$ul": [
+                  "**bulkListId**: The ID of the bulk list. Set this optional value to use scheduled sending with a bulk send operation.",
+                  "**resumeDate**: The timestamp of when the envelope is scheduled to be sent in ISO 8601 format.",
+                  "**rules**: User-specified rules indicating how and when the envelope should be scheduled for sending. Only one rule may be specified.",
+                  "**status**: Status of the scheduled sending job. Valid values:"
+                ]
+              }
+            ],
+            "**workflowStatus**: The status of the workflow:",
+            "**workflowSteps**: An array of workflow steps."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

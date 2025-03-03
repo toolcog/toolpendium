@@ -1,0 +1,458 @@
+{
+  "name": "BatchWriteItem",
+  "description": "<p>The <code>BatchWriteItem</code> operation puts or deletes multiple items in one or more tables. A single call to <code>BatchWriteItem</code> can transmit up to 16MB of data over the network, consisting of up to 25 item put or delete operations. While individual items can be up to 400 KB once stored, it's important to note that an item's representation might be greater than 400KB while being sent in DynamoDB's JSON format for the API call. For more details on this distinction, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html\">Naming Rules and Data Types</a>.</p> <note> <p> <code>BatchWriteItem</code> cannot update items. If you perform a <code>BatchWriteItem</code> operation on an existing item, that item's values will be overwritten by the operation and it will appear like it was updated. To update items, we recommend you use the <code>UpdateItem</code> action.</p> </note> <p>The individual <code>PutItem</code> and <code>DeleteItem</code> operations specified in <code>BatchWriteItem</code> are atomic; however <code>BatchWriteItem</code> as a whole is not. If any requested operations fail because the table's provisioned throughput is exceeded or an internal processing failure occurs, the failed operations are returned in the <code>UnprocessedItems</code> response parameter. You can investigate and optionally resend the requests. Typically, you would call <code>BatchWriteItem</code> in a loop. Each iteration would check for unprocessed items and submit a new <code>BatchWriteItem</code> request with those unprocessed items until all items have been processed.</p> <p>If <i>none</i> of the items can be processed due to insufficient provisioned throughput on all of the tables in the request, then <code>BatchWriteItem</code> returns a <code>ProvisionedThroughputExceededException</code>.</p> <important> <p>If DynamoDB returns any unprocessed items, you should retry the batch operation on those items. However, <i>we strongly recommend that you use an exponential backoff algorithm</i>. If you retry the batch operation immediately, the underlying read or write requests can still fail due to throttling on the individual tables. If you delay the batch operation using exponential backoff, the individual requests in the batch are much more likely to succeed.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ErrorHandling.html#Programming.Errors.BatchOperations\">Batch Operations and Error Handling</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p> </important> <p>With <code>BatchWriteItem</code>, you can efficiently write or delete large amounts of data, such as from Amazon EMR, or copy data from another database into DynamoDB. In order to improve performance with these large-scale operations, <code>BatchWriteItem</code> does not behave in the same way as individual <code>PutItem</code> and <code>DeleteItem</code> calls would. For example, you cannot specify conditions on individual put and delete requests, and <code>BatchWriteItem</code> does not return deleted items in the response.</p> <p>If you use a programming language that supports concurrency, you can use threads to write items in parallel. Your application must include the necessary logic to manage the threads. With languages that don't support threading, you must update or delete the specified items one at a time. In both situations, <code>BatchWriteItem</code> performs the specified put and delete operations in parallel, giving you the power of the thread pool approach without having to introduce complexity into your application.</p> <p>Parallel processing reduces latency, but each specified put and delete request consumes the same number of write capacity units whether it is processed in parallel or not. Delete operations on nonexistent items consume one write capacity unit.</p> <p>If one or more of the following is true, DynamoDB rejects the entire batch write operation:</p> <ul> <li> <p>One or more tables specified in the <code>BatchWriteItem</code> request does not exist.</p> </li> <li> <p>Primary key attributes specified on an item in the request do not match those in the corresponding table's primary key schema.</p> </li> <li> <p>You try to perform multiple operations on the same item in the same <code>BatchWriteItem</code> request. For example, you cannot put and delete the same item in the same <code>BatchWriteItem</code> request. </p> </li> <li> <p> Your request contains at least two items with identical hash and range keys (which essentially is two put operations). </p> </li> <li> <p>There are more than 25 requests in the batch.</p> </li> <li> <p>Any individual item in a batch exceeds 400 KB.</p> </li> <li> <p>The total request size exceeds 16 MB.</p> </li> </ul>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "DynamoDB_20120810.BatchWriteItem"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/BatchWriteItemInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "BatchWriteItemInput": {
+        "type": "object",
+        "required": [
+          "RequestItems"
+        ],
+        "title": "BatchWriteItemInput",
+        "properties": {
+          "RequestItems": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BatchWriteItemRequestMap"
+              },
+              {
+                "description": "<p>A map of one or more table names and, for each table, a list of operations to be performed (<code>DeleteRequest</code> or <code>PutRequest</code>). Each element in the map consists of the following:</p> <ul> <li> <p> <code>DeleteRequest</code> - Perform a <code>DeleteItem</code> operation on the specified item. The item to be deleted is identified by a <code>Key</code> subelement:</p> <ul> <li> <p> <code>Key</code> - A map of primary key attribute values that uniquely identify the item. Each entry in this map consists of an attribute name and an attribute value. For each primary key, you must provide <i>all</i> of the key attributes. For example, with a simple primary key, you only need to provide a value for the partition key. For a composite primary key, you must provide values for <i>both</i> the partition key and the sort key.</p> </li> </ul> </li> <li> <p> <code>PutRequest</code> - Perform a <code>PutItem</code> operation on the specified item. The item to be put is identified by an <code>Item</code> subelement:</p> <ul> <li> <p> <code>Item</code> - A map of attributes and their values. Each entry in this map consists of an attribute name and an attribute value. Attribute values must not be null; string and binary type attributes must have lengths greater than zero; and set type attributes must not be empty. Requests that contain empty values are rejected with a <code>ValidationException</code> exception.</p> <p>If you specify any attributes that are part of an index key, then the data types for those attributes must match those of the schema in the table's attribute definition.</p> </li> </ul> </li> </ul>"
+              }
+            ]
+          },
+          "ReturnConsumedCapacity": {
+            "$ref": "#/$defs/ReturnConsumedCapacity"
+          },
+          "ReturnItemCollectionMetrics": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReturnItemCollectionMetrics"
+              },
+              {
+                "description": "Determines whether item collection metrics are returned. If set to <code>SIZE</code>, the response includes statistics about item collections, if any, that were modified during the operation are returned in the response. If set to <code>NONE</code> (the default), no statistics are returned."
+              }
+            ]
+          }
+        },
+        "description": "Represents the input of a <code>BatchWriteItem</code> operation."
+      },
+      "BatchWriteItemRequestMap": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 25,
+        "additionalProperties": {
+          "$ref": "#/$defs/WriteRequests"
+        }
+      },
+      "WriteRequests": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/WriteRequest"
+        },
+        "minItems": 1,
+        "maxItems": 25
+      },
+      "WriteRequest": {
+        "type": "object",
+        "properties": {
+          "PutRequest": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PutRequest"
+              },
+              {
+                "description": "A request to perform a <code>PutItem</code> operation."
+              }
+            ]
+          },
+          "DeleteRequest": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeleteRequest"
+              },
+              {
+                "description": "A request to perform a <code>DeleteItem</code> operation."
+              }
+            ]
+          }
+        },
+        "description": "Represents an operation to perform - either <code>DeleteItem</code> or <code>PutItem</code>. You can only request one of these operations, not both, in a single <code>WriteRequest</code>. If you do need to perform both of these operations, you need to provide two separate <code>WriteRequest</code> objects."
+      },
+      "PutRequest": {
+        "type": "object",
+        "required": [
+          "Item"
+        ],
+        "properties": {
+          "Item": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PutItemInputAttributeMap"
+              },
+              {
+                "description": "A map of attribute name to attribute values, representing the primary key of an item to be processed by <code>PutItem</code>. All of the table's primary key attributes must be specified, and their data types must match those of the table's key schema. If any attributes are present in the item that are part of an index key schema for the table, their types must match the index key schema."
+              }
+            ]
+          }
+        },
+        "description": "Represents a request to perform a <code>PutItem</code> operation on an item."
+      },
+      "PutItemInputAttributeMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "AttributeValue": {
+        "type": "object",
+        "properties": {
+          "S": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type String. For example:</p> <p> <code>\"S\": \"Hello\"</code> </p>"
+              }
+            ]
+          },
+          "N": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Number. For example:</p> <p> <code>\"N\": \"123.45\"</code> </p> <p>Numbers are sent across the network to DynamoDB as strings, to maximize compatibility across languages and libraries. However, DynamoDB treats them as number type attributes for mathematical operations.</p>"
+              }
+            ]
+          },
+          "B": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BinaryAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Binary. For example:</p> <p> <code>\"B\": \"dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk\"</code> </p>"
+              }
+            ]
+          },
+          "SS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringSetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type String Set. For example:</p> <p> <code>\"SS\": [\"Giraffe\", \"Hippo\" ,\"Zebra\"]</code> </p>"
+              }
+            ]
+          },
+          "NS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberSetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Number Set. For example:</p> <p> <code>\"NS\": [\"42.2\", \"-19\", \"7.5\", \"3.14\"]</code> </p> <p>Numbers are sent across the network to DynamoDB as strings, to maximize compatibility across languages and libraries. However, DynamoDB treats them as number type attributes for mathematical operations.</p>"
+              }
+            ]
+          },
+          "BS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BinarySetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Binary Set. For example:</p> <p> <code>\"BS\": [\"U3Vubnk=\", \"UmFpbnk=\", \"U25vd3k=\"]</code> </p>"
+              }
+            ]
+          },
+          "M": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MapAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Map. For example:</p> <p> <code>\"M\": {\"Name\": {\"S\": \"Joe\"}, \"Age\": {\"N\": \"35\"}}</code> </p>"
+              }
+            ]
+          },
+          "L": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type List. For example:</p> <p> <code>\"L\": [ {\"S\": \"Cookies\"} , {\"S\": \"Coffee\"}, {\"N\": \"3.14159\"}]</code> </p>"
+              }
+            ]
+          },
+          "NULL": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Null. For example:</p> <p> <code>\"NULL\": true</code> </p>"
+              }
+            ]
+          },
+          "BOOL": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BooleanAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Boolean. For example:</p> <p> <code>\"BOOL\": true</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Represents the data for an attribute.</p> <p>Each attribute value is described as a name-value pair. The name is the data type, and the value is the data itself.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html#HowItWorks.DataTypes\">Data Types</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+      },
+      "StringAttributeValue": {
+        "type": "string"
+      },
+      "NumberAttributeValue": {
+        "type": "string"
+      },
+      "BinaryAttributeValue": {
+        "type": "string"
+      },
+      "StringSetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/StringAttributeValue"
+        }
+      },
+      "NumberSetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NumberAttributeValue"
+        }
+      },
+      "BinarySetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BinaryAttributeValue"
+        }
+      },
+      "MapAttributeValue": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "ListAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "NullAttributeValue": {
+        "type": "boolean"
+      },
+      "BooleanAttributeValue": {
+        "type": "boolean"
+      },
+      "DeleteRequest": {
+        "type": "object",
+        "required": [
+          "Key"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Key"
+              },
+              {
+                "description": "A map of attribute name to attribute values, representing the primary key of the item to delete. All of the table's primary key attributes must be specified, and their data types must match those of the table's key schema."
+              }
+            ]
+          }
+        },
+        "description": "Represents a request to perform a <code>DeleteItem</code> operation on an item."
+      },
+      "Key": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "ReturnConsumedCapacity": {
+        "type": "string",
+        "enum": [
+          "INDEXES",
+          "TOTAL",
+          "NONE"
+        ],
+        "description": "<p>Determines the level of detail about either provisioned or on-demand throughput consumption that is returned in the response:</p> <ul> <li> <p> <code>INDEXES</code> - The response includes the aggregate <code>ConsumedCapacity</code> for the operation, together with <code>ConsumedCapacity</code> for each table and secondary index that was accessed.</p> <p>Note that some operations, such as <code>GetItem</code> and <code>BatchGetItem</code>, do not access any indexes at all. In these cases, specifying <code>INDEXES</code> will only return <code>ConsumedCapacity</code> information for table(s).</p> </li> <li> <p> <code>TOTAL</code> - The response includes only the aggregate <code>ConsumedCapacity</code> for the operation.</p> </li> <li> <p> <code>NONE</code> - No <code>ConsumedCapacity</code> details are included in the response.</p> </li> </ul>"
+      },
+      "ReturnItemCollectionMetrics": {
+        "type": "string",
+        "enum": [
+          "SIZE",
+          "NONE"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://dynamodb.us-east-1.amazonaws.com/#X-Amz-Target=DynamoDB_20120810.BatchWriteItem"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents the output of a <code>BatchWriteItem</code> operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**UnprocessedItems**",
+            "**ItemCollectionMetrics**",
+            "**ConsumedCapacity**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

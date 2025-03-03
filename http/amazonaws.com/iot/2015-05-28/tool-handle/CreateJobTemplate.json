@@ -1,0 +1,639 @@
+{
+  "name": "CreateJobTemplate",
+  "description": "<p>Creates a job template.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiot.html#awsiot-actions-as-permissions\">CreateJobTemplate</a> action.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "jobTemplateId": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_-]+",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "A unique identifier for the job template. We recommend using a UUID. Alpha-numeric characters, \"-\", and \"_\" are valid for use here."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "properties": {
+          "jobArn": {
+            "description": "The ARN of the job to use as the basis for the job template.",
+            "type": "string"
+          },
+          "documentSource": {
+            "description": "<p>An S3 link to the job document to use in the template. Required if you don't specify a value for <code>document</code>.</p> <note> <p>If the job document resides in an S3 bucket, you must use a placeholder link when specifying the document.</p> <p>The placeholder link is of the following form:</p> <p> <code>${aws:iot:s3-presigned-url:https://s3.amazonaws.com/<i>bucket</i>/<i>key</i>}</code> </p> <p>where <i>bucket</i> is your bucket name and <i>key</i> is the object in the bucket to which you are linking.</p> </note>",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1350
+          },
+          "document": {
+            "description": "The job document. Required if you don't specify a value for <code>documentSource</code>.",
+            "type": "string",
+            "maxLength": 32768
+          },
+          "description": {
+            "description": "A description of the job document.",
+            "type": "string",
+            "pattern": "[^\\p{C}]+",
+            "maxLength": 2028
+          },
+          "presignedUrlConfig": {
+            "description": "Configuration for pre-signed S3 URLs.",
+            "type": "object",
+            "properties": {
+              "roleArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RoleArn"
+                  },
+                  {
+                    "description": "<p>The ARN of an IAM role that grants permission to download files from the S3 bucket where the job data/updates are stored. The role must also grant permission for IoT to download the files.</p> <important> <p>For information about addressing the confused deputy problem, see <a href=\"https://docs.aws.amazon.com/iot/latest/developerguide/cross-service-confused-deputy-prevention.html\">cross-service confused deputy prevention</a> in the <i>Amazon Web Services IoT Core developer guide</i>.</p> </important>"
+                  }
+                ]
+              },
+              "expiresInSec": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ExpiresInSec"
+                  },
+                  {
+                    "description": "How long (in seconds) pre-signed URLs are valid. Valid values are 60 - 3600, the default value is 3600 seconds. Pre-signed URLs are generated when Jobs receives an MQTT request for the job document."
+                  }
+                ]
+              }
+            }
+          },
+          "jobExecutionsRolloutConfig": {
+            "description": "Allows you to create a staged rollout of a job.",
+            "type": "object",
+            "properties": {
+              "maximumPerMinute": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MaxJobExecutionsPerMin"
+                  },
+                  {
+                    "description": "The maximum number of things that will be notified of a pending job, per minute. This parameter allows you to create a staged rollout."
+                  }
+                ]
+              },
+              "exponentialRate": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ExponentialRolloutRate"
+                  },
+                  {
+                    "description": "The rate of increase for a job rollout. This parameter allows you to define an exponential rate for a job rollout."
+                  }
+                ]
+              }
+            }
+          },
+          "abortConfig": {
+            "description": "The criteria that determine when and how a job abort takes place.",
+            "type": "object",
+            "properties": {
+              "criteriaList": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AbortCriteriaList"
+                  },
+                  {
+                    "description": "The list of criteria that determine when and how to abort the job."
+                  }
+                ]
+              }
+            }
+          },
+          "timeoutConfig": {
+            "description": "Specifies the amount of time each device has to finish its execution of the job. A timer is started when the job execution status is set to <code>IN_PROGRESS</code>. If the job execution status is not set to another terminal state before the timer expires, it will be automatically set to <code>TIMED_OUT</code>.",
+            "type": "object",
+            "properties": {
+              "inProgressTimeoutInMinutes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/InProgressTimeoutInMinutes"
+                  },
+                  {
+                    "description": "Specifies the amount of time, in minutes, this device has to finish execution of this job. The timeout interval can be anywhere between 1 minute and 7 days (1 to 10080 minutes). The in progress timer can't be updated and will apply to all job executions for the job. Whenever a job execution remains in the IN_PROGRESS status for longer than this interval, the job execution will fail and switch to the terminal <code>TIMED_OUT</code> status."
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "Metadata that can be used to manage the job template.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            }
+          },
+          "jobExecutionsRetryConfig": {
+            "description": "The configuration that determines how many retries are allowed for each failure type for a job.",
+            "type": "object",
+            "properties": {
+              "criteriaList": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RetryCriteriaList"
+                  },
+                  {
+                    "description": "The list of criteria that determines how many retries are allowed for each failure type for a job."
+                  }
+                ]
+              }
+            }
+          },
+          "maintenanceWindows": {
+            "description": "Allows you to configure an optional maintenance window for the rollout of a job document to all devices in the target group for a job.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MaintenanceWindow"
+            }
+          },
+          "destinationPackageVersions": {
+            "description": "<p>The package version Amazon Resource Names (ARNs) that are installed on the device when the job successfully completes. </p> <p> <b>Note:</b>The following Length Constraints relates to a single string. Up to five strings are allowed.</p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PackageVersionArn"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "jobTemplateId",
+      "body"
+    ],
+    "$defs": {
+      "RoleArn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "ExpiresInSec": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 3600
+      },
+      "MaxJobExecutionsPerMin": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ExponentialRolloutRate": {
+        "type": "object",
+        "required": [
+          "baseRatePerMinute",
+          "incrementFactor",
+          "rateIncreaseCriteria"
+        ],
+        "properties": {
+          "baseRatePerMinute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RolloutRatePerMinute"
+              },
+              {
+                "description": "The minimum number of things that will be notified of a pending job, per minute at the start of job rollout. This parameter allows you to define the initial rate of rollout."
+              }
+            ]
+          },
+          "incrementFactor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IncrementFactor"
+              },
+              {
+                "description": "<p>The exponential factor to increase the rate of rollout for a job.</p> <p>Amazon Web Services IoT Core supports up to one digit after the decimal (for example, 1.5, but not 1.55).</p>"
+              }
+            ]
+          },
+          "rateIncreaseCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RateIncreaseCriteria"
+              },
+              {
+                "description": "The criteria to initiate the increase in rate of rollout for a job."
+              }
+            ]
+          }
+        },
+        "description": "Allows you to create an exponential rate of rollout for a job."
+      },
+      "RolloutRatePerMinute": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "IncrementFactor": {
+        "type": "number",
+        "format": "double",
+        "minimum": 1.1,
+        "maximum": 5
+      },
+      "RateIncreaseCriteria": {
+        "type": "object",
+        "properties": {
+          "numberOfNotifiedThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberOfThings"
+              },
+              {
+                "description": "The threshold for number of notified things that will initiate the increase in rate of rollout."
+              }
+            ]
+          },
+          "numberOfSucceededThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberOfThings"
+              },
+              {
+                "description": "The threshold for number of succeeded things that will initiate the increase in rate of rollout."
+              }
+            ]
+          }
+        },
+        "description": "Allows you to define a criteria to initiate the increase in rate of rollout for a job."
+      },
+      "NumberOfThings": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "AbortCriteriaList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AbortCriteria"
+        },
+        "minItems": 1
+      },
+      "AbortCriteria": {
+        "type": "object",
+        "required": [
+          "failureType",
+          "action",
+          "thresholdPercentage",
+          "minNumberOfExecutedThings"
+        ],
+        "properties": {
+          "failureType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JobExecutionFailureType"
+              },
+              {
+                "description": "The type of job execution failures that can initiate a job abort."
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AbortAction"
+              },
+              {
+                "description": "The type of job action to take to initiate the job abort."
+              }
+            ]
+          },
+          "thresholdPercentage": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AbortThresholdPercentage"
+              },
+              {
+                "description": "<p>The minimum percentage of job execution failures that must occur to initiate the job abort.</p> <p>Amazon Web Services IoT Core supports up to two digits after the decimal (for example, 10.9 and 10.99, but not 10.999).</p>"
+              }
+            ]
+          },
+          "minNumberOfExecutedThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MinimumNumberOfExecutedThings"
+              },
+              {
+                "description": "The minimum number of things which must receive job execution notifications before the job can be aborted."
+              }
+            ]
+          }
+        },
+        "description": "The criteria that determine when and how a job abort takes place."
+      },
+      "JobExecutionFailureType": {
+        "type": "string",
+        "enum": [
+          "FAILED",
+          "REJECTED",
+          "TIMED_OUT",
+          "ALL"
+        ]
+      },
+      "AbortAction": {
+        "type": "string",
+        "enum": [
+          "CANCEL"
+        ]
+      },
+      "AbortThresholdPercentage": {
+        "type": "number",
+        "format": "double",
+        "maximum": 100
+      },
+      "MinimumNumberOfExecutedThings": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "InProgressTimeoutInMinutes": {
+        "type": "integer"
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The tag's key."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The tag's value."
+              }
+            ]
+          }
+        },
+        "description": "A set of key/value pairs that are used to manage the resource."
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "RetryCriteriaList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/RetryCriteria"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "RetryCriteria": {
+        "type": "object",
+        "required": [
+          "failureType",
+          "numberOfRetries"
+        ],
+        "properties": {
+          "failureType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RetryableFailureType"
+              },
+              {
+                "description": "The type of job execution failures that can initiate a job retry."
+              }
+            ]
+          },
+          "numberOfRetries": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberOfRetries"
+              },
+              {
+                "description": "The number of retries allowed for a failure type for the job."
+              }
+            ]
+          }
+        },
+        "description": "The criteria that determines how many retries are allowed for each failure type for a job."
+      },
+      "RetryableFailureType": {
+        "type": "string",
+        "enum": [
+          "FAILED",
+          "TIMED_OUT",
+          "ALL"
+        ]
+      },
+      "NumberOfRetries": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10
+      },
+      "MaintenanceWindow": {
+        "type": "object",
+        "required": [
+          "startTime",
+          "durationInMinutes"
+        ],
+        "properties": {
+          "startTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CronExpression"
+              },
+              {
+                "description": "Displays the start time of the next maintenance window."
+              }
+            ]
+          },
+          "durationInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DurationInMinutes"
+              },
+              {
+                "description": "Displays the duration of the next maintenance window."
+              }
+            ]
+          }
+        },
+        "description": "An optional configuration within the <code>SchedulingConfig</code> to setup a recurring maintenance window with a predetermined start time and duration for the rollout of a job document to all devices in a target group for a job."
+      },
+      "CronExpression": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "DurationInMinutes": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1430
+      },
+      "PackageVersionArn": {
+        "type": "string",
+        "pattern": "^arn:[!-~]+$",
+        "minLength": 1,
+        "maxLength": 1600
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://iot.us-east-1.amazonaws.com/job-templates/{jobTemplateId}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**jobTemplateArn**",
+            "**jobTemplateId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

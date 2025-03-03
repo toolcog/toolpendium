@@ -1,0 +1,278 @@
+{
+  "name": "requestAuditNodeUserData",
+  "description": "<h3 style='padding: 5px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px; display: table-cell;'>&#128679; Deprecated since v4.32.0</h3>\n\n### Description: \nRetrieve a list of all nodes of type room, and the room assignment users with permissions.\n\n### Precondition:\nRight <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128275; read audit log</span> required.\n\n### Postcondition:\nList of rooms and their assigned users is returned.\n\n### Further Information:\n\nOutput is limited to **500** entries.  \nFor more results please use filter criteria and the `limit` parameter.\n\n### Filtering:\nAll filter fields are connected via logical conjunction (**AND**)  \nExcept for `userName`, `userFirstName` and  `userLastName` - these are connected via logical disjunction (**OR**)  \nFilter string syntax: `FIELD_NAME:OPERATOR:VALUE[:VALUE...]`\n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`userName:cn:searchString_1|userFirstName:cn:searchString_2|nodeId:eq:2`  \nFilter by user login containing `searchString_1` **OR** first name containing `searchString_2` **AND** node ID equals `2`.\n\n</details>\n\n### Filtering options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Filter Description | `OPERATOR` | Operator Description | `VALUE` |\n| :--- | :--- | :--- | :--- | :--- |\n| `nodeId` | Node ID filter | `eq` | Node ID equals value. | `positive Integer` |\n| `nodeName` | Node name filter | `cn, eq` | Node name contains / equals value. | `search String` |\n| `nodeParentId` | Node parent ID filter | `eq` | Parent ID equals value. | `positive Integer`<br>Parent ID `0` is the root node. |\n| `userId` | User ID filter | `eq` | User ID equals value. | `positive Integer` |\n| `userName` | Username (login) filter | `cn, eq` | Username contains / equals value. | `search String` |\n| `userFirstName` | User first name filter | `cn, eq` | User first name contains / equals value. | `search String` |\n| `userLastName` | User last name filter | `cn, eq` | User last name contains / equals value. | `search String` |\n| `permissionsManage` | Filter the users that do (not) have `manage` permissions in this room | `eq` |  | `true or false` |\n| `nodeIsEncrypted` | Encrypted node filter | `eq` |  | `true or false` |\n| `nodeHasActivitiesLog` | Activities log filter | `eq` |  | `true or false` |\n\n</details>\n\n### Deprecated filtering options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Filter Description | `OPERATOR` | Operator Description | `VALUE` |\n| :--- | :--- | :--- | :--- | :--- |\n| <del>`nodeHasRecycleBin`</del> | Recycle bin filter<br>**Filter has no effect!** | `eq` |  | `true or false` |\n\n</details>\n\n---\n\n### Sorting:\nSort string syntax: `FIELD_NAME:ORDER`  \n`ORDER` can be `asc` or `desc`.  \nMultiple sort fields are supported.\n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`nodeName:asc`  \nSort by `nodeName` ascending.\n\n</details>\n\n### Sorting options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Description |\n| :--- | :--- |\n| `nodeId` | Node ID |\n| `nodeName` | Node name |\n| `nodeParentId` | Node parent ID |\n| `nodeSize` | Node size |\n| `nodeQuota` | Node quota |\n\n</details>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "offset": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range offset"
+      },
+      "limit": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range limit.\n\nMaximum 500.\n\n For more results please use paging (`offset` + `limit`)."
+      },
+      "filter": {
+        "type": "string",
+        "description": "Filter string"
+      },
+      "sort": {
+        "type": "string",
+        "description": "Sort string"
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v4/eventlog/audits/nodes{?offset,limit,filter,sort}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Audit node report",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**auditUserPermissionList**: List of assigned users with permissions",
+            "**nodeCntChildren**: Number of direct children",
+            "**nodeCreatedAt**: Creation date",
+            [
+              "**nodeCreatedBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ],
+            "**nodeHasActivitiesLog**: Is activities log active (for rooms only) (default: true)",
+            "**nodeHasRecycleBin**: &#128679; Deprecated since v4.10.0",
+            "**nodeId**: Node ID",
+            "**nodeIsEncrypted**: Encryption state",
+            "**nodeName**: Node name",
+            "**nodeParentId**: Parent node ID (room or folder)",
+            "**nodeParentPath**: Parent node path",
+            "**nodeQuota**: Quota in byte",
+            "**nodeRecycleBinRetentionPeriod**: Retention period for deleted nodes in days",
+            "**nodeSize**: Node size in byte",
+            "**nodeUpdatedAt**: Modification date",
+            [
+              "**nodeUpdatedBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

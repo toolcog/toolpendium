@@ -1,0 +1,458 @@
+{
+  "name": "CreateVirtualNode",
+  "description": "<p>Creates a new virtual node within a service mesh.</p>\n         <p>A virtual node acts as logical pointer to a particular task group, such as an Amazon ECS\n         service or a Kubernetes deployment. When you create a virtual node, you must specify the\n         DNS service discovery name for your task group.</p>\n         <p>Any inbound traffic that your virtual node expects should be specified as a\n            <code>listener</code>. Any outbound traffic that your virtual node expects to reach\n         should be specified as a <code>backend</code>.</p>\n         <p>The response metadata for your new virtual node contains the <code>arn</code> that is\n         associated with the virtual node. Set this value (either the full ARN or the truncated\n         resource name, for example, <code>mesh/default/virtualNode/simpleapp</code>, as the\n            <code>APPMESH_VIRTUAL_NODE_NAME</code> environment variable for your task group's Envoy\n         proxy container in your task definition or pod spec. This is then mapped to the\n            <code>node.id</code> and <code>node.cluster</code> Envoy parameters.</p>\n         <note>\n            <p>If you require your Envoy stats or tracing to use a different name, you can override\n            the <code>node.cluster</code> value that is set by\n               <code>APPMESH_VIRTUAL_NODE_NAME</code> with the\n               <code>APPMESH_VIRTUAL_NODE_CLUSTER</code> environment variable.</p>\n         </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "meshName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the service mesh in which to create the virtual node."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "spec",
+          "virtualNodeName"
+        ],
+        "properties": {
+          "clientToken": {
+            "description": "Unique, case-sensitive identifier that you provide to ensure the idempotency of the\nrequest. Up to 36 letters, numbers, hyphens, and underscores are allowed.",
+            "type": "string"
+          },
+          "spec": {
+            "description": "An object representing the specification of a virtual node.",
+            "type": "object",
+            "properties": {
+              "backends": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Backends"
+                  },
+                  {
+                    "description": "The backends to which the virtual node is expected to send outbound traffic."
+                  }
+                ]
+              },
+              "listeners": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Listeners"
+                  },
+                  {
+                    "description": "The listeners from which the virtual node is expected to receive inbound traffic."
+                  }
+                ]
+              },
+              "serviceDiscovery": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ServiceDiscovery"
+                  },
+                  {
+                    "description": "The service discovery information for the virtual node."
+                  }
+                ]
+              }
+            }
+          },
+          "virtualNodeName": {
+            "description": "The name to use for the virtual node.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        }
+      }
+    },
+    "required": [
+      "meshName",
+      "body"
+    ],
+    "$defs": {
+      "Backends": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ServiceName"
+        }
+      },
+      "ServiceName": {
+        "type": "string"
+      },
+      "Listeners": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Listener"
+        }
+      },
+      "Listener": {
+        "type": "object",
+        "properties": {
+          "healthCheck": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheckPolicy"
+              },
+              {
+                "description": "The health check information for the listener."
+              }
+            ]
+          },
+          "portMapping": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PortMapping"
+              },
+              {
+                "description": "The port mapping information for the listener."
+              }
+            ]
+          }
+        },
+        "description": "An object representing a listener for a virtual node."
+      },
+      "HealthCheckPolicy": {
+        "type": "object",
+        "required": [
+          "healthyThreshold",
+          "intervalMillis",
+          "protocol",
+          "timeoutMillis",
+          "unhealthyThreshold"
+        ],
+        "properties": {
+          "healthyThreshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheckThreshold"
+              },
+              {
+                "description": "The number of consecutive successful health checks that must occur before declaring\n         listener healthy."
+              }
+            ]
+          },
+          "intervalMillis": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheckIntervalMillis"
+              },
+              {
+                "description": "The time period in milliseconds between each health check execution."
+              }
+            ]
+          },
+          "path": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The destination path for the health check request. This is only required if the\n         specified protocol is HTTP; if the protocol is TCP, then this parameter is ignored."
+              }
+            ]
+          },
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PortNumber"
+              },
+              {
+                "description": "The destination port for the health check request. This port must match the port defined\n         in the <a>PortMapping</a> for the listener."
+              }
+            ]
+          },
+          "protocol": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PortProtocol"
+              },
+              {
+                "description": "The protocol for the health check request."
+              }
+            ]
+          },
+          "timeoutMillis": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheckTimeoutMillis"
+              },
+              {
+                "description": "The amount of time to wait when receiving a response from the health check, in\n         milliseconds."
+              }
+            ]
+          },
+          "unhealthyThreshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheckThreshold"
+              },
+              {
+                "description": "The number of consecutive failed health checks that must occur before declaring a\n         virtual node unhealthy. "
+              }
+            ]
+          }
+        },
+        "description": "An object representing the health check policy for a virtual node's listener."
+      },
+      "HealthCheckThreshold": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 10
+      },
+      "HealthCheckIntervalMillis": {
+        "type": "integer",
+        "minimum": 5000,
+        "maximum": 300000
+      },
+      "String": {
+        "type": "string"
+      },
+      "PortNumber": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "PortProtocol": {
+        "type": "string",
+        "enum": [
+          "http",
+          "tcp"
+        ]
+      },
+      "HealthCheckTimeoutMillis": {
+        "type": "integer",
+        "minimum": 2000,
+        "maximum": 60000
+      },
+      "PortMapping": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PortNumber"
+              },
+              {
+                "description": "The port used for the port mapping."
+              }
+            ]
+          },
+          "protocol": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PortProtocol"
+              },
+              {
+                "description": "The protocol used for the port mapping."
+              }
+            ]
+          }
+        },
+        "description": "An object representing a virtual node listener port mapping."
+      },
+      "ServiceDiscovery": {
+        "type": "object",
+        "properties": {
+          "dns": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DnsServiceDiscovery"
+              },
+              {
+                "description": "Specifies the DNS service name for the virtual node."
+              }
+            ]
+          }
+        },
+        "description": "An object representing the service discovery information for a virtual node."
+      },
+      "DnsServiceDiscovery": {
+        "type": "object",
+        "properties": {
+          "serviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServiceName"
+              },
+              {
+                "description": "The DNS service name for your virtual node."
+              }
+            ]
+          }
+        },
+        "description": "The DNS service discovery information for your virtual node."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://appmesh.us-east-1.amazonaws.com/meshes/{meshName}/virtualNodes"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**virtualNode**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

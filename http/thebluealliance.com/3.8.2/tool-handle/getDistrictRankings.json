@@ -1,0 +1,72 @@
+{
+  "name": "getDistrictRankings",
+  "description": "Gets a list of team district rankings for the given district.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "district_key": {
+        "type": "string",
+        "description": "TBA District Key, eg `2016fim`"
+      }
+    },
+    "required": [
+      "district_key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/district/{district_key}/rankings"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Rank of a team in a district.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**event_points**: List of events that contributed to the point total for the team.",
+            "**point_total**: Total district points for the team.",
+            "**rank**: Numerical rank of the team, 1 being top rank.",
+            "**rookie_bonus**: Any points added to a team as a result of the rookie bonus.",
+            "**team_key**: TBA team key for the team."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "name": "transactionsGet",
+  "description": "The `/transactions/get` endpoint allows developers to receive user-authorized transaction data for credit, depository, and some loan-type accounts (only those with account subtype `student`; coverage may be limited). For transaction history from investments accounts, use the [Investments endpoint](https://plaid.com/docs/api/products/investments/) instead. Transaction data is standardized across financial institutions, and in many cases transactions are linked to a clean name, entity type, location, and category. Similarly, account data is standardized and returned with a clean name, number, balance, and other meta information where available.\n\nTransactions are returned in reverse-chronological order, and the sequence of transaction ordering is stable and will not shift.  Transactions are not immutable and can also be removed altogether by the institution; a removed transaction will no longer appear in `/transactions/get`.  For more details, see [Pending and posted transactions](https://plaid.com/docs/transactions/transactions-data/#pending-and-posted-transactions).\n\nDue to the potentially large number of transactions associated with an Item, results are paginated. Manipulate the `count` and `offset` parameters in conjunction with the `total_transactions` response body field to fetch all available transactions.\n\nData returned by `/transactions/get` will be the data available for the Item as of the most recent successful check for new transactions. Plaid typically checks for new data multiple times a day, but these checks may occur less frequently, such as once a day, depending on the institution. An Item's `status.transactions.last_successful_update` field will show the timestamp of the most recent successful update. To force Plaid to check for new transactions, you can use the `/transactions/refresh` endpoint.\n\nNote that data may not be immediately available to `/transactions/get`. Plaid will begin to prepare transactions data upon Item link, if Link was initialized with `transactions`, or upon the first call to `/transactions/get`, if it wasn't. To be alerted when transaction data is ready to be fetched, listen for the [`INITIAL_UPDATE`](https://plaid.com/docs/api/products/transactions/#initial_update) and [`HISTORICAL_UPDATE`](https://plaid.com/docs/api/products/transactions/#historical_update) webhooks. If no transaction history is ready when `/transactions/get` is called, it will return a `PRODUCT_NOT_READY` error.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransactionsGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransactionsGetRequest": {
+        "description": "TransactionsGetRequest defines the request schema for `/transactions/get`",
+        "properties": {
+          "access_token": {
+            "$ref": "#/$defs/AccessToken"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "end_date": {
+            "description": "The latest date for which data should be returned. Dates should be formatted as YYYY-MM-DD.",
+            "format": "date",
+            "type": "string"
+          },
+          "options": {
+            "$ref": "#/$defs/TransactionsGetRequestOptions"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "start_date": {
+            "description": "The earliest date for which data should be returned. Dates should be formatted as YYYY-MM-DD.",
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "start_date",
+          "end_date"
+        ],
+        "type": "object"
+      },
+      "AccessToken": {
+        "description": "The access token associated with the Item data is being requested for.",
+        "title": "AccessToken",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "TransactionsGetRequestOptions": {
+        "description": "An optional object to be used with the request. If specified, `options` must not be `null`.",
+        "properties": {
+          "account_ids": {
+            "description": "A list of `account_ids` to retrieve for the Item\n\nNote: An error will be returned if a provided `account_id` is not associated with the Item.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "count": {
+            "default": 100,
+            "description": "The number of transactions to fetch.",
+            "exclusiveMinimum": false,
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "include_logo_and_counterparty_beta": {
+            "default": false,
+            "description": "Include counterparties and extran merchant fields in the transaction. This field is disabled by default. If you need this information in addition to the parsed data provided, contact your Plaid Account Manager.",
+            "type": "boolean",
+            "x-hidden-from-docs": true
+          },
+          "include_original_description": {
+            "default": false,
+            "description": "Include the raw unparsed transaction description from the financial institution. This field is disabled by default. If you need this information in addition to the parsed data provided, contact your Plaid Account Manager, or submit a [Support request](https://dashboard.plaid.com/support/new/product-and-development/product-troubleshooting/product-functionality) .",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "include_personal_finance_category": {
+            "default": false,
+            "description": "Include the [`personal_finance_category`](https://plaid.com/docs/api/products/transactions/#transactions-get-response-transactions-personal-finance-category) object in the response.\n\nSee the [`taxonomy csv file`](https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv) for a full list of personal finance categories.\n\nWe’re introducing Category Rules - a new beta endpoint that will enable you to change the `personal_finance_category` for a transaction based on your users’ needs. When rules are set, the selected category will override the Plaid provided category. To learn more, send a note to transactions-feedback@plaid.com.",
+            "type": "boolean"
+          },
+          "include_personal_finance_category_beta": {
+            "default": false,
+            "deprecated": true,
+            "description": "Please use [`include_personal_finance_category`](https://plaid.com/docs/api/products/transactions/#transactions-get-request-options-include-personal-finance-category) instead.",
+            "type": "boolean"
+          },
+          "offset": {
+            "default": 0,
+            "description": "The number of transactions to skip. The default value is 0.",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transactions/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "TransactionsGetResponse defines the response schema for `/transactions/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accounts**: An array containing the `accounts` associated with the Item for which transactions are being returned. Each transaction can be mapped to its corresponding account via the `account_id` field.",
+            [
+              "**item**: Metadata about the Item.",
+              {
+                "$ul": [
+                  "**available_products**: A list of products available for the Item that have not yet been accessed. The contents of this array will be mutually exclusive with `billed_products`.",
+                  "**billed_products**: A list of products that have been billed for the Item. The contents of this array will be mutually exclusive with `available_products`. Note - `billed_products` is populated in all environments but only requests in Production are billed. Also note that products that are billed on a pay-per-call basis rather than a pay-per-Item basis, such as `balance`, will not appear here.",
+                  "**consent_expiration_time**: The RFC 3339 timestamp after which the consent provided by the end user will expire. Upon consent expiration, the item will enter the `ITEM_LOGIN_REQUIRED` error state. To circumvent the `ITEM_LOGIN_REQUIRED` error and maintain continuous consent, the end user can reauthenticate via Link’s update mode in advance of the consent expiration time.",
+                  "**consented_products**: Beta: A list of products that have gone through consent collection for the Item. Only present for those enabled in the beta.",
+                  [
+                    "**error**: We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+                    {
+                      "$ul": [
+                        "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+                        "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+                        "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+                        "**error_code**: The particular error code. Safe for programmatic use.",
+                        "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+                        "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+                        "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+                        "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+                        "**suggested_action**: Suggested steps for resolving the error"
+                      ]
+                    }
+                  ],
+                  "**institution_id**: The Plaid Institution ID associated with the Item. Field is `null` for Items created via Same Day Micro-deposits.",
+                  "**item_id**: The Plaid Item ID. The `item_id` is always unique; linking the same account at the same institution twice will result in two Items with different `item_id` values. Like all Plaid identifiers, the `item_id` is case-sensitive.",
+                  "**products**: A list of authorized products for the Item.",
+                  "**update_type**: Indicates whether an Item requires user interaction to be updated, which can be the case for Items with some forms of two-factor authentication.",
+                  "**webhook**: The URL registered to receive webhooks for the Item."
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**total_transactions**: The total number of transactions available within the date range specified. If `total_transactions` is larger than the size of the `transactions` array, more transactions are available and can be fetched via manipulating the `offset` parameter.",
+            "**transactions**: An array containing transactions from the account. Transactions are returned in reverse chronological order, with the most recent at the beginning of the array. The maximum number of transactions returned is determined by the `count` parameter."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

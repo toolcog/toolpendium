@@ -1,0 +1,129 @@
+{
+  "name": "GetApiActivity",
+  "description": "Retrieve a list of API Requests that have been made.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "default": 50,
+        "example": 10,
+        "type": "integer",
+        "description": "How many API Events should be retrieved in a single request."
+      },
+      "offset": {
+        "default": 0,
+        "example": 50,
+        "type": "integer",
+        "description": "How far into the collection of API Events should the response start"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://1password.local/activity{?limit,offset}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Represents a request that was made to the API. Including what Token was used and what resource was accessed.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**",
+            [
+              "**actor**",
+              {
+                "$ul": [
+                  "**account**",
+                  "**id**",
+                  "**jti**",
+                  "**requestIp**",
+                  "**userAgent**"
+                ]
+              }
+            ],
+            "**requestId**: The unique id used to identify a single request.",
+            [
+              "**resource**",
+              {
+                "$ul": [
+                  [
+                    "**item**",
+                    {
+                      "$ul": [
+                        "**id**"
+                      ]
+                    }
+                  ],
+                  "**itemVersion**",
+                  "**type**",
+                  [
+                    "**vault**",
+                    {
+                      "$ul": [
+                        "**id**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**result**",
+            "**timestamp**: The time at which the request was processed by the server."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

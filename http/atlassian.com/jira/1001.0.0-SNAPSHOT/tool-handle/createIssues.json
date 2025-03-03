@@ -1,0 +1,552 @@
+{
+  "name": "createIssues",
+  "description": "Creates upto **50** issues and, where the option to create subtasks is enabled in Jira, subtasks. Transitions may be applied, to move the issues or subtasks to a workflow step other than the default start step, and issue properties set.\n\nThe content of each issue or subtask is defined using `update` and `fields`. The fields that can be set in the issue or subtask are determined using the [ Get create issue metadata](#api-rest-api-3-issue-createmeta-get). These are the same fields that appear on the issues' create screens. Note that the `description`, `environment`, and any `textarea` type custom fields (multi-line text fields) take Atlassian Document Format content. Single line custom fields (`textfield`) accept a string and don't handle Atlassian Document Format content.\n\nCreating a subtask differs from creating an issue as follows:\n\n *  `issueType` must be set to a subtask issue type (use [ Get create issue metadata](#api-rest-api-3-issue-createmeta-get) to find subtask issue types).\n *  `parent` the must contain the ID or key of the parent issue.\n\n**[Permissions](#permissions) required:** *Browse projects* and *Create issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project in which each issue or subtask is created.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/IssuesUpdateBean"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "IssuesUpdateBean": {
+        "additionalProperties": true,
+        "properties": {
+          "issueUpdates": {
+            "items": {
+              "$ref": "#/$defs/IssueUpdateDetails"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "IssueUpdateDetails": {
+        "additionalProperties": true,
+        "description": "Details of an issue update request.",
+        "properties": {
+          "fields": {
+            "additionalProperties": {},
+            "description": "List of issue screen fields to update, specifying the sub-field to update and its value for each field. This field provides a straightforward option when setting a sub-field. When multiple sub-fields or other operations are required, use `update`. Fields included in here cannot be included in `update`.",
+            "type": "object"
+          },
+          "historyMetadata": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HistoryMetadata"
+              }
+            ],
+            "description": "Additional issue history details."
+          },
+          "properties": {
+            "description": "Details of issue properties to be add or update.",
+            "items": {
+              "$ref": "#/$defs/EntityProperty"
+            },
+            "type": "array"
+          },
+          "transition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IssueTransition"
+              }
+            ],
+            "description": "Details of a transition. Required when performing a transition, optional when creating or editing an issue."
+          },
+          "update": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/$defs/FieldUpdateOperation"
+              },
+              "type": "array"
+            },
+            "description": "A Map containing the field field name and a list of operations to perform on the issue screen field. Note that fields included in here cannot be included in `fields`.",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "HistoryMetadata": {
+        "additionalProperties": true,
+        "description": "Details of issue history metadata.",
+        "properties": {
+          "activityDescription": {
+            "description": "The activity described in the history record.",
+            "type": "string"
+          },
+          "activityDescriptionKey": {
+            "description": "The key of the activity described in the history record.",
+            "type": "string"
+          },
+          "actor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HistoryMetadataParticipant"
+              }
+            ],
+            "description": "Details of the user whose action created the history record."
+          },
+          "cause": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HistoryMetadataParticipant"
+              }
+            ],
+            "description": "Details of the cause that triggered the creation the history record."
+          },
+          "description": {
+            "description": "The description of the history record.",
+            "type": "string"
+          },
+          "descriptionKey": {
+            "description": "The description key of the history record.",
+            "type": "string"
+          },
+          "emailDescription": {
+            "description": "The description of the email address associated the history record.",
+            "type": "string"
+          },
+          "emailDescriptionKey": {
+            "description": "The description key of the email address associated the history record.",
+            "type": "string"
+          },
+          "extraData": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional arbitrary information about the history record.",
+            "type": "object"
+          },
+          "generator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HistoryMetadataParticipant"
+              }
+            ],
+            "description": "Details of the system that generated the history record."
+          },
+          "type": {
+            "description": "The type of the history record.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "HistoryMetadataParticipant": {
+        "additionalProperties": true,
+        "description": "Details of user or system associated with a issue history metadata item.",
+        "properties": {
+          "avatarUrl": {
+            "description": "The URL to an avatar for the user or system associated with a history record.",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "The display name of the user or system associated with a history record.",
+            "type": "string"
+          },
+          "displayNameKey": {
+            "description": "The key of the display name of the user or system associated with a history record.",
+            "type": "string"
+          },
+          "id": {
+            "description": "The ID of the user or system associated with a history record.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the user or system associated with a history record.",
+            "type": "string"
+          },
+          "url": {
+            "description": "The URL of the user or system associated with a history record.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EntityProperty": {
+        "additionalProperties": false,
+        "description": "An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).",
+        "properties": {
+          "key": {
+            "description": "The key of the property. Required on create and update.",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the property. Required on create and update."
+          }
+        },
+        "type": "object"
+      },
+      "IssueTransition": {
+        "additionalProperties": true,
+        "description": "Details of an issue transition.",
+        "properties": {
+          "expand": {
+            "description": "Expand options that include additional transition details in the response.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "$ref": "#/$defs/FieldMetadata"
+            },
+            "description": "Details of the fields associated with the issue transition screen. Use this information to populate `fields` and `update` in a transition request.",
+            "readOnly": true,
+            "type": "object"
+          },
+          "hasScreen": {
+            "description": "Whether there is a screen associated with the issue transition.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "The ID of the issue transition. Required when specifying a transition to undertake.",
+            "type": "string"
+          },
+          "isAvailable": {
+            "description": "Whether the transition is available to be performed.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isConditional": {
+            "description": "Whether the issue has to meet criteria before the issue transition is applied.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isGlobal": {
+            "description": "Whether the issue transition is global, that is, the transition is applied to issues regardless of their status.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isInitial": {
+            "description": "Whether this is the initial issue transition for the workflow.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "looped": {
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The name of the issue transition.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "to": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StatusDetails"
+              }
+            ],
+            "description": "Details of the issue status after the transition.",
+            "readOnly": true
+          }
+        },
+        "type": "object"
+      },
+      "FieldMetadata": {
+        "additionalProperties": false,
+        "description": "The metadata describing an issue field.",
+        "properties": {
+          "allowedValues": {
+            "description": "The list of values allowed in the field.",
+            "items": {
+              "readOnly": true
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "autoCompleteUrl": {
+            "description": "The URL that can be used to automatically complete the field.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "configuration": {
+            "additionalProperties": {
+              "readOnly": true
+            },
+            "description": "The configuration properties.",
+            "readOnly": true,
+            "type": "object"
+          },
+          "defaultValue": {
+            "description": "The default value of the field.",
+            "readOnly": true
+          },
+          "hasDefaultValue": {
+            "description": "Whether the field has a default value.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "key": {
+            "description": "The key of the field.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the field.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "operations": {
+            "description": "The list of operations that can be performed on the field.",
+            "items": {
+              "readOnly": true,
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "required": {
+            "description": "Whether the field is required.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "schema": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonTypeBean"
+              }
+            ],
+            "description": "The data type of the field.",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "operations",
+          "required",
+          "schema"
+        ],
+        "type": "object",
+        "xml": {
+          "name": "availableField"
+        }
+      },
+      "JsonTypeBean": {
+        "additionalProperties": false,
+        "description": "The schema of a field.",
+        "properties": {
+          "configuration": {
+            "additionalProperties": {
+              "readOnly": true
+            },
+            "description": "If the field is a custom field, the configuration of the field.",
+            "readOnly": true,
+            "type": "object"
+          },
+          "custom": {
+            "description": "If the field is a custom field, the URI of the field.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customId": {
+            "description": "If the field is a custom field, the custom ID of the field.",
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "items": {
+            "description": "When the data type is an array, the name of the field items within the array.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "system": {
+            "description": "If the field is a system field, the name of the field.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "The data type of the field.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "StatusDetails": {
+        "additionalProperties": true,
+        "description": "A status.",
+        "properties": {
+          "description": {
+            "description": "The description of the status.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "iconUrl": {
+            "description": "The URL of the icon used to represent the status.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "The ID of the status.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the status.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "self": {
+            "description": "The URL of the status.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "statusCategory": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StatusCategory"
+              }
+            ],
+            "description": "The category assigned to the status.",
+            "readOnly": true
+          }
+        },
+        "type": "object"
+      },
+      "StatusCategory": {
+        "additionalProperties": true,
+        "description": "A status category.",
+        "properties": {
+          "colorName": {
+            "description": "The name of the color used to represent the status category.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "The ID of the status category.",
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "key": {
+            "description": "The key of the status category.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the status category.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "self": {
+            "description": "The URL of the status category.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FieldUpdateOperation": {
+        "additionalProperties": false,
+        "description": "Details of an operation to perform on a field.",
+        "properties": {
+          "add": {
+            "description": "The value to add to the field.",
+            "example": "triaged"
+          },
+          "copy": {
+            "description": "The field value to copy from another issue.",
+            "example": {
+              "issuelinks": {
+                "sourceIssues": [
+                  {
+                    "key": "FP-5"
+                  }
+                ]
+              }
+            }
+          },
+          "edit": {
+            "description": "The value to edit in the field.",
+            "example": {
+              "originalEstimate": "1w 1d",
+              "remainingEstimate": "4d"
+            }
+          },
+          "remove": {
+            "description": "The value to removed from the field.",
+            "example": "blocker"
+          },
+          "set": {
+            "description": "The value to set in the field.",
+            "example": "A new summary"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/issue/bulk"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Details about the issues created and the errors for requests that failed.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**: Error details for failed issue creation requests.",
+            "**issues**: Details of the issues created."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Details about the issues created and the errors for requests that failed.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**: Error details for failed issue creation requests.",
+            "**issues**: Details of the issues created."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

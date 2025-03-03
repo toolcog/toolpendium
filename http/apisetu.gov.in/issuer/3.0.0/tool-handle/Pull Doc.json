@@ -1,0 +1,76 @@
+{
+  "name": "Pull_Doc",
+  "description": "The Pull Doc Request API has to be implemented by the issuers and will be consumed by Digital Locker system. This API will be invoked when the resident clicks on the URI displayed in the Issued documents section of DigLocker. The issuer API will by sending the certificate data. The certificate data should be sent in one of the two formats depending on the request send by Digital Locker:|- a. PDF document format b. XML format for machine readable metadata",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Content-Type": {
+        "type": "string",
+        "description": "application/xml"
+      },
+      "x-digilocker-hmac": {
+        "type": "string",
+        "description": "This is used for authentication and to verify the integrity of the request. DigiLocker calculates the hash message authentication code (hmac) of the HTTP request body using SHA256 hashing algorithm and the API Key provided by the issuer as the hashing key. The API Key is specified by the issuer while configuring the Pull Doc API in DigiLocker Partner Portal. The resulting hmac is converted to Base64 format and sent in this parameter. It is strongly recommended that the issuer API calculates the hmac of the HTTP request body, convert it to Base64 and match it with this parameter to ensure authenticity of the request."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "Your API URL/Your Pull DOC Request API Path"
+    },
+    "headers": {
+      "Content-Type": {
+        "$": "Content-Type"
+      },
+      "x-digilocker-hmac": {
+        "$": "x-digilocker-hmac"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**DocDetails**: Issuer can add meta content specific to document here.",
+              {
+                "$ul": [
+                  "**DataContent**: Enclose the Base64 byte encoded certificate metadata in XML format. The DataContent element should be sent only if the original request contains format attribute as “xml” or “both”.",
+                  "**DocContent**: Enclose the Base64 byte encoded contents of PDF file in this element. The DocContent element should be sent only if the format attribute in the original request is sent as “pdf” or “both” or is absent."
+                ]
+              }
+            ],
+            [
+              "**ResponseStatus**",
+              {
+                "$ul": [
+                  "**Status**: 1 for success, 0 for error.",
+                  "**ts**: A timestamp value as sent in the request.",
+                  "**txn**: Transaction id value as sent in the request."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

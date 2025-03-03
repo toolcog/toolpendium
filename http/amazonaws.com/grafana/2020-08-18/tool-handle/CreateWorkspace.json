@@ -1,0 +1,407 @@
+{
+  "name": "CreateWorkspace",
+  "description": "<p>Creates a <i>workspace</i>. In a workspace, you can create Grafana dashboards and visualizations to analyze your metrics, logs, and traces. You don't have to build, package, or deploy any hardware to run the Grafana server.</p> <p>Don't use <code>CreateWorkspace</code> to modify an existing workspace. Instead, use <a href=\"https://docs.aws.amazon.com/grafana/latest/APIReference/API_UpdateWorkspace.html\">UpdateWorkspace</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "accountAccessType",
+          "authenticationProviders",
+          "permissionType"
+        ],
+        "properties": {
+          "accountAccessType": {
+            "description": "Specifies whether the workspace can access Amazon Web Services resources in this Amazon Web Services account only, or whether it can also access Amazon Web Services resources in other accounts in the same organization. If you specify <code>ORGANIZATION</code>, you must specify which organizational units the workspace can access in the <code>workspaceOrganizationalUnits</code> parameter.",
+            "type": "string",
+            "enum": [
+              "CURRENT_ACCOUNT",
+              "ORGANIZATION"
+            ]
+          },
+          "authenticationProviders": {
+            "description": "Specifies whether this workspace uses SAML 2.0, IAM Identity Center (successor to Single Sign-On), or both to authenticate users for using the Grafana console within a workspace. For more information, see <a href=\"https://docs.aws.amazon.com/grafana/latest/userguide/authentication-in-AMG.html\">User authentication in Amazon Managed Grafana</a>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/AuthenticationProviderTypes"
+            }
+          },
+          "clientToken": {
+            "description": "A unique, case-sensitive, user-provided identifier to ensure the idempotency of the request.",
+            "type": "string",
+            "pattern": "^[!-~]{1,64}$"
+          },
+          "configuration": {
+            "description": "The configuration string for the workspace that you create. For more information about the format and configuration options available, see <a href=\"https://docs.aws.amazon.com/grafana/latest/userguide/AMG-configure-workspace.html\">Working in your Grafana workspace</a>.",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 65536
+          },
+          "grafanaVersion": {
+            "description": "<p>Specifies the version of Grafana to support in the new workspace.</p> <p>To get a list of supported version, use the <code>ListVersions</code> operation.</p>",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "networkAccessControl": {
+            "description": "<p>The configuration settings for in-bound network access to your workspace.</p> <p>When this is configured, only listed IP addresses and VPC endpoints will be able to access your workspace. Standard Grafana authentication and authorization are still required.</p> <p>Access is granted to a caller that is in either the IP address list or the VPC endpoint list - they do not need to be in both.</p> <p>If this is not configured, or is removed, then all IP addresses and VPC endpoints are allowed. Standard Grafana authentication and authorization are still required.</p> <note> <p>While both <code>prefixListIds</code> and <code>vpceIds</code> are required, you can pass in an empty array of strings for either parameter if you do not want to allow any of that type.</p> <p>If both are passed as empty arrays, no traffic is allowed to the workspace, because only <i>explicitly</i> allowed connections are accepted.</p> </note>",
+            "type": "object",
+            "properties": {
+              "prefixListIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PrefixListIds"
+                  },
+                  {
+                    "description": "<p>An array of prefix list IDs. A prefix list is a list of CIDR ranges of IP addresses. The IP addresses specified are allowed to access your workspace. If the list is not included in the configuration (passed an empty array) then no IP addresses are allowed to access the workspace. You create a prefix list using the Amazon VPC console.</p> <p>Prefix list IDs have the format <code>pl-<i>1a2b3c4d</i> </code>.</p> <p>For more information about prefix lists, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/managed-prefix-lists.html\">Group CIDR blocks using managed prefix lists</a>in the <i>Amazon Virtual Private Cloud User Guide</i>.</p>"
+                  }
+                ]
+              },
+              "vpceIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/VpceIds"
+                  },
+                  {
+                    "description": "<p>An array of Amazon VPC endpoint IDs for the workspace. You can create VPC endpoints to your Amazon Managed Grafana workspace for access from within a VPC. If a <code>NetworkAccessConfiguration</code> is specified then only VPC endpoints specified here are allowed to access the workspace. If you pass in an empty array of strings, then no VPCs are allowed to access the workspace.</p> <p>VPC endpoint IDs have the format <code>vpce-<i>1a2b3c4d</i> </code>.</p> <p>For more information about creating an interface VPC endpoint, see <a href=\"https://docs.aws.amazon.com/grafana/latest/userguide/VPC-endpoints\">Interface VPC endpoints</a> in the <i>Amazon Managed Grafana User Guide</i>.</p> <note> <p>The only VPC endpoints that can be specified here are interface VPC endpoints for Grafana workspaces (using the <code>com.amazonaws.[region].grafana-workspace</code> service endpoint). Other VPC endpoints are ignored.</p> </note>"
+                  }
+                ]
+              }
+            }
+          },
+          "organizationRoleName": {
+            "description": "The name of an IAM role that already exists to use with Organizations to access Amazon Web Services data sources and notification channels in other accounts in an organization.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "format": "password"
+          },
+          "permissionType": {
+            "description": "<p>When creating a workspace through the Amazon Web Services API, CLI or Amazon Web Services CloudFormation, you must manage IAM roles and provision the permissions that the workspace needs to use Amazon Web Services data sources and notification channels.</p> <p>You must also specify a <code>workspaceRoleArn</code> for a role that you will manage for the workspace to use when accessing those datasources and notification channels.</p> <p>The ability for Amazon Managed Grafana to create and update IAM roles on behalf of the user is supported only in the Amazon Managed Grafana console, where this value may be set to <code>SERVICE_MANAGED</code>.</p> <note> <p>Use only the <code>CUSTOMER_MANAGED</code> permission type when creating a workspace with the API, CLI or Amazon Web Services CloudFormation. </p> </note> <p>For more information, see <a href=\"https://docs.aws.amazon.com/grafana/latest/userguide/AMG-manage-permissions.html\">Amazon Managed Grafana permissions and policies for Amazon Web Services data sources and notification channels</a>.</p>",
+            "type": "string",
+            "enum": [
+              "CUSTOMER_MANAGED",
+              "SERVICE_MANAGED"
+            ]
+          },
+          "stackSetName": {
+            "description": "The name of the CloudFormation stack set to use to generate IAM roles to be used for this workspace.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "The list of tags associated with the workspace.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "vpcConfiguration": {
+            "description": "<p>The configuration settings for an Amazon VPC that contains data sources for your Grafana workspace to connect to.</p> <note> <p>Provided <code>securityGroupIds</code> and <code>subnetIds</code> must be part of the same VPC.</p> <p>Connecting to a private VPC is not yet available in the Asia Pacific (Seoul) Region (ap-northeast-2).</p> </note>",
+            "type": "object",
+            "properties": {
+              "securityGroupIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SecurityGroupIds"
+                  },
+                  {
+                    "description": "The list of Amazon EC2 security group IDs attached to the Amazon VPC for your Grafana workspace to connect. Duplicates not allowed."
+                  }
+                ]
+              },
+              "subnetIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SubnetIds"
+                  },
+                  {
+                    "description": "The list of Amazon EC2 subnet IDs created in the Amazon VPC for your Grafana workspace to connect. Duplicates not allowed."
+                  }
+                ]
+              }
+            }
+          },
+          "workspaceDataSources": {
+            "description": "This parameter is for internal use only, and should not be used.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DataSourceType"
+            }
+          },
+          "workspaceDescription": {
+            "description": "<p>A description for the workspace. This is used only to help you identify this workspace.</p> <p>Pattern: <code>^[\\\\p{L}\\\\p{Z}\\\\p{N}\\\\p{P}]{0,2048}$</code> </p>",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2048,
+            "format": "password"
+          },
+          "workspaceName": {
+            "description": "The name for the workspace. It does not have to be unique.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-._~]{1,255}$",
+            "format": "password"
+          },
+          "workspaceNotificationDestinations": {
+            "description": "Specify the Amazon Web Services notification channels that you plan to use in this workspace. Specifying these data sources here enables Amazon Managed Grafana to create IAM roles and permissions that allow Amazon Managed Grafana to use these channels.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/NotificationDestinationType"
+            }
+          },
+          "workspaceOrganizationalUnits": {
+            "description": "Specifies the organizational units that this workspace is allowed to use data sources from, if this workspace is in an account that is part of an organization.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/OrganizationalUnit"
+            }
+          },
+          "workspaceRoleArn": {
+            "description": "Specified the IAM role that grants permissions to the Amazon Web Services resources that the workspace will view data from, including both data sources and notification channels. You are responsible for managing the permissions for this role as new data sources or notification channels are added. ",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "format": "password"
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AuthenticationProviderTypes": {
+        "type": "string",
+        "enum": [
+          "AWS_SSO",
+          "SAML"
+        ]
+      },
+      "PrefixListIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/PrefixListId"
+        }
+      },
+      "PrefixListId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "VpceIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/VpceId"
+        }
+      },
+      "VpceId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "SecurityGroupIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SecurityGroupId"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "SecurityGroupId": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "SubnetIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SubnetId"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "SubnetId": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "DataSourceType": {
+        "type": "string",
+        "enum": [
+          "AMAZON_OPENSEARCH_SERVICE",
+          "CLOUDWATCH",
+          "PROMETHEUS",
+          "XRAY",
+          "TIMESTREAM",
+          "SITEWISE",
+          "ATHENA",
+          "REDSHIFT",
+          "TWINMAKER"
+        ]
+      },
+      "NotificationDestinationType": {
+        "type": "string",
+        "enum": [
+          "SNS"
+        ]
+      },
+      "OrganizationalUnit": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://grafana.us-east-1.amazonaws.com/workspaces"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**workspace**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

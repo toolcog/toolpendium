@@ -1,0 +1,226 @@
+{
+  "name": "list_labels",
+  "description": "This endpoint returns a list of labels that you've [created](https://www.shipengine.com/docs/labels/create-a-label/). You can optionally filter the results as well as control their sort order and the number of results returned at a time.\n\nBy default, all labels are returned, 25 at a time, starting with the most recently created ones.  You can combine multiple filter options to narrow-down the results.  For example, if you only want to get your UPS labels for your east coast warehouse you could query by both `warehouse_id` and `carrier_id`\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "label_status": {
+        "$ref": "#/components/schemas/label_status",
+        "description": "Only return labels that are currently in the specified status"
+      },
+      "service_code": {
+        "$ref": "#/components/schemas/service_code",
+        "description": "Only return labels for a specific [carrier service](https://www.shipengine.com/docs/shipping/use-a-carrier-service/)"
+      },
+      "carrier_id": {
+        "$ref": "#/components/schemas/se_id",
+        "description": "Only return labels for a specific [carrier account](https://www.shipengine.com/docs/carriers/setup/)"
+      },
+      "tracking_number": {
+        "minLength": 1,
+        "type": "string",
+        "description": "Only return labels with a specific tracking number"
+      },
+      "batch_id": {
+        "$ref": "#/components/schemas/se_id",
+        "description": "Only return labels that were created in a specific [batch](https://www.shipengine.com/docs/labels/bulk/)"
+      },
+      "rate_id": {
+        "$ref": "#/components/schemas/se_id",
+        "description": "Rate ID"
+      },
+      "shipment_id": {
+        "$ref": "#/components/schemas/se_id",
+        "description": "Shipment ID"
+      },
+      "warehouse_id": {
+        "$ref": "#/components/schemas/se_id",
+        "description": "Only return labels that originate from a specific [warehouse](https://www.shipengine.com/docs/shipping/ship-from-a-warehouse/)"
+      },
+      "created_at_start": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Only return labels that were created on or after a specific date/time"
+      },
+      "created_at_end": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Only return labels that were created on or before a specific date/time"
+      },
+      "page": {
+        "default": 1,
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Return a specific page of results. Defaults to the first page. If set to a number that's greater than the number of pages of results, an empty page is returned.\n"
+      },
+      "page_size": {
+        "default": 25,
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of results to return per response."
+      },
+      "sort_dir": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/sort_dir"
+          }
+        ],
+        "default": "desc",
+        "description": "Controls the sort order of the query."
+      },
+      "sort_by": {
+        "default": "created_at",
+        "enum": [
+          "modified_at",
+          "created_at"
+        ],
+        "type": "string",
+        "description": "Controls which field the query is sorted by."
+      }
+    },
+    "$defs": {
+      "sort_dir": {
+        "description": "Controls the sort order of queries\n\n|Value     |Description\n|:---------|:-----------------------------------------------------\n|`asc`     |Return results in ascending order\n|`desc`    |Return results in descending order\n",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "title": "sort_dir",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.shipengine.com/v1/labels{?label_status,service_code,carrier_id,tracking_number,batch_id,rate_id,shipment_id,warehouse_id,created_at_start,created_at_end,page,page_size,sort_dir,sort_by}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "paged_list_response_body"
+        },
+        "Many ShipEngine endpoints return a paged list of items.  In addition to the returned items, these responses also include information about the total number of items, the number of pages of results, and URLs of other pages of results.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**links**: Helpful links to other pages of results",
+              {
+                "$ul": [
+                  [
+                    "**first**: A link to a related resource, or an empty object if there is no resource to link to",
+                    {
+                      "$ul": [
+                        "**href**: The URL of the linked resource, if any",
+                        "**type**: The type of resource, or the type of relationship to the parent resource"
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: A link to a related resource, or an empty object if there is no resource to link to",
+                    {
+                      "$ul": [
+                        "**href**: The URL of the linked resource, if any",
+                        "**type**: The type of resource, or the type of relationship to the parent resource"
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: A link to a related resource, or an empty object if there is no resource to link to",
+                    {
+                      "$ul": [
+                        "**href**: The URL of the linked resource, if any",
+                        "**type**: The type of resource, or the type of relationship to the parent resource"
+                      ]
+                    }
+                  ],
+                  [
+                    "**prev**: A link to a related resource, or an empty object if there is no resource to link to",
+                    {
+                      "$ul": [
+                        "**href**: The URL of the linked resource, if any",
+                        "**type**: The type of resource, or the type of relationship to the parent resource"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**page**: The current page number of results.  For example, if there are 80 results, and the page size is 25, then `page` could be 1, 2, 3, or 4.  The first three pages would contain 25 items each, and the fourth page would contain the five remaining items.",
+            "**pages**: The total number of pages of results.  For example, if there are 80 results, and the page size is 25, then `pages` would be 4.  The first three pages would contain 25 items each, and the fourth page would contain the five remaining items.  If there are no results, then `pages` will be zero.",
+            "**total**: The total number of items across all pages of results"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "error_response_body"
+        },
+        "An error response body",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**: The errors associated with the failed API call",
+            "**request_id**: A UUID that uniquely identifies the request id."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "error_response_body"
+        },
+        "An error response body",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**: The errors associated with the failed API call",
+            "**request_id**: A UUID that uniquely identifies the request id."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

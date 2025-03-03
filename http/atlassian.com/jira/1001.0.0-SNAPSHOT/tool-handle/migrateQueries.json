@@ -1,0 +1,70 @@
+{
+  "name": "migrateQueries",
+  "description": "Converts one or more JQL queries with user identifiers (username or user key) to equivalent JQL queries with account IDs.\n\nYou may wish to use this operation if your system stores JQL queries and you want to make them GDPR-compliant. For more information about GDPR-related changes, see the [migration guide](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/).\n\n**[Permissions](#permissions) required:** Permission to access Jira.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/JQLPersonalDataMigrationRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "JQLPersonalDataMigrationRequest": {
+        "additionalProperties": false,
+        "description": "The JQL queries to be converted.",
+        "properties": {
+          "queryStrings": {
+            "description": "A list of queries with user identifiers. Maximum of 100 queries.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/jql/pdcleaner"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The converted JQL queries.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**queriesWithUnknownUsers**: List of queries containing user information that could not be mapped to an existing user",
+            "**queryStrings**: The list of converted query strings with account IDs in place of user identifiers."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

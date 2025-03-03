@@ -1,0 +1,124 @@
+{
+  "name": "app_policies_list",
+  "description": "Get all policies for an app. Manage access for users",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appId": {
+        "type": "integer",
+        "description": "The identifier of the Sinao application you are using. Each application corresponds to a company and an accounting. A user can have several Sinao applications. To retrieve the identifiers of its applications, you must call the endpoint `/apps`."
+      },
+      "limit": {
+        "default": 10,
+        "maximum": 10000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The numbers of items to return."
+      },
+      "search": {
+        "type": "string",
+        "description": "A string to search for in objects."
+      },
+      "filters": {
+        "items": {
+          "properties": {
+            "comparator": {
+              "enum": [
+                "=",
+                "<",
+                ">",
+                "<=",
+                ">=",
+                "!=",
+                "LIKE",
+                "IN",
+                "REGEX"
+              ],
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array",
+        "description": "List of filters to apply to the query."
+      },
+      "order": {
+        "items": {
+          "properties": {
+            "direction": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array",
+        "description": "List in order of priority of the variables by which to order the result."
+      }
+    },
+    "required": [
+      "appId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.sinao.app/v1/apps/{appId}/access{?limit,search,filters,order}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**",
+            "**homepage**",
+            "**name**",
+            "**restricted**",
+            "**rights**: Routes list",
+            "**visible**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

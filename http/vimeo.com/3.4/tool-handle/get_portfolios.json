@@ -1,0 +1,123 @@
+{
+  "name": "get_portfolios",
+  "description": "Get all the portfolios that belong to a user",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "user_id": {
+        "example": 152184,
+        "type": "number",
+        "description": "The ID of the user."
+      },
+      "direction": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "example": "asc",
+        "type": "string",
+        "description": "The sort direction of the results."
+      },
+      "page": {
+        "example": 1,
+        "type": "number",
+        "description": "The page number of the results to show."
+      },
+      "per_page": {
+        "example": 10,
+        "type": "number",
+        "description": "The number of items to show on each page of results, up to a maximum of 100."
+      },
+      "query": {
+        "example": "Stop motion",
+        "type": "string",
+        "description": "The search query to use to filter the results."
+      },
+      "sort": {
+        "enum": [
+          "alphabetical",
+          "date"
+        ],
+        "type": "string",
+        "description": "The way to sort the results."
+      }
+    },
+    "required": [
+      "user_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.vimeo.com/users/{user_id}/portfolios{?direction,page,per_page,query,sort}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Portfolio list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_time**: The time in ISO 8601 format when the portfolio was created.",
+            "**description**: The portfolio's description.",
+            "**link**: The link to the portfolio.",
+            [
+              "**metadata**: Metadata about the album.",
+              {
+                "$ul": [
+                  [
+                    "**connections**: A list of resource URIs related to the album.",
+                    {
+                      "$ul": [
+                        [
+                          "**videos**: Information about the videos contained within this portfolio.",
+                          {
+                            "$ul": [
+                              "**options**: An array of HTTP methods permitted on this URI.",
+                              "**total**: The total number of videos on this connection.",
+                              "**uri**: The API URI that resolves to the connection data."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**modified_time**: The time in ISO 8601 format when the portfolio's data was last modified.",
+            "**name**: The display name of the portfolio.",
+            "**sort**: The default video sort order for the portfolio:",
+            "**uri**: The canonical relative URI of the portfolio."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

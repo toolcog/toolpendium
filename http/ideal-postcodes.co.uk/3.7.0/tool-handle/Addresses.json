@@ -1,0 +1,340 @@
+{
+  "name": "Addresses",
+  "description": "Extract a list of complete addresses that match the query ordered by relevance score. This query accepts an optional limit and page query (defaults to 10 and 0 respectively).\n\nIf a valid postcode is passed as the query string, the entire address list for that postcode is passed as a result. Note, in these cases, limit and page parameters are ignored.\n\nThis API is designed as a multi-purpose tool for generating address lists, cleansing and wholesale data extraction according to specific parameters.\n\nFor address autocomplete, see our address finder API - which is designed for speed and address completion.\n\n## Reverse Geocoding\n\nReturn a list of addresses around a point using the lon= and lat= querystring arguments. Addresses will be sorted in order of distance to the point. The search radius is 100m.\n\n## Filters\n\nYou can strictly narrow your result by adding filters to your query string which correspond with an address attribute.\n\nFor instance, you can restrict to postcode `SW1A 2AA` by appending `postcode=sw1a2aa`.\n\nIf a filter term is invalid, e.g. `postcode=SW1A2AAA`, then an empty result set is returned and no lookup is incurred.\n\nYou can also scope using multiple terms for the same filter with a comma separated list of terms. E.g. Restrict results to E1, E2 and E3 outward codes: `postcode_outward=e1,e2,e3`. Multiple terms are `OR`'ed, i.e. the matching result sets are combined.\n\nAll filters can accept multiple terms unless stated otherwise below.\n\nMultiple filters can also be combined. E.g. Restrict results to small user organisations in the N postcode area: `su_organisation_indicator=Y&postcode_area=n`. Multiple filters are `AND`'ed, i.e. each additional filter narrows the result set.\n\nA combined maximum of 5 terms are allowed across all filters.\n\n## Biases\n\nYou can boost certain addresses results that correspond with a certain address attribute. All bias searches are prefixed with `bias_`.\n\nBiased searches, unlike filtered searches, also allow unmatched addresses to appear . These will rank lower.\n\nFor instance, you can boost addresses with postcode areas `SW` and `SE` by appending `bias_postcode_area=SW,SE`.\n\nIf a bias term is invalid, e.g. `bias_postcode=SW1A2AAA` no bias effect is applied.\n\nYou may scope using multiple terms for the same bias with a comma separated list of terms. E.g. Restrict results to `E1`, `E2` and `E3` outward codes: `bias_postcode_outward=e1,e2,e3`.\n\nAll biases can accept multiple terms unless stated otherwise below.\n\nA combined maximum of 5 terms are allowed across all biases.\n\n## Search by Postcode and Building Name or Number\n\nSearch by postcode and building attribute with the postcode filter and query argument. E.g. For \"SW1A 2AA Prime Minister\" `/v1/addresses?postcode=sw1a2aa&q=prime minister`.\n\nThe advantage of using filters is a postcode mismatch does not result in a lookup as no results are returned.\n\n#### Search By UPRN\n\nSearch by UPRN using the `uprn` filter and excluding the query argument. E.g. `/v1/addresses?uprn=100`.\n\n## Testing\n\n- **ID1 1QD** Returns a successful query response `2000`\n- **ID1 KFA** Returns an empty query response `2000`\n- **ID1 CLIP** Returns \"no lookups remaining\" error `4020`\n- **ID1 CHOP** Returns \"daily (or individual) lookup limit breached\" error `4021`\n\nTest request undergo the usual authentication and restriction rules. This is to help surface any issues that occur during implementation and does not cost you a lookup.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "$ref": "#/$defs/ApiKeyParam"
+      },
+      "query": {
+        "type": "string",
+        "description": "Specifies the address you wish to query. Query can be shortened to `q=`"
+      },
+      "limit": {
+        "$ref": "#/$defs/LimitParam"
+      },
+      "page": {
+        "$ref": "#/$defs/PageParam"
+      },
+      "filter": {
+        "$ref": "#/$defs/FilterParam"
+      },
+      "lon": {
+        "$ref": "#/$defs/AddressLongitudeParam"
+      },
+      "lat": {
+        "$ref": "#/$defs/AddressLatitudeParam"
+      },
+      "postcode_outward": {
+        "$ref": "#/$defs/PostcodeOutwardParam"
+      },
+      "postcode": {
+        "$ref": "#/$defs/PostcodeParam"
+      },
+      "postcode_area": {
+        "$ref": "#/$defs/PostcodeAreaParam"
+      },
+      "postcode_sector": {
+        "$ref": "#/$defs/PostcodeSectorParam"
+      },
+      "post_town": {
+        "$ref": "#/$defs/PostTownParam"
+      },
+      "uprn": {
+        "$ref": "#/$defs/UPRNParam"
+      },
+      "country": {
+        "$ref": "#/$defs/CountryParam"
+      },
+      "postcode_type": {
+        "$ref": "#/$defs/PostcodeTypeParam"
+      },
+      "su_organisation_indicator": {
+        "$ref": "#/$defs/SmallUserParam"
+      },
+      "box": {
+        "$ref": "#/$defs/BoxParam"
+      },
+      "bias_postcode_outward": {
+        "$ref": "#/$defs/BiasPostcodeOutwardParam"
+      },
+      "bias_postcode": {
+        "$ref": "#/$defs/BiasPostcodeParam"
+      },
+      "bias_postcode_area": {
+        "$ref": "#/$defs/BiasPostcodeAreaParam"
+      },
+      "bias_postcode_sector": {
+        "$ref": "#/$defs/BiasPostcodeSectorParam"
+      },
+      "bias_post_town": {
+        "$ref": "#/$defs/BiasPosttownParam"
+      },
+      "bias_thoroughfare": {
+        "$ref": "#/$defs/BiasThoroughfareParam"
+      },
+      "bias_country": {
+        "$ref": "#/$defs/BiasCountryParam"
+      },
+      "bias_lonlat": {
+        "$ref": "#/$defs/BiasLonLatParam"
+      }
+    },
+    "required": [
+      "api_key"
+    ],
+    "$defs": {
+      "ApiKeyParam": {
+        "description": "Your API Key. Typically beings `ak_`.\n\nAvailable from your dashboard\n",
+        "example": "ak_test",
+        "title": "API Key",
+        "type": "string"
+      },
+      "LimitParam": {
+        "default": 10,
+        "description": "Specifies the maximum number of suggestions to retrieve.\n\nBy default the limit is 10, unless a postcode is queried (then all addresses at that postcode will be returned). Limit can be shortened to `l=`\n",
+        "example": 5,
+        "format": "int32",
+        "maximum": 100,
+        "minimum": 1,
+        "title": "Limit",
+        "type": "integer"
+      },
+      "PageParam": {
+        "default": 0,
+        "description": "0 indexed indicator of the page of results to receive. Virtually all postcode results are returned on page 0. \n\nA small number of Multiple Residence postcodes may need pagination (i.e. have more than 100 premises).\n",
+        "example": 0,
+        "format": "int32",
+        "minimum": 0,
+        "title": "Page",
+        "type": "integer"
+      },
+      "FilterParam": {
+        "description": "Comma separated whitelist of address elements to return. \n\nE.g. `filter=line_1,line_2,line_3` returns only `line_1`, `line_2` and `line_3` address elements in your response\n",
+        "example": "line_1,line_2,line_3",
+        "title": "Filter",
+        "type": "string"
+      },
+      "AddressLongitudeParam": {
+        "description": "Longitude query for reverse geocoding.\n\nAn accompanying latitude (lat=) query must be submitted for a valid reverse geocode query.\n",
+        "example": -0.12767,
+        "format": "float",
+        "maximum": 90,
+        "minimum": -90,
+        "title": "Longitude",
+        "type": "number"
+      },
+      "AddressLatitudeParam": {
+        "description": "Latitude query for reverse geocoding.\n\nAn accompanying longitude (lon=) query must be submitted for a valid reverse geocode query.\n",
+        "example": 51.503541,
+        "format": "float",
+        "maximum": 90,
+        "minimum": -90,
+        "title": "Latitude",
+        "type": "number"
+      },
+      "PostcodeOutwardParam": {
+        "description": "Filter by outward code.",
+        "example": "1AA",
+        "title": "Postcode Outward",
+        "type": "string"
+      },
+      "PostcodeParam": {
+        "description": "Filter by postcode. Can be combined with query to perform a postcode + building number/name search.",
+        "example": "SW1A 2AA",
+        "title": "Postcode",
+        "type": "string"
+      },
+      "PostcodeAreaParam": {
+        "description": "Filter by postcode. Can be combined with query to perform a postcode + building number/name search.",
+        "example": "SW",
+        "title": "Postcode Area",
+        "type": "string"
+      },
+      "PostcodeSectorParam": {
+        "description": "Filter by postcode sector, the outward code plus first numeric of the inward code. ",
+        "example": "SW1A 2",
+        "title": "Postcode Sector",
+        "type": "string"
+      },
+      "PostTownParam": {
+        "description": "Filter by town. ",
+        "example": "London",
+        "title": "Post Town",
+        "type": "string"
+      },
+      "UPRNParam": {
+        "description": "Filters by UPRN. Does not accept comma separated terms. Only a single term is permitted",
+        "example": "100023336956",
+        "title": "UPRN",
+        "type": "integer"
+      },
+      "CountryParam": {
+        "description": "Filter by country. Possible values are England, Scotland, Wales, Northern Ireland, Jersey, Guernsey and Isle of Man.",
+        "example": "England",
+        "title": "Country",
+        "type": "string"
+      },
+      "PostcodeTypeParam": {
+        "description": "Filter by Postcode Type. Useful for separating organisational and residential addresses",
+        "example": "L",
+        "title": "Country",
+        "type": "string"
+      },
+      "SmallUserParam": {
+        "description": "Filter by Organisation Indicator. Useful for separating organisational and residential addresses",
+        "example": "Y",
+        "title": "SU Organisation Indicator",
+        "type": "string"
+      },
+      "BoxParam": {
+        "description": "Restrict search to a geospatial box determined by the \"top-left\" and \"bottom-right\" gelocations.   Only one geospatial box can be provided.",
+        "example": "2.095,57.15,-2.096,57.14",
+        "title": "Box",
+        "type": "string"
+      },
+      "BiasPostcodeOutwardParam": {
+        "description": "Bias by outward code",
+        "title": "Bias Postcode Outward",
+        "type": "string"
+      },
+      "BiasPostcodeParam": {
+        "description": "Bias by postcode. Can be combined with query to perform a postcode + building number/name search.",
+        "example": "/addresses?postcode=SW1A2AA&q=10",
+        "title": "Bias Postcode",
+        "type": "string"
+      },
+      "BiasPostcodeAreaParam": {
+        "description": "Bias by postcode area, the first one or two non-numeric characters of a postcode.",
+        "example": "The postcode area of SW1A 2AA and N1 6RT are SW and N respectively",
+        "title": "Bias Postcode Area",
+        "type": "string"
+      },
+      "BiasPostcodeSectorParam": {
+        "description": "Bias by postcode sector, the outward code plus first numeric of the inward code.",
+        "example": "SW1A 2AA is SW1A 2",
+        "title": "Bias Postcode Sector",
+        "type": "string"
+      },
+      "BiasPosttownParam": {
+        "description": "Bias by town.",
+        "title": "Bias Post Town",
+        "type": "string"
+      },
+      "BiasThoroughfareParam": {
+        "description": "Bias by street name.",
+        "title": "Bias Thoroughfare",
+        "type": "string"
+      },
+      "BiasCountryParam": {
+        "description": "Bias by country. Possible values are England, Scotland, Wales, Northern Ireland, Jersey, Guernsey and Isle of Man.",
+        "title": "Bias Country",
+        "type": "string"
+      },
+      "BiasLonLatParam": {
+        "description": "Bias search to a geospatial circle determined by an origin and radius in meters. Max radius is `50000`.  Uses the format bias_lonlat=[longitude],[latitude],[radius in metres] Only one geospatial bias may be provided",
+        "example": "-2.095,57.15,100",
+        "title": "Bias Lon/Lat",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.ideal-postcodes.co.uk/v1/addresses{?api_key,query,limit,page,filter,lon,lat,postcode_outward,postcode,postcode_area,postcode_sector,post_town,uprn,country,postcode_type,su_organisation_indicator,box,bias_postcode_outward,bias_postcode,bias_postcode_area,bias_postcode_sector,bias_post_town,bias_thoroughfare,bias_country,bias_lonlat}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Address Search Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**",
+            [
+              "**result**",
+              {
+                "$ul": [
+                  "**hits**: List of matching addresses",
+                  "**limit** (default: 10)",
+                  "**page** (default: 0)",
+                  "**total**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: `400X` type error response code",
+            "**message**: Bad request error description",
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Postcode Not Found"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**",
+            "**suggestions**: A list of alternate nearest matching postcodes you can try"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

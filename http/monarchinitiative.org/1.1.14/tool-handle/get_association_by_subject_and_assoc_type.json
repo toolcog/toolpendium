@@ -1,0 +1,100 @@
+{
+  "name": "get_association_by_subject_and_assoc_type",
+  "description": "Returns list of matching associations of a given type",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "rows": {
+        "default": 100,
+        "type": "integer",
+        "description": "number of rows"
+      },
+      "start": {
+        "type": "integer",
+        "description": "beginning row"
+      },
+      "evidence": {
+        "type": "string",
+        "description": "Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2"
+      },
+      "unselect_evidence": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, excludes evidence objects in response"
+      },
+      "exclude_automatic_assertions": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, excludes associations that involve IEAs (ECO:0000501)"
+      },
+      "use_compact_associations": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, returns results in compact associations format"
+      },
+      "subject": {
+        "type": "string",
+        "description": "Subject CURIE"
+      },
+      "object": {
+        "type": "string",
+        "description": "Object CURIE"
+      },
+      "association_type": {
+        "type": "string",
+        "description": "Association type, eg gene_phenotype"
+      }
+    },
+    "required": [
+      "association_type"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/association/type/{association_type}{?rows,start,evidence,unselect_evidence,exclude_automatic_assertions,use_compact_associations,subject,object}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**docs**: solr docs",
+            "**facet_counts**: Mapping between field names and association counts",
+            "**highlighting**: Mapping between id and solr highlight",
+            "**numFound**: total number of associations matching query",
+            "**associations**: Complete representation of full association object, plus evidence",
+            "**compact_associations**: Compact representation in which objects (e.g. phenotypes) are collected for subject-predicate pairs",
+            "**objects**: List of distinct objects used"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

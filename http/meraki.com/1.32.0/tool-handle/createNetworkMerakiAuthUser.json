@@ -1,0 +1,130 @@
+{
+  "name": "createNetworkMerakiAuthUser",
+  "description": "Authorize a user configured with Meraki Authentication for a network (currently supports 802.1X, splash guest, and client VPN users, and currently, organizations have a 50,000 user cap)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "body": {
+        "example": {
+          "accountType": "802.1X",
+          "authorizations": [
+            {
+              "expiresAt": "2018-03-13T00:00:00.090210Z",
+              "ssidNumber": 1
+            }
+          ],
+          "email": "miles@meraki.com",
+          "emailPasswordToUser": false,
+          "isAdmin": false,
+          "name": "Miles Meraki",
+          "password": "secret"
+        },
+        "properties": {
+          "accountType": {
+            "default": "802.1X",
+            "description": "Authorization type for user. Can be 'Guest' or '802.1X' for wireless networks, or 'Client VPN' for wired networks. Defaults to '802.1X'.",
+            "enum": [
+              "802.1X",
+              "Client VPN",
+              "Guest"
+            ],
+            "type": "string"
+          },
+          "authorizations": {
+            "description": "Authorization zones and expiration dates for the user.",
+            "items": {
+              "properties": {
+                "expiresAt": {
+                  "default": "Never",
+                  "description": "Date for authorization to expire. Set to 'Never' for the authorization to not expire, which is the default.",
+                  "type": "string"
+                },
+                "ssidNumber": {
+                  "description": "Required for wireless networks. The SSID for which the user is being authorized, which must be configured for the user's given accountType.",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "email": {
+            "description": "Email address of the user",
+            "type": "string"
+          },
+          "emailPasswordToUser": {
+            "description": "Whether or not Meraki should email the password to user. Default is false.",
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "description": "Whether or not the user is a Dashboard administrator.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Name of the user. Only required If the user is not a Dashboard administrator.",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password for this user account. Only required If the user is not a Dashboard administrator.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "authorizations"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "networkId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/merakiAuthUsers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountType**: Authorization type for user.",
+            "**authorizations**: User authorization info",
+            "**createdAt**: Creation time of the user",
+            "**email**: Email address of the user",
+            "**id**: Meraki auth user id",
+            "**isAdmin**: Whether or not the user is a Dashboard administrator",
+            "**name**: Name of the user"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

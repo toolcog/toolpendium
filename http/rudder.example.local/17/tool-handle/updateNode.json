@@ -1,0 +1,144 @@
+{
+  "name": "updateNode",
+  "description": "Update node settings and properties",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "nodeId": {
+        "example": "9a1773c9-0889-40b6-be89-f6504443ac1b",
+        "format": "uuid (or \"root\")",
+        "type": "string",
+        "description": "Id of the target node"
+      },
+      "body": {
+        "$ref": "#/$defs/node-settings"
+      }
+    },
+    "required": [
+      "nodeId"
+    ],
+    "$defs": {
+      "node-settings": {
+        "properties": {
+          "agentKey": {
+            "$ref": "#/$defs/agent-key"
+          },
+          "policyMode": {
+            "description": "In which mode the node will apply its configuration policy. Use `default` to use the global mode.",
+            "enum": [
+              "audit",
+              "enforce",
+              "default"
+            ],
+            "example": "audit",
+            "type": "string"
+          },
+          "properties": {
+            "items": {
+              "properties": {
+                "name": {
+                  "description": "Property name",
+                  "example": "datacenter",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "Property value (can be a string or JSON object)",
+                  "example": "AMS2",
+                  "format": "string or JSON"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "state": {
+            "description": "The node life cycle state. See [dedicated doc](https://docs.rudder.io/reference/current/usage/advanced_node_management.html#node-lifecycle) for more information.",
+            "enum": [
+              "enabled",
+              "ignored",
+              "empty-policies",
+              "initializing",
+              "preparing-eol"
+            ],
+            "example": "enabled",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "agent-key": {
+        "description": "Information about agent key or certificate",
+        "properties": {
+          "status": {
+            "description": "Certification status of the security token (reset to `undefined` to trust a new certificate). If `certified`, inventory signature check will be enforced",
+            "enum": [
+              "certified",
+              "undefined"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "description": "Certificate (or public key for <6.0 agents) used by the agent. Be careful write a \"\\n\" after header line and before footer line, JSON does not keep formatting in string.",
+            "example": "-----BEGIN CERTIFICATE-----\nMIIFqDCC[...]3tALNn\n-----END CERTIFICATE-----",
+            "format": "PEM",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rudder.example.local/rudder/api/latest/nodes/{nodeId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: The id of the action",
+            [
+              "**data**: Information about the node",
+              {
+                "$ul": [
+                  "**nodes**"
+                ]
+              }
+            ],
+            "**result**: Result of the request"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

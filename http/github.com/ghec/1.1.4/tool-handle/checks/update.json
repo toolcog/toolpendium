@@ -1,0 +1,453 @@
+{
+  "name": "checks_update",
+  "description": "**Note:** The Checks API only looks for pushes in the repository where the check suite or check run were created. Pushes to a branch in a forked repository are not detected and return an empty `pull_requests` array.\n\nUpdates a check run for a specific commit in a repository. Your GitHub App must have the `checks:write` permission to edit check runs.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "check_run_id": {
+        "type": "integer",
+        "description": "The unique identifier of the check run."
+      },
+      "body": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "properties": {
+              "status": {
+                "enum": [
+                  "completed"
+                ]
+              }
+            },
+            "required": [
+              "conclusion"
+            ]
+          },
+          {
+            "additionalProperties": true,
+            "properties": {
+              "status": {
+                "enum": [
+                  "queued",
+                  "in_progress"
+                ]
+              }
+            }
+          }
+        ],
+        "properties": {
+          "actions": {
+            "description": "Possible further actions the integrator can perform, which a user may trigger. Each action includes a `label`, `identifier` and `description`. A maximum of three actions are accepted. See the [`actions` object](https://docs.github.com/enterprise-cloud@latest//rest/reference/checks#actions-object) description. To learn more about check runs and requested actions, see \"[Check runs and requested actions](https://docs.github.com/enterprise-cloud@latest//rest/reference/checks#check-runs-and-requested-actions).\"",
+            "items": {
+              "properties": {
+                "description": {
+                  "description": "A short explanation of what this action would do. The maximum size is 40 characters.",
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                "identifier": {
+                  "description": "A reference for the action on the integrator's system. The maximum size is 20 characters.",
+                  "maxLength": 20,
+                  "type": "string"
+                },
+                "label": {
+                  "description": "The text to be displayed on a button in the web UI. The maximum size is 20 characters.",
+                  "maxLength": 20,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "description",
+                "identifier"
+              ],
+              "type": "object"
+            },
+            "maxItems": 3,
+            "type": "array"
+          },
+          "completed_at": {
+            "description": "The time the check completed. This is a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "conclusion": {
+            "description": "**Required if you provide `completed_at` or a `status` of `completed`**. The final conclusion of the check. \n**Note:** Providing `conclusion` will automatically set the `status` parameter to `completed`. You cannot change a check run conclusion to `stale`, only GitHub can set this.",
+            "enum": [
+              "action_required",
+              "cancelled",
+              "failure",
+              "neutral",
+              "success",
+              "skipped",
+              "stale",
+              "timed_out"
+            ],
+            "type": "string"
+          },
+          "details_url": {
+            "description": "The URL of the integrator's site that has the full details of the check.",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "A reference for the run on the integrator's system.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the check. For example, \"code-coverage\".",
+            "type": "string"
+          },
+          "output": {
+            "description": "Check runs can accept a variety of data in the `output` object, including a `title` and `summary` and can optionally provide descriptive details about the run.",
+            "properties": {
+              "annotations": {
+                "description": "Adds information from your analysis to specific lines of code. Annotations are visible in GitHub's pull request UI. Annotations are visible in GitHub's pull request UI. The Checks API limits the number of annotations to a maximum of 50 per API request. To create more than 50 annotations, you have to make multiple requests to the [Update a check run](https://docs.github.com/enterprise-cloud@latest//rest/reference/checks#update-a-check-run) endpoint. Each time you update the check run, annotations are appended to the list of annotations that already exist for the check run. For details about annotations in the UI, see \"[About status checks](https://docs.github.com/enterprise-cloud@latest//articles/about-status-checks#checks)\".",
+                "items": {
+                  "properties": {
+                    "annotation_level": {
+                      "description": "The level of the annotation.",
+                      "enum": [
+                        "notice",
+                        "warning",
+                        "failure"
+                      ],
+                      "type": "string"
+                    },
+                    "end_column": {
+                      "description": "The end column of the annotation. Annotations only support `start_column` and `end_column` on the same line. Omit this parameter if `start_line` and `end_line` have different values.",
+                      "type": "integer"
+                    },
+                    "end_line": {
+                      "description": "The end line of the annotation.",
+                      "type": "integer"
+                    },
+                    "message": {
+                      "description": "A short description of the feedback for these lines of code. The maximum size is 64 KB.",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "The path of the file to add an annotation to. For example, `assets/css/main.css`.",
+                      "type": "string"
+                    },
+                    "raw_details": {
+                      "description": "Details about this annotation. The maximum size is 64 KB.",
+                      "type": "string"
+                    },
+                    "start_column": {
+                      "description": "The start column of the annotation. Annotations only support `start_column` and `end_column` on the same line. Omit this parameter if `start_line` and `end_line` have different values. Column numbers start at 1.",
+                      "type": "integer"
+                    },
+                    "start_line": {
+                      "description": "The start line of the annotation. Line numbers start at 1.",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "description": "The title that represents the annotation. The maximum size is 255 characters.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "start_line",
+                    "end_line",
+                    "annotation_level",
+                    "message"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              "images": {
+                "description": "Adds images to the output displayed in the GitHub pull request UI.",
+                "items": {
+                  "properties": {
+                    "alt": {
+                      "description": "The alternative text for the image.",
+                      "type": "string"
+                    },
+                    "caption": {
+                      "description": "A short image description.",
+                      "type": "string"
+                    },
+                    "image_url": {
+                      "description": "The full URL of the image.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "alt",
+                    "image_url"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "summary": {
+                "description": "Can contain Markdown.",
+                "maxLength": 65535,
+                "type": "string"
+              },
+              "text": {
+                "description": "Can contain Markdown.",
+                "maxLength": 65535,
+                "type": "string"
+              },
+              "title": {
+                "description": "**Required**.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "summary"
+            ],
+            "type": "object"
+          },
+          "started_at": {
+            "description": "This is a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "The current status.",
+            "enum": [
+              "queued",
+              "in_progress",
+              "completed"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "check_run_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/check-runs/{check_run_id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "CheckRun"
+        },
+        "A check performed on the code of a given code change",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**app**: GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+              {
+                "$ul": [
+                  "**client_id**",
+                  "**client_secret**",
+                  "**created_at**",
+                  "**description**",
+                  "**events**: The list of events for the GitHub app",
+                  "**external_url**",
+                  "**html_url**",
+                  "**id**: Unique identifier of the GitHub app",
+                  "**installations_count**: The number of installations associated with the GitHub app",
+                  "**name**: The name of the GitHub app",
+                  "**node_id**",
+                  [
+                    "**owner**: A GitHub user.",
+                    {
+                      "$ul": [
+                        "**avatar_url**",
+                        "**email**",
+                        "**events_url**",
+                        "**followers_url**",
+                        "**following_url**",
+                        "**gists_url**",
+                        "**gravatar_id**",
+                        "**html_url**",
+                        "**id**",
+                        "**login**",
+                        "**name**",
+                        "**node_id**",
+                        "**organizations_url**",
+                        "**received_events_url**",
+                        "**repos_url**",
+                        "**site_admin**",
+                        "**starred_at**",
+                        "**starred_url**",
+                        "**subscriptions_url**",
+                        "**type**",
+                        "**url**"
+                      ]
+                    }
+                  ],
+                  "**pem**",
+                  [
+                    "**permissions**: The set of permissions for the GitHub app",
+                    {
+                      "$ul": [
+                        "**checks**",
+                        "**contents**",
+                        "**deployments**",
+                        "**issues**",
+                        "**metadata**"
+                      ]
+                    }
+                  ],
+                  "**slug**: The slug name of the GitHub app",
+                  "**updated_at**",
+                  "**webhook_secret**"
+                ]
+              }
+            ],
+            [
+              "**check_suite**",
+              {
+                "$ul": [
+                  "**id**"
+                ]
+              }
+            ],
+            "**completed_at**",
+            "**conclusion**",
+            [
+              "**deployment**: A deployment created as the result of an Actions check run from a workflow that references an environment",
+              {
+                "$ul": [
+                  "**created_at**",
+                  "**description**",
+                  "**environment**: Name for the target deployment environment.",
+                  "**id**: Unique identifier of the deployment",
+                  "**node_id**",
+                  "**original_environment**",
+                  [
+                    "**performed_via_github_app**: GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+                    {
+                      "$ul": [
+                        "**client_id**",
+                        "**client_secret**",
+                        "**created_at**",
+                        "**description**",
+                        "**events**: The list of events for the GitHub app",
+                        "**external_url**",
+                        "**html_url**",
+                        "**id**: Unique identifier of the GitHub app",
+                        "**installations_count**: The number of installations associated with the GitHub app",
+                        "**name**: The name of the GitHub app",
+                        "**node_id**",
+                        [
+                          "**owner**: A GitHub user.",
+                          {
+                            "$ul": [
+                              "**avatar_url**",
+                              "**email**",
+                              "**events_url**",
+                              "**followers_url**",
+                              "**following_url**",
+                              "**gists_url**",
+                              "**gravatar_id**",
+                              "**html_url**",
+                              "**id**",
+                              "**login**",
+                              "**name**",
+                              "**node_id**",
+                              "**organizations_url**",
+                              "**received_events_url**",
+                              "**repos_url**",
+                              "**site_admin**",
+                              "**starred_at**",
+                              "**starred_url**",
+                              "**subscriptions_url**",
+                              "**type**",
+                              "**url**"
+                            ]
+                          }
+                        ],
+                        "**pem**",
+                        [
+                          "**permissions**: The set of permissions for the GitHub app",
+                          {
+                            "$ul": [
+                              "**checks**",
+                              "**contents**",
+                              "**deployments**",
+                              "**issues**",
+                              "**metadata**"
+                            ]
+                          }
+                        ],
+                        "**slug**: The slug name of the GitHub app",
+                        "**updated_at**",
+                        "**webhook_secret**"
+                      ]
+                    }
+                  ],
+                  "**production_environment**: Specifies if the given environment is one that end-users directly interact with. Default: false.",
+                  "**repository_url**",
+                  "**statuses_url**",
+                  "**task**: Parameter to specify a task to execute",
+                  "**transient_environment**: Specifies if the given environment is will no longer exist at some point in the future. Default: false.",
+                  "**updated_at**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**details_url**",
+            "**external_id**",
+            "**head_sha**: The SHA of the commit that is being checked.",
+            "**html_url**",
+            "**id**: The id of the check.",
+            "**name**: The name of the check.",
+            "**node_id**",
+            [
+              "**output**",
+              {
+                "$ul": [
+                  "**annotations_count**",
+                  "**annotations_url**",
+                  "**summary**",
+                  "**text**",
+                  "**title**"
+                ]
+              }
+            ],
+            "**pull_requests**",
+            "**started_at**",
+            "**status**: The phase of the lifecycle that the check is currently in.",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

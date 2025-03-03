@@ -1,0 +1,97 @@
+{
+  "name": "nodes_wikis_list",
+  "description": "List of wiki pages on a node.\n#### Returns\nPaginated list of the node's current wiki page versions ordered by their date_modified. Each resource contains the full representation of the wiki, meaning additional requests to an individual wiki's detail view are not necessary.\n\nNote that if an anonymous view_only key is being used, the user relationship will not be exposed.\n\nIf the request is unsuccessful, a JSON object with an `errors` key containing information about the failure will be returned. Refer to the [list of error codes](#tag/Errors-and-Error-Codes) to understand why this request may have failed.\n#### Filtering\nWiki pages can be filtered based on their `name` and `date_modified` fields.\n+ `filter[name]=<Str>` -- filter wiki pages by name\n+ `filter[date_modified][comparison_operator]=YYYY-MM-DDTH:M:S` -- filter wiki pages based on date modified.\n\nPossible comparison operators include 'gt' (greater than), 'gte'(greater than or equal to), 'lt' (less than) and 'lte' (less than or equal to). The date must be in the format YYYY-MM-DD and the time is optional.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "node_id": {
+        "type": "string",
+        "description": "The unique identifier of the node."
+      }
+    },
+    "required": [
+      "node_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.test.osf.io/v2/nodes/{node_id}/wikis/"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Wiki list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**attributes**: The properties of the wiki.",
+              {
+                "$ul": [
+                  "**content_type**: Content type of the wiki (`text/markdown`).",
+                  "**current_user_can_comment**: Whether the current user is allowed to post comments on this wiki.",
+                  "**date_modified**: The date and time at which the wiki was last modified, as an iso8601 formatted timestamp.",
+                  "**extra**: A dictionary containing additional metadata about this wiki, including version information.",
+                  "**kind**: The type of object.",
+                  "**materialized_path**: Materialized path to the wiki object.",
+                  "**name**: The name/title of the wiki page.",
+                  "**path**: Path to the wiki object.",
+                  "**size**: Size of the wiki."
+                ]
+              }
+            ],
+            "**id**: The identifier of the wiki.",
+            [
+              "**links**: URLs to alternative representations of the wiki.",
+              {
+                "$ul": [
+                  "**download**: The URL to download the content of the wiki.",
+                  "**info**: A link to the detail page for the wiki.",
+                  "**self**: A link to the detail page for the wiki."
+                ]
+              }
+            ],
+            [
+              "**relationships**: URLs to other entities or entity collections that have a relationship to the wiki.",
+              {
+                "$ul": [
+                  "**comments**: A relationship to the comments related to this wiki.",
+                  "**node**: A relationship to the associated node.",
+                  "**user**: A relationship to the user associated with this wiki."
+                ]
+              }
+            ],
+            "**type**: The type identifier of the wiki (`wikis`)."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

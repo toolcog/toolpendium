@@ -1,0 +1,436 @@
+{
+  "name": "PatchPaymentInstrument",
+  "description": "Update allowed payment instrument's values.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "maxLength": 50,
+        "pattern": "^[@~\\-\\.\\w]+$",
+        "type": "string",
+        "description": "The resource identifier string."
+      },
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/PaymentInstrumentUpdateToken"
+          },
+          {
+            "$ref": "#/$defs/PaymentCardUpdatePlain"
+          },
+          {
+            "$ref": "#/$defs/BankAccountUpdatePlain"
+          }
+        ],
+        "description": "PaymentInstrument resource."
+      }
+    },
+    "required": [
+      "id",
+      "body"
+    ],
+    "$defs": {
+      "PaymentInstrumentUpdateToken": {
+        "properties": {
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address (if supplied – overrides billing address from token)."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "token": {
+            "description": "Payment token ID.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContactObject": {
+        "properties": {
+          "address": {
+            "description": "The contact street address.",
+            "example": "36 Craven St",
+            "maxLength": 60,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          },
+          "address2": {
+            "description": "The contact street address (second line).",
+            "maxLength": 60,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          },
+          "city": {
+            "description": "The contact city.",
+            "example": "London",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "country": {
+            "description": "The contact country ISO Alpha-2 code.",
+            "example": "GB",
+            "maxLength": 2,
+            "nullable": true,
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          "emails": {
+            "$ref": "#/$defs/ContactEmails"
+          },
+          "firstName": {
+            "description": "The contact first name.",
+            "example": "Benjamin",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "hash": {
+            "description": "A hash that can be used to compare multiple contacts for identical attribute values.",
+            "example": "056ae6d97c788b9e98b049ebafd7b229bf852221",
+            "maxLength": 40,
+            "readOnly": true,
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The contact last name.",
+            "example": "Franklin",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "organization": {
+            "description": "The contact organization.",
+            "example": {
+              "$ref": "#/components/schemas/ReadyToPayMethods/example/2/feature"
+            },
+            "maxLength": 255,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "phoneNumbers": {
+            "$ref": "#/$defs/ContactPhoneNumbers"
+          },
+          "postalCode": {
+            "description": "The contact postal code.",
+            "example": "WC2N 5NF",
+            "maxLength": 10,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-]+$",
+            "type": "string"
+          },
+          "region": {
+            "description": "The contact region (state).",
+            "example": "London",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContactEmails": {
+        "description": "The list of emails.",
+        "items": {
+          "properties": {
+            "label": {
+              "description": "The email label.",
+              "example": "main",
+              "maxLength": 45,
+              "type": "string"
+            },
+            "primary": {
+              "description": "True if email is primary.",
+              "example": true,
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The email value.",
+              "example": "rebilly@example.com",
+              "format": "email",
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "ContactPhoneNumbers": {
+        "description": "The list of phone numbers.",
+        "items": {
+          "properties": {
+            "label": {
+              "description": "The phone label.",
+              "example": "main",
+              "maxLength": 45,
+              "type": "string"
+            },
+            "primary": {
+              "description": "True if phone is primary.",
+              "example": true,
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The phone value.",
+              "example": "512-710-1640",
+              "maxLength": 50,
+              "type": "string"
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "ResourceCustomFields": {
+        "default": {},
+        "description": "Custom Fields list as a map `{\"custom field name\": \"custom field value\", ...}`. The format must follow the saved format (see Custom Fields section for the formats).\n",
+        "example": {
+          "foo": "bar"
+        },
+        "type": "object"
+      },
+      "PaymentCardUpdatePlain": {
+        "properties": {
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "cvv": {
+            "description": "Card's cvv (card verification value).",
+            "type": "string"
+          },
+          "expMonth": {
+            "description": "Card's expiration month.",
+            "type": "integer"
+          },
+          "expYear": {
+            "description": "Card's expiration year.",
+            "type": "integer"
+          },
+          "stickyGatewayAccountId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "Sticky gateway account ID."
+          }
+        },
+        "type": "object"
+      },
+      "ResourceId": {
+        "description": "The resource ID. Defaults to UUID v4.",
+        "example": "4f6cf35x-2c4y-483z-a0a9-158621f77a21",
+        "maxLength": 50,
+        "type": "string"
+      },
+      "BankAccountUpdatePlain": {
+        "properties": {
+          "accountType": {
+            "description": "Bank's account type.",
+            "enum": [
+              "checking",
+              "savings",
+              "other"
+            ],
+            "type": "string"
+          },
+          "bankName": {
+            "description": "Bank's name.",
+            "type": "string"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/payment-instruments/{id}"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**",
+            "**invalidFields**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

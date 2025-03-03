@@ -1,0 +1,95 @@
+{
+  "name": "migrations_get-large-files",
+  "description": "List files larger than 100MB found during the import",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/import/large_files"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Porter Large File list"
+        },
+        "Porter Large File",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**oid**",
+            "**path**",
+            "**ref_name**",
+            "**size**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "503": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "name": "putBenefitsDocumentUpload",
+  "description": "Accepts document metadata, document binary, and attachment binaries. Full URL, including\nquery parameters, provided from POST `/document_uploads`.\n\n## Example Payload\n\nThe following demonstrates a (redacted) multipart payload suitable for submitting to the PUT\nendpoint. Most programming languages should have provisions for assembling a multipart\npayload like this without having to do so manually.\n\n```\n--17de1ed8f01442b2a2d7a93506314b76\nContent-Disposition: form-data; name=\"metadata\"\nContent-Type: application/json\n\n{\"veteranFirstName\": \"Jane\",\n\"veteranLastName\": \"Doe\",\n\"fileNumber\": \"012345678\",\n\"zipCode\": \"97202\",\n\"source\": \"MyVSO\",\n\"docType\": \"21-22\"\n\"businessLine\": \"CMP\"}\n--17de1ed8f01442b2a2d7a93506314b76\nContent-Disposition: form-data; name=\"content\"\nContent-Type: application/pdf\n\n<Binary PDF contents>\n--17de1ed8f01442b2a2d7a93506314b76\nContent-Disposition: form-data; name=\"attachment1\"\nContent-Type: application/pdf\n\n<Binary PDF attachment contents>\n--17de1ed8f01442b2a2d7a93506314b76--\n```\n\nThis PUT request would have an overall HTTP Content-Type header:\n\n```\nContent-Type: multipart/form-data; boundary=17de1ed8f01442b2a2d7a93506314b76\n```\n\nNote that the Content-Disposition parameter \"name\" in each part must be the expected values\n\"metadata\", \"content\", \"attachment1\"...\"attachmentN\". The attachment attributes must be named \nexactly as they are listed here (case sensitive), for example: \"attachment_1\" or \"Attachment2\"\nare invalid.\n\nThis is an example curl command:\n\n```\ncurl -v -L -X PUT '<Location from \\uploads>' -F 'metadata=\"{\\\"veteranFirstName\\\": \\\"Jane\\\",\\\"veteranLastName\\\": \\\"Doe\\\",\\\"fileNumber\\\": \\\"012345678\\\",\\\"zipCode\\\": \\\"97202\\\",\\\"source\\\": \\\"MyVSO\\\",\\\"docType\\\": \\\"21-22\\\",\\\"businessLine\\\": \\\"CMP\\\"}\";type=application/json' -F 'content=@\"content.pdf\"' -F 'attachment1=@\"file1.pdf\"' -F 'attachment2=@\"another_file.pdf\"'\n```\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Content-MD5": {
+        "format": "md5",
+        "type": "string",
+        "description": "Base64-encoded 128-bit MD5 digest of the message. Use for integrity control"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://sandbox-api.va.gov/services/vba_documents/v1/path"
+    },
+    "headers": {
+      "Content-MD5": {
+        "$": "Content-MD5"
+      }
+    }
+  },
+  "responses": {
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Message**: Error detail"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Document upload failed",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Code**: Error code",
+            "**Message**: Error detail"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Message**: message"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Unambiguous status code. Only present if status = \"error\"",
+            "**detail**: Human readable error detail. Only present if status = \"error\"",
+            "**status**: Unambiguous status code. Only present if status = \"error\"",
+            "**title**: Human readable title description."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

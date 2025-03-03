@@ -1,0 +1,177 @@
+{
+  "name": "SIGN_UP_id",
+  "description": "This API is used to validate Aadhaar details and verify the mobile number by generating an OTP. This API call, if successful, will be followed by verify OTP call by the partner application if the user is online or available to perform OTP validation as indicated in verification parameter",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/DemoAuth"
+      }
+    },
+    "$defs": {
+      "DemoAuth": {
+        "properties": {
+          "clientid": {
+            "description": "Provide the client id that was created during the application registration process on Partners Portal.",
+            "type": "string"
+          },
+          "consent": {
+            "description": "The consent indicator from the user for performing demographic authentication using Aadhaar details. This Partner Application must capture the user consent for performing the Aadhaar demographic authentication. The possible values are ‘Y’ and ‘N’. The sign up request will be processed only when this indicator is ‘Y’.",
+            "type": "string"
+          },
+          "demoauth": {
+            "description": "The parameter indicates whether Aadhaar demographic authentication must be successful for creating DigiLocker account. The possible values are ‘Y’ and ‘N’. The value of ‘Y’ will perform Aadhaar demographic authentication and will return errors if any in response. The value of ‘N’ will also perform Aadhaar demographic authentication but will return any error in case of authentication failure. It will create a basic mobile based account for the user. Value ‘N’ should be used when the user account needs to be created in the absence of the user.",
+            "type": "string"
+          },
+          "dob": {
+            "description": "This is date of birth of the user as mentioned in Aadhaar in DDMMYYYY format.",
+            "type": "integer"
+          },
+          "gender": {
+            "description": "This is gender of the user as mentioned in Aadhaar. The possible values are M, F, T for male, female and transgender respectively.",
+            "enum": [
+              "M",
+              "F",
+              "T"
+            ]
+          },
+          "hmac": {
+            "description": "Provide SHA-256 encrypted value of the client secret, clientid and ts parameters above concatenated in this sequence (client secret, clientid, ts). The hmac parameter is used by DigiLocker to ensure the data integrity and authentication of the request. Use the Client Secret Key generated during the application registration process on Partners Portal as the client secret.",
+            "format": "binary",
+            "type": "string"
+          },
+          "mobile": {
+            "description": "This is the mobile number of the user. DigiLocker will check whether an account exists for this mobile number. Either uid or mobile is required to verify whether an account exists.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "This is name of the user as mentioned in Aadhaar.",
+            "type": "string"
+          },
+          "ts": {
+            "description": "Provide a timestamp value in UNIX (or POSIX) format in IST time zone in seconds. This timestamp value must not be older than 30 minutes.",
+            "type": "string"
+          },
+          "uid": {
+            "description": "This is the Aadhaar number of the user. DigiLocker will check whether an account exists for this Aadhaar number. Either uid or mobile is required to verify whether an account exists.",
+            "type": "integer"
+          },
+          "verification": {
+            "description": "The parameter indicates whether the mobile number provided above should be validated by DigiLocker. If this parameter is ‘Y’, the DigiLocker sends an OTP to verify the mobile number. In this case the client application will call the second API to validate the OTP. The user will be signed on only after successful OTP validation. This flow should be used when the user account is created by user himself/herself or the user is present to provide the OTP. If this parameter is ‘N’, the user account will be created without OTP validation. The OTP validation will be performed when the user signs in for the first time in DigiLocker. This flow should be used when the user account needs to be created in the absence of the user.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://betaapi.digitallocker.gov.in/public/signup/2/demoauth"
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**details**",
+              {
+                "$ul": [
+                  "**access_token**: The access token that can be used to call the DigiLocker APIs.",
+                  "**expires_in**: The duration in seconds for which the access token is valid.",
+                  "**mobile**: The masked mobile number of the user on which the OTP has been sent.           ",
+                  "**refresh_token**: The refresh token used to refresh the above access token when it expires. Please refer to Refresh Access Token API for more details.",
+                  "**scope**: Scope of the token",
+                  "**token_type**: The type of token which will always be Bearer."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**",
+            "**error_description**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: unexpected_error",
+            "**error_description**: Internal server error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

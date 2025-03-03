@@ -1,0 +1,99 @@
+{
+  "name": "HistoryListForUser",
+  "description": "List history for specific user.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_at": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Leave blank or set to a date/time to filter earlier entries."
+      },
+      "end_at": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Leave blank or set to a date/time to filter later entries."
+      },
+      "display": {
+        "type": "string",
+        "description": "Display format. Leave blank or set to `full` or `parent`."
+      },
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination."
+      },
+      "per_page": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended)."
+      },
+      "sort_by": {
+        "type": "object",
+        "description": "If set, sort records by the specified field in either `asc` or `desc` direction (e.g. `sort_by[user_id]=desc`). Valid fields are `user_id` and `created_at`."
+      },
+      "user_id": {
+        "format": "int32",
+        "type": "integer",
+        "description": "User ID."
+      }
+    },
+    "required": [
+      "user_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/history/users/{user_id}{?start_at,end_at,display,cursor,per_page,sort_by}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List site full action history.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Type of action",
+            "**destination**: The destination path for this action, if applicable",
+            "**display**: Friendly displayed output",
+            "**failure_type**: Failure type.  If action was a user login or session failure, why did it fail?",
+            "**id**: Action ID",
+            "**interface**: Interface on which this action occurred.",
+            "**ip**: IP Address that performed this action",
+            "**path**: Path",
+            "**source**: The source path for this action, if applicable",
+            "**targets**: Targets",
+            "**user_id**: User ID",
+            "**username**: Username",
+            "**when**: Action occurrence date/time"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

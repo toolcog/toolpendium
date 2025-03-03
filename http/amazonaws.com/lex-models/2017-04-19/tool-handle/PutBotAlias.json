@@ -1,0 +1,363 @@
+{
+  "name": "PutBotAlias",
+  "description": "<p>Creates an alias for the specified version of the bot or replaces an alias for the specified bot. To change the version of the bot that the alias points to, replace the alias. For more information about aliases, see <a>versioning-aliases</a>.</p> <p>This operation requires permissions for the <code>lex:PutBotAlias</code> action. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "^([A-Za-z]_?)+$",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "The name of the alias. The name is <i>not</i> case sensitive."
+      },
+      "botName": {
+        "type": "string",
+        "pattern": "^([A-Za-z]_?)+$",
+        "minLength": 2,
+        "maxLength": 50,
+        "description": "The name of the bot."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "botVersion"
+        ],
+        "properties": {
+          "description": {
+            "description": "A description of the alias.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "botVersion": {
+            "description": "The version of the bot.",
+            "type": "string",
+            "pattern": "\\$LATEST|[0-9]+",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "checksum": {
+            "description": "<p>Identifies a specific revision of the <code>$LATEST</code> version.</p> <p>When you create a new bot alias, leave the <code>checksum</code> field blank. If you specify a checksum you get a <code>BadRequestException</code> exception.</p> <p>When you want to update a bot alias, set the <code>checksum</code> field to the checksum of the most recent revision of the <code>$LATEST</code> version. If you don't specify the <code> checksum</code> field, or if the checksum does not match the <code>$LATEST</code> version, you get a <code>PreconditionFailedException</code> exception.</p>",
+            "type": "string"
+          },
+          "conversationLogs": {
+            "description": "Provides the settings needed for conversation logs.",
+            "type": "object",
+            "properties": {
+              "logSettings": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LogSettingsRequestList"
+                  },
+                  {
+                    "description": "The settings for your conversation logs. You can log the conversation text, conversation audio, or both."
+                  }
+                ]
+              },
+              "iamRoleArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IamRoleArn"
+                  },
+                  {
+                    "description": "The Amazon Resource Name (ARN) of an IAM role with permission to write to your CloudWatch Logs for text logs and your S3 bucket for audio logs. If audio encryption is enabled, this role also provides access permission for the AWS KMS key used for encrypting audio logs. For more information, see <a href=\"https://docs.aws.amazon.com/lex/latest/dg/conversation-logs-role-and-policy.html\">Creating an IAM Role and Policy for Conversation Logs</a>."
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "A list of tags to add to the bot alias. You can only add tags when you create an alias, you can't use the <code>PutBotAlias</code> operation to update the tags on a bot alias. To update tags, use the <code>TagResource</code> operation.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          }
+        }
+      }
+    },
+    "required": [
+      "name",
+      "botName",
+      "body"
+    ],
+    "$defs": {
+      "LogSettingsRequestList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/LogSettingsRequest"
+        }
+      },
+      "LogSettingsRequest": {
+        "type": "object",
+        "required": [
+          "logType",
+          "destination",
+          "resourceArn"
+        ],
+        "properties": {
+          "logType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LogType"
+              },
+              {
+                "description": "The type of logging to enable. Text logs are delivered to a CloudWatch Logs log group. Audio logs are delivered to an S3 bucket."
+              }
+            ]
+          },
+          "destination": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Destination"
+              },
+              {
+                "description": "Where the logs will be delivered. Text logs are delivered to a CloudWatch Logs log group. Audio logs are delivered to an S3 bucket."
+              }
+            ]
+          },
+          "kmsKeyArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KmsKeyArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the AWS KMS customer managed key for encrypting audio logs delivered to an S3 bucket. The key does not apply to CloudWatch Logs and is optional for S3 buckets."
+              }
+            ]
+          },
+          "resourceArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the CloudWatch Logs log group or S3 bucket where the logs should be delivered."
+              }
+            ]
+          }
+        },
+        "description": "Settings used to configure delivery mode and destination for conversation logs."
+      },
+      "LogType": {
+        "type": "string",
+        "enum": [
+          "AUDIO",
+          "TEXT"
+        ]
+      },
+      "Destination": {
+        "type": "string",
+        "enum": [
+          "CLOUDWATCH_LOGS",
+          "S3"
+        ]
+      },
+      "KmsKeyArn": {
+        "type": "string",
+        "pattern": "^arn:[\\w\\-]+:kms:[\\w\\-]+:[\\d]{12}:(?:key\\/[\\w\\-]+|alias\\/[a-zA-Z0-9:\\/_\\-]{1,256})$",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "ResourceArn": {
+        "type": "string",
+        "pattern": "^arn:[\\w\\-]+:(?:logs:[\\w\\-]+:[\\d]{12}:log-group:[\\.\\-_/#A-Za-z0-9]{1,512}(?::\\*)?|s3:::[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9])$",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "IamRoleArn": {
+        "type": "string",
+        "pattern": "^arn:[\\w\\-]+:iam::[\\d]{12}:role/.+$",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The key for the tag. Keys are not case-sensitive and must be unique."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The value associated with a key. The value may be an empty string but it can't be null."
+              }
+            ]
+          }
+        },
+        "description": "A list of key/value pairs that identify a bot, bot alias, or bot channel. Tag keys and values can consist of Unicode letters, digits, white space, and any of the following symbols: _ . : / = + - @. "
+      },
+      "TagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://models.lex.us-east-1.amazonaws.com/bots/{botName}/aliases/{name}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**name**",
+            "**description**",
+            "**botVersion**",
+            "**botName**",
+            "**lastUpdatedDate**",
+            "**createdDate**",
+            "**checksum**",
+            "**conversationLogs**",
+            "**tags**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

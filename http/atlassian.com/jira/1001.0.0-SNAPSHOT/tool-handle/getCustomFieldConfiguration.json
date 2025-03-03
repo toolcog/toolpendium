@@ -1,0 +1,99 @@
+{
+  "name": "getCustomFieldConfiguration",
+  "description": "Returns a [paginated](#pagination) list of configurations for a custom field created by a [Forge app](https://developer.atlassian.com/platform/forge/).\n\nThe result can be filtered by one of these criteria:\n\n *  `id`.\n *  `fieldContextId`.\n *  `issueId`.\n *  `projectKeyOrId` and `issueTypeId`.\n\nOtherwise, all configurations are returned.\n\n**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg). Jira permissions are not required for the Forge app that created the custom field.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fieldIdOrKey": {
+        "type": "string",
+        "description": "The ID or key of the custom field, for example `customfield_10000`."
+      },
+      "id": {
+        "items": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "description": "The list of configuration IDs. To include multiple configurations, separate IDs with an ampersand: `id=10000&id=10001`. Can't be provided with `fieldContextId`, `issueId`, `projectKeyOrId`, or `issueTypeId`."
+      },
+      "fieldContextId": {
+        "items": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "description": "The list of field context IDs. To include multiple field contexts, separate IDs with an ampersand: `fieldContextId=10000&fieldContextId=10001`. Can't be provided with `id`, `issueId`, `projectKeyOrId`, or `issueTypeId`."
+      },
+      "issueId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The ID of the issue to filter results by. If the issue doesn't exist, an empty list is returned. Can't be provided with `projectKeyOrId`, or `issueTypeId`."
+      },
+      "projectKeyOrId": {
+        "type": "string",
+        "description": "The ID or key of the project to filter results by. Must be provided with `issueTypeId`. Can't be provided with `issueId`."
+      },
+      "issueTypeId": {
+        "type": "string",
+        "description": "The ID of the issue type to filter results by. Must be provided with `projectKeyOrId`. Can't be provided with `issueId`."
+      },
+      "startAt": {
+        "default": 0,
+        "format": "int64",
+        "type": "integer",
+        "description": "The index of the first item to return in a page of results (page offset)."
+      },
+      "maxResults": {
+        "default": 100,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of items to return per page."
+      }
+    },
+    "required": [
+      "fieldIdOrKey"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/app/field/{fieldIdOrKey}/context/configuration{?id,fieldContextId,issueId,projectKeyOrId,issueTypeId,startAt,maxResults}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A page of items.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**isLast**: Whether this is the last page.",
+            "**maxResults**: The maximum number of items that could be returned.",
+            "**nextPage**: If there is another page of results, the URL of the next page.",
+            "**self**: The URL of the page.",
+            "**startAt**: The index of the first item returned.",
+            "**total**: The number of items returned.",
+            "**values**: The list of items."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

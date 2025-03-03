@@ -1,0 +1,267 @@
+{
+  "name": "bulkRegisterHostAsync",
+  "description": "Register multiple hosts and perform discovery for databases and Microsoft SQL Server instances. When called, this API returns a success message, but completes the host registration in the background. Monitor the status of the background host discovery with the \"status\" field in GET API on /hosts. The POST API on /hosts can take longer for discovery, depending on the number of hosts on the system. POST on this API can be used instead to perform the discovery in the background and quickly register the host. Doing this requires that you install RBS for Linux and Windows hosts, similar to regular register using POST on /hosts.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "items": {
+          "$ref": "#/$defs/HostRegister"
+        },
+        "type": "array",
+        "description": "Registration definition for each host."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "HostRegister": {
+        "properties": {
+          "alias": {
+            "description": "A user-specified string that returns this host in searches.",
+            "type": "string"
+          },
+          "hasAgent": {
+            "type": "boolean"
+          },
+          "hdfsConfig": {
+            "$ref": "#/$defs/HdfsConfig"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "isOracleHost": {
+            "description": "A Boolean that specifies whether to discover Oracle information at registration. A value of 'true' discovers Oracle information at registration.\n",
+            "type": "boolean"
+          },
+          "nasConfig": {
+            "$ref": "#/$defs/NasConfig"
+          },
+          "oracleQueryUser": {
+            "description": "Specifies the Oracle username for an account with query privileges. The account must have query privileges for a specified Oracle installation to enable Oracle discovery queries for that installation.\n",
+            "type": "string"
+          },
+          "oracleSysDbaUser": {
+            "description": "Specifies the Oracle username for an account with sysdba privileges. The account must have sysdba privileges for a specified Oracle installation to enable Oracle discovery queries for that installation. This field overrides the configured global sysdba user for the specified Oracle installation.",
+            "type": "string"
+          },
+          "organizationId": {
+            "description": "The ID of the organization to which the host is assigned.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hostname"
+        ],
+        "type": "object"
+      },
+      "HdfsConfig": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/HdfsBaseConfig"
+          }
+        ]
+      },
+      "HdfsBaseConfig": {
+        "properties": {
+          "apiToken": {
+            "description": "API token to access Hdfs.",
+            "type": "string"
+          },
+          "hosts": {
+            "description": "List of Hdfs Namenode Hosts.",
+            "items": {
+              "$ref": "#/$defs/HdfsHost"
+            },
+            "type": "array"
+          },
+          "kerberosTicket": {
+            "description": "Ticket Cache Path of Kerberos Ticket.",
+            "type": "string"
+          },
+          "nameservices": {
+            "description": "Logical name for nameservice for Hdfs HA.",
+            "type": "string"
+          },
+          "username": {
+            "description": "Username to access Hdfs API.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hosts"
+        ],
+        "type": "object"
+      },
+      "HdfsHost": {
+        "properties": {
+          "hostname": {
+            "description": "Hostname or Ip of Namenode.",
+            "type": "string"
+          },
+          "port": {
+            "description": "Port number of Namenode.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hostname",
+          "port"
+        ],
+        "type": "object"
+      },
+      "NasConfig": {
+        "properties": {
+          "apiCertificate": {
+            "description": "TLS certification to validate NAS server.",
+            "type": "string"
+          },
+          "apiEndpoint": {
+            "description": "API endpoint to access NAS API 'FLASHBLADE'.",
+            "type": "string"
+          },
+          "apiHostname": {
+            "description": "Hostname or IP used in the NAS API calls.",
+            "type": "string"
+          },
+          "apiPassword": {
+            "description": "Password to access NAS API 'ISILON/NETAPP'.",
+            "type": "string",
+            "x-secret": true
+          },
+          "apiToken": {
+            "description": "API token to access NAS API 'FLASHBLADE'.",
+            "type": "string",
+            "x-secret": true
+          },
+          "apiUsername": {
+            "description": "Username to access NAS API 'ISILON/NETAPP'.",
+            "type": "string"
+          },
+          "isIsilonChangelistEnabled": {
+            "description": "Indicates if Changelist is enabled on Isilon NAS share. When this value is 'true', metadata fetches during backup operations use the Isilon Changelist feature. The Changelist feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+            "type": "boolean"
+          },
+          "isNetAppSnapDiffEnabled": {
+            "description": "Indicates if SnapDiff is enabled on NetApp NAS share. When this value is 'true', metadata fetches during backup operations use the NetApp SnapDiff feature. The SnapDiff feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+            "type": "boolean"
+          },
+          "isShareAutoDiscoveryEnabled": {
+            "description": "Specifies whether shares on the NAS host are automatically discovered. When this value is 'true', Rubrik periodically (every 30 minutes by default) connects to the NAS host to discover NFS and SMB shares.",
+            "type": "boolean"
+          },
+          "vendorType": {
+            "description": "Type of NAS vendor 'ISILON/NETAPP/FLASHBLADE'.",
+            "type": "string"
+          },
+          "zoneName": {
+            "description": "Name of the Isilon zone that data IP belongs to.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendorType"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v1/host/bulk_background"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**alias**: A user-specified string that returns this host in searches.",
+            [
+              "**hdfsBaseConfig**",
+              {
+                "$ul": [
+                  "**apiToken**: API token to access Hdfs.",
+                  "**hosts**: List of Hdfs Namenode Hosts.",
+                  "**kerberosTicket**: Ticket Cache Path of Kerberos Ticket.",
+                  "**nameservices**: Logical name for nameservice for Hdfs HA.",
+                  "**username**: Username to access Hdfs API."
+                ]
+              }
+            ],
+            "**hostname**: Deprecated. Please use 'name' instead.",
+            "**id**: Unique identifier for host.",
+            "**mssqlCbtEffectiveStatus**: Effective CBT host status.",
+            "**mssqlCbtEnabled**: CBT host support status.",
+            "**name**: IP address or hostname of the host.",
+            [
+              "**nasBaseConfig**",
+              {
+                "$ul": [
+                  "**apiCertificate**: TLS certification to validate NAS server.",
+                  "**apiEndpoint**: API endpoint to access NAS API 'FLASHBLADE'.",
+                  "**apiHostname**: Hostname or IP used in the NAS API calls.",
+                  "**apiUsername**: Username to access NAS API.",
+                  "**isIsilonChangelistEnabled**: Indicates if Changelist is enabled on Isilon NAS share. When this value is 'true', metadata fetches during backup operations use the Isilon Changelist feature. The Changelist feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+                  "**isNetAppSnapDiffEnabled**: Indicates if SnapDiff is enabled on NetApp NAS share. When this value is 'true', metadata fetches during backup operations use the NetApp SnapDiff feature. The SnapDiff feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+                  "**isShareAutoDiscoveryEnabled**: Specifies whether shares on the NAS host are automatically discovered. When this value is 'true', Rubrik periodically (every 30 minutes by default) connects to the NAS host to discover NFS and SMB shares.",
+                  "**vendorType**: Type of NAS vendor 'ISILON/NETAPP/FLASHBLADE'.",
+                  "**zoneName**: Name of the Isilon zone that data IP belongs to."
+                ]
+              }
+            ],
+            "**operatingSystem**: Operating system of the host. One of Windows, Linux, AIX, HPUX, and SunOS.",
+            "**operatingSystemType**: The operating system of the host. Possible choices are Windows, Linux, AIX, HPUX, SunOS.",
+            "**organizationId**: The ID of the organization to which the host is assigned (set by envoy).",
+            "**organizationName**: The name of the organization to which the host is assigned (set by envoy).",
+            "**primaryClusterId**: ID of the Rubrik cluster to which the host belongs.",
+            "**status**: Specifies the connect status for the host. Status is Refreshing while discovery is running or Connected once discovery was successful and the host is available.",
+            "**agentId**: ID of the Rubrik Backup Service (RBS) installed on the host.",
+            "**compressionEnabled**: Indicates if compression is enabled while transferring data between the host and the Rubrik cluster.",
+            "**hostVfdDriverState**: VFD host install state.",
+            "**hostVfdEnabled**: VFD host support status.",
+            "**isOracleHost**: Specifies whether this is an Oracle host. This indicates whether to show Oracle discovery fields in the UI.",
+            "**isRelic**: A relic host is deleted, but still may have snapshots associated with its children (e.g. Fileset).",
+            "**mssqlCbtDriverInstalled**: Indicates if the CBT driver is installed for SQL Server instances on the specified Windows host. Set to true when the CBT driver is installed. Set to false when the CBT driver is not installed.",
+            "**oracleQueryUser**: Specifies the Oracle username for an account with query privileges.",
+            "**oracleSysDbaUser**: Specifies the Oracle username for an account with sysdba privileges."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

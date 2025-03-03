@@ -1,0 +1,84 @@
+{
+  "name": "findUsersForPicker",
+  "description": "Returns a list of users whose attributes match the query term. The returned object includes the `html` field where the matched query term is highlighted with the HTML strong tag. A list of account IDs can be provided to exclude users from the results.\n\nThis operation takes the users in the range defined by `maxResults`, up to the thousandth user, and then returns only the users from that range that match the query term. This means the operation usually returns fewer users than specified in `maxResults`. To get all the users who match the query term, use [Get all users](#api-rest-api-3-users-search-get) and filter the records in your code.\n\nPrivacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg). Anonymous calls and calls by users without the required permission return search results for an exact name match only.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "A query string that is matched against user attributes, such as `displayName`, and `emailAddress`, to find relevant users. The string can match the prefix of the attribute's value. For example, *query=john* matches a user with a `displayName` of *John Smith* and a user with an `emailAddress` of *johnson@example.com*."
+      },
+      "maxResults": {
+        "default": 50,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of items to return. The total number of matched users is returned in `total`."
+      },
+      "showAvatar": {
+        "default": false,
+        "type": "boolean",
+        "description": "Include the URI to the user's avatar."
+      },
+      "exclude": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "This parameter is no longer available. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details."
+      },
+      "excludeAccountIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A list of account IDs to exclude from the search results. This parameter accepts a comma-separated list. Multiple account IDs can also be provided using an ampersand-separated list. For example, `excludeAccountIds=5b10a2844c20165700ede21g,5b10a0effa615349cb016cd8&excludeAccountIds=5b10ac8d82e05b22cc7d4ef5`. Cannot be provided with `exclude`."
+      },
+      "avatarSize": {
+        "type": "string"
+      },
+      "excludeConnectUsers": {
+        "default": false,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/user/picker{?query,maxResults,showAvatar,exclude,excludeAccountIds,avatarSize,excludeConnectUsers}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The list of users found in a search, including header text (Showing X of Y matching users) and total of matched users.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**header**: Header text indicating the number of users in the response and the total number of users found in the search.",
+            "**total**: The total number of users found in the search.",
+            "**users**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

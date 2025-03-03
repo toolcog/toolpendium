@@ -1,0 +1,218 @@
+{
+  "name": "StreamJournalToKinesis",
+  "description": "Creates a journal stream for a given Amazon QLDB ledger. The stream captures every document revision that is committed to the ledger's journal and delivers the data to a specified Amazon Kinesis Data Streams resource.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "(?!^.*--)(?!^[0-9]+$)(?!^-)(?!.*-$)^[A-Za-z0-9-]+$",
+        "minLength": 1,
+        "maxLength": 32,
+        "description": "The name of the ledger."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "RoleArn",
+          "InclusiveStartTime",
+          "KinesisConfiguration",
+          "StreamName"
+        ],
+        "properties": {
+          "RoleArn": {
+            "description": "<p>The Amazon Resource Name (ARN) of the IAM role that grants QLDB permissions for a journal stream to write data records to a Kinesis Data Streams resource.</p> <p>To pass a role to QLDB when requesting a journal stream, you must have permissions to perform the <code>iam:PassRole</code> action on the IAM role resource. This is required for all journal stream requests.</p>",
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1600
+          },
+          "Tags": {
+            "description": "The key-value pairs to add as tags to the stream that you want to create. Tag keys are case sensitive. Tag values are case sensitive and can be null.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 200,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "InclusiveStartTime": {
+            "description": "<p>The inclusive start date and time from which to start streaming journal data. This parameter must be in <code>ISO 8601</code> date and time format and in Universal Coordinated Time (UTC). For example: <code>2019-06-13T21:36:34Z</code>.</p> <p>The <code>InclusiveStartTime</code> cannot be in the future and must be before <code>ExclusiveEndTime</code>.</p> <p>If you provide an <code>InclusiveStartTime</code> that is before the ledger's <code>CreationDateTime</code>, QLDB effectively defaults it to the ledger's <code>CreationDateTime</code>.</p>",
+            "type": "string",
+            "format": "date-time"
+          },
+          "ExclusiveEndTime": {
+            "description": "<p>The exclusive date and time that specifies when the stream ends. If you don't define this parameter, the stream runs indefinitely until you cancel it.</p> <p>The <code>ExclusiveEndTime</code> must be in <code>ISO 8601</code> date and time format and in Universal Coordinated Time (UTC). For example: <code>2019-06-13T21:36:34Z</code>.</p>",
+            "type": "string",
+            "format": "date-time"
+          },
+          "KinesisConfiguration": {
+            "description": "The configuration settings of the Amazon Kinesis Data Streams destination for an Amazon QLDB journal stream.",
+            "type": "object",
+            "properties": {
+              "StreamArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Arn"
+                  },
+                  {
+                    "description": "The Amazon Resource Name (ARN) of the Kinesis Data Streams resource."
+                  }
+                ]
+              },
+              "AggregationEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Boolean"
+                  },
+                  {
+                    "description": "<p>Enables QLDB to publish multiple data records in a single Kinesis Data Streams record, increasing the number of records sent per API call.</p> <p>Default: <code>True</code> </p> <important> <p>Record aggregation has important implications for processing records and requires de-aggregation in your stream consumer. To learn more, see <a href=\"https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html\">KPL Key Concepts</a> and <a href=\"https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-consumer-deaggregation.html\">Consumer De-aggregation</a> in the <i>Amazon Kinesis Data Streams Developer Guide</i>.</p> </important>"
+                  }
+                ]
+              }
+            }
+          },
+          "StreamName": {
+            "description": "<p>The name that you want to assign to the QLDB journal stream. User-defined names can help identify and indicate the purpose of a stream.</p> <p>Your stream name must be unique among other <i>active</i> streams for a given ledger. Stream names have the same naming constraints as ledger names, as defined in <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/limits.html#limits.naming\">Quotas in Amazon QLDB</a> in the <i>Amazon QLDB Developer Guide</i>.</p>",
+            "type": "string",
+            "pattern": "(?!^.*--)(?!^[0-9]+$)(?!^-)(?!.*-$)^[A-Za-z0-9-]+$",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        }
+      }
+    },
+    "required": [
+      "name",
+      "body"
+    ],
+    "$defs": {
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "Arn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 1600
+      },
+      "Boolean": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://qldb.us-east-1.amazonaws.com/ledgers/{name}/journal-kinesis-streams"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**StreamId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

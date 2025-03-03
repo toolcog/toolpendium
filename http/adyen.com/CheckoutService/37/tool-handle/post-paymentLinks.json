@@ -1,0 +1,759 @@
+{
+  "name": "post-paymentLinks",
+  "description": "Creates a payment link to our hosted payment form where shoppers can pay. The list of payment methods presented to the shopper depends on the `currency` and `country` parameters sent in the request.\n\nFor more information, refer to [Pay by Link documentation](https://docs.adyen.com/online-payments/pay-by-link#create-payment-links-through-api).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Idempotency-Key": {
+        "type": "string",
+        "description": "A unique identifier for the message with a maximum of 64 characters (we recommend a UUID)."
+      },
+      "body": {
+        "$ref": "#/$defs/PaymentLinkRequest"
+      }
+    },
+    "$defs": {
+      "PaymentLinkRequest": {
+        "properties": {
+          "allowedPaymentMethods": {
+            "description": "List of payment methods to be presented to the shopper. To refer to payment methods, use their [payment method type](https://docs.adyen.com/payment-methods/payment-method-types).\n\nExample: `\"allowedPaymentMethods\":[\"ideal\",\"giropay\"]`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "amount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "applicationInfo": {
+            "$ref": "#/$defs/ApplicationInfo"
+          },
+          "billingAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "blockedPaymentMethods": {
+            "description": "List of payment methods to be hidden from the shopper. To refer to payment methods, use their [payment method type](https://docs.adyen.com/payment-methods/payment-method-types).\n\nExample: `\"blockedPaymentMethods\":[\"ideal\",\"giropay\"]`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "countryCode": {
+            "description": "The shopper's two-letter country code.",
+            "type": "string"
+          },
+          "deliverAt": {
+            "description": "The date and time when the purchased goods should be delivered.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30+01:00**.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveryAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "description": {
+            "description": "A short description visible on the payment page.\nMaximum length: 280 characters.",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "The date when the payment link expires.\n\n[ISO 8601](https://www.w3.org/TR/NOTE-datetime) format with time zone designator **Z**: YYYY-MM-DDThh:mm:ss+TZD, for example, **2020-12-18T10:15:30Z**.\n\nThe maximum expiry date is 70 days after the payment link is created.\n\nIf not provided, the payment link expires 24 hours after it was created.",
+            "type": "string"
+          },
+          "installmentOptions": {
+            "additionalProperties": {
+              "$ref": "#/$defs/InstallmentOption"
+            },
+            "description": "A set of key-value pairs that specifies the installment options available per payment method. The key must be a payment method name in lowercase. For example, **card** to specify installment options for all cards, or **visa** or **mc**. The value must be an object containing the installment options.",
+            "type": "object"
+          },
+          "lineItems": {
+            "description": "Price and product information about the purchased items, to be included on the invoice sent to the shopper.\nThis parameter is required for open invoice (_buy now, pay later_) payment methods such Afterpay, Clearpay, Klarna, RatePay, and Zip.",
+            "items": {
+              "$ref": "#/$defs/LineItem"
+            },
+            "type": "array"
+          },
+          "manualCapture": {
+            "description": "Indicates if the payment must be [captured manually](https://docs.adyen.com/online-payments/capture).",
+            "type": "boolean"
+          },
+          "merchantAccount": {
+            "description": "The merchant account identifier for which the payment link is created.",
+            "type": "string"
+          },
+          "merchantOrderReference": {
+            "description": "This reference allows linking multiple transactions to each other for reporting purposes (for example, order auth-rate). The reference should be unique per billing cycle.",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Metadata consists of entries, each of which includes a key and a value.\nLimitations:\n* Maximum 20 key-value pairs per request. Otherwise, error \"177\" occurs: \"Metadata size exceeds limit\"\n* Maximum 20 characters per key. Otherwise, error \"178\" occurs: \"Metadata key size exceeds limit\"\n* A key cannot have the name `checkout.linkId`. Any value that you provide with this key is going to be replaced by the real payment link ID.",
+            "maxLength": 80,
+            "type": "object"
+          },
+          "recurringProcessingModel": {
+            "description": "Defines a recurring payment type. Required when `storePaymentMethodMode` is set to **askForConsent** or **enabled**.\nPossible values:\n* **Subscription** – A transaction for a fixed or variable amount, which follows a fixed schedule.\n* **CardOnFile** – With a card-on-file (CoF) transaction, card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.\n* **UnscheduledCardOnFile** – An unscheduled card-on-file (UCoF) transaction is a transaction that occurs on a non-fixed schedule and/or has variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.\n",
+            "enum": [
+              "CardOnFile",
+              "Subscription",
+              "UnscheduledCardOnFile"
+            ],
+            "type": "string"
+          },
+          "reference": {
+            "description": "A reference that is used to uniquely identify the payment in future communications about the payment status.",
+            "type": "string"
+          },
+          "returnUrl": {
+            "description": "Website URL used for redirection after payment is completed.\nIf provided, a **Continue** button will be shown on the payment page. If shoppers select the button, they are redirected to the specified URL.",
+            "type": "string"
+          },
+          "reusable": {
+            "description": "Indicates whether the payment link can be reused for multiple payments. If not provided, this defaults to **false** which means the link can be used for one successful payment only.",
+            "type": "boolean"
+          },
+          "shopperEmail": {
+            "description": "The shopper's email address.",
+            "type": "string"
+          },
+          "shopperLocale": {
+            "description": "The language to be used in the payment page, specified by a combination of a language and country code. For example, `en-US`.\n\nFor a list of shopper locales that Pay by Link supports, refer to [Language and localization](https://docs.adyen.com/unified-commerce/pay-by-link/payment-links/api#language).",
+            "type": "string"
+          },
+          "shopperName": {
+            "$ref": "#/$defs/Name"
+          },
+          "shopperReference": {
+            "description": "Your reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.\n> Your reference must not include personally identifiable information (PII), for example name or email address.",
+            "maxLength": 256,
+            "minLength": 3,
+            "type": "string"
+          },
+          "showRemovePaymentMethodButton": {
+            "default": true,
+            "description": "Set to **false** to hide the button that lets the shopper remove a stored payment method.",
+            "type": "boolean"
+          },
+          "splits": {
+            "description": "An array of objects specifying how to split a payment when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information), [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic/processing-payments#providing-split-information), or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).",
+            "items": {
+              "$ref": "#/$defs/Split"
+            },
+            "type": "array"
+          },
+          "store": {
+            "description": "The physical store, for which this payment is processed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "reference",
+          "merchantAccount"
+        ],
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "ApplicationInfo": {
+        "properties": {
+          "adyenLibrary": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "adyenPaymentSource": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "externalPlatform": {
+            "$ref": "#/$defs/ExternalPlatform"
+          },
+          "merchantApplication": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "merchantDevice": {
+            "$ref": "#/$defs/MerchantDevice"
+          },
+          "shopperInteractionDevice": {
+            "$ref": "#/$defs/ShopperInteractionDevice"
+          }
+        },
+        "type": "object"
+      },
+      "CommonField": {
+        "properties": {
+          "name": {
+            "description": "Name of the field. For example, Name of External Platform.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the field. For example, Version of External Platform.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExternalPlatform": {
+        "properties": {
+          "integrator": {
+            "description": "External platform integrator.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the field. For example, Name of External Platform.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the field. For example, Version of External Platform.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MerchantDevice": {
+        "properties": {
+          "os": {
+            "description": "Operating system running on the merchant device.",
+            "type": "string"
+          },
+          "osVersion": {
+            "description": "Version of the operating system on the merchant device.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Merchant device reference.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShopperInteractionDevice": {
+        "properties": {
+          "locale": {
+            "description": "Locale on the shopper interaction device.",
+            "type": "string"
+          },
+          "os": {
+            "description": "Operating system running on the shopper interaction device.",
+            "type": "string"
+          },
+          "osVersion": {
+            "description": "Version of the operating system on the shopper interaction device.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Address": {
+        "properties": {
+          "city": {
+            "description": "The name of the city. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+            "type": "string"
+          },
+          "houseNumberOrName": {
+            "description": "The number or name of the house. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+            "type": "string"
+          },
+          "street": {
+            "description": "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+            "maxLength": 3000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "street",
+          "houseNumberOrName",
+          "city",
+          "postalCode",
+          "country"
+        ],
+        "type": "object"
+      },
+      "InstallmentOption": {
+        "properties": {
+          "maxValue": {
+            "description": "The maximum number of installments offered for this payment method.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "LineItem": {
+        "properties": {
+          "amountExcludingTax": {
+            "description": "Item amount excluding the tax, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "amountIncludingTax": {
+            "description": "Item amount including the tax, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "description": "Description of the line item.",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID of the line item.",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Link to the picture of the purchased item.",
+            "type": "string"
+          },
+          "itemCategory": {
+            "description": "Item category, used by the payment methods PayPal and Ratepay.",
+            "type": "string"
+          },
+          "productUrl": {
+            "description": "Link to the purchased item.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Number of items.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "taxAmount": {
+            "description": "Tax amount, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "taxPercentage": {
+            "description": "Tax percentage, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Name": {
+        "properties": {
+          "firstName": {
+            "description": "The first name.",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object"
+      },
+      "Split": {
+        "properties": {
+          "account": {
+            "description": "The unique identifier of the account to which the split amount is booked. Required if `type` is **MarketPlace** or **BalanceAccount**.\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): The [`accountCode`](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccount#request-accountCode) of the account to which the split amount is booked.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): The [`balanceAccountId`](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/balanceAccounts/_id_#path-id) of the account to which the split amount is booked.",
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/$defs/SplitAmount"
+          },
+          "description": {
+            "description": "Your description for the split item.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Your unique reference for the split item.\n\nThis is required if `type` is **MarketPlace** ([Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic)) or **BalanceAccount** ([Balance Platform](https://docs.adyen.com/marketplaces-and-platforms)).\n\nFor the other types, we also recommend providing a **unique** reference so you can reconcile the split and the associated payment in the transaction overview and in the reports.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the split item.\n\nPossible values:\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): **BalanceAccount**, **Commission**, **Default**, **PaymentFee**, **Remainder**, **Surcharge**, **Tip**, **VAT**.",
+            "enum": [
+              "AcquiringFees",
+              "AdyenCommission",
+              "AdyenFees",
+              "AdyenMarkup",
+              "BalanceAccount",
+              "Commission",
+              "Default",
+              "Interchange",
+              "MarketPlace",
+              "PaymentFee",
+              "Remainder",
+              "SchemeFee",
+              "Surcharge",
+              "Tip",
+              "VAT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "SplitAmount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes). By default, this is the original payment currency.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the split amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://checkout-test.adyen.com/v37/paymentLinks"
+    },
+    "headers": {
+      "Idempotency-Key": {
+        "$": "Idempotency-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**allowedPaymentMethods**: List of payment methods to be presented to the shopper. To refer to payment methods, use their [payment method type](https://docs.adyen.com/payment-methods/payment-method-types).",
+            [
+              "**amount**",
+              {
+                "$ul": [
+                  "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                ]
+              }
+            ],
+            [
+              "**applicationInfo**",
+              {
+                "$ul": [
+                  [
+                    "**adyenLibrary**",
+                    {
+                      "$ul": [
+                        "**name**: Name of the field. For example, Name of External Platform.",
+                        "**version**: Version of the field. For example, Version of External Platform."
+                      ]
+                    }
+                  ],
+                  [
+                    "**adyenPaymentSource**",
+                    {
+                      "$ul": [
+                        "**name**: Name of the field. For example, Name of External Platform.",
+                        "**version**: Version of the field. For example, Version of External Platform."
+                      ]
+                    }
+                  ],
+                  [
+                    "**externalPlatform**",
+                    {
+                      "$ul": [
+                        "**integrator**: External platform integrator.",
+                        "**name**: Name of the field. For example, Name of External Platform.",
+                        "**version**: Version of the field. For example, Version of External Platform."
+                      ]
+                    }
+                  ],
+                  [
+                    "**merchantApplication**",
+                    {
+                      "$ul": [
+                        "**name**: Name of the field. For example, Name of External Platform.",
+                        "**version**: Version of the field. For example, Version of External Platform."
+                      ]
+                    }
+                  ],
+                  [
+                    "**merchantDevice**",
+                    {
+                      "$ul": [
+                        "**os**: Operating system running on the merchant device.",
+                        "**osVersion**: Version of the operating system on the merchant device.",
+                        "**reference**: Merchant device reference."
+                      ]
+                    }
+                  ],
+                  [
+                    "**shopperInteractionDevice**",
+                    {
+                      "$ul": [
+                        "**locale**: Locale on the shopper interaction device.",
+                        "**os**: Operating system running on the shopper interaction device.",
+                        "**osVersion**: Version of the operating system on the shopper interaction device."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**billingAddress**",
+              {
+                "$ul": [
+                  "**city**: The name of the city. Maximum length: 3000 characters.",
+                  "**country**: The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+                  "**houseNumberOrName**: The number or name of the house. Maximum length: 3000 characters.",
+                  "**postalCode**: A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+                  "**stateOrProvince**: The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.",
+                  "**street**: The name of the street. Maximum length: 3000 characters."
+                ]
+              }
+            ],
+            "**blockedPaymentMethods**: List of payment methods to be hidden from the shopper. To refer to payment methods, use their [payment method type](https://docs.adyen.com/payment-methods/payment-method-types).",
+            "**countryCode**: The shopper's two-letter country code.",
+            "**deliverAt**: The date and time when the purchased goods should be delivered.",
+            [
+              "**deliveryAddress**",
+              {
+                "$ul": [
+                  "**city**: The name of the city. Maximum length: 3000 characters.",
+                  "**country**: The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+                  "**houseNumberOrName**: The number or name of the house. Maximum length: 3000 characters.",
+                  "**postalCode**: A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+                  "**stateOrProvince**: The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.",
+                  "**street**: The name of the street. Maximum length: 3000 characters."
+                ]
+              }
+            ],
+            "**description**: A short description visible on the payment page.",
+            "**expiresAt**: The date when the payment link expires.",
+            "**installmentOptions**: A set of key-value pairs that specifies the installment options available per payment method. The key must be a payment method name in lowercase. For example, **card** to specify installment options for all cards, or **visa** or **mc**. The value must be an object containing the installment options.",
+            "**lineItems**: Price and product information about the purchased items, to be included on the invoice sent to the shopper.",
+            "**manualCapture**: Indicates if the payment must be [captured manually](https://docs.adyen.com/online-payments/capture).",
+            "**merchantAccount**: The merchant account identifier for which the payment link is created.",
+            "**merchantOrderReference**: This reference allows linking multiple transactions to each other for reporting purposes (for example, order auth-rate). The reference should be unique per billing cycle.",
+            "**metadata**: Metadata consists of entries, each of which includes a key and a value.",
+            "**recurringProcessingModel**: Defines a recurring payment type. Required when `storePaymentMethodMode` is set to **askForConsent** or **enabled**.",
+            "**reference**: A reference that is used to uniquely identify the payment in future communications about the payment status.",
+            "**returnUrl**: Website URL used for redirection after payment is completed.",
+            "**reusable**: Indicates whether the payment link can be reused for multiple payments. If not provided, this defaults to **false** which means the link can be used for one successful payment only.",
+            "**shopperEmail**: The shopper's email address.",
+            "**shopperLocale**: The language to be used in the payment page, specified by a combination of a language and country code. For example, `en-US`.",
+            [
+              "**shopperName**",
+              {
+                "$ul": [
+                  "**firstName**: The first name.",
+                  "**lastName**: The last name."
+                ]
+              }
+            ],
+            "**shopperReference**: Your reference to uniquely identify this shopper, for example user ID or account ID. Minimum length: 3 characters.",
+            "**showRemovePaymentMethodButton**: Set to **false** to hide the button that lets the shopper remove a stored payment method. (default: true)",
+            "**splits**: An array of objects specifying how to split a payment when using [Adyen for Platforms](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information), [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic/processing-payments#providing-split-information), or [Issuing](https://docs.adyen.com/issuing/manage-funds#split).",
+            "**status**: Status of the payment link. Possible values:",
+            "**store**: The physical store, for which this payment is processed.",
+            "**updatedAt**: The date when the payment link status was updated.",
+            "**url**: The URL at which the shopper can complete the payment."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

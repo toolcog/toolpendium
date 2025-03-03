@@ -1,0 +1,87 @@
+{
+  "name": "editChatbotMessage",
+  "description": "Edit a message that was [sent](https://marketplace.zoom.us/docs/api-reference/zoom-api/im-chat/sendchatbot) by your Chatbot app.<br> After sending a message using the Send Chatbot Message API, you must store the messageId returned in the response so that you can make edits to the associated message using this API.\n\n**Scope:** `imchat:bot`<br>\n **[Rate Limit Label](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limits):** `Medium`<br>\n**Authorization Flow**: Client Credentials Flow<br><br>\nTo get authorized, make a POST request to `/oauth/token` endpoint with grant type as `client_credentials`. <br>Use `https://api.zoom.us/oauth/token?grant_type=client_credentials` as the endpoint for the request. \nYou will need to send your ClientID and Secret as a Basic base64 encoded AUthorization header. Ex. `Basic base64Encode({client_id}:{client_sceret})`<br><br> Next, use the token received (access_token) as a bearer token while making the PUT /im/chat/messages/{message_id} request to edit a chatbot message.<br><br>\nLearn more about how to authotize chatbots in the [Chatbot Authorization](https://marketplace.zoom.us/docs/guides/chatbots/authorization) guide.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "message_id": {
+        "type": "string",
+        "description": "Unique Identifier of the message that needs to be updated. This should be retrieved from the response of [Send Chatbot Message API](https://marketplace.zoom.us/docs/api-reference/zoom-api/im-chat/sendchatbot)."
+      },
+      "body": {
+        "properties": {
+          "account_id": {
+            "description": "The AccountID of the Zoom account to which the message was sent. Retrieve this from the Chatbot request sent to your server as shown in the example [here]( https://marketplace.zoom.us/docs/guides/chatbots/sending-messages).",
+            "type": "string"
+          },
+          "content": {
+            "description": "JSON template describing how the edited message should be displayed for the user. For more information please see our [\"Send Message\" templates](https://marketplace.zoom.us/docs/guides/chatbots/sending-messages#example-request).",
+            "type": "object"
+          },
+          "is_markdown_support": {
+            "description": "**Optional**<br>\nEnable or disable markdown parser to your chatbot message. Applies the markdown parser to your chatbot message if the value of this field is set to `true`.<br> To learn more, refer to the Chatbot message [markdown reference](https://marketplace.zoom.us/docs/guides/chatbots/customizing-messages/message-with-markdown).",
+            "type": "boolean"
+          },
+          "robot_jid": {
+            "description": "Robot JID created when enabling chatbot features on your marketplace app.",
+            "type": "string"
+          },
+          "user_jid": {
+            "description": "**Optional**<br>\nThe UserJID of the user on whose behalf the message is being sent. Use this field to prevent members of a channel from getting notifications that were set up by a user who has left the channel.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "robot_jid",
+          "account_id",
+          "content"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "message_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.zoom.us/v2/im/chat/messages/{message_id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message_id**: Unique Identifier of the updated message,",
+            "**robot_jid**: The BotJID found in the Chat Subscription Section on the Features page of your App Dashboard.",
+            "**sent_time**: The date and time at which the message was sent.",
+            "**to_jid**: The JID of the Channel or User to whom the message was sent.",
+            "**user_jid**: The UserJID of the user on whose behalf the message is being sent. Used to prevent members of a channel from getting notifications that were set up by a user who has left the channel."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

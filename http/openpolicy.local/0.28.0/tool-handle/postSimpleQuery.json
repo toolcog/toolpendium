@@ -1,0 +1,110 @@
+{
+  "name": "postSimpleQuery",
+  "description": "This API queries the document at */data/system/main* by default (however, you can [configure OPA](https://www.openpolicyagent.org/docs/latest/configuration/) to use a different path to serve these queries). That document defines the response.\nFor example, use the following in `PUT /v1/policies/{path}`) to define a rule that will produce a value for the */data/system/main* document:\n\n  ```yaml\n  package system\n  main = msg {\n    msg := sprintf(\"hello, %v\", input.user)\n  }\n  ```\n\nThe server will return a *not found* (404) response if */data/system/main* is undefined.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "pretty": {
+        "type": "boolean",
+        "description": "If true, response will be in a human-readable format."
+      },
+      "body": {
+        "$ref": "#/components/schemas/queryInputSchema",
+        "description": "The text of the input document (in JSON format)"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://openpolicy.local/{?pretty}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code name",
+            "**errors**: Errors that may have been generated during the parse, compile, or installation of a policy module",
+            "**message**: The description of the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code name",
+            "**message**: The description of the error (including the name of any undefined policy module)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code name",
+            "**errors**: Errors that may have been generated during the parse, compile, or installation of a policy module",
+            "**message**: The description of the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

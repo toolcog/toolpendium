@@ -1,0 +1,627 @@
+{
+  "name": "Scan",
+  "description": "<p>The <code>Scan</code> operation returns one or more items and item attributes by accessing every item in a table or a secondary index. To have DynamoDB return fewer items, you can provide a <code>FilterExpression</code> operation.</p> <p>If the total size of scanned items exceeds the maximum dataset size limit of 1 MB, the scan completes and results are returned to the user. The <code>LastEvaluatedKey</code> value is also returned and the requestor can use the <code>LastEvaluatedKey</code> to continue the scan in a subsequent operation. Each scan response also includes number of items that were scanned (ScannedCount) as part of the request. If using a <code>FilterExpression</code>, a scan result can result in no items meeting the criteria and the <code>Count</code> will result in zero. If you did not use a <code>FilterExpression</code> in the scan request, then <code>Count</code> is the same as <code>ScannedCount</code>.</p> <note> <p> <code>Count</code> and <code>ScannedCount</code> only return the count of items specific to a single scan request and, unless the table is less than 1MB, do not represent the total number of items in the table. </p> </note> <p>A single <code>Scan</code> operation first reads up to the maximum number of items set (if using the <code>Limit</code> parameter) or a maximum of 1 MB of data and then applies any filtering to the results if a <code>FilterExpression</code> is provided. If <code>LastEvaluatedKey</code> is present in the response, pagination is required to complete the full table scan. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.Pagination\">Paginating the Results</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p> <p> <code>Scan</code> operations proceed sequentially; however, for faster performance on a large table or secondary index, applications can request a parallel <code>Scan</code> operation by providing the <code>Segment</code> and <code>TotalSegments</code> parameters. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html#Scan.ParallelScan\">Parallel Scan</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p> <p>By default, a <code>Scan</code> uses eventually consistent reads when accessing the items in a table. Therefore, the results from an eventually consistent <code>Scan</code> may not include the latest item changes at the time the scan iterates through each item in the table. If you require a strongly consistent read of each item as the scan iterates through the items in the table, you can set the <code>ConsistentRead</code> parameter to true. Strong consistency only relates to the consistency of the read at the item level.</p> <note> <p> DynamoDB does not provide snapshot isolation for a scan operation when the <code>ConsistentRead</code> parameter is set to true. Thus, a DynamoDB scan operation does not guarantee that all reads in a scan see a consistent snapshot of the table when the scan operation was requested. </p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Limit": {
+        "type": "string",
+        "description": "Pagination limit"
+      },
+      "ExclusiveStartKey": {
+        "type": "string",
+        "description": "Pagination token"
+      },
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "DynamoDB_20120810.Scan"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/ScanInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "ScanInput": {
+        "type": "object",
+        "required": [
+          "TableName"
+        ],
+        "title": "ScanInput",
+        "properties": {
+          "TableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TableName"
+              },
+              {
+                "description": "The name of the table containing the requested items; or, if you provide <code>IndexName</code>, the name of the table to which that index belongs."
+              }
+            ]
+          },
+          "IndexName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IndexName"
+              },
+              {
+                "description": "The name of a secondary index to scan. This index can be any local secondary index or global secondary index. Note that if you use the <code>IndexName</code> parameter, you must also provide <code>TableName</code>."
+              }
+            ]
+          },
+          "AttributesToGet": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeNameList"
+              },
+              {
+                "description": "This is a legacy parameter. Use <code>ProjectionExpression</code> instead. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LegacyConditionalParameters.AttributesToGet.html\">AttributesToGet</a> in the <i>Amazon DynamoDB Developer Guide</i>."
+              }
+            ]
+          },
+          "Limit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositiveIntegerObject"
+              },
+              {
+                "description": "The maximum number of items to evaluate (not necessarily the number of matching items). If DynamoDB processes the number of items up to the limit while processing the results, it stops the operation and returns the matching values up to that point, and a key in <code>LastEvaluatedKey</code> to apply in a subsequent operation, so that you can pick up where you left off. Also, if the processed dataset size exceeds 1 MB before DynamoDB reaches this limit, it stops the operation and returns the matching values up to the limit, and a key in <code>LastEvaluatedKey</code> to apply in a subsequent operation to continue the operation. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScan.html\">Working with Queries</a> in the <i>Amazon DynamoDB Developer Guide</i>."
+              }
+            ]
+          },
+          "Select": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Select"
+              },
+              {
+                "description": "<p>The attributes to be returned in the result. You can retrieve all item attributes, specific item attributes, the count of matching items, or in the case of an index, some or all of the attributes projected into the index.</p> <ul> <li> <p> <code>ALL_ATTRIBUTES</code> - Returns all of the item attributes from the specified table or index. If you query a local secondary index, then for each matching item in the index, DynamoDB fetches the entire item from the parent table. If the index is configured to project all item attributes, then all of the data can be obtained from the local secondary index, and no fetching is required.</p> </li> <li> <p> <code>ALL_PROJECTED_ATTRIBUTES</code> - Allowed only when querying an index. Retrieves all attributes that have been projected into the index. If the index is configured to project all attributes, this return value is equivalent to specifying <code>ALL_ATTRIBUTES</code>.</p> </li> <li> <p> <code>COUNT</code> - Returns the number of matching items, rather than the matching items themselves. Note that this uses the same quantity of read capacity units as getting the items, and is subject to the same item size calculations.</p> </li> <li> <p> <code>SPECIFIC_ATTRIBUTES</code> - Returns only the attributes listed in <code>ProjectionExpression</code>. This return value is equivalent to specifying <code>ProjectionExpression</code> without specifying any value for <code>Select</code>.</p> <p>If you query or scan a local secondary index and request only attributes that are projected into that index, the operation reads only the index and not the table. If any of the requested attributes are not projected into the local secondary index, DynamoDB fetches each of these attributes from the parent table. This extra fetching incurs additional throughput cost and latency.</p> <p>If you query or scan a global secondary index, you can only request attributes that are projected into the index. Global secondary index queries cannot fetch attributes from the parent table.</p> </li> </ul> <p>If neither <code>Select</code> nor <code>ProjectionExpression</code> are specified, DynamoDB defaults to <code>ALL_ATTRIBUTES</code> when accessing a table, and <code>ALL_PROJECTED_ATTRIBUTES</code> when accessing an index. You cannot use both <code>Select</code> and <code>ProjectionExpression</code> together in a single request, unless the value for <code>Select</code> is <code>SPECIFIC_ATTRIBUTES</code>. (This usage is equivalent to specifying <code>ProjectionExpression</code> without any value for <code>Select</code>.)</p> <note> <p>If you use the <code>ProjectionExpression</code> parameter, then the value for <code>Select</code> can only be <code>SPECIFIC_ATTRIBUTES</code>. Any other value for <code>Select</code> will return an error.</p> </note>"
+              }
+            ]
+          },
+          "ScanFilter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterConditionMap"
+              },
+              {
+                "description": "This is a legacy parameter. Use <code>FilterExpression</code> instead. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LegacyConditionalParameters.ScanFilter.html\">ScanFilter</a> in the <i>Amazon DynamoDB Developer Guide</i>."
+              }
+            ]
+          },
+          "ConditionalOperator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConditionalOperator"
+              },
+              {
+                "description": "This is a legacy parameter. Use <code>FilterExpression</code> instead. For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LegacyConditionalParameters.ConditionalOperator.html\">ConditionalOperator</a> in the <i>Amazon DynamoDB Developer Guide</i>."
+              }
+            ]
+          },
+          "ExclusiveStartKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Key"
+              },
+              {
+                "description": "<p>The primary key of the first item that this operation will evaluate. Use the value that was returned for <code>LastEvaluatedKey</code> in the previous operation.</p> <p>The data type for <code>ExclusiveStartKey</code> must be String, Number or Binary. No set data types are allowed.</p> <p>In a parallel scan, a <code>Scan</code> request that includes <code>ExclusiveStartKey</code> must specify the same segment whose previous <code>Scan</code> returned the corresponding value of <code>LastEvaluatedKey</code>.</p>"
+              }
+            ]
+          },
+          "ReturnConsumedCapacity": {
+            "$ref": "#/$defs/ReturnConsumedCapacity"
+          },
+          "TotalSegments": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScanTotalSegments"
+              },
+              {
+                "description": "<p>For a parallel <code>Scan</code> request, <code>TotalSegments</code> represents the total number of segments into which the <code>Scan</code> operation will be divided. The value of <code>TotalSegments</code> corresponds to the number of application workers that will perform the parallel scan. For example, if you want to use four application threads to scan a table or an index, specify a <code>TotalSegments</code> value of 4.</p> <p>The value for <code>TotalSegments</code> must be greater than or equal to 1, and less than or equal to 1000000. If you specify a <code>TotalSegments</code> value of 1, the <code>Scan</code> operation will be sequential rather than parallel.</p> <p>If you specify <code>TotalSegments</code>, you must also specify <code>Segment</code>.</p>"
+              }
+            ]
+          },
+          "Segment": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScanSegment"
+              },
+              {
+                "description": "<p>For a parallel <code>Scan</code> request, <code>Segment</code> identifies an individual segment to be scanned by an application worker.</p> <p>Segment IDs are zero-based, so the first segment is always 0. For example, if you want to use four application threads to scan a table or an index, then the first thread specifies a <code>Segment</code> value of 0, the second thread specifies 1, and so on.</p> <p>The value of <code>LastEvaluatedKey</code> returned from a parallel <code>Scan</code> request must be used as <code>ExclusiveStartKey</code> with the same segment ID in a subsequent <code>Scan</code> operation.</p> <p>The value for <code>Segment</code> must be greater than or equal to 0, and less than the value provided for <code>TotalSegments</code>.</p> <p>If you provide <code>Segment</code>, you must also provide <code>TotalSegments</code>.</p>"
+              }
+            ]
+          },
+          "ProjectionExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProjectionExpression"
+              },
+              {
+                "description": "<p>A string that identifies one or more attributes to retrieve from the specified table or index. These attributes can include scalars, sets, or elements of a JSON document. The attributes in the expression must be separated by commas.</p> <p>If no attribute names are specified, then all attributes will be returned. If any of the requested attributes are not found, they will not appear in the result.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.AccessingItemAttributes.html\">Specifying Item Attributes</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+              }
+            ]
+          },
+          "FilterExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConditionExpression"
+              },
+              {
+                "description": "<p>A string that contains conditions that DynamoDB applies after the <code>Scan</code> operation, but before the data is returned to you. Items that do not satisfy the <code>FilterExpression</code> criteria are not returned.</p> <note> <p>A <code>FilterExpression</code> is applied after the items have already been read; the process of filtering does not consume any additional read capacity units.</p> </note> <p>For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScan.html#Query.FilterExpression\">Filter Expressions</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+              }
+            ]
+          },
+          "ExpressionAttributeNames": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExpressionAttributeNameMap"
+              },
+              {
+                "description": "<p>One or more substitution tokens for attribute names in an expression. The following are some use cases for using <code>ExpressionAttributeNames</code>:</p> <ul> <li> <p>To access an attribute whose name conflicts with a DynamoDB reserved word.</p> </li> <li> <p>To create a placeholder for repeating occurrences of an attribute name in an expression.</p> </li> <li> <p>To prevent special characters in an attribute name from being misinterpreted in an expression.</p> </li> </ul> <p>Use the <b>#</b> character in an expression to dereference an attribute name. For example, consider the following attribute name:</p> <ul> <li> <p> <code>Percentile</code> </p> </li> </ul> <p>The name of this attribute conflicts with a reserved word, so it cannot be used directly in an expression. (For the complete list of reserved words, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ReservedWords.html\">Reserved Words</a> in the <i>Amazon DynamoDB Developer Guide</i>). To work around this, you could specify the following for <code>ExpressionAttributeNames</code>:</p> <ul> <li> <p> <code>{\"#P\":\"Percentile\"}</code> </p> </li> </ul> <p>You could then use this substitution in an expression, as in this example:</p> <ul> <li> <p> <code>#P = :val</code> </p> </li> </ul> <note> <p>Tokens that begin with the <b>:</b> character are <i>expression attribute values</i>, which are placeholders for the actual value at runtime.</p> </note> <p>For more information on expression attribute names, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.AccessingItemAttributes.html\">Specifying Item Attributes</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+              }
+            ]
+          },
+          "ExpressionAttributeValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExpressionAttributeValueMap"
+              },
+              {
+                "description": "<p>One or more values that can be substituted in an expression.</p> <p>Use the <b>:</b> (colon) character in an expression to dereference an attribute value. For example, suppose that you wanted to check whether the value of the <code>ProductStatus</code> attribute was one of the following: </p> <p> <code>Available | Backordered | Discontinued</code> </p> <p>You would first need to specify <code>ExpressionAttributeValues</code> as follows:</p> <p> <code>{ \":avail\":{\"S\":\"Available\"}, \":back\":{\"S\":\"Backordered\"}, \":disc\":{\"S\":\"Discontinued\"} }</code> </p> <p>You could then use these values in an expression, such as this:</p> <p> <code>ProductStatus IN (:avail, :back, :disc)</code> </p> <p>For more information on expression attribute values, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.SpecifyingConditions.html\">Condition Expressions</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+              }
+            ]
+          },
+          "ConsistentRead": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConsistentRead"
+              },
+              {
+                "description": "<p>A Boolean value that determines the read consistency model during the scan:</p> <ul> <li> <p>If <code>ConsistentRead</code> is <code>false</code>, then the data returned from <code>Scan</code> might not contain the results from other recently completed write operations (<code>PutItem</code>, <code>UpdateItem</code>, or <code>DeleteItem</code>).</p> </li> <li> <p>If <code>ConsistentRead</code> is <code>true</code>, then all of the write operations that completed before the <code>Scan</code> began are guaranteed to be contained in the <code>Scan</code> response.</p> </li> </ul> <p>The default setting for <code>ConsistentRead</code> is <code>false</code>.</p> <p>The <code>ConsistentRead</code> parameter is not supported on global secondary indexes. If you scan a global secondary index with <code>ConsistentRead</code> set to true, you will receive a <code>ValidationException</code>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Represents the input of a <code>Scan</code> operation."
+      },
+      "TableName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.-]+",
+        "minLength": 3,
+        "maxLength": 255
+      },
+      "IndexName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.-]+",
+        "minLength": 3,
+        "maxLength": 255
+      },
+      "AttributeNameList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeName"
+        },
+        "minItems": 1
+      },
+      "AttributeName": {
+        "type": "string",
+        "maxLength": 65535
+      },
+      "PositiveIntegerObject": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "Select": {
+        "type": "string",
+        "enum": [
+          "ALL_ATTRIBUTES",
+          "ALL_PROJECTED_ATTRIBUTES",
+          "SPECIFIC_ATTRIBUTES",
+          "COUNT"
+        ]
+      },
+      "FilterConditionMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Condition"
+        }
+      },
+      "Condition": {
+        "type": "object",
+        "required": [
+          "ComparisonOperator"
+        ],
+        "properties": {
+          "AttributeValueList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeValueList"
+              },
+              {
+                "description": "<p>One or more values to evaluate against the supplied attribute. The number of values in the list depends on the <code>ComparisonOperator</code> being used.</p> <p>For type Number, value comparisons are numeric.</p> <p>String value comparisons for greater than, equals, or less than are based on ASCII character code values. For example, <code>a</code> is greater than <code>A</code>, and <code>a</code> is greater than <code>B</code>. For a list of code values, see <a href=\"http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters\">http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters</a>.</p> <p>For Binary, DynamoDB treats each byte of the binary data as unsigned when it compares binary values.</p>"
+              }
+            ]
+          },
+          "ComparisonOperator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComparisonOperator"
+              },
+              {
+                "description": "<p>A comparator for evaluating attributes. For example, equals, greater than, less than, etc.</p> <p>The following comparison operators are available:</p> <p> <code>EQ | NE | LE | LT | GE | GT | NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH | IN | BETWEEN</code> </p> <p>The following are descriptions of each comparison operator.</p> <ul> <li> <p> <code>EQ</code> : Equal. <code>EQ</code> is supported for all data types, including lists and maps.</p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, Binary, String Set, Number Set, or Binary Set. If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not equal <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>NE</code> : Not equal. <code>NE</code> is supported for all data types, including lists and maps.</p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> of type String, Number, Binary, String Set, Number Set, or Binary Set. If an item contains an <code>AttributeValue</code> of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not equal <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>LE</code> : Less than or equal. </p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, or Binary (not a set type). If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not compare to <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>LT</code> : Less than. </p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> of type String, Number, or Binary (not a set type). If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not compare to <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>GE</code> : Greater than or equal. </p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, or Binary (not a set type). If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not compare to <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>GT</code> : Greater than. </p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, or Binary (not a set type). If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not equal <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not compare to <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code>.</p> <p/> </li> <li> <p> <code>NOT_NULL</code> : The attribute exists. <code>NOT_NULL</code> is supported for all data types, including lists and maps.</p> <note> <p>This operator tests for the existence of an attribute, not its data type. If the data type of attribute \"<code>a</code>\" is null, and you evaluate it using <code>NOT_NULL</code>, the result is a Boolean <code>true</code>. This result is because the attribute \"<code>a</code>\" exists; its data type is not relevant to the <code>NOT_NULL</code> comparison operator.</p> </note> </li> <li> <p> <code>NULL</code> : The attribute does not exist. <code>NULL</code> is supported for all data types, including lists and maps.</p> <note> <p>This operator tests for the nonexistence of an attribute, not its data type. If the data type of attribute \"<code>a</code>\" is null, and you evaluate it using <code>NULL</code>, the result is a Boolean <code>false</code>. This is because the attribute \"<code>a</code>\" exists; its data type is not relevant to the <code>NULL</code> comparison operator.</p> </note> </li> <li> <p> <code>CONTAINS</code> : Checks for a subsequence, or value in a set.</p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, or Binary (not a set type). If the target attribute of the comparison is of type String, then the operator checks for a substring match. If the target attribute of the comparison is of type Binary, then the operator looks for a subsequence of the target that matches the input. If the target attribute of the comparison is a set (\"<code>SS</code>\", \"<code>NS</code>\", or \"<code>BS</code>\"), then the operator evaluates to true if it finds an exact match with any member of the set.</p> <p>CONTAINS is supported for lists: When evaluating \"<code>a CONTAINS b</code>\", \"<code>a</code>\" can be a list; however, \"<code>b</code>\" cannot be a set, a map, or a list.</p> </li> <li> <p> <code>NOT_CONTAINS</code> : Checks for absence of a subsequence, or absence of a value in a set.</p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> element of type String, Number, or Binary (not a set type). If the target attribute of the comparison is a String, then the operator checks for the absence of a substring match. If the target attribute of the comparison is Binary, then the operator checks for the absence of a subsequence of the target that matches the input. If the target attribute of the comparison is a set (\"<code>SS</code>\", \"<code>NS</code>\", or \"<code>BS</code>\"), then the operator evaluates to true if it <i>does not</i> find an exact match with any member of the set.</p> <p>NOT_CONTAINS is supported for lists: When evaluating \"<code>a NOT CONTAINS b</code>\", \"<code>a</code>\" can be a list; however, \"<code>b</code>\" cannot be a set, a map, or a list.</p> </li> <li> <p> <code>BEGINS_WITH</code> : Checks for a prefix. </p> <p> <code>AttributeValueList</code> can contain only one <code>AttributeValue</code> of type String or Binary (not a Number or a set type). The target attribute of the comparison must be of type String or Binary (not a Number or a set type).</p> <p/> </li> <li> <p> <code>IN</code> : Checks for matching elements in a list.</p> <p> <code>AttributeValueList</code> can contain one or more <code>AttributeValue</code> elements of type String, Number, or Binary. These attributes are compared against an existing attribute of an item. If any elements of the input are equal to the item attribute, the expression evaluates to true.</p> </li> <li> <p> <code>BETWEEN</code> : Greater than or equal to the first value, and less than or equal to the second value. </p> <p> <code>AttributeValueList</code> must contain two <code>AttributeValue</code> elements of the same type, either String, Number, or Binary (not a set type). A target attribute matches if the target value is greater than, or equal to, the first element and less than, or equal to, the second element. If an item contains an <code>AttributeValue</code> element of a different type than the one provided in the request, the value does not match. For example, <code>{\"S\":\"6\"}</code> does not compare to <code>{\"N\":\"6\"}</code>. Also, <code>{\"N\":\"6\"}</code> does not compare to <code>{\"NS\":[\"6\", \"2\", \"1\"]}</code> </p> </li> </ul> <p>For usage examples of <code>AttributeValueList</code> and <code>ComparisonOperator</code>, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/LegacyConditionalParameters.html\">Legacy Conditional Parameters</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Represents the selection criteria for a <code>Query</code> or <code>Scan</code> operation:</p> <ul> <li> <p>For a <code>Query</code> operation, <code>Condition</code> is used for specifying the <code>KeyConditions</code> to use when querying a table or an index. For <code>KeyConditions</code>, only the following comparison operators are supported:</p> <p> <code>EQ | LE | LT | GE | GT | BEGINS_WITH | BETWEEN</code> </p> <p> <code>Condition</code> is also used in a <code>QueryFilter</code>, which evaluates the query results and returns only the desired values.</p> </li> <li> <p>For a <code>Scan</code> operation, <code>Condition</code> is used in a <code>ScanFilter</code>, which evaluates the scan results and returns only the desired values.</p> </li> </ul>"
+      },
+      "AttributeValueList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "AttributeValue": {
+        "type": "object",
+        "properties": {
+          "S": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type String. For example:</p> <p> <code>\"S\": \"Hello\"</code> </p>"
+              }
+            ]
+          },
+          "N": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Number. For example:</p> <p> <code>\"N\": \"123.45\"</code> </p> <p>Numbers are sent across the network to DynamoDB as strings, to maximize compatibility across languages and libraries. However, DynamoDB treats them as number type attributes for mathematical operations.</p>"
+              }
+            ]
+          },
+          "B": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BinaryAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Binary. For example:</p> <p> <code>\"B\": \"dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk\"</code> </p>"
+              }
+            ]
+          },
+          "SS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringSetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type String Set. For example:</p> <p> <code>\"SS\": [\"Giraffe\", \"Hippo\" ,\"Zebra\"]</code> </p>"
+              }
+            ]
+          },
+          "NS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberSetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Number Set. For example:</p> <p> <code>\"NS\": [\"42.2\", \"-19\", \"7.5\", \"3.14\"]</code> </p> <p>Numbers are sent across the network to DynamoDB as strings, to maximize compatibility across languages and libraries. However, DynamoDB treats them as number type attributes for mathematical operations.</p>"
+              }
+            ]
+          },
+          "BS": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BinarySetAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Binary Set. For example:</p> <p> <code>\"BS\": [\"U3Vubnk=\", \"UmFpbnk=\", \"U25vd3k=\"]</code> </p>"
+              }
+            ]
+          },
+          "M": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MapAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Map. For example:</p> <p> <code>\"M\": {\"Name\": {\"S\": \"Joe\"}, \"Age\": {\"N\": \"35\"}}</code> </p>"
+              }
+            ]
+          },
+          "L": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ListAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type List. For example:</p> <p> <code>\"L\": [ {\"S\": \"Cookies\"} , {\"S\": \"Coffee\"}, {\"N\": \"3.14159\"}]</code> </p>"
+              }
+            ]
+          },
+          "NULL": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Null. For example:</p> <p> <code>\"NULL\": true</code> </p>"
+              }
+            ]
+          },
+          "BOOL": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BooleanAttributeValue"
+              },
+              {
+                "description": "<p>An attribute of type Boolean. For example:</p> <p> <code>\"BOOL\": true</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Represents the data for an attribute.</p> <p>Each attribute value is described as a name-value pair. The name is the data type, and the value is the data itself.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html#HowItWorks.DataTypes\">Data Types</a> in the <i>Amazon DynamoDB Developer Guide</i>.</p>"
+      },
+      "StringAttributeValue": {
+        "type": "string"
+      },
+      "NumberAttributeValue": {
+        "type": "string"
+      },
+      "BinaryAttributeValue": {
+        "type": "string"
+      },
+      "StringSetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/StringAttributeValue"
+        }
+      },
+      "NumberSetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NumberAttributeValue"
+        }
+      },
+      "BinarySetAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BinaryAttributeValue"
+        }
+      },
+      "MapAttributeValue": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "ListAttributeValue": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "NullAttributeValue": {
+        "type": "boolean"
+      },
+      "BooleanAttributeValue": {
+        "type": "boolean"
+      },
+      "ComparisonOperator": {
+        "type": "string",
+        "enum": [
+          "EQ",
+          "NE",
+          "IN",
+          "LE",
+          "LT",
+          "GE",
+          "GT",
+          "BETWEEN",
+          "NOT_NULL",
+          "NULL",
+          "CONTAINS",
+          "NOT_CONTAINS",
+          "BEGINS_WITH"
+        ]
+      },
+      "ConditionalOperator": {
+        "type": "string",
+        "enum": [
+          "AND",
+          "OR"
+        ]
+      },
+      "Key": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "ReturnConsumedCapacity": {
+        "type": "string",
+        "enum": [
+          "INDEXES",
+          "TOTAL",
+          "NONE"
+        ],
+        "description": "<p>Determines the level of detail about either provisioned or on-demand throughput consumption that is returned in the response:</p> <ul> <li> <p> <code>INDEXES</code> - The response includes the aggregate <code>ConsumedCapacity</code> for the operation, together with <code>ConsumedCapacity</code> for each table and secondary index that was accessed.</p> <p>Note that some operations, such as <code>GetItem</code> and <code>BatchGetItem</code>, do not access any indexes at all. In these cases, specifying <code>INDEXES</code> will only return <code>ConsumedCapacity</code> information for table(s).</p> </li> <li> <p> <code>TOTAL</code> - The response includes only the aggregate <code>ConsumedCapacity</code> for the operation.</p> </li> <li> <p> <code>NONE</code> - No <code>ConsumedCapacity</code> details are included in the response.</p> </li> </ul>"
+      },
+      "ScanTotalSegments": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000000
+      },
+      "ScanSegment": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999999
+      },
+      "ProjectionExpression": {
+        "type": "string"
+      },
+      "ConditionExpression": {
+        "type": "string"
+      },
+      "ExpressionAttributeNameMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeName"
+        }
+      },
+      "ExpressionAttributeValueMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeValue"
+        }
+      },
+      "ConsistentRead": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://dynamodb.us-east-1.amazonaws.com/#X-Amz-Target=DynamoDB_20120810.Scan{?Limit,ExclusiveStartKey}"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents the output of a <code>Scan</code> operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Items**",
+            "**Count**",
+            "**ScannedCount**",
+            "**LastEvaluatedKey**",
+            "**ConsumedCapacity**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

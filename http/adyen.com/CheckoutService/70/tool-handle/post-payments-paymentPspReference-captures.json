@@ -1,0 +1,625 @@
+{
+  "name": "post-payments-paymentPspReference-captures",
+  "description": " Captures an authorised payment and returns a unique reference for this request. You get the outcome of the request asynchronously, in a [**CAPTURE** webhook](https://docs.adyen.com/online-payments/capture#capture-notification).\n\nYou can capture either the full authorised amount or a part of the authorised amount. By default, any unclaimed amount after a partial capture gets cancelled. This does not apply if you enabled multiple partial captures on your account and the payment method supports multiple partial captures. \n\n[Automatic capture](https://docs.adyen.com/online-payments/capture#automatic-capture) is the default setting for most payment methods. In these cases, you don't need to make capture requests. However, making capture requests for payments that are captured automatically does not result in double charges.\n\nFor more information, refer to [Capture](https://docs.adyen.com/online-payments/capture).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "paymentPspReference": {
+        "type": "string",
+        "description": "The [`pspReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_pspReference) of the payment that you want to capture."
+      },
+      "Idempotency-Key": {
+        "type": "string",
+        "description": "A unique identifier for the message with a maximum of 64 characters (we recommend a UUID)."
+      },
+      "body": {
+        "$ref": "#/$defs/PaymentCaptureRequest"
+      }
+    },
+    "required": [
+      "paymentPspReference"
+    ],
+    "$defs": {
+      "PaymentCaptureRequest": {
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "applicationInfo": {
+            "$ref": "#/$defs/ApplicationInfo"
+          },
+          "lineItems": {
+            "description": "Price and product information of the refunded items, required for [partial refunds](https://docs.adyen.com/online-payments/refund#refund-a-payment).\n> This field is required for partial refunds with 3x 4x Oney, Affirm, Afterpay, Atome, Clearpay, Klarna, Ratepay, Walley, and Zip.",
+            "items": {
+              "$ref": "#/$defs/LineItem"
+            },
+            "type": "array"
+          },
+          "merchantAccount": {
+            "description": "The merchant account that is used to process the payment.",
+            "type": "string"
+          },
+          "platformChargebackLogic": {
+            "$ref": "#/$defs/PlatformChargebackLogic"
+          },
+          "reference": {
+            "description": "Your reference for the capture request. Maximum length: 80 characters.",
+            "type": "string"
+          },
+          "splits": {
+            "description": "An array of objects specifying how the amount should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
+            "items": {
+              "$ref": "#/$defs/Split"
+            },
+            "type": "array"
+          },
+          "subMerchants": {
+            "description": "A List of sub-merchants.",
+            "items": {
+              "$ref": "#/$defs/SubMerchantInfo"
+            },
+            "type": "array",
+            "x-addedInVersion": "70"
+          }
+        },
+        "required": [
+          "merchantAccount",
+          "amount"
+        ],
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "ApplicationInfo": {
+        "properties": {
+          "adyenLibrary": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "adyenPaymentSource": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "externalPlatform": {
+            "$ref": "#/$defs/ExternalPlatform"
+          },
+          "merchantApplication": {
+            "$ref": "#/$defs/CommonField"
+          },
+          "merchantDevice": {
+            "$ref": "#/$defs/MerchantDevice"
+          },
+          "shopperInteractionDevice": {
+            "$ref": "#/$defs/ShopperInteractionDevice"
+          }
+        },
+        "type": "object"
+      },
+      "CommonField": {
+        "properties": {
+          "name": {
+            "description": "Name of the field. For example, Name of External Platform.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the field. For example, Version of External Platform.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExternalPlatform": {
+        "properties": {
+          "integrator": {
+            "description": "External platform integrator.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the field. For example, Name of External Platform.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version of the field. For example, Version of External Platform.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MerchantDevice": {
+        "properties": {
+          "os": {
+            "description": "Operating system running on the merchant device.",
+            "type": "string"
+          },
+          "osVersion": {
+            "description": "Version of the operating system on the merchant device.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Merchant device reference.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShopperInteractionDevice": {
+        "properties": {
+          "locale": {
+            "description": "Locale on the shopper interaction device.",
+            "type": "string"
+          },
+          "os": {
+            "description": "Operating system running on the shopper interaction device.",
+            "type": "string"
+          },
+          "osVersion": {
+            "description": "Version of the operating system on the shopper interaction device.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LineItem": {
+        "properties": {
+          "amountExcludingTax": {
+            "description": "Item amount excluding the tax, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "amountIncludingTax": {
+            "description": "Item amount including the tax, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "brand": {
+            "description": "Brand of the item.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "color": {
+            "description": "Color of the item.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "description": {
+            "description": "Description of the line item.",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID of the line item.",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Link to the picture of the purchased item.",
+            "type": "string"
+          },
+          "itemCategory": {
+            "description": "Item category, used by the payment methods PayPal and Ratepay.",
+            "type": "string"
+          },
+          "manufacturer": {
+            "description": "Manufacturer of the item.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "productUrl": {
+            "description": "Link to the purchased item.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Number of items.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "receiverEmail": {
+            "description": "Email associated with the given product in the basket (usually in electronic gift cards).",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "size": {
+            "description": "Size of the item.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "sku": {
+            "description": "Stock keeping unit.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          },
+          "taxAmount": {
+            "description": "Tax amount, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "taxPercentage": {
+            "description": "Tax percentage, in minor units.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "upc": {
+            "description": "Universal Product Code.",
+            "type": "string",
+            "x-addedInVersion": "70"
+          }
+        },
+        "type": "object"
+      },
+      "PlatformChargebackLogic": {
+        "properties": {
+          "behavior": {
+            "description": "The method of handling the chargeback.\n\nPossible values: **deductFromLiableAccount**, **deductFromOneBalanceAccount**, **deductAccordingToSplitRatio**.",
+            "enum": [
+              "deductAccordingToSplitRatio",
+              "deductFromLiableAccount",
+              "deductFromOneBalanceAccount"
+            ],
+            "type": "string",
+            "x-addedInVersion": "68"
+          },
+          "costAllocationAccount": {
+            "description": "The unique identifier of the balance account to which the chargeback fees are booked. By default, the chargeback fees are booked to your liable balance account.",
+            "type": "string",
+            "x-addedInVersion": "68"
+          },
+          "targetAccount": {
+            "description": "The unique identifier of the balance account against which the disputed amount is booked.\n\nRequired if `behavior` is **deductFromOneBalanceAccount**.",
+            "type": "string",
+            "x-addedInVersion": "68"
+          }
+        },
+        "type": "object"
+      },
+      "Split": {
+        "properties": {
+          "account": {
+            "description": "The unique identifier of the account to which the split amount is booked. Required if `type` is **MarketPlace** or **BalanceAccount**.\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): The [`accountCode`](https://docs.adyen.com/api-explorer/Account/latest/post/updateAccount#request-accountCode) of the account to which the split amount is booked.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): The [`balanceAccountId`](https://docs.adyen.com/api-explorer/balanceplatform/latest/get/balanceAccounts/_id_#path-id) of the account to which the split amount is booked.",
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/$defs/SplitAmount"
+          },
+          "description": {
+            "description": "Your description for the split item.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Your unique reference for the split item.\n\nThis is required if `type` is **MarketPlace** ([Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic)) or **BalanceAccount** ([Balance Platform](https://docs.adyen.com/marketplaces-and-platforms)).\n\nFor the other types, we also recommend providing a **unique** reference so you can reconcile the split and the associated payment in the transaction overview and in the reports.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the split item.\n\nPossible values:\n\n* [Classic Platforms integration](https://docs.adyen.com/marketplaces-and-platforms/classic): **Commission**, **Default**, **Marketplace**, **PaymentFee**, **VAT**.\n* [Balance Platform](https://docs.adyen.com/marketplaces-and-platforms): **BalanceAccount**, **Commission**, **Default**, **PaymentFee**, **Remainder**, **Surcharge**, **Tip**, **VAT**.",
+            "enum": [
+              "AcquiringFees",
+              "AdyenCommission",
+              "AdyenFees",
+              "AdyenMarkup",
+              "BalanceAccount",
+              "Commission",
+              "Default",
+              "Interchange",
+              "MarketPlace",
+              "PaymentFee",
+              "Remainder",
+              "SchemeFee",
+              "Surcharge",
+              "Tip",
+              "VAT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "SplitAmount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes). By default, this is the original payment currency.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the split amount, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "SubMerchantInfo": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/BillingAddress"
+          },
+          "id": {
+            "type": "string"
+          },
+          "mcc": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BillingAddress": {
+        "properties": {
+          "city": {
+            "description": "The name of the city. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+            "type": "string"
+          },
+          "houseNumberOrName": {
+            "description": "The number or name of the house. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+            "type": "string"
+          },
+          "street": {
+            "description": "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+            "maxLength": 3000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "street",
+          "houseNumberOrName",
+          "city",
+          "postalCode",
+          "country"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://checkout-test.adyen.com/v70/payments/{paymentPspReference}/captures"
+    },
+    "headers": {
+      "Idempotency-Key": {
+        "$": "Idempotency-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**amount**",
+              {
+                "$ul": [
+                  "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                  "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                ]
+              }
+            ],
+            "**lineItems**: Price and product information of the refunded items, required for [partial refunds](https://docs.adyen.com/online-payments/refund#refund-a-payment).",
+            "**merchantAccount**: The merchant account that is used to process the payment.",
+            "**paymentPspReference**: The [`pspReference`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/payments__resParam_pspReference) of the payment to capture. ",
+            [
+              "**platformChargebackLogic**",
+              {
+                "$ul": [
+                  "**behavior**: The method of handling the chargeback.",
+                  "**costAllocationAccount**: The unique identifier of the balance account to which the chargeback fees are booked. By default, the chargeback fees are booked to your liable balance account.",
+                  "**targetAccount**: The unique identifier of the balance account against which the disputed amount is booked."
+                ]
+              }
+            ],
+            "**pspReference**: Adyen's 16-character reference associated with the capture request.",
+            "**reference**: Your reference for the capture request.",
+            "**splits**: An array of objects specifying how the amount should be split between accounts when using Adyen for Platforms. For details, refer to [Providing split information](https://docs.adyen.com/marketplaces-and-platforms/processing-payments#providing-split-information).",
+            "**status**: The status of your request. This will always have the value **received**.",
+            "**subMerchants**: List of sub-merchants."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first. Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "name": "getNetworkSwitchAccessPolicies",
+  "description": "List the access policies for a switch network. Only returns access policies with 'my RADIUS server' as authentication method",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "networkId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/switch/accessPolicies"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accessPolicyType**: Access Type of the policy. Automatically 'Hybrid authentication' when hostMode is 'Multi-Domain'.",
+            [
+              "**dot1x**: 802.1x Settings",
+              {
+                "$ul": [
+                  "**controlDirection**: Supports either 'both' or 'inbound'. Set to 'inbound' to allow unauthorized egress on the switchport. Set to 'both' to control both traffic directions with authorization. Defaults to 'both'"
+                ]
+              }
+            ],
+            "**guestPortBouncing**: If enabled, Meraki devices will periodically send access-request messages to these RADIUS servers",
+            "**guestVlanId**: ID for the guest VLAN allow unauthorized devices access to limited network resources",
+            "**hostMode**: Choose the Host Mode for the access policy.",
+            "**increaseAccessSpeed**: Enabling this option will make switches execute 802.1X and MAC-bypass authentication simultaneously so that clients authenticate faster. Only required when accessPolicyType is 'Hybrid Authentication.",
+            "**name**: Name of the access policy",
+            [
+              "**radius**: Object for RADIUS Settings",
+              {
+                "$ul": [
+                  [
+                    "**criticalAuth**: Critical auth settings for when authentication is rejected by the RADIUS server",
+                    {
+                      "$ul": [
+                        "**dataVlanId**: VLAN that clients who use data will be placed on when RADIUS authentication fails. Will be null if hostMode is Multi-Auth",
+                        "**suspendPortBounce**: Enable to suspend port bounce when RADIUS servers are unreachable",
+                        "**voiceVlanId**: VLAN that clients who use voice will be placed on when RADIUS authentication fails. Will be null if hostMode is Multi-Auth"
+                      ]
+                    }
+                  ],
+                  "**failedAuthVlanId**: VLAN that clients will be placed on when RADIUS authentication fails. Will be null if hostMode is Multi-Auth",
+                  "**reAuthenticationInterval**: Re-authentication period in seconds. Will be null if hostMode is Multi-Auth"
+                ]
+              }
+            ],
+            "**radiusAccountingEnabled**: Enable to send start, interim-update and stop messages to a configured RADIUS accounting server for tracking connected clients",
+            "**radiusAccountingServers**: List of RADIUS accounting servers to require connecting devices to authenticate against before granting network access",
+            "**radiusCoaSupportEnabled**: Change of authentication for RADIUS re-authentication and disconnection",
+            "**radiusGroupAttribute**: Acceptable values are `\"\"` for None, or `\"11\"` for Group Policies ACL",
+            "**radiusServers**: List of RADIUS servers to require connecting devices to authenticate against before granting network access",
+            "**radiusTestingEnabled**: If enabled, Meraki devices will periodically send access-request messages to these RADIUS servers",
+            "**urlRedirectWalledGardenEnabled**: Enable to restrict access for clients to a response_objectific set of IP addresses or hostnames prior to authentication",
+            "**urlRedirectWalledGardenRanges**: IP address ranges, in CIDR notation, to restrict access for clients to a specific set of IP addresses or hostnames prior to authentication",
+            "**voiceVlanClients**: CDP/LLDP capable voice clients will be able to use this VLAN. Automatically true when hostMode is 'Multi-Domain'."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

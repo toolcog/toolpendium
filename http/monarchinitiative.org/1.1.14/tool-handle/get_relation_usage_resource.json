@@ -1,0 +1,65 @@
+{
+  "name": "get_relation_usage_resource",
+  "description": "All relations used plus count of associations",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "subject_taxon": {
+        "type": "string",
+        "description": "SUBJECT TAXON id, e.g. NCBITaxon:9606. Includes inferred by default"
+      },
+      "evidence": {
+        "type": "string",
+        "description": "Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default)\n                    or a specific publication or other supporting ibject, e.g. ZFIN:ZDB-PUB-060503-2.\n                    "
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/relation/usage/{?subject_taxon,evidence}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**docs**: solr docs",
+            "**facet_counts**: Mapping between field names and association counts",
+            "**highlighting**: Mapping between id and solr highlight",
+            "**numFound**: total number of associations matching query",
+            "**associations**: Complete representation of full association object, plus evidence",
+            "**compact_associations**: Compact representation in which objects (e.g. phenotypes) are collected for subject-predicate pairs",
+            "**objects**: List of distinct objects used"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

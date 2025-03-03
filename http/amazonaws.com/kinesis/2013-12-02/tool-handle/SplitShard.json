@@ -1,0 +1,223 @@
+{
+  "name": "SplitShard",
+  "description": "<p>Splits a shard into two new shards in the Kinesis data stream, to increase the stream's capacity to ingest and transport data. <code>SplitShard</code> is called when there is a need to increase the overall capacity of a stream because of an expected increase in the volume of data records being ingested. This API is only supported for the data streams with the provisioned capacity mode.</p> <note> <p>When invoking this API, it is recommended you use the <code>StreamARN</code> input parameter rather than the <code>StreamName</code> input parameter.</p> </note> <p>You can also use <code>SplitShard</code> when a shard appears to be approaching its maximum utilization; for example, the producers sending data into the specific shard are suddenly sending more than previously anticipated. You can also call <code>SplitShard</code> to increase stream capacity, so that more Kinesis Data Streams applications can simultaneously read data from the stream for real-time processing. </p> <p>You must specify the shard to be split and the new hash key, which is the position in the shard where the shard gets split in two. In many cases, the new hash key might be the average of the beginning and ending hash key, but it can be any hash key value in the range being mapped into the shard. For more information, see <a href=\"https://docs.aws.amazon.com/kinesis/latest/dev/kinesis-using-sdk-java-resharding-split.html\">Split a Shard</a> in the <i>Amazon Kinesis Data Streams Developer Guide</i>.</p> <p>You can use <a>DescribeStreamSummary</a> and the <a>ListShards</a> APIs to determine the shard ID and hash key values for the <code>ShardToSplit</code> and <code>NewStartingHashKey</code> parameters that are specified in the <code>SplitShard</code> request.</p> <p> <code>SplitShard</code> is an asynchronous operation. Upon receiving a <code>SplitShard</code> request, Kinesis Data Streams immediately returns a response and sets the stream status to <code>UPDATING</code>. After the operation is completed, Kinesis Data Streams sets the stream status to <code>ACTIVE</code>. Read and write operations continue to work while the stream is in the <code>UPDATING</code> state. </p> <p>You can use <a>DescribeStreamSummary</a> to check the status of the stream, which is returned in <code>StreamStatus</code>. If the stream is in the <code>ACTIVE</code> state, you can call <code>SplitShard</code>. </p> <p>If the specified stream does not exist, <a>DescribeStreamSummary</a> returns a <code>ResourceNotFoundException</code>. If you try to create more shards than are authorized for your account, you receive a <code>LimitExceededException</code>. </p> <p>For the default shard limit for an Amazon Web Services account, see <a href=\"https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html\">Kinesis Data Streams Limits</a> in the <i>Amazon Kinesis Data Streams Developer Guide</i>. To increase this limit, <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html\">contact Amazon Web Services Support</a>.</p> <p>If you try to operate on too many streams simultaneously using <a>CreateStream</a>, <a>DeleteStream</a>, <a>MergeShards</a>, and/or <a>SplitShard</a>, you receive a <code>LimitExceededException</code>. </p> <p> <code>SplitShard</code> has a limit of five transactions per second per account.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "Kinesis_20131202.SplitShard"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/SplitShardInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "SplitShardInput": {
+        "type": "object",
+        "required": [
+          "ShardToSplit",
+          "NewStartingHashKey"
+        ],
+        "title": "SplitShardInput",
+        "properties": {
+          "StreamName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StreamName"
+              },
+              {
+                "description": "The name of the stream for the shard split."
+              }
+            ]
+          },
+          "ShardToSplit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShardId"
+              },
+              {
+                "description": "The shard ID of the shard to split."
+              }
+            ]
+          },
+          "NewStartingHashKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HashKey"
+              },
+              {
+                "description": "A hash key value for the starting hash key of one of the child shards created by the split. The hash key range for a given shard constitutes a set of ordered contiguous positive integers. The value for <code>NewStartingHashKey</code> must be in the range of hash keys being mapped into the shard. The <code>NewStartingHashKey</code> hash key value and all higher hash key values in hash key range are distributed to one of the child shards. All the lower hash key values in the range are distributed to the other child shard."
+              }
+            ]
+          },
+          "StreamARN": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StreamARN"
+              },
+              {
+                "description": "The ARN of the stream."
+              }
+            ]
+          }
+        },
+        "description": "Represents the input for <code>SplitShard</code>."
+      },
+      "StreamName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.-]+",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "ShardId": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.-]+",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "HashKey": {
+        "type": "string",
+        "pattern": "0|([1-9]\\d{0,38})"
+      },
+      "StreamARN": {
+        "type": "string",
+        "pattern": "arn:aws.*:kinesis:.*:\\d{12}:stream/\\S+",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://kinesis.us-east-1.amazonaws.com/#X-Amz-Target=Kinesis_20131202.SplitShard"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,813 @@
+{
+  "name": "create-async-report",
+  "description": "Request a report on your account activity",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "discriminator": {
+          "propertyName": "product"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/SMS"
+          },
+          {
+            "$ref": "#/$defs/VOICE-CALL"
+          },
+          {
+            "$ref": "#/$defs/IN-APP-VOICE"
+          },
+          {
+            "$ref": "#/$defs/WEBSOCKET-CALL"
+          },
+          {
+            "$ref": "#/$defs/VERIFY-API"
+          },
+          {
+            "$ref": "#/$defs/NUMBER-INSIGHT"
+          },
+          {
+            "$ref": "#/$defs/MESSAGES"
+          },
+          {
+            "$ref": "#/$defs/CONVERSATIONS"
+          },
+          {
+            "$ref": "#/$defs/ASR"
+          }
+        ],
+        "description": "The parameters of the JSON body will be used to create and filter the report.<br> The value of the `product` field will define which product the report will be created for and which parameters are accepted.\n"
+      }
+    },
+    "$defs": {
+      "SMS": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/sms_fields"
+          }
+        ],
+        "description": "SMS",
+        "x-tab-id": "SMS"
+      },
+      "report_request": {
+        "discriminator": {
+          "propertyName": "product"
+        },
+        "properties": {
+          "account_id": {
+            "$ref": "#/$defs/account_id"
+          },
+          "callback_url": {
+            "$ref": "#/$defs/callback_url"
+          },
+          "date_end": {
+            "$ref": "#/$defs/date_end"
+          },
+          "date_start": {
+            "$ref": "#/$defs/date_start"
+          },
+          "include_subaccounts": {
+            "$ref": "#/$defs/include_subaccounts"
+          },
+          "product": {
+            "$ref": "#/$defs/product"
+          }
+        },
+        "required": [
+          "product",
+          "account_id"
+        ],
+        "type": "object"
+      },
+      "account_id": {
+        "description": "The account ID (API key) you wish to search for. This can differ from the API key in the authorization header because some accounts can request reports for other accounts, e.g. a primary account owner wants to create a report for one of its subaccounts.",
+        "example": "abcdef01",
+        "type": "string"
+      },
+      "callback_url": {
+        "description": "URL to send a callback upon completion of the report. This POST callback contains the same information as the response to [Get status of report](/api/reports#get-report).",
+        "example": "https://requestb.in/12345",
+        "format": "uri",
+        "type": "string"
+      },
+      "date_end": {
+        "description": "ISO-8601 extended time zone offset or ISO-8601 UTC zone offset formatted date (format `yyyy-mm-ddThh:mm:ss[.sss]±hh:mm` or `yyyy-mm-ddThh:mm:ss[.sss]Z`) for when report should end.  It is exclusive, i.e. the provided value is strictly greater than the value in the field `date_received` in the CDR. <br>If unspecified, defaults to the current time.\n",
+        "example": "2018-01-01T00:00:00+00:00",
+        "format": "date",
+        "type": "string"
+      },
+      "date_start": {
+        "description": "ISO-8601 extended time zone offset or ISO-8601 UTC zone offset formatted date (format `yyyy-mm-ddThh:mm:ss[.sss]±hh:mm` or `yyyy-mm-ddThh:mm:ss[.sss]Z`) for when reports  should begin. It filters on the time the API call was received by Vonage and corresponds to the field `date_received` (`date_start` for Voice) in the report file. It is inclusive, i.e. the provided value is less than or equal to the value in the field `date_received` (`date_start` for Voice) in the CDR.<br>If unspecified, defaults  to seven days ago.\n",
+        "example": "2017-12-01T00:00:00+00:00",
+        "format": "date",
+        "type": "string"
+      },
+      "include_subaccounts": {
+        "default": false,
+        "description": "Whether to include subaccounts or not.",
+        "enum": [
+          true,
+          false
+        ],
+        "example": "false",
+        "type": "boolean"
+      },
+      "product": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "SMS",
+        "type": "string"
+      },
+      "sms_fields": {
+        "description": "SMS",
+        "properties": {
+          "account_ref": {
+            "$ref": "#/$defs/account_ref"
+          },
+          "client_ref": {
+            "$ref": "#/$defs/client_ref"
+          },
+          "direction": {
+            "$ref": "#/$defs/direction"
+          },
+          "from": {
+            "$ref": "#/$defs/from"
+          },
+          "include_message": {
+            "$ref": "#/$defs/include_message"
+          },
+          "network": {
+            "$ref": "#/$defs/network"
+          },
+          "product": {
+            "$ref": "#/$defs/product_sms"
+          },
+          "show_concatenated": {
+            "$ref": "#/$defs/show_concatenated"
+          },
+          "status": {
+            "$ref": "#/$defs/sms_status"
+          },
+          "to": {
+            "$ref": "#/$defs/to"
+          }
+        },
+        "required": [
+          "product",
+          "account_id",
+          "direction"
+        ],
+        "type": "object",
+        "x-tab-id": "SMS"
+      },
+      "account_ref": {
+        "description": "Search for messages with this `account_ref`.",
+        "maxLength": 40,
+        "minLength": 40,
+        "type": "string"
+      },
+      "client_ref": {
+        "description": "Search for messages with this `client_ref`.",
+        "maxLength": 40,
+        "minLength": 40,
+        "type": "string"
+      },
+      "direction": {
+        "description": "Direction of the communication, either `inbound` (received by our services), or `outbound` (originated from our services). Required for products `SMS` and `MESSAGES`. Optional for `VOICE-CALL`. Invalid for `IN-APP-VOICE`, `CONVERSATIONS`, `NUMBER-INSIGHT`, `VERIFY-API`.",
+        "enum": [
+          "inbound",
+          "outbound"
+        ],
+        "example": "outbound",
+        "type": "string"
+      },
+      "from": {
+        "description": "Request from this number.",
+        "example": "441234567890",
+        "type": "string"
+      },
+      "include_message": {
+        "default": false,
+        "description": "Include the text of messages in the report.",
+        "example": "true",
+        "type": "boolean"
+      },
+      "network": {
+        "description": "Network used to send the request.",
+        "example": "23415",
+        "type": "string"
+      },
+      "product_sms": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "SMS",
+        "type": "string"
+      },
+      "show_concatenated": {
+        "default": false,
+        "description": "Indicates whether the SMS was split up into multiple parts (due to its length).",
+        "example": "false",
+        "type": "boolean"
+      },
+      "sms_status": {
+        "description": "Search only for sms with the corresponding status.",
+        "enum": [
+          "delivered",
+          "expired",
+          "failed",
+          "rejected",
+          "accepted",
+          "buffered",
+          "unknown"
+        ],
+        "example": "delivered",
+        "type": "string"
+      },
+      "to": {
+        "description": "Request to this number.",
+        "example": "441234567890",
+        "type": "string"
+      },
+      "VOICE-CALL": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/voice_call_fields"
+          }
+        ],
+        "description": "Voice Call",
+        "x-tab-id": "voice-call"
+      },
+      "voice_call_fields": {
+        "description": "Voice Call",
+        "properties": {
+          "direction": {
+            "$ref": "#/$defs/direction"
+          },
+          "from": {
+            "$ref": "#/$defs/from"
+          },
+          "network": {
+            "$ref": "#/$defs/network"
+          },
+          "product": {
+            "$ref": "#/$defs/product_voice"
+          },
+          "status": {
+            "$ref": "#/$defs/voice_status"
+          },
+          "to": {
+            "$ref": "#/$defs/to"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "voice-call"
+      },
+      "product_voice": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "VOICE-CALL",
+        "type": "string"
+      },
+      "voice_status": {
+        "description": "Search only for voice call with the corresponding status.",
+        "enum": [
+          "answered",
+          "machine",
+          "error",
+          "failed"
+        ],
+        "example": "started",
+        "type": "string"
+      },
+      "IN-APP-VOICE": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/in_app_voice_fields"
+          }
+        ],
+        "description": "In App Voice",
+        "x-tab-id": "in-app-voice"
+      },
+      "in_app_voice_fields": {
+        "description": "In App Voice",
+        "properties": {
+          "conversation_id": {
+            "$ref": "#/$defs/call_conversation_id"
+          },
+          "product": {
+            "$ref": "#/$defs/product_in_app_voice"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "in-app-voice"
+      },
+      "call_conversation_id": {
+        "description": "Search only for In App Voive calls attached to this particular Conversation. This should include the \"CON-\" prefix.",
+        "example": "CON-abc123",
+        "type": "string"
+      },
+      "product_in_app_voice": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "IN-APP-VOICE",
+        "type": "string"
+      },
+      "WEBSOCKET-CALL": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/websocket_call_fields"
+          }
+        ],
+        "description": "WebSocket Call",
+        "x-tab-id": "websocket-call"
+      },
+      "websocket_call_fields": {
+        "description": "WebSocket Call",
+        "properties": {
+          "product": {
+            "$ref": "#/$defs/product_websocket"
+          },
+          "status": {
+            "$ref": "#/$defs/websocket_status"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "websocket-call"
+      },
+      "product_websocket": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "WEBSOCKET-CALL",
+        "type": "string"
+      },
+      "websocket_status": {
+        "description": "Search only for WebSocket call with corresponding status.",
+        "example": 200,
+        "type": "string"
+      },
+      "VERIFY-API": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/verify_api_fields"
+          }
+        ],
+        "description": "Verify",
+        "x-tab-id": "verify"
+      },
+      "verify_api_fields": {
+        "description": "Verify",
+        "properties": {
+          "network": {
+            "$ref": "#/$defs/network"
+          },
+          "product": {
+            "$ref": "#/$defs/product_verify"
+          },
+          "to": {
+            "$ref": "#/$defs/to"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "verify"
+      },
+      "product_verify": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "VERIFY-API",
+        "type": "string"
+      },
+      "NUMBER-INSIGHT": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/number_insight_fields"
+          }
+        ],
+        "description": "Number Insight",
+        "x-tab-id": "number-insight"
+      },
+      "number_insight_fields": {
+        "description": "Number Insight",
+        "properties": {
+          "network": {
+            "$ref": "#/$defs/network"
+          },
+          "number": {
+            "$ref": "#/$defs/number"
+          },
+          "product": {
+            "$ref": "#/$defs/product_ni"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "number-insight"
+      },
+      "number": {
+        "description": "Search only request for the target number.",
+        "example": "441234567890",
+        "type": "string"
+      },
+      "product_ni": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "NUMBER-INSIGHT",
+        "type": "string"
+      },
+      "MESSAGES": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/messages_fields"
+          }
+        ],
+        "description": "Messages",
+        "x-tab-id": "messages"
+      },
+      "messages_fields": {
+        "description": "Messages",
+        "properties": {
+          "direction": {
+            "$ref": "#/$defs/direction"
+          },
+          "from": {
+            "$ref": "#/$defs/from"
+          },
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "include_message": {
+            "$ref": "#/$defs/include_message"
+          },
+          "product": {
+            "$ref": "#/$defs/product_messages"
+          },
+          "to": {
+            "$ref": "#/$defs/to"
+          }
+        },
+        "required": [
+          "product",
+          "account_id",
+          "direction"
+        ],
+        "type": "object",
+        "x-tab-id": "messages"
+      },
+      "id": {
+        "description": "Search only messages with the specified uuid.",
+        "example": "aaaaaaaa-bbbb-cccc-dddd-0123456789ab",
+        "type": "string"
+      },
+      "product_messages": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "MESSAGES",
+        "type": "string"
+      },
+      "CONVERSATIONS": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/conversations_fields"
+          }
+        ],
+        "description": "Conversations",
+        "x-tab-id": "conversations"
+      },
+      "conversations_fields": {
+        "description": "Conversations",
+        "properties": {
+          "conversation_id": {
+            "$ref": "#/$defs/conversation_id"
+          },
+          "product": {
+            "$ref": "#/$defs/product_conversations"
+          },
+          "status": {
+            "$ref": "#/$defs/status"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "conversations"
+      },
+      "conversation_id": {
+        "description": "Search only for events sent to this particular Conversation. This should include the \"CON-\" prefix.",
+        "example": "CON-abc123",
+        "type": "string"
+      },
+      "product_conversations": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "CONVERSATIONS",
+        "type": "string"
+      },
+      "status": {
+        "description": "Search only for conversation events with the specified event status.",
+        "example": "0",
+        "type": "string"
+      },
+      "ASR": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/report_request"
+          },
+          {
+            "$ref": "#/$defs/asr_fields"
+          }
+        ],
+        "description": "ASR",
+        "x-tab-id": "asr"
+      },
+      "asr_fields": {
+        "description": "ASR",
+        "properties": {
+          "direction": {
+            "$ref": "#/$defs/direction"
+          },
+          "from": {
+            "$ref": "#/$defs/from"
+          },
+          "product": {
+            "$ref": "#/$defs/product_asr"
+          },
+          "status": {
+            "$ref": "#/$defs/asr_status"
+          },
+          "to": {
+            "$ref": "#/$defs/to"
+          }
+        },
+        "type": "object",
+        "x-tab-id": "asr"
+      },
+      "product_asr": {
+        "description": "Which product you wish to generate a report for.",
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "CONVERSATIONS",
+          "ASR"
+        ],
+        "example": "ASR",
+        "type": "string"
+      },
+      "asr_status": {
+        "description": "Search only for ASR with corresponding status.",
+        "enum": [
+          "ok",
+          "error"
+        ],
+        "example": "ok",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.nexmo.com/v2/reports"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**instance**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**instance**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**instance**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**instance**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

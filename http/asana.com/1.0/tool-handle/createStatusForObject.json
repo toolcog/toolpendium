@@ -1,0 +1,371 @@
+{
+  "name": "createStatusForObject",
+  "description": "Creates a new status update on an object.\nReturns the full record of the newly created status update.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "opt_pretty": {
+        "type": "boolean",
+        "description": "Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging."
+      },
+      "opt_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Defines fields to return.\nSome requests return *compact* representations of objects in order to conserve resources and complete the request more efficiently. Other times requests return more information than you may need. This option allows you to list the exact set of fields that the API should be sure to return for the objects. The field names should be provided as paths, described below.\nThe id of included objects will always be returned, regardless of the field options."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Results per page.\nThe number of objects to return per page. The value must be between 1 and 100."
+      },
+      "offset": {
+        "type": "string",
+        "description": "Offset token.\nAn offset to the next page returned by the API. A pagination request will return an offset token, which can be used as an input parameter to the next request. If an offset is not passed in, the API will return the first page of results.\n'Note: You can only pass in an offset that was returned to you via a previously paginated request.'"
+      },
+      "body": {
+        "properties": {
+          "data": {
+            "$ref": "#/$defs/StatusUpdateRequest"
+          }
+        },
+        "type": "object",
+        "description": "The status update to create."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "StatusUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/StatusUpdateBase"
+          },
+          {
+            "properties": {
+              "parent": {
+                "allOf": [
+                  {
+                    "description": "The id of parent to send this status update to. This can be a project, goal or portfolio.",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "parent"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "StatusUpdateBase": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/StatusUpdateCompact"
+          },
+          {
+            "properties": {
+              "html_text": {
+                "description": "[Opt In](/docs/input-output-options). The text content of the status update with formatting as HTML.",
+                "example": "<body>The project <strong>is</strong> moving forward according to plan...</body>",
+                "type": "string"
+              },
+              "status_type": {
+                "description": "The type associated with the status update. This represents the current state of the object this object is on.",
+                "enum": [
+                  "on_track",
+                  "at_risk",
+                  "off_track",
+                  "on_hold",
+                  "complete",
+                  "achieved",
+                  "partial",
+                  "missed",
+                  "dropped"
+                ],
+                "type": "string"
+              },
+              "text": {
+                "description": "The text content of the status update.",
+                "example": "The project is moving forward according to plan...",
+                "type": "string"
+              }
+            },
+            "required": [
+              "text",
+              "status_type"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "StatusUpdateCompact": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/AsanaResource"
+          },
+          {
+            "description": "A *status update* is an update on the progress of a particular project, portfolio, or goal, and is sent out to all of its parent's followers when created. These updates include both text describing the update and a `status_type` intended to represent the overall state of the project.",
+            "properties": {
+              "resource_subtype": {
+                "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.\nThe `resource_subtype`s for `status` objects represent the type of their parent.",
+                "enum": [
+                  "project_status_update",
+                  "portfolio_status_update",
+                  "goal_status_update"
+                ],
+                "example": "project_status_update",
+                "readOnly": true,
+                "type": "string"
+              },
+              "title": {
+                "description": "The title of the status update.",
+                "example": "Status Update - Jun 15",
+                "type": "string"
+              }
+            },
+            "type": "object",
+            "x-docs-overrides": {
+              "properties.resource_type.example": "status_update"
+            }
+          }
+        ]
+      },
+      "AsanaResource": {
+        "description": "A generic Asana Resource, containing a globally unique identifier.",
+        "properties": {
+          "gid": {
+            "description": "Globally unique identifier of the resource, as a string.",
+            "example": "12345",
+            "readOnly": true,
+            "type": "string",
+            "x-insert-after": false
+          },
+          "resource_type": {
+            "description": "The base type of this resource.",
+            "example": "task",
+            "readOnly": true,
+            "type": "string",
+            "x-insert-after": "gid"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://app.asana.com/api/1.0/status_updates{?opt_pretty,opt_fields,limit,offset}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: A generic Asana Resource, containing a globally unique identifier.",
+              {
+                "$ul": [
+                  "**gid**: Globally unique identifier of the resource, as a string.",
+                  "**resource_type**: The base type of this resource.",
+                  "**resource_subtype**: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+                  "**title**: The title of the status update.",
+                  "**html_text**: [Opt In](/docs/input-output-options). The text content of the status update with formatting as HTML.",
+                  "**status_type**: The type associated with the status update. This represents the current state of the object this object is on.",
+                  "**text**: The text content of the status update.",
+                  [
+                    "**author**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: *Read-only except when same user as requester*. The user’s name."
+                      ]
+                    }
+                  ],
+                  "**created_at**: The time at which this resource was created.",
+                  [
+                    "**created_by**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: *Read-only except when same user as requester*. The user’s name."
+                      ]
+                    }
+                  ],
+                  "**hearted**: *Deprecated - please use liked instead* True if the status is hearted by the authorized user, false if not.",
+                  "**hearts**: *Deprecated - please use likes instead* Array of likes for users who have hearted this status.",
+                  "**liked**: True if the status is liked by the authorized user, false if not.",
+                  "**likes**: Array of likes for users who have liked this status.",
+                  "**modified_at**: The time at which this project status was last modified.",
+                  "**num_hearts**: *Deprecated - please use likes instead* The number of users who have hearted this status.",
+                  "**num_likes**: The number of users who have liked this status.",
+                  [
+                    "**parent**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

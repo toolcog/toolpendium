@@ -1,0 +1,152 @@
+{
+  "name": "repos_remove-user-access-restrictions",
+  "description": "Protected branches are available in public repositories with GitHub Free and GitHub Free for organizations, and in public and private repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and GitHub Enterprise Server. For more information, see [GitHub's products](https://docs.github.com/enterprise-server@3.4/github/getting-started-with-github/githubs-products) in the GitHub Help documentation.\n\nRemoves the ability of a user to push to this branch.\n\n| Type    | Description                                                                                                                                   |\n| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- |\n| `array` | Usernames of the people who should no longer have push access. **Note**: The list of users, apps, and teams in total is limited to 100 items. |",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "branch": {
+        "type": "string",
+        "description": "The name of the branch. Cannot contain wildcard characters. To use wildcard characters in branch names, use [the GraphQL API](https://docs.github.com/enterprise-server@3.4/graphql)."
+      },
+      "body": {
+        "oneOf": [
+          {
+            "example": {
+              "users": [
+                "mona"
+              ]
+            },
+            "properties": {
+              "users": {
+                "description": "The username for users",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "users"
+            ],
+            "type": "object"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "branch"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Simple User list"
+        },
+        "A GitHub user.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**avatar_url**",
+            "**email**",
+            "**events_url**",
+            "**followers_url**",
+            "**following_url**",
+            "**gists_url**",
+            "**gravatar_id**",
+            "**html_url**",
+            "**id**",
+            "**login**",
+            "**name**",
+            "**node_id**",
+            "**organizations_url**",
+            "**received_events_url**",
+            "**repos_url**",
+            "**site_admin**",
+            "**starred_at**",
+            "**starred_url**",
+            "**subscriptions_url**",
+            "**type**",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

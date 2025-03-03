@@ -1,0 +1,442 @@
+{
+  "name": "saveCampaign",
+  "description": "Save a campaign details",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/campaign-details"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "campaign-details": {
+        "properties": {
+          "campaignType": {
+            "description": "Type of campaign (with version determine what kind of campaign you handle and the details object)",
+            "example": "system-update",
+            "type": "string"
+          },
+          "details": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/campaign-system-update"
+              },
+              {
+                "$ref": "#/$defs/campaign-software-update"
+              }
+            ]
+          },
+          "info": {
+            "description": "common data about campaign",
+            "properties": {
+              "description": {
+                "description": "Campaign description",
+                "example": "",
+                "type": "string"
+              },
+              "id": {
+                "description": "Campaign id",
+                "example": "0076a379-f32d-4732-9e91-33ab219d8fde",
+                "format": "uuid",
+                "type": "string"
+              },
+              "name": {
+                "description": "Campaign name",
+                "example": "Update all systems",
+                "type": "string"
+              },
+              "schedule": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/campaign-schedule-weekly"
+                  },
+                  {
+                    "$ref": "#/$defs/campaign-schedule-oneshot"
+                  },
+                  {
+                    "$ref": "#/$defs/campaign-schedule-monthly"
+                  }
+                ]
+              },
+              "status": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/campaign-status-enabled"
+                  },
+                  {
+                    "$ref": "#/$defs/campaign-status-disabled"
+                  },
+                  {
+                    "$ref": "#/$defs/campaign-status-archived"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "version": {
+            "description": "Version of campaign (with type determine what kind of campaign you handle and the details object)",
+            "example": 2,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-system-update": {
+        "description": "System update campaign details (type system-update, version 2)",
+        "properties": {
+          "reboot": {
+            "description": "Define the behavior after update",
+            "enum": [
+              "as-needed",
+              "disabled",
+              "always",
+              "services-only"
+            ],
+            "type": "string"
+          },
+          "targets": {
+            "description": "List of all  groups of node to target the campaign",
+            "items": {
+              "$ref": "#/$defs/rule-targets"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "rule-targets": {
+        "description": "Node and special groups targeted by that rule",
+        "items": {
+          "example": {
+            "exclude": {
+              "or": [
+                "policyServer:root",
+                "group:cd377524-808b-4b42-8724-6ef308efeac7"
+              ]
+            },
+            "include": {
+              "or": [
+                "special:all"
+              ]
+            }
+          },
+          "properties": {
+            "exclude": {
+              "description": "list of groups to exclude from rule application",
+              "properties": {
+                "or": {
+                  "items": {
+                    "$ref": "#/$defs/rule-target"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "include": {
+              "description": "list of groups to include in rule application",
+              "properties": {
+                "or": {
+                  "items": {
+                    "$ref": "#/$defs/rule-target"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": [
+            "include",
+            "exclude"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "rule-target": {
+        "description": "Node and special groups targeted by that rule",
+        "enum": [
+          "special:all",
+          "special:all_exceptPolicyServers",
+          "special:all_policyServers",
+          "policyServer:${policyServerId}",
+          "group:${nodeGroupId}"
+        ],
+        "example": "policyServer:root",
+        "type": "string"
+      },
+      "campaign-software-update": {
+        "description": "Software update campaign details (type software-update, version 1)",
+        "properties": {
+          "reboot": {
+            "description": "Define the behavior after update",
+            "enum": [
+              "as-needed",
+              "disabled",
+              "always",
+              "services-only"
+            ],
+            "type": "string"
+          },
+          "softwareUpdate": {
+            "description": "List of all software to update",
+            "items": {
+              "properties": {
+                "arch": {
+                  "description": "Architecture of the packkage to update",
+                  "example": "x64",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Name of the package  to update",
+                  "example": "htop",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "Target version of the package to update to",
+                  "example": "49.3",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "targets": {
+            "description": "List of all  groups of node to target the campaign",
+            "items": {
+              "$ref": "#/$defs/rule-targets"
+            },
+            "type": "array"
+          }
+        }
+      },
+      "campaign-schedule-weekly": {
+        "properties": {
+          "end": {
+            "description": "Date when the campaign should end",
+            "properties": {
+              "day": {
+                "description": "Day of the week the campaign should end",
+                "example": 3,
+                "format": "[1-7]",
+                "type": "integer"
+              },
+              "hour": {
+                "description": "Hour of the day the campaign should end",
+                "example": 3,
+                "format": "[0-23]",
+                "type": "integer"
+              },
+              "minute": {
+                "description": "Minute of the hour the campaign should end",
+                "example": 42,
+                "format": "[0-59]",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "start": {
+            "description": "Date when the campaign should start",
+            "properties": {
+              "day": {
+                "description": "Day of the week the campaign should start",
+                "example": 2,
+                "format": "[1-7]",
+                "type": "integer"
+              },
+              "hour": {
+                "description": "Hour of the day the campaign should start",
+                "example": 17,
+                "format": "[0-23]",
+                "type": "integer"
+              },
+              "minute": {
+                "description": "Minute of the hour the campaign should start",
+                "example": 22,
+                "format": "[0-59]",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "format": "weekly",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-schedule-oneshot": {
+        "properties": {
+          "end": {
+            "description": "Date when the campaign should end",
+            "format": "rfc3339",
+            "type": "string"
+          },
+          "start": {
+            "description": "Date when the campaign should start",
+            "format": "rfc3339",
+            "type": "string"
+          },
+          "type": {
+            "format": "one-shot",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-schedule-monthly": {
+        "properties": {
+          "end": {
+            "description": "Date when the campaign should end",
+            "properties": {
+              "day": {
+                "description": "Day of the week the campaign should end",
+                "format": "[1-7]",
+                "type": "integer"
+              },
+              "hour": {
+                "description": "Hour of the day the campaign should end",
+                "format": "[0-23]",
+                "type": "integer"
+              },
+              "minute": {
+                "description": "Minute of the hour the campaign should end",
+                "format": "[0-59]",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "position": {
+            "description": "Week during the month in which our campaign start, 1/2/3 means first/second/last, -1/-2 means Last/secondLast",
+            "format": "-2, -1, 1, 2, 3",
+            "type": "integer"
+          },
+          "start": {
+            "description": "Date when the campaign should start",
+            "properties": {
+              "day": {
+                "description": "Day of the week the campaign should start",
+                "format": "[1-7]",
+                "type": "integer"
+              },
+              "hour": {
+                "description": "Hour of the day the campaign should start",
+                "format": "[0-23]",
+                "type": "integer"
+              },
+              "minute": {
+                "description": "Minute of the hour the campaign should start",
+                "format": "[0-59]",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "format": "monthly",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-status-enabled": {
+        "description": "Campaign status",
+        "properties": {
+          "value": {
+            "format": "enabled",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-status-disabled": {
+        "description": "Campaign status",
+        "properties": {
+          "reason": {
+            "description": "Reason of to disable this campaign",
+            "type": "string"
+          },
+          "value": {
+            "format": "disabled",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "campaign-status-archived": {
+        "description": "Campaign status",
+        "properties": {
+          "date": {
+            "description": "Date when the campaign was archived",
+            "format": "rfc3339",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Reason of to archive this campaign",
+            "type": "string"
+          },
+          "value": {
+            "format": "archived",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rudder.example.local/rudder/api/latest/campaigns"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: The id of the action",
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**campaigns**"
+                ]
+              }
+            ],
+            "**result**: Result of the request"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

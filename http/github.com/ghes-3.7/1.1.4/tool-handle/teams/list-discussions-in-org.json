@@ -1,0 +1,149 @@
+{
+  "name": "teams_list-discussions-in-org",
+  "description": "List all discussions on a team's page. OAuth access tokens require the `read:discussion` [scope](https://docs.github.com/enterprise-server@3.7/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/).\n\n**Note:** You can also specify a team by `org_id` and `team_id` using the route `GET /organizations/{org_id}/team/{team_id}/discussions`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org": {
+        "type": "string",
+        "description": "The organization name. The name is not case sensitive."
+      },
+      "team_slug": {
+        "type": "string",
+        "description": "The slug of the team name."
+      },
+      "direction": {
+        "default": "desc",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "The direction to sort the results by."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      },
+      "pinned": {
+        "type": "string",
+        "description": "Pinned discussions only filter"
+      }
+    },
+    "required": [
+      "org",
+      "team_slug"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//orgs/{org}/teams/{team_slug}/discussions{?direction,per_page,page,pinned}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Team Discussion list"
+        },
+        "A team discussion is a persistent record of a free-form conversation within a team.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**author**: A GitHub user.",
+              {
+                "$ul": [
+                  "**avatar_url**",
+                  "**email**",
+                  "**events_url**",
+                  "**followers_url**",
+                  "**following_url**",
+                  "**gists_url**",
+                  "**gravatar_id**",
+                  "**html_url**",
+                  "**id**",
+                  "**login**",
+                  "**name**",
+                  "**node_id**",
+                  "**organizations_url**",
+                  "**received_events_url**",
+                  "**repos_url**",
+                  "**site_admin**",
+                  "**starred_at**",
+                  "**starred_url**",
+                  "**subscriptions_url**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**body**: The main text of the discussion.",
+            "**body_html**",
+            "**body_version**: The current version of the body content. If provided, this update operation will be rejected if the given version does not match the latest version on the server.",
+            "**comments_count**",
+            "**comments_url**",
+            "**created_at**",
+            "**html_url**",
+            "**last_edited_at**",
+            "**node_id**",
+            "**number**: The unique sequence number of a team discussion.",
+            "**pinned**: Whether or not this discussion should be pinned for easy retrieval.",
+            "**private**: Whether or not this discussion should be restricted to team members and organization administrators.",
+            [
+              "**reactions**",
+              {
+                "$ul": [
+                  "**+1**",
+                  "**-1**",
+                  "**confused**",
+                  "**eyes**",
+                  "**heart**",
+                  "**hooray**",
+                  "**laugh**",
+                  "**rocket**",
+                  "**total_count**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**team_url**",
+            "**title**: The title of the discussion.",
+            "**updated_at**",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

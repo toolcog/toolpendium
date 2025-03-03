@@ -1,0 +1,509 @@
+{
+  "name": "UpdateLaunch",
+  "description": "<p>Updates a launch of a given feature. </p> <p>Don't use this operation to update the tags of an existing launch. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_TagResource.html\">TagResource</a>. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "launch": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127,
+        "description": "The name of the launch that is to be updated."
+      },
+      "project": {
+        "type": "string",
+        "pattern": "(^[a-zA-Z0-9._-]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[a-zA-Z0-9._-]*)",
+        "minLength": 0,
+        "maxLength": 2048,
+        "description": "The name or ARN of the project that contains the launch that you want to update."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "description": "An optional description for the launch.",
+            "type": "string",
+            "pattern": ".*",
+            "minLength": 0,
+            "maxLength": 160
+          },
+          "groups": {
+            "description": "An array of structures that contains the feature and variations that are to be used for the launch.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/LaunchGroupConfig"
+            },
+            "minItems": 1,
+            "maxItems": 5
+          },
+          "metricMonitors": {
+            "description": "An array of structures that define the metrics that will be used to monitor the launch performance.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MetricMonitorConfig"
+            },
+            "minItems": 0,
+            "maxItems": 3
+          },
+          "randomizationSalt": {
+            "description": "When Evidently assigns a particular user session to a launch, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the launch name as the <code>randomizationSalt</code>.",
+            "type": "string",
+            "pattern": ".*",
+            "minLength": 0,
+            "maxLength": 127
+          },
+          "scheduledSplitsConfig": {
+            "description": "An array of structures that define the traffic allocation percentages among the feature variations during each step of a launch. This also defines the start time of each step.",
+            "type": "object",
+            "properties": {
+              "steps": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ScheduledSplitConfigList"
+                  },
+                  {
+                    "description": "An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch. This also defines the start time of each step."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "launch",
+      "project",
+      "body"
+    ],
+    "$defs": {
+      "LaunchGroupConfig": {
+        "type": "object",
+        "required": [
+          "feature",
+          "name",
+          "variation"
+        ],
+        "properties": {
+          "description": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Description"
+              },
+              {
+                "description": "A description of the launch group."
+              }
+            ]
+          },
+          "feature": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeatureName"
+              },
+              {
+                "description": "The feature that this launch is using."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GroupName"
+              },
+              {
+                "description": "A name for this launch group."
+              }
+            ]
+          },
+          "variation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VariationName"
+              },
+              {
+                "description": "The feature variation to use for this launch group."
+              }
+            ]
+          }
+        },
+        "description": "A structure that defines one launch group in a launch. A launch group is a variation of the feature that you are including in the launch."
+      },
+      "Description": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 0,
+        "maxLength": 160
+      },
+      "FeatureName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "GroupName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "VariationName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "MetricMonitorConfig": {
+        "type": "object",
+        "required": [
+          "metricDefinition"
+        ],
+        "properties": {
+          "metricDefinition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDefinitionConfig"
+              },
+              {
+                "description": "A structure that defines the metric."
+              }
+            ]
+          }
+        },
+        "description": "A structure that defines a metric to be used to monitor performance of the variations during a launch."
+      },
+      "MetricDefinitionConfig": {
+        "type": "object",
+        "required": [
+          "entityIdKey",
+          "name",
+          "valueKey"
+        ],
+        "properties": {
+          "entityIdKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonPath"
+              },
+              {
+                "description": "The entity, such as a user or session, that does an action that causes a metric value to be recorded. An example is <code>userDetails.userID</code>."
+              }
+            ]
+          },
+          "eventPattern": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDefinitionConfigEventPatternString"
+              },
+              {
+                "description": "<p>The EventBridge event pattern that defines how the metric is recorded.</p> <p>For more information about EventBridge event patterns, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html\">Amazon EventBridge event patterns</a>.</p>"
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CwDimensionSafeName"
+              },
+              {
+                "description": "A name for the metric."
+              }
+            ]
+          },
+          "unitLabel": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricUnitLabel"
+              },
+              {
+                "description": "A label for the units that the metric is measuring."
+              }
+            ]
+          },
+          "valueKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonPath"
+              },
+              {
+                "description": "The value that is tracked to produce the metric."
+              }
+            ]
+          }
+        },
+        "description": "This structure defines a metric that you want to use to evaluate the variations during a launch or experiment."
+      },
+      "JsonPath": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "MetricDefinitionConfigEventPatternString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024
+      },
+      "CwDimensionSafeName": {
+        "type": "string",
+        "pattern": "^[\\S]+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "MetricUnitLabel": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ScheduledSplitConfigList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ScheduledSplitConfig"
+        },
+        "minItems": 1,
+        "maxItems": 6
+      },
+      "ScheduledSplitConfig": {
+        "type": "object",
+        "required": [
+          "groupWeights",
+          "startTime"
+        ],
+        "properties": {
+          "groupWeights": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GroupToWeightMap"
+              },
+              {
+                "description": "<p>The traffic allocation percentages among the feature variations during one step of a launch. This is a set of key-value pairs. The keys are variation names. The values represent the percentage of traffic to allocate to that variation during this step.</p> <p>The values is expressed in thousandths of a percent, so assigning a weight of 50000 assigns 50% of traffic to that variation.</p> <p>If the sum of the weights for all the variations in a segment override does not add up to 100,000, then the remaining traffic that matches this segment is not assigned by this segment override, and instead moves on to the next segment override or the default traffic split.</p>"
+              }
+            ]
+          },
+          "segmentOverrides": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SegmentOverridesList"
+              },
+              {
+                "description": "<p>Use this parameter to specify different traffic splits for one or more audience <i>segments</i>. A segment is a portion of your audience that share one or more characteristics. Examples could be Chrome browser users, users in Europe, or Firefox browser users in Europe who also fit other criteria that your application collects, such as age.</p> <p>This parameter is an array of up to six segment override objects. Each of these objects specifies a segment that you have already created, and defines the traffic split for that segment.</p>"
+              }
+            ]
+          },
+          "startTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "The date and time that this step of the launch starts."
+              }
+            ]
+          }
+        },
+        "description": "This structure defines the traffic allocation percentages among the feature variations during one step of a launch, and the start time of that step."
+      },
+      "GroupToWeightMap": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 5,
+        "additionalProperties": {
+          "$ref": "#/$defs/SplitWeight"
+        }
+      },
+      "SplitWeight": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000
+      },
+      "SegmentOverridesList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SegmentOverride"
+        },
+        "minItems": 0,
+        "maxItems": 6
+      },
+      "SegmentOverride": {
+        "type": "object",
+        "required": [
+          "evaluationOrder",
+          "segment",
+          "weights"
+        ],
+        "properties": {
+          "evaluationOrder": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "A number indicating the order to use to evaluate segment overrides, if there are more than one. Segment overrides with lower numbers are evaluated first."
+              }
+            ]
+          },
+          "segment": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SegmentRef"
+              },
+              {
+                "description": "The ARN of the segment to use."
+              }
+            ]
+          },
+          "weights": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GroupToWeightMap"
+              },
+              {
+                "description": "The traffic allocation percentages among the feature variations to assign to this segment. This is a set of key-value pairs. The keys are variation names. The values represent the amount of traffic to allocate to that variation for this segment. This is expressed in thousandths of a percent, so a weight of 50000 represents 50% of traffic."
+              }
+            ]
+          }
+        },
+        "description": "This structure specifies a segment that you have already created, and defines the traffic split for that segment to be used in a launch."
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "SegmentRef": {
+        "type": "string",
+        "pattern": "(^[-a-zA-Z0-9._]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:segment/[-a-zA-Z0-9._]*)",
+        "minLength": 0,
+        "maxLength": 2048
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://evidently.us-east-1.amazonaws.com/projects/{project}/launches/{launch}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**launch**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

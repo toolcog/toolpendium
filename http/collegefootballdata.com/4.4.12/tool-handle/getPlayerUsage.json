@@ -1,0 +1,102 @@
+{
+  "name": "getPlayerUsage",
+  "description": "Player usage metrics by season",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "year": {
+        "default": 2022,
+        "minimum": 2013,
+        "type": "integer",
+        "description": "Year filter"
+      },
+      "team": {
+        "type": "string",
+        "description": "Team filter"
+      },
+      "conference": {
+        "type": "string",
+        "description": "Conference abbreviation filter"
+      },
+      "position": {
+        "type": "string",
+        "description": "Position abbreviation filter"
+      },
+      "playerId": {
+        "type": "integer",
+        "description": "Player id filter"
+      },
+      "excludeGarbageTime": {
+        "type": "boolean",
+        "description": "Filter to remove garbage time plays from calculations"
+      }
+    },
+    "required": [
+      "year"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.collegefootballdata.com/player/usage{?year,team,conference,position,playerId,excludeGarbageTime}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**conference**",
+            "**id**",
+            "**name**",
+            "**position**",
+            "**season**",
+            "**team**",
+            [
+              "**usage**",
+              {
+                "$ul": [
+                  "**firstDown**",
+                  "**overall**",
+                  "**pass**",
+                  "**passingDowns**",
+                  "**rush**",
+                  "**secondDown**",
+                  "**standardDowns**",
+                  "**thirdDown**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

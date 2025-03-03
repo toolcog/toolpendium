@@ -1,0 +1,244 @@
+{
+  "name": "createTweet",
+  "description": "Causes the User to create a Tweet under the authorized account.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TweetCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TweetCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "card_uri": {
+            "description": "Card Uri Parameter. This is mutually exclusive from Quote Tweet Id, Poll, Media, and Direct Message Deep Link.",
+            "type": "string"
+          },
+          "direct_message_deep_link": {
+            "description": "Link to take the conversation from the public timeline to a private Direct Message.",
+            "type": "string"
+          },
+          "for_super_followers_only": {
+            "default": false,
+            "description": "Exclusive Tweet for super followers.",
+            "type": "boolean"
+          },
+          "geo": {
+            "additionalProperties": false,
+            "description": "Place ID being attached to the Tweet for geo location.",
+            "properties": {
+              "place_id": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "media": {
+            "additionalProperties": false,
+            "description": "Media information being attached to created Tweet. This is mutually exclusive from Quote Tweet Id, Poll, and Card URI.",
+            "properties": {
+              "media_ids": {
+                "description": "A list of Media Ids to be attached to a created Tweet.",
+                "items": {
+                  "$ref": "#/$defs/MediaId"
+                },
+                "maxItems": 4,
+                "minItems": 1,
+                "type": "array"
+              },
+              "tagged_user_ids": {
+                "description": "A list of User Ids to be tagged in the media for created Tweet.",
+                "items": {
+                  "$ref": "#/$defs/UserId"
+                },
+                "maxItems": 10,
+                "minItems": 0,
+                "type": "array"
+              }
+            },
+            "required": [
+              "media_ids"
+            ],
+            "type": "object"
+          },
+          "nullcast": {
+            "default": false,
+            "description": "Nullcasted (promoted-only) Tweets do not appear in the public timeline and are not served to followers.",
+            "type": "boolean"
+          },
+          "poll": {
+            "additionalProperties": false,
+            "description": "Poll options for a Tweet with a poll. This is mutually exclusive from Media, Quote Tweet Id, and Card URI.",
+            "properties": {
+              "duration_minutes": {
+                "description": "Duration of the poll in minutes.",
+                "format": "int32",
+                "maximum": 10080,
+                "minimum": 5,
+                "type": "integer"
+              },
+              "options": {
+                "items": {
+                  "description": "The text of a poll choice.",
+                  "maxLength": 25,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "minItems": 2,
+                "type": "array"
+              },
+              "reply_settings": {
+                "description": "Settings to indicate who can reply to the Tweet.",
+                "enum": [
+                  "following",
+                  "mentionedUsers"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "options",
+              "duration_minutes"
+            ],
+            "type": "object"
+          },
+          "quote_tweet_id": {
+            "$ref": "#/$defs/TweetId"
+          },
+          "reply": {
+            "additionalProperties": false,
+            "description": "Tweet information of the Tweet being replied to.",
+            "properties": {
+              "exclude_reply_user_ids": {
+                "description": "A list of User Ids to be excluded from the reply Tweet.",
+                "items": {
+                  "$ref": "#/$defs/UserId"
+                },
+                "type": "array"
+              },
+              "in_reply_to_tweet_id": {
+                "$ref": "#/$defs/TweetId"
+              }
+            },
+            "required": [
+              "in_reply_to_tweet_id"
+            ],
+            "type": "object"
+          },
+          "reply_settings": {
+            "description": "Settings to indicate who can reply to the Tweet.",
+            "enum": [
+              "following",
+              "mentionedUsers"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "$ref": "#/$defs/TweetText"
+          }
+        },
+        "type": "object"
+      },
+      "MediaId": {
+        "description": "The unique identifier of this Media.",
+        "example": "1146654567674912769",
+        "pattern": "^[0-9]{1,19}$",
+        "type": "string"
+      },
+      "UserId": {
+        "description": "Unique identifier of this User. This is returned as a string in order to avoid complications with languages and tools that cannot handle large integers.",
+        "example": "2244994945",
+        "pattern": "^[0-9]{1,19}$",
+        "type": "string"
+      },
+      "TweetId": {
+        "description": "Unique identifier of this Tweet. This is returned as a string in order to avoid complications with languages and tools that cannot handle large integers.",
+        "example": "1346889436626259968",
+        "pattern": "^[0-9]{1,19}$",
+        "type": "string"
+      },
+      "TweetText": {
+        "description": "The content of the Tweet.",
+        "example": "Learn how to use the user Tweet timeline and user mention timeline endpoints in the Twitter API v2 to explore Tweet\\u2026 https:\\/\\/t.co\\/56a0vZUx7i",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.twitter.com/2/tweets"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**id**: Unique identifier of this Tweet. This is returned as a string in order to avoid complications with languages and tools that cannot handle large integers.",
+                  "**text**: The content of the Tweet."
+                ]
+              }
+            ],
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

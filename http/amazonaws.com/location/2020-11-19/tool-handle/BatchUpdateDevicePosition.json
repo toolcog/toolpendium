@@ -1,0 +1,296 @@
+{
+  "name": "BatchUpdateDevicePosition",
+  "description": "<p>Uploads position update data for one or more devices to a tracker resource (up to 10 devices per batch). Amazon Location uses the data when it reports the last known device position and position history. Amazon Location retains location data for 30 days.</p> <note> <p>Position updates are handled based on the <code>PositionFiltering</code> property of the tracker. When <code>PositionFiltering</code> is set to <code>TimeBased</code>, updates are evaluated against linked geofence collections, and location data is stored at a maximum of one position per 30 second interval. If your update frequency is more often than every 30 seconds, only one update per 30 seconds is stored for each unique device ID.</p> <p>When <code>PositionFiltering</code> is set to <code>DistanceBased</code> filtering, location data is stored and evaluated against linked geofence collections only if the device has moved more than 30 m (98.4 ft).</p> <p>When <code>PositionFiltering</code> is set to <code>AccuracyBased</code> filtering, location data is stored and evaluated against linked geofence collections only if the device has moved more than the measured accuracy. For example, if two consecutive updates from a device have a horizontal accuracy of 5 m and 10 m, the second update is neither stored or evaluated if the device has moved less than 15 m. If <code>PositionFiltering</code> is set to <code>AccuracyBased</code> filtering, Amazon Location uses the default value <code>{ \"Horizontal\": 0}</code> when accuracy is not provided on a <code>DevicePositionUpdate</code>.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "TrackerName": {
+        "type": "string",
+        "pattern": "^[-._\\w]+$",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "The name of the tracker resource to update."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Updates"
+        ],
+        "properties": {
+          "Updates": {
+            "description": "Contains the position update details for each device, up to 10 devices.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DevicePositionUpdate"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        }
+      }
+    },
+    "required": [
+      "TrackerName",
+      "body"
+    ],
+    "$defs": {
+      "DevicePositionUpdate": {
+        "type": "object",
+        "required": [
+          "DeviceId",
+          "Position",
+          "SampleTime"
+        ],
+        "properties": {
+          "Accuracy": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositionalAccuracy"
+              },
+              {
+                "description": "The accuracy of the device position."
+              }
+            ]
+          },
+          "DeviceId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Id"
+              },
+              {
+                "description": "The device associated to the position update."
+              }
+            ]
+          },
+          "Position": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Position"
+              },
+              {
+                "description": "The latest device position defined in <a href=\"https://earth-info.nga.mil/index.php?dir=wgs84&amp;action=wgs84\">WGS 84</a> format: <code>[X or longitude, Y or latitude]</code>."
+              }
+            ]
+          },
+          "PositionProperties": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyMap"
+              },
+              {
+                "description": "<p>Associates one of more properties with the position update. A property is a key-value pair stored with the position update and added to any geofence event the update may trigger.</p> <p>Format: <code>\"key\" : \"value\"</code> </p>"
+              }
+            ]
+          },
+          "SampleTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "The timestamp at which the device's position was determined. Uses <a href=\"https://www.iso.org/iso-8601-date-and-time-format.html\">ISO 8601</a> format: <code>YYYY-MM-DDThh:mm:ss.sssZ</code> "
+              }
+            ]
+          }
+        },
+        "description": "Contains the position update details for a device."
+      },
+      "PositionalAccuracy": {
+        "type": "object",
+        "required": [
+          "Horizontal"
+        ],
+        "properties": {
+          "Horizontal": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositionalAccuracyHorizontalDouble"
+              },
+              {
+                "description": "Estimated maximum distance, in meters, between the measured position and the true position of a device, along the Earth's surface."
+              }
+            ]
+          }
+        },
+        "description": "Defines the level of certainty of the position."
+      },
+      "PositionalAccuracyHorizontalDouble": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "maximum": 10000
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[-._\\p{L}\\p{N}]+$",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "Position": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Double"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "Double": {
+        "type": "number",
+        "format": "double"
+      },
+      "PropertyMap": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 3,
+        "additionalProperties": {
+          "$ref": "#/$defs/PropertyMapValueString"
+        }
+      },
+      "PropertyMapValueString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://geo.us-east-1.amazonaws.com/tracking/v0/trackers/{TrackerName}/positions"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

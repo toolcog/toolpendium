@@ -1,0 +1,379 @@
+{
+  "name": "addLinodeConfig",
+  "description": "Adds a new Configuration profile to a Linode.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "linodeId": {
+        "type": "integer",
+        "description": "ID of the Linode to look up Configuration profiles for."
+      },
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/LinodeConfig"
+          }
+        ],
+        "required": [
+          "label",
+          "devices"
+        ],
+        "description": "The parameters to set when creating the Configuration profile.\nThis determines which kernel, devices, how much memory, etc. a Linode boots with.\n"
+      }
+    },
+    "required": [
+      "linodeId",
+      "body"
+    ],
+    "$defs": {
+      "LinodeConfig": {
+        "properties": {
+          "comments": {
+            "description": "Optional field for arbitrary User comments on this Config.",
+            "example": "This is my main Config",
+            "nullable": true,
+            "type": "string"
+          },
+          "devices": {
+            "$ref": "#/$defs/Devices"
+          },
+          "helpers": {
+            "description": "Helpers enabled when booting to this Linode Config.",
+            "properties": {
+              "devtmpfs_automount": {
+                "description": "Populates the /dev directory early during boot without udev.  Defaults to false.\n",
+                "example": false,
+                "type": "boolean"
+              },
+              "distro": {
+                "description": "Helps maintain correct inittab/upstart console device.",
+                "example": true,
+                "type": "boolean"
+              },
+              "modules_dep": {
+                "description": "Creates a modules dependency file for the Kernel you run.",
+                "example": true,
+                "type": "boolean"
+              },
+              "network": {
+                "description": "Automatically configures static networking.",
+                "example": true,
+                "type": "boolean"
+              },
+              "updatedb_disabled": {
+                "description": "Disables updatedb cron job to avoid disk thrashing.",
+                "example": true,
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "description": "The ID of this Config.",
+            "example": 23456,
+            "readOnly": true,
+            "type": "integer",
+            "x-linode-cli-display": 1
+          },
+          "interfaces": {
+            "$ref": "#/$defs/LinodeConfigInterfaces"
+          },
+          "kernel": {
+            "description": "A Kernel ID to boot a Linode with. Defaults to \"linode/latest-64bit\".",
+            "example": "linode/latest-64bit",
+            "type": "string",
+            "x-linode-cli-display": 3
+          },
+          "label": {
+            "description": "The Config's label is for display purposes only.\n",
+            "example": "My Config",
+            "maxLength": 48,
+            "minLength": 1,
+            "type": "string",
+            "x-linode-cli-display": 2,
+            "x-linode-filterable": true
+          },
+          "memory_limit": {
+            "description": "Defaults to the total RAM of the Linode.\n",
+            "example": 2048,
+            "type": "integer"
+          },
+          "root_device": {
+            "description": "The root device to boot.\n* If no value or an invalid value is provided, root device will default to `/dev/sda`.\n* If the device specified at the root device location is not mounted, the Linode will not boot until a device is mounted.\n",
+            "example": "/dev/sda",
+            "pattern": "a-z, A-Z, 0-9, /, _, -",
+            "type": "string"
+          },
+          "run_level": {
+            "description": "Defines the state of your Linode after booting. Defaults to `default`.\n",
+            "enum": [
+              "default",
+              "single",
+              "binbash"
+            ],
+            "example": "default",
+            "type": "string"
+          },
+          "virt_mode": {
+            "description": "Controls the virtualization mode. Defaults to `paravirt`.\n* `paravirt` is suitable for most cases. Linodes running in paravirt mode\n  share some qualities with the host, ultimately making it run faster since\n  there is less transition between it and the host.\n* `fullvirt` affords more customization, but is slower because 100% of the VM\n  is virtualized.\n",
+            "enum": [
+              "paravirt",
+              "fullvirt"
+            ],
+            "example": "paravirt",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Devices": {
+        "description": "A dictionary of device disks to use as a device map in a Linode's configuration profile.\n* An empty device disk dictionary or a dictionary with empty values for device slots is allowed.\n* If no devices are specified, booting from this configuration will hold until a device exists that allows the boot process to start.\n",
+        "properties": {
+          "sda": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdb": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdc": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdd": {
+            "$ref": "#/$defs/Device"
+          },
+          "sde": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdf": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdg": {
+            "$ref": "#/$defs/Device"
+          },
+          "sdh": {
+            "$ref": "#/$defs/Device"
+          }
+        },
+        "type": "object"
+      },
+      "Device": {
+        "description": "Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.\nDevices mapped from _sde_ through _sdh_ are unavailable in `fullvirt` virt_mode.\n",
+        "properties": {
+          "disk_id": {
+            "description": "The Disk ID, or `null` if a Volume is assigned to this slot.",
+            "example": 124458,
+            "type": "integer"
+          },
+          "volume_id": {
+            "description": "The Volume ID, or `null` if a Disk is assigned to this slot.",
+            "example": null,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "LinodeConfigInterfaces": {
+        "description": "An array of Network Interfaces to add to this Linode's Configuration Profile.\n\nUp to three interface objects can be entered in this array. The position in the array determines the interface to which the settings apply:\n\n- First/0:  eth0\n- Second/1: eth1\n- Third/2:  eth2\n\nWhen updating a Linode's interfaces, *each interface must be redefined*. An empty interfaces array results in a default public interface configuration only.\n\nIf no public interface is configured, public IP addresses are still assigned to the Linode but will not be usable without manual configuration.\n\n**Note:** Changes to Linode interface configurations can be enabled by rebooting the Linode.\n\n**Note:** Only Next Generation Network (NGN) data centers support VLANs. Use the Regions ([/regions](/docs/api/regions/)) endpoint to view the capabilities of data center regions.\nIf a VLAN is attached to your Linode and you attempt to migrate or clone it to a non-NGN data center,\nthe migration or cloning will not initiate. If a Linode cannot be migrated because of an incompatibility,\nyou will be prompted to select a different data center or contact support.\n\n**Note:** See the [VLANs Overview](/docs/products/networking/vlans/#technical-specifications) guide to view additional specifications and limitations.\n",
+        "items": {
+          "$ref": "#/$defs/LinodeConfigInterface"
+        },
+        "required": [
+          "purpose"
+        ],
+        "type": "array"
+      },
+      "LinodeConfigInterface": {
+        "description": "The Network Interface to apply to this Linode's configuration profile.\n",
+        "properties": {
+          "ipam_address": {
+            "description": "This Network Interface's private IP address in Classless Inter-Domain Routing (CIDR) notation.\n\nOnly used for `vlan` purpose interfaces. Must be an empty string or `null` for `public` purpose interfaces.\n\nThe Linode is configured to use this address for the associated interface upon reboot if Network Helper is enabled. If Network Helper is disabled, the address can be enabled with [manual static IP configuration](/docs/guides/manual-network-configuration/).\n\nMust be unique among the Linode's interfaces.\n",
+            "example": "10.0.0.1/24",
+            "format": "ip/netmask",
+            "nullable": true,
+            "type": "string"
+          },
+          "label": {
+            "description": "The name of this interface.\n\nRequired for `vlan` purpose interfaces. Must be an empty string or `null` for `public` purpose interfaces.\n\nIf the VLAN label is new, a VLAN is created. Up to 10 VLANs can be created in each data center region. To view your active VLANs, use the [VLANs List](/docs/api/networking/#vlans-list) endpoint.\n\nMay only consist of ASCII letters, numbers, and dashes (`-`).\n\nMust be unique among the Linode's interfaces.\n",
+            "example": "example-interface",
+            "maxLength": 64,
+            "minLength": 1,
+            "nullable": true,
+            "pattern": "/[a-z0-9-]+/",
+            "type": "string",
+            "x-linode-filterable": true
+          },
+          "purpose": {
+            "description": "The type of interface.\n\n* `public`\n  * Only one `public` interface per Linode can be defined.\n  * The Linode's default public IPv4 address is assigned to the `public` interface.\n  * A Linode must have a public interface in the first/eth0 position to be reachable via the public internet upon boot without additional system configuration. If no `public` interface is configured, the Linode is not directly reachable via the public internet. In this case, access can only be established via LISH or other Linodes connected to the same VLAN.\n\n* `vlan`\n  * Configuring a `vlan` purpose interface attaches this Linode to the VLAN with the specified `label`.\n  * The Linode is configured to use the specified `ipam_address`, if any.\n",
+            "enum": [
+              "public",
+              "vlan"
+            ],
+            "example": "vlan",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/linode/instances/{linodeId}/configs"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**comments**: Optional field for arbitrary User comments on this Config.",
+            [
+              "**devices**: A dictionary of device disks to use as a device map in a Linode's configuration profile.",
+              {
+                "$ul": [
+                  [
+                    "**sda**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdb**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdc**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdd**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sde**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdf**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdg**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ],
+                  [
+                    "**sdh**: Device can be either a Disk or Volume identified by `disk_id` or `volume_id`. Only one type per slot allowed. Can be null.",
+                    {
+                      "$ul": [
+                        "**disk_id**: The Disk ID, or `null` if a Volume is assigned to this slot.",
+                        "**volume_id**: The Volume ID, or `null` if a Disk is assigned to this slot."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**helpers**: Helpers enabled when booting to this Linode Config.",
+              {
+                "$ul": [
+                  "**devtmpfs_automount**: Populates the /dev directory early during boot without udev.  Defaults to false.",
+                  "**distro**: Helps maintain correct inittab/upstart console device.",
+                  "**modules_dep**: Creates a modules dependency file for the Kernel you run.",
+                  "**network**: Automatically configures static networking.",
+                  "**updatedb_disabled**: Disables updatedb cron job to avoid disk thrashing."
+                ]
+              }
+            ],
+            "**id**: The ID of this Config.",
+            "**interfaces**: An array of Network Interfaces to add to this Linode's Configuration Profile.",
+            "**kernel**: A Kernel ID to boot a Linode with. Defaults to \"linode/latest-64bit\".",
+            "**label**: The Config's label is for display purposes only.",
+            "**memory_limit**: Defaults to the total RAM of the Linode.",
+            "**root_device**: The root device to boot.",
+            "**run_level**: Defines the state of your Linode after booting. Defaults to `default`.",
+            "**virt_mode**: Controls the virtualization mode. Defaults to `paravirt`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

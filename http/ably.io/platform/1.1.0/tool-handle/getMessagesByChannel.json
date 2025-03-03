@@ -1,0 +1,189 @@
+{
+  "name": "getMessagesByChannel",
+  "description": "Get message history for a channel",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "channel_id": {
+        "type": "string",
+        "description": "The [Channel's ID](https://www.ably.io/documentation/rest/channels)."
+      },
+      "start": {
+        "type": "string"
+      },
+      "limit": {
+        "default": "100",
+        "type": "integer"
+      },
+      "end": {
+        "default": "now",
+        "type": "string"
+      },
+      "direction": {
+        "default": "backwards",
+        "enum": [
+          "forwards",
+          "backwards"
+        ],
+        "type": "string"
+      },
+      "X-Ably-Version": {
+        "type": "string",
+        "description": "The version of the API you wish to use."
+      },
+      "format": {
+        "enum": [
+          "json",
+          "jsonp",
+          "msgpack",
+          "html"
+        ],
+        "type": "string",
+        "description": "The response format you would like"
+      }
+    },
+    "required": [
+      "channel_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://rest.ably.io/channels/{channel_id}/messages{?start,limit,end,direction,format}"
+    },
+    "headers": {
+      "X-Ably-Version": {
+        "$": "X-Ably-Version"
+      }
+    }
+  },
+  "responses": {
+    "2XX": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Message object.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**clientId**: The [client ID](https://www.ably.io/documentation/core-features/authentication#identified-clients) of the publisher of this message.",
+            "**connectionId**: The connection ID of the publisher of this message.",
+            "**data**: The string encoded payload, with the encoding specified below.",
+            "**encoding**: This will typically be empty as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute will contain the remaining transformations not applied to the data payload.",
+            [
+              "**extras**: Extras object. Currently only allows for [push](https://www.ably.io/documentation/general/push/publish#channel-broadcast-example) extra.",
+              {
+                "$ul": [
+                  [
+                    "**push**",
+                    {
+                      "$ul": [
+                        [
+                          "**apns**: Extends and overrides generic values when delivering via APNs. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+                          {
+                            "$ul": [
+                              [
+                                "**notification**",
+                                {
+                                  "$ul": [
+                                    "**body**: Text below title on the expanded notification.",
+                                    "**collapseKey**: Platform-specific, used to group notifications together.",
+                                    "**icon**: Platform-specific icon for the notification.",
+                                    "**sound**: Platform-specific sound for the notification.",
+                                    "**title**: Title to display at the notification."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**data**: Arbitrary [key-value string-to-string payload](https://www.ably.io/documentation/general/push/publish#channel-broadcast-example).",
+                        [
+                          "**fcm**: Extends and overrides generic values when delivering via GCM/FCM. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+                          {
+                            "$ul": [
+                              [
+                                "**notification**",
+                                {
+                                  "$ul": [
+                                    "**body**: Text below title on the expanded notification.",
+                                    "**collapseKey**: Platform-specific, used to group notifications together.",
+                                    "**icon**: Platform-specific icon for the notification.",
+                                    "**sound**: Platform-specific sound for the notification.",
+                                    "**title**: Title to display at the notification."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**notification**",
+                          {
+                            "$ul": [
+                              "**body**: Text below title on the expanded notification.",
+                              "**collapseKey**: Platform-specific, used to group notifications together.",
+                              "**icon**: Platform-specific icon for the notification.",
+                              "**sound**: Platform-specific sound for the notification.",
+                              "**title**: Title to display at the notification."
+                            ]
+                          }
+                        ],
+                        [
+                          "**web**: Extends and overrides generic values when delivering via web. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+                          {
+                            "$ul": [
+                              [
+                                "**notification**",
+                                {
+                                  "$ul": [
+                                    "**body**: Text below title on the expanded notification.",
+                                    "**collapseKey**: Platform-specific, used to group notifications together.",
+                                    "**icon**: Platform-specific icon for the notification.",
+                                    "**sound**: Platform-specific sound for the notification.",
+                                    "**title**: Title to display at the notification."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**id**: A Unique ID that can be specified by the publisher for [idempotent publishing](https://www.ably.io/documentation/rest/messages#idempotent).",
+            "**name**: The event name, if provided.",
+            "**timestamp**: Timestamp when the message was received by the Ably, as milliseconds since the epoch."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,405 @@
+{
+  "name": "StartTableDataImportJob",
+  "description": " The StartTableDataImportJob API allows you to start an import job on a table. This API will only return the id of the job that was started. To find out the status of the import request, you need to call the DescribeTableDataImportJob API. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workbookId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the workbook where the rows are being imported.</p> <p> If a workbook with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "tableId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the table where the rows are being imported.</p> <p> If a table with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "dataSource",
+          "dataFormat",
+          "importOptions",
+          "clientRequestToken"
+        ],
+        "properties": {
+          "dataSource": {
+            "description": "An object that has details about the source of the data that was submitted for import.",
+            "type": "object",
+            "properties": {
+              "dataSourceConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ImportDataSourceConfig"
+                  },
+                  {
+                    "description": "The configuration parameters for the data source of the import"
+                  }
+                ]
+              }
+            }
+          },
+          "dataFormat": {
+            "description": " The format of the data that is being imported. Currently the only option supported is \"DELIMITED_TEXT\". ",
+            "type": "string",
+            "enum": [
+              "DELIMITED_TEXT"
+            ]
+          },
+          "importOptions": {
+            "description": "An object that contains the options specified by the sumitter of the import request.",
+            "type": "object",
+            "properties": {
+              "destinationOptions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DestinationOptions"
+                  },
+                  {
+                    "description": "Options relating to the destination of the import request."
+                  }
+                ]
+              },
+              "delimitedTextOptions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DelimitedTextImportOptions"
+                  },
+                  {
+                    "description": "Options relating to parsing delimited text. Required if dataFormat is DELIMITED_TEXT."
+                  }
+                ]
+              }
+            }
+          },
+          "clientRequestToken": {
+            "description": "<p> The request token for performing the update action. Request tokens help to identify duplicate requests. If a call times out or fails due to a transient error like a failed network connection, you can retry the call with the same request token. The service ensures that if the first call using that request token is successfully performed, the second call will not perform the action again. </p> <p> Note that request tokens are valid only for a few minutes. You cannot use request tokens to dedupe requests spanning hours or days. </p>",
+            "type": "string",
+            "pattern": "^(?!\\s*$).+",
+            "minLength": 32,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "workbookId",
+      "tableId",
+      "body"
+    ],
+    "$defs": {
+      "ImportDataSourceConfig": {
+        "type": "object",
+        "properties": {
+          "dataSourceUrl": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SecureURL"
+              },
+              {
+                "description": " The URL from which source data will be downloaded for the import request. "
+              }
+            ]
+          }
+        },
+        "description": " An object that contains the configuration parameters for the data source of an import request. "
+      },
+      "SecureURL": {
+        "type": "string",
+        "pattern": "^https:\\/\\/[^\\n\\r\\x00\\x08\\x0B\\x0C\\x0E\\x1F]*$",
+        "minLength": 1,
+        "maxLength": 8000,
+        "format": "password"
+      },
+      "DestinationOptions": {
+        "type": "object",
+        "properties": {
+          "columnMap": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ImportColumnMap"
+              },
+              {
+                "description": "A map of the column id to the import properties for each column."
+              }
+            ]
+          }
+        },
+        "description": "An object that contains the options relating to the destination of the import request."
+      },
+      "ImportColumnMap": {
+        "type": "object",
+        "maxProperties": 100,
+        "additionalProperties": {
+          "$ref": "#/$defs/SourceDataColumnProperties"
+        }
+      },
+      "SourceDataColumnProperties": {
+        "type": "object",
+        "properties": {
+          "columnIndex": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SourceDataColumnIndex"
+              },
+              {
+                "description": "The index of the column in the input file."
+              }
+            ]
+          }
+        },
+        "description": "An object that contains the properties for importing data to a specific column in a table."
+      },
+      "SourceDataColumnIndex": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "DelimitedTextImportOptions": {
+        "type": "object",
+        "required": [
+          "delimiter"
+        ],
+        "properties": {
+          "delimiter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DelimitedTextDelimiter"
+              },
+              {
+                "description": "The delimiter to use for separating columns in a single row of the input."
+              }
+            ]
+          },
+          "hasHeaderRow": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HasHeaderRow"
+              },
+              {
+                "description": "Indicates whether the input file has a header row at the top containing the column names."
+              }
+            ]
+          },
+          "ignoreEmptyRows": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IgnoreEmptyRows"
+              },
+              {
+                "description": "A parameter to indicate whether empty rows should be ignored or be included in the import."
+              }
+            ]
+          },
+          "dataCharacterEncoding": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ImportDataCharacterEncoding"
+              },
+              {
+                "description": "The encoding of the data in the input file."
+              }
+            ]
+          }
+        },
+        "description": " An object that contains the options relating to parsing delimited text as part of an import request. "
+      },
+      "DelimitedTextDelimiter": {
+        "type": "string",
+        "pattern": "^[^\\n\\r\\x00\\x08\\x0B\\x0C\\x0E\\x1F]?$",
+        "minLength": 1,
+        "maxLength": 1
+      },
+      "HasHeaderRow": {
+        "type": "boolean"
+      },
+      "IgnoreEmptyRows": {
+        "type": "boolean"
+      },
+      "ImportDataCharacterEncoding": {
+        "type": "string",
+        "enum": [
+          "UTF-8",
+          "US-ASCII",
+          "ISO-8859-1",
+          "UTF-16BE",
+          "UTF-16LE",
+          "UTF-16"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://honeycode.us-east-1.amazonaws.com/workbooks/{workbookId}/tables/{tableId}/import"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**jobId**",
+            "**jobStatus**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

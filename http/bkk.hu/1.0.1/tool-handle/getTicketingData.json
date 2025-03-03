@@ -1,0 +1,126 @@
+{
+  "name": "getTicketingData",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ifModifiedSince": {
+        "default": -1,
+        "format": "int64",
+        "type": "integer",
+        "description": "Csak azokat az elemeket adjuk vissza, amik módosultak az itt megadott időbélyeg (UNIX időbélyeg másodpercben) után. Ha nincs változás üres listákkal tér vissza. Elsőbbsége van a header paraméterrel szemben."
+      },
+      "If-Modified-Since": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Ha meg van adva, akkor csak abban az esetben érkezik vissza adat, ha az változott a megadott időpont óta. Különben HTTP 304 a válasz. A query paraméternek elsőbbsége van ezzel szemben."
+      },
+      "full": {
+        "type": "boolean",
+        "description": "Ha igaz, és az adat változott az `ifModifiedSince` query paraméterben megadott időpont óta, akkor az összes adat visszaadásra kerül. Ha nincs megadva csak a módosult elemek szerepelnek a válaszban. Csak az `ifModifiedSince` query paraméterrel együtt szerepelhet, mivel az `If-Modified-Since` fejléc minden esetben a teljes választ tartalmazza."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/ticketing-locations{?ifModifiedSince,full,appVersion,version,includeReferences}"
+    },
+    "headers": {
+      "If-Modified-Since": {
+        "$": "If-Modified-Since"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+                  [
+                    "**entry**: A lekért adat.",
+                    {
+                      "$ul": [
+                        "**lastModifiedTime**: A jegyértékesítési adatok legutóbbi módosulásának időpontja.",
+                        "**locations**: A jegyértékesítési pontok listája.",
+                        "**oldestModifiedTime**: A legrégebb óta módosított értékesítési hely vagy termék módosításának időpontja.",
+                        "**products**: A termékek listája."
+                      ]
+                    }
+                  ],
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

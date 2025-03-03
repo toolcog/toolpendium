@@ -1,0 +1,250 @@
+{
+  "name": "ExportJournalToS3",
+  "description": "<p>Exports journal contents within a date and time range from a ledger into a specified Amazon Simple Storage Service (Amazon S3) bucket. A journal export job can write the data objects in either the text or binary representation of Amazon Ion format, or in <i>JSON Lines</i> text format.</p> <p>If the ledger with the given <code>Name</code> doesn't exist, then throws <code>ResourceNotFoundException</code>.</p> <p>If the ledger with the given <code>Name</code> is in <code>CREATING</code> status, then throws <code>ResourcePreconditionNotMetException</code>.</p> <p>You can initiate up to two concurrent journal export requests for each ledger. Beyond this limit, journal export requests throw <code>LimitExceededException</code>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "(?!^.*--)(?!^[0-9]+$)(?!^-)(?!.*-$)^[A-Za-z0-9-]+$",
+        "minLength": 1,
+        "maxLength": 32,
+        "description": "The name of the ledger."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "InclusiveStartTime",
+          "ExclusiveEndTime",
+          "S3ExportConfiguration",
+          "RoleArn"
+        ],
+        "properties": {
+          "InclusiveStartTime": {
+            "description": "<p>The inclusive start date and time for the range of journal contents to export.</p> <p>The <code>InclusiveStartTime</code> must be in <code>ISO 8601</code> date and time format and in Universal Coordinated Time (UTC). For example: <code>2019-06-13T21:36:34Z</code>.</p> <p>The <code>InclusiveStartTime</code> must be before <code>ExclusiveEndTime</code>.</p> <p>If you provide an <code>InclusiveStartTime</code> that is before the ledger's <code>CreationDateTime</code>, Amazon QLDB defaults it to the ledger's <code>CreationDateTime</code>.</p>",
+            "type": "string",
+            "format": "date-time"
+          },
+          "ExclusiveEndTime": {
+            "description": "<p>The exclusive end date and time for the range of journal contents to export.</p> <p>The <code>ExclusiveEndTime</code> must be in <code>ISO 8601</code> date and time format and in Universal Coordinated Time (UTC). For example: <code>2019-06-13T21:36:34Z</code>.</p> <p>The <code>ExclusiveEndTime</code> must be less than or equal to the current UTC date and time.</p>",
+            "type": "string",
+            "format": "date-time"
+          },
+          "S3ExportConfiguration": {
+            "description": "The Amazon Simple Storage Service (Amazon S3) bucket location in which a journal export job writes the journal contents.",
+            "type": "object",
+            "properties": {
+              "Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Bucket"
+                  },
+                  {
+                    "description": "<p>The Amazon S3 bucket name in which a journal export job writes the journal contents.</p> <p>The bucket name must comply with the Amazon S3 bucket naming conventions. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html\">Bucket Restrictions and Limitations</a> in the <i>Amazon S3 Developer Guide</i>.</p>"
+                  }
+                ]
+              },
+              "Prefix": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Prefix"
+                  },
+                  {
+                    "description": "<p>The prefix for the Amazon S3 bucket in which a journal export job writes the journal contents.</p> <p>The prefix must comply with Amazon S3 key naming rules and restrictions. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html\">Object Key and Metadata</a> in the <i>Amazon S3 Developer Guide</i>.</p> <p>The following are examples of valid <code>Prefix</code> values:</p> <ul> <li> <p> <code>JournalExports-ForMyLedger/Testing/</code> </p> </li> <li> <p> <code>JournalExports</code> </p> </li> <li> <p> <code>My:Tests/</code> </p> </li> </ul>"
+                  }
+                ]
+              },
+              "EncryptionConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3EncryptionConfiguration"
+                  },
+                  {
+                    "description": "The encryption settings that are used by a journal export job to write data in an Amazon S3 bucket."
+                  }
+                ]
+              }
+            }
+          },
+          "RoleArn": {
+            "description": "<p>The Amazon Resource Name (ARN) of the IAM role that grants QLDB permissions for a journal export job to do the following:</p> <ul> <li> <p>Write objects into your Amazon S3 bucket.</p> </li> <li> <p>(Optional) Use your customer managed key in Key Management Service (KMS) for server-side encryption of your exported data.</p> </li> </ul> <p>To pass a role to QLDB when requesting a journal export, you must have permissions to perform the <code>iam:PassRole</code> action on the IAM role resource. This is required for all journal export requests.</p>",
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1600
+          },
+          "OutputFormat": {
+            "description": "<p>The output format of your exported journal data. A journal export job can write the data objects in either the text or binary representation of <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/ion.html\">Amazon Ion</a> format, or in <a href=\"https://jsonlines.org/\">JSON Lines</a> text format.</p> <p>Default: <code>ION_TEXT</code> </p> <p>In JSON Lines format, each journal block in an exported data object is a valid JSON object that is delimited by a newline. You can use this format to directly integrate JSON exports with analytics tools such as Amazon Athena and Glue because these services can parse newline-delimited JSON automatically.</p>",
+            "type": "string",
+            "enum": [
+              "ION_BINARY",
+              "ION_TEXT",
+              "JSON"
+            ]
+          }
+        }
+      }
+    },
+    "required": [
+      "name",
+      "body"
+    ],
+    "$defs": {
+      "S3Bucket": {
+        "type": "string",
+        "pattern": "^[A-Za-z-0-9-_.]+$",
+        "minLength": 3,
+        "maxLength": 255
+      },
+      "S3Prefix": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128
+      },
+      "S3EncryptionConfiguration": {
+        "type": "object",
+        "required": [
+          "ObjectEncryptionType"
+        ],
+        "properties": {
+          "ObjectEncryptionType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3ObjectEncryptionType"
+              },
+              {
+                "description": "<p>The Amazon S3 object encryption type.</p> <p>To learn more about server-side encryption options in Amazon S3, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/serv-side-encryption.html\">Protecting Data Using Server-Side Encryption</a> in the <i>Amazon S3 Developer Guide</i>.</p>"
+              }
+            ]
+          },
+          "KmsKeyArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "<p>The Amazon Resource Name (ARN) of a symmetric encryption key in Key Management Service (KMS). Amazon S3 does not support asymmetric KMS keys.</p> <p>You must provide a <code>KmsKeyArn</code> if you specify <code>SSE_KMS</code> as the <code>ObjectEncryptionType</code>.</p> <p> <code>KmsKeyArn</code> is not required if you specify <code>SSE_S3</code> as the <code>ObjectEncryptionType</code>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "The encryption settings that are used by a journal export job to write data in an Amazon Simple Storage Service (Amazon S3) bucket."
+      },
+      "S3ObjectEncryptionType": {
+        "type": "string",
+        "enum": [
+          "SSE_KMS",
+          "SSE_S3",
+          "NO_ENCRYPTION"
+        ]
+      },
+      "Arn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 1600
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://qldb.us-east-1.amazonaws.com/ledgers/{name}/journal-s3-exports"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ExportId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "name": "getOrganizationApiRequestsOverviewResponseCodesByInterval",
+  "description": "Tracks organizations' API requests by response code across a given time period",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data. The maximum lookback period is 31 days from today."
+      },
+      "t1": {
+        "type": "string",
+        "description": "The end of the timespan for the data. t1 can be a maximum of 31 days after t0."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameters t0 and t1. The value must be in seconds and be less than or equal to 31 days. The default is 31 days. If interval is provided, the timespan will be autocalculated."
+      },
+      "interval": {
+        "type": "integer",
+        "description": "The time interval in seconds for returned data. The valid intervals are: 120, 3600, 14400, 21600. The default is 21600. Interval is calculated if time params are provided."
+      },
+      "version": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "description": "Filter by API version of the endpoint. Allowable values are: [0, 1]"
+      },
+      "operationIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Filter by operation ID of the endpoint"
+      },
+      "sourceIps": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Filter by source IP that made the API request"
+      },
+      "adminIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Filter by admin ID of user that made the API request"
+      },
+      "userAgent": {
+        "type": "string",
+        "description": "Filter by user agent string for API request. This will filter by a complete or partial match."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/apiRequests/overview/responseCodes/byInterval{?t0,t1,timespan,interval,version,operationIds,sourceIps,adminIds,userAgent}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**counts**: list of response codes and a count of how many requests had that code in the given time period",
+            "**endTs**: The end time of the access period",
+            "**startTs**: The start time of the access period"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

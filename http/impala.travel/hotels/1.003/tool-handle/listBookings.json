@@ -1,0 +1,163 @@
+{
+  "name": "listBookings",
+  "description": "Returns a list of all the bookings you've made.\n\nYou can filter the list based on when bookings were created or last updated, as well as their arrival (`start`) and departure (`end`). These date-based filters allow to narrow down the result with modifiers for less than (`lt`), greater than (`gt`), lower than or equal to (`lte`), greater than or equal to (`gte`) and equal to (`eq`).\n\nExample: Adding the query parameters `start[gt]=2021-05-20&updated[lte]=2020-11-20T11:11:00.000Z` would return bookings arriving after May 20th, 2020 that were updated before or on November 20th, 2020 at 11:11 am UTC.\n\nYou can specify the **sorting order** in which bookings are returned:\n* This is done by using the `sortBy` query parameter.\n* Results can be sorted by `createdAt` and `updatedAt`\n* The parameter allows for a comma-separated list of arguments with `:asc` (ascending, the default if no sorting is specified) and `:desc` (descending) modifiers.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start": {
+        "type": "object",
+        "description": "Allows for filtering based on arrival date of the booking in ISO 8601 format (e.g. `2021-12-01`). Available modifiers include less than (`lt`), greater than (`gt`), lower than or equal to (`lte`), greater than or equal to (`gte`) and equal to (`eq`). Usage example: `?start[lte]=2021-12-20&start[gte]=2021-12-10`"
+      },
+      "end": {
+        "type": "object",
+        "description": "Allows for filtering based on departure date of the booking in ISO 8601 format (e.g. `2021-12-01`). Available modifiers include less than (`lt`), greater than (`gt`), lower than or equal to (`lte`), greater than or equal to (`gte`) and equal to (`eq`). Usage example: `?end[lte]=2021-12-25&end[gte]=2021-12-15`"
+      },
+      "created": {
+        "type": "object",
+        "description": "Allows for filtering based on creation date and time of the booking in ISO 8601 format (e.g. `2020-11-04T17:37:37Z`) and UTC timezone. Available modifiers include less than (`lt`), greater than (`gt`), lower than or equal to (`lte`), greater than or equal to (`gte`) and equal to (`eq`). Usage example: `?created[lte]=2020-11-04T19:37:37Z&created[gte]=2020-11-04T15:56:37.000Z`"
+      },
+      "updated": {
+        "type": "object",
+        "description": "Allows for filtering based on the date and time the booking was last updated, in ISO 8601 format (e.g. `2020-11-04T17:37:37Z`) and UTC timezone. Available modifiers include less than (`lt`), greater than (`gt`), lower than or equal to (`lte`), greater than or equal to (`gte`) and equal to (`eq`). Usage example: `?updated[lte]=2020-11-04T19:37:37Z&updated[gte]=2020-11-04T15:56:37.000Z`"
+      },
+      "size": {
+        "default": 100,
+        "format": "int32",
+        "type": "number",
+        "description": "Pagination size. Defaults to 100 if omitted."
+      },
+      "offset": {
+        "default": 0,
+        "format": "int32",
+        "type": "number",
+        "description": "Pagination offset. Defaults to 0 if omitted."
+      },
+      "sortBy": {
+        "default": "createdAt:asc",
+        "example": "createdAt:desc,updatedAt:asc",
+        "type": "string",
+        "description": "Order in which the results should be sorted. Currently allows you to sort by `createdAt` and `updatedAt`. Specify multiple paramaters by separating with commas"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://sandbox.impala.travel/v1/bookings{?start,end,created,updated,size,offset,sortBy}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            [
+              "**pagination**: Information that helps paginate through lists of resources.",
+              {
+                "$ul": [
+                  "**count**: The number of items returned on this page.",
+                  "**next**: The absolute URL pointing to the next page. Will be null if there are no next pages.",
+                  "**prev**: The absolute URL pointing to the previous page. Will be null if there are no previous pages.",
+                  "**total**: The total number of items that exist for your query across all pages."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**.",
+            "**validations**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

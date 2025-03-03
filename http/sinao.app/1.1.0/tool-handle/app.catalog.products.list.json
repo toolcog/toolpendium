@@ -1,0 +1,150 @@
+{
+  "name": "app_catalog_products_list",
+  "description": "Get list of products",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appId": {
+        "type": "integer",
+        "description": "The identifier of the Sinao application you are using. Each application corresponds to a company and an accounting. A user can have several Sinao applications. To retrieve the identifiers of its applications, you must call the endpoint `/apps`."
+      },
+      "offset": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "The number of items to skip before starting to collect the result set."
+      },
+      "limit": {
+        "default": 10,
+        "maximum": 10000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The numbers of items to return."
+      },
+      "search": {
+        "type": "string",
+        "description": "A string to search for in objects."
+      },
+      "filters": {
+        "items": {
+          "properties": {
+            "comparator": {
+              "enum": [
+                "=",
+                "<",
+                ">",
+                "<=",
+                ">=",
+                "!=",
+                "LIKE",
+                "IN",
+                "REGEX"
+              ],
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array",
+        "description": "List of filters to apply to the query."
+      },
+      "order": {
+        "items": {
+          "properties": {
+            "direction": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array",
+        "description": "List in order of priority of the variables by which to order the result."
+      }
+    },
+    "required": [
+      "appId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.sinao.app/v1/apps/{appId}/products{?offset,limit,search,filters,order}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accounting_number**",
+            "**amount_accurately**: Price without taxes in milli-cents",
+            [
+              "**category**",
+              {
+                "$ul": [
+                  "**id**",
+                  "**image**",
+                  "**name**",
+                  "**parent**",
+                  "**products**"
+                ]
+              }
+            ],
+            "**currency**",
+            "**description**",
+            "**id**",
+            "**image**",
+            "**intangible**: Is a service or a product ?",
+            "**lifetime**: Product life time in seconds",
+            "**metadata**",
+            "**name**",
+            "**quantity_name**: Name of the quantity: days, liters, m2, m3...",
+            "**reference**",
+            "**tags**",
+            "**unity**: Unity, hours, days, meters, liters..",
+            "**vat_percent**: VAT rate in cents"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

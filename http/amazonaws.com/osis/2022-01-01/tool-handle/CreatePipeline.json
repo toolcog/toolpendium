@@ -1,0 +1,343 @@
+{
+  "name": "CreatePipeline",
+  "description": "Creates an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html\">Creating Amazon OpenSearch Ingestion pipelines</a>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "PipelineName",
+          "MinUnits",
+          "MaxUnits",
+          "PipelineConfigurationBody"
+        ],
+        "properties": {
+          "PipelineName": {
+            "description": "The name of the OpenSearch Ingestion pipeline to create. Pipeline names are unique across the pipelines owned by an account within an Amazon Web Services Region.",
+            "type": "string",
+            "pattern": "[a-z][a-z0-9\\-]+",
+            "minLength": 3,
+            "maxLength": 28
+          },
+          "MinUnits": {
+            "description": "The minimum pipeline capacity, in Ingestion Compute Units (ICUs).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 96
+          },
+          "MaxUnits": {
+            "description": "The maximum pipeline capacity, in Ingestion Compute Units (ICUs).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 96
+          },
+          "PipelineConfigurationBody": {
+            "description": "The pipeline configuration in YAML format. The command accepts the pipeline configuration as a string or within a .yaml file. If you provide the configuration as a string, each new line must be escaped with <code>\\n</code>.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24000
+          },
+          "LogPublishingOptions": {
+            "description": "Container for the values required to configure logging for the pipeline. If you don't specify these values, OpenSearch Ingestion will not publish logs from your application to CloudWatch Logs.",
+            "type": "object",
+            "properties": {
+              "IsLoggingEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Boolean"
+                  },
+                  {
+                    "description": "Whether logs should be published."
+                  }
+                ]
+              },
+              "CloudWatchLogDestination": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CloudWatchLogDestination"
+                  },
+                  {
+                    "description": "The destination for OpenSearch Ingestion logs sent to Amazon CloudWatch Logs. This parameter is required if <code>IsLoggingEnabled</code> is set to <code>true</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "VpcOptions": {
+            "description": "Options that specify the subnets and security groups for an OpenSearch Ingestion VPC endpoint.",
+            "type": "object",
+            "properties": {
+              "SubnetIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SubnetIds"
+                  },
+                  {
+                    "description": "A list of subnet IDs associated with the VPC endpoint."
+                  }
+                ]
+              },
+              "SecurityGroupIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SecurityGroupIds"
+                  },
+                  {
+                    "description": "A list of security groups associated with the VPC endpoint."
+                  }
+                ]
+              }
+            }
+          },
+          "Tags": {
+            "description": "List of tags to add to the pipeline upon creation.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Boolean": {
+        "type": "boolean"
+      },
+      "CloudWatchLogDestination": {
+        "type": "object",
+        "required": [
+          "LogGroup"
+        ],
+        "properties": {
+          "LogGroup": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LogGroup"
+              },
+              {
+                "description": "The name of the CloudWatch Logs group to send pipeline logs to. You can specify an existing log group or create a new one. For example, <code>/aws/OpenSearchService/IngestionService/my-pipeline</code>."
+              }
+            ]
+          }
+        },
+        "description": "The destination for OpenSearch Ingestion logs sent to Amazon CloudWatch."
+      },
+      "LogGroup": {
+        "type": "string",
+        "pattern": "\\/aws\\/vendedlogs\\/[\\.\\-_/#A-Za-z0-9]+",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "SubnetIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SubnetId"
+        },
+        "minItems": 1,
+        "maxItems": 12
+      },
+      "SubnetId": {
+        "type": "string",
+        "pattern": "subnet-\\w{8}(\\w{9})?",
+        "minLength": 15,
+        "maxLength": 24
+      },
+      "SecurityGroupIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SecurityGroupId"
+        },
+        "minItems": 1,
+        "maxItems": 12
+      },
+      "SecurityGroupId": {
+        "type": "string",
+        "pattern": "sg-\\w{8}(\\w{9})?",
+        "minLength": 11,
+        "maxLength": 20
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The tag key. Tag keys must be unique for the pipeline to which they are attached."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The value assigned to the corresponding tag key. Tag values can be null and don't have to be unique in a tag set. For example, you can have a key value pair in a tag set of <code>project : Trinity</code> and <code>cost-center : Trinity</code> "
+              }
+            ]
+          }
+        },
+        "description": "A tag (key-value pair) for an OpenSearch Ingestion pipeline."
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://osis.us-east-1.amazonaws.com/2022-01-01/osis/createPipeline"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Pipeline**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

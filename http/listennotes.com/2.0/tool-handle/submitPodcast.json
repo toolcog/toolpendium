@@ -1,0 +1,101 @@
+{
+  "name": "submitPodcast",
+  "description": "Podcast hosting services can use this endpoint to help your users directly submit a new podcast to Listen Notes database. If the podcast doesn't exist in the database, \"status\" in the response will be \"in review\", and we'll review it within 12 hours. If the podcast exists, \"status\" in the response will be \"found\". If this submission is rejected, \"status\" in the response will be \"rejected\". You can use `POST /podcasts` to check if multiple podcasts exist in the database. If you want to get a notification once the podcast is accepted, you can either specify the \"email\" parameter or configure a webhook url in the dashboard: listennotes.com/api/dashboard/#webhooks\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-ListenAPI-Key": {
+        "type": "string",
+        "description": "Get API Key on listennotes.com/api"
+      },
+      "body": {
+        "$ref": "#/$defs/SubmitPodcastForm"
+      }
+    },
+    "required": [
+      "X-ListenAPI-Key",
+      "body"
+    ],
+    "$defs": {
+      "SubmitPodcastForm": {
+        "properties": {
+          "email": {
+            "description": "A valid email address. If **email** is specified, then we'll notify this email address once the podcast is accepted.",
+            "examples": [
+              "hello@example.com"
+            ],
+            "type": "string"
+          },
+          "rss": {
+            "description": "A valid podcast rss url.",
+            "examples": [
+              "https://feeds.megaphone.fm/committed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rss"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://listen-api.listennotes.com/api/v2/podcasts/submit"
+    },
+    "headers": {
+      "X-ListenAPI-Key": {
+        "$": "X-ListenAPI-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**podcast**",
+              {
+                "$ul": [
+                  "**id**: Podcast id, which can be used to further fetch detailed podcast metadata via `GET /podcasts/{id}`.",
+                  "**image**: Image url for this podcast's artwork. If you are using PRO/ENTERPRISE plan, then it's",
+                  "**listen_score**: The estimated popularity score of a podcast compared to all other rss-based public podcasts in the world on a scale from 0 to 100.",
+                  "**listen_score_global_rank**: The estimated popularity ranking of a podcast compared to all other rss-based public podcasts in the world.",
+                  "**listennotes_url**: The url of this podcast on [ListenNotes.com](https://www.ListenNotes.com).",
+                  "**publisher**: Podcast publisher name.",
+                  "**thumbnail**: Thumbnail image url for this podcast's artwork (300x300).",
+                  "**title**: Podcast name."
+                ]
+              }
+            ],
+            "**status**: The status of this submission."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

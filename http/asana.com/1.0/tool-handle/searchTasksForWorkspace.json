@@ -1,0 +1,435 @@
+{
+  "name": "searchTasksForWorkspace",
+  "description": "To mirror the functionality of the Asana web app's advanced search feature, the Asana API has a task search endpoint that allows you to build complex filters to find and retrieve the exact data you need.\n#### Premium access\nLike the Asana web product's advance search feature, this search endpoint will only be available to premium Asana users. A user is premium if any of the following is true:\n\n- The workspace in which the search is being performed is a premium workspace - The user is a member of a premium team inside the workspace\n\nEven if a user is only a member of a premium team inside a non-premium workspace, search will allow them to find data anywhere in the workspace, not just inside the premium team. Making a search request using credentials of a non-premium user will result in a `402 Payment Required` error.\n#### Pagination\nSearch results are not stable; repeating the same query multiple times may return the data in a different order, even if the data do not change. Because of this, the traditional [pagination](https://developers.asana.com/docs/#pagination) available elsewhere in the Asana API is not available here. However, you can paginate manually by sorting the search results by their creation time and then modifying each subsequent query to exclude data you have already seen. Page sizes are limited to a maximum of 100 items, and can be specified by the `limit` query parameter.\n#### Eventual consistency\nChanges in Asana (regardless of whether they’re made though the web product or the API) are forwarded to our search infrastructure to be indexed. This process can take between 10 and 60 seconds to complete under normal operation, and longer during some production incidents. Making a change to a task that would alter its presence in a particular search query will not be reflected immediately. This is also true of the advanced search feature in the web product.\n#### Rate limits\nYou may receive a `429 Too Many Requests` response if you hit any of our [rate limits](https://developers.asana.com/docs/#rate-limits).\n#### Custom field parameters\n| Parameter name | Custom field type | Accepted type |\n|---|---|---|\n| custom_fields.{gid}.is_set | All | Boolean |\n| custom_fields.{gid}.value | Text | String |\n| custom_fields.{gid}.value | Number | Number |\n| custom_fields.{gid}.value | Enum | Enum option ID |\n| custom_fields.{gid}.starts_with | Text only | String |\n| custom_fields.{gid}.ends_with | Text only | String |\n| custom_fields.{gid}.contains | Text only | String |\n| custom_fields.{gid}.less_than | Number only | Number |\n| custom_fields.{gid}.greater_than | Number only | Number |\n\n\nFor example, if the gid of the custom field is 12345, these query parameter to find tasks where it is set would be `custom_fields.12345.is_set=true`. To match an exact value for an enum custom field, use the gid of the desired enum option and not the name of the enum option: `custom_fields.12345.value=67890`.\n\n**Not Supported**: searching for multiple exact matches of a custom field, searching for multi-enum custom field\n\n*Note: If you specify `projects.any` and `sections.any`, you will receive tasks for the project **and** tasks for the section. If you're looking for only tasks in a section, omit the `projects.any` from the request.*",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workspace_gid": {
+        "type": "string",
+        "description": "Globally unique identifier for the workspace or organization."
+      },
+      "opt_pretty": {
+        "type": "boolean",
+        "description": "Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging."
+      },
+      "opt_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Defines fields to return.\nSome requests return *compact* representations of objects in order to conserve resources and complete the request more efficiently. Other times requests return more information than you may need. This option allows you to list the exact set of fields that the API should be sure to return for the objects. The field names should be provided as paths, described below.\nThe id of included objects will always be returned, regardless of the field options."
+      },
+      "text": {
+        "type": "string",
+        "description": "Performs full-text search on both task name and description"
+      },
+      "resource_subtype": {
+        "default": "milestone",
+        "enum": [
+          "default_task",
+          "milestone"
+        ],
+        "type": "string",
+        "description": "Filters results by the task's resource_subtype"
+      },
+      "assignee.any": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "assignee.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "portfolios.any": {
+        "type": "string",
+        "description": "Comma-separated list of portfolio IDs"
+      },
+      "projects.any": {
+        "type": "string",
+        "description": "Comma-separated list of project IDs"
+      },
+      "projects.not": {
+        "type": "string",
+        "description": "Comma-separated list of project IDs"
+      },
+      "projects.all": {
+        "type": "string",
+        "description": "Comma-separated list of project IDs"
+      },
+      "sections.any": {
+        "type": "string",
+        "description": "Comma-separated list of section or column IDs"
+      },
+      "sections.not": {
+        "type": "string",
+        "description": "Comma-separated list of section or column IDs"
+      },
+      "sections.all": {
+        "type": "string",
+        "description": "Comma-separated list of section or column IDs"
+      },
+      "tags.any": {
+        "type": "string",
+        "description": "Comma-separated list of tag IDs"
+      },
+      "tags.not": {
+        "type": "string",
+        "description": "Comma-separated list of tag IDs"
+      },
+      "tags.all": {
+        "type": "string",
+        "description": "Comma-separated list of tag IDs"
+      },
+      "teams.any": {
+        "type": "string",
+        "description": "Comma-separated list of team IDs"
+      },
+      "followers.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "created_by.any": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "created_by.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "assigned_by.any": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "assigned_by.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "liked_by.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "commented_on_by.not": {
+        "type": "string",
+        "description": "Comma-separated list of user identifiers"
+      },
+      "due_on.before": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "due_on.after": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "due_on": {
+        "format": "date",
+        "nullable": true,
+        "type": "string",
+        "description": "ISO 8601 date string or `null`"
+      },
+      "due_at.before": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "due_at.after": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "start_on.before": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "start_on.after": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "start_on": {
+        "format": "date",
+        "nullable": true,
+        "type": "string",
+        "description": "ISO 8601 date string or `null`"
+      },
+      "created_on.before": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "created_on.after": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "created_on": {
+        "format": "date",
+        "nullable": true,
+        "type": "string",
+        "description": "ISO 8601 date string or `null`"
+      },
+      "created_at.before": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "created_at.after": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "completed_on.before": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "completed_on.after": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "completed_on": {
+        "format": "date",
+        "nullable": true,
+        "type": "string",
+        "description": "ISO 8601 date string or `null`"
+      },
+      "completed_at.before": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "completed_at.after": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "modified_on.before": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "modified_on.after": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO 8601 date string"
+      },
+      "modified_on": {
+        "format": "date",
+        "nullable": true,
+        "type": "string",
+        "description": "ISO 8601 date string or `null`"
+      },
+      "modified_at.before": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "modified_at.after": {
+        "format": "date-time",
+        "type": "string",
+        "description": "ISO 8601 datetime string"
+      },
+      "is_blocking": {
+        "type": "boolean",
+        "description": "Filter to incomplete tasks with dependents"
+      },
+      "is_blocked": {
+        "type": "boolean",
+        "description": "Filter to tasks with incomplete dependencies"
+      },
+      "has_attachment": {
+        "type": "boolean",
+        "description": "Filter to tasks with attachments"
+      },
+      "completed": {
+        "type": "boolean",
+        "description": "Filter to completed tasks"
+      },
+      "is_subtask": {
+        "type": "boolean",
+        "description": "Filter to subtasks"
+      },
+      "sort_by": {
+        "default": "modified_at",
+        "enum": [
+          "due_date",
+          "created_at",
+          "completed_at",
+          "likes",
+          "modified_at"
+        ],
+        "type": "string",
+        "description": "One of `due_date`, `created_at`, `completed_at`, `likes`, or `modified_at`, defaults to `modified_at`"
+      },
+      "sort_ascending": {
+        "default": false,
+        "type": "boolean",
+        "description": "Default `false`"
+      }
+    },
+    "required": [
+      "workspace_gid"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://app.asana.com/api/1.0/workspaces/{workspace_gid}/tasks/search{?opt_pretty,opt_fields,text,resource_subtype,assignee.any,assignee.not,portfolios.any,projects.any,projects.not,projects.all,sections.any,sections.not,sections.all,tags.any,tags.not,tags.all,teams.any,followers.not,created_by.any,created_by.not,assigned_by.any,assigned_by.not,liked_by.not,commented_on_by.not,due_on.before,due_on.after,due_on,due_at.before,due_at.after,start_on.before,start_on.after,start_on,created_on.before,created_on.after,created_on,created_at.before,created_at.after,completed_on.before,completed_on.after,completed_on,completed_at.before,completed_at.after,modified_on.before,modified_on.after,modified_on,modified_at.before,modified_at.after,is_blocking,is_blocked,has_attachment,completed,is_subtask,sort_by,sort_ascending}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

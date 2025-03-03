@@ -1,0 +1,103 @@
+{
+  "name": "delete_images_async",
+  "description": "Delete analysis for image digests in the list asynchronously",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "imageDigests": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "force": {
+        "type": "boolean"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    },
+    "required": [
+      "imageDigests"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "//images{?imageDigests,force}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A list of delete image responses",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**digest**",
+            "**status**: Current status of the image deletion"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

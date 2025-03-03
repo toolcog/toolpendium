@@ -1,0 +1,111 @@
+{
+  "name": "getAllUsers",
+  "description": "Returns a list of all users, including active users, inactive users and previously deleted users that have an Atlassian account.\n\nPrivacy controls are applied to the response based on the users' preferences. This could mean, for example, that the user's email address is hidden. See the [Profile visibility overview](https://developer.atlassian.com/cloud/jira/platform/profile-visibility/) for more details.\n\n**[Permissions](#permissions) required:** *Browse users and groups* [global permission](https://confluence.atlassian.com/x/x4dKLg).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "startAt": {
+        "default": 0,
+        "format": "int32",
+        "type": "integer",
+        "description": "The index of the first item to return."
+      },
+      "maxResults": {
+        "default": 50,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of items to return."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/users/search{?startAt,maxResults}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A user with details as permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:\n\n *  User record deleted from Atlassian: This occurs as the result of a right to be forgotten request. In this case, `displayName` provides an indication and other parameters have default values or are blank (for example, email is blank).\n *  User record corrupted: This occurs as a results of events such as a server import and can only happen to deleted users. In this case, `accountId` returns *unknown* and all other parameters have fallback values.\n *  User record unavailable: This usually occurs due to an internal service outage. In this case, all parameters have fallback values.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountId**: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
+            "**accountType**: The user account type. Can take the following values:",
+            "**active**: Whether the user is active.",
+            [
+              "**applicationRoles**",
+              {
+                "$ul": [
+                  "**callback**",
+                  "**items**",
+                  "**max-results**",
+                  "**pagingCallback**",
+                  "**size**"
+                ]
+              }
+            ],
+            [
+              "**avatarUrls**",
+              {
+                "$ul": [
+                  "**16x16**: The URL of the item's 16x16 pixel avatar.",
+                  "**24x24**: The URL of the item's 24x24 pixel avatar.",
+                  "**32x32**: The URL of the item's 32x32 pixel avatar.",
+                  "**48x48**: The URL of the item's 48x48 pixel avatar."
+                ]
+              }
+            ],
+            "**displayName**: The display name of the user. Depending on the user’s privacy setting, this may return an alternative value.",
+            "**emailAddress**: The email address of the user. Depending on the user’s privacy setting, this may be returned as null.",
+            "**expand**: Expand options that include additional user details in the response.",
+            [
+              "**groups**",
+              {
+                "$ul": [
+                  "**callback**",
+                  "**items**",
+                  "**max-results**",
+                  "**pagingCallback**",
+                  "**size**"
+                ]
+              }
+            ],
+            "**key**: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+            "**locale**: The locale of the user. Depending on the user’s privacy setting, this may be returned as null.",
+            "**name**: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+            "**self**: The URL of the user.",
+            "**timeZone**: The time zone specified in the user's profile. Depending on the user’s privacy setting, this may be returned as null."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

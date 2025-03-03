@@ -1,0 +1,85 @@
+{
+  "name": "getStatusesById",
+  "description": "Returns a list of the statuses specified by one or more status IDs.\n\n**[Permissions](#permissions) required:**\n\n *  *Administer projects* [project permission.](https://confluence.atlassian.com/x/yodKLg)\n *  *Administer Jira* [project permission.](https://confluence.atlassian.com/x/yodKLg)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "expand": {
+        "type": "string",
+        "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `usages` Returns the project and issue types that use the status in their workflow."
+      },
+      "id": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of status IDs. To include multiple IDs, provide an ampersand-separated list. For example, id=10000&id=10001.\n\nMin items `1`, Max items `50`"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/statuses{?expand,id}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Details of a status.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**: The description of the status.",
+            "**id**: The ID of the status.",
+            "**name**: The name of the status.",
+            [
+              "**scope**: The scope of the status.",
+              {
+                "$ul": [
+                  [
+                    "**project**: Project ID details.",
+                    {
+                      "$ul": [
+                        "**id**: The ID of the project."
+                      ]
+                    }
+                  ],
+                  "**type**: The scope of the status. `GLOBAL` for company-managed projects and `PROJECT` for team-managed projects."
+                ]
+              }
+            ],
+            "**statusCategory**: The category of the status.",
+            "**usages**: Projects and issue types where the status is used. Only available if the `usages` expand is requested."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

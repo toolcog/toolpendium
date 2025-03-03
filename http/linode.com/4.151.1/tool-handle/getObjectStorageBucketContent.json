@@ -1,0 +1,97 @@
+{
+  "name": "getObjectStorageBucketContent",
+  "description": "Returns the contents of a bucket. The contents are paginated using a `marker`,\nwhich is the name of the last object on the previous page.  Objects may\nbe filtered by `prefix` and `delimiter` as well; see Query Parameters for more\ninformation.\n\n\nThis endpoint is available for convenience. It is recommended that instead you\nuse the more [fully-featured S3 API](https://docs.ceph.com/en/latest/radosgw/s3/objectops/#get-object) directly.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "marker": {
+        "type": "string",
+        "description": "The \"marker\" for this request, which can be used to paginate through large buckets. Its value should be the value of the `next_marker` property returned with the last page. Listing bucket contents *does not* support arbitrary page access. See the `next_marker` property in the responses section for more details.\n"
+      },
+      "delimiter": {
+        "type": "string",
+        "description": "The delimiter for object names; if given, object names will be returned up to the first occurrence of this character. This is most commonly used with the `/` character to allow bucket transversal in a manner similar to a filesystem, however any delimiter may be used. Use in conjunction with `prefix` to see object names past the first occurrence of the delimiter.\n"
+      },
+      "prefix": {
+        "type": "string",
+        "description": "Filters objects returned to only those whose name start with the given prefix. Commonly used in conjunction with `delimiter` to allow transversal of bucket contents in a manner similar to a filesystem.\n"
+      },
+      "page_size": {
+        "default": 100,
+        "maximum": 500,
+        "minimum": 25,
+        "type": "integer",
+        "description": "The number of items to return per page."
+      },
+      "clusterId": {
+        "type": "string",
+        "description": "The ID of the cluster this bucket exists in."
+      },
+      "bucket": {
+        "type": "string",
+        "description": "The bucket name."
+      }
+    },
+    "required": [
+      "clusterId",
+      "bucket"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.linode.com/v4/object-storage/buckets/{clusterId}/{bucket}/object-list{?marker,delimiter,prefix,page_size}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**: This page of objects in the bucket."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

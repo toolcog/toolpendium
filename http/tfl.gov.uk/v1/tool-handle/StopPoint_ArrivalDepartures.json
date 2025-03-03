@@ -1,0 +1,92 @@
+{
+  "name": "StopPoint_ArrivalDepartures",
+  "description": "Gets the list of arrival and departure predictions for the given stop point id (overground, Elizabeth line and thameslink only)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A StopPoint id (station naptan code e.g. 940GZZLUASL, you can use /StopPoint/Search/{query} endpoint to find a stop point id from a station name)"
+      },
+      "lineIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma-separated list of line ids e.g. elizabeth, london-overground, thameslink"
+      }
+    },
+    "required": [
+      "id",
+      "lineIds"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/StopPoint/{id}/ArrivalDepartures{?lineIds}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "DTO to capture the prediction details",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**cause**: Reason for cancellation or delay",
+            "**departureStatus**: Status of departure",
+            "**destinationName**: Name of the destination",
+            "**destinationNaptanId**: Naptan Identifier for the prediction's destination",
+            "**estimatedTimeOfArrival**: Estimated time of arrival",
+            "**estimatedTimeOfDeparture**: Estimated time of arrival",
+            "**minutesAndSecondsToArrival**: Estimated time of arrival",
+            "**minutesAndSecondsToDeparture**: Estimated time of arrival",
+            "**naptanId**: Identifier for the prediction",
+            "**platformName**: Platform name (for bus, this is the stop letter)",
+            "**scheduledTimeOfArrival**: Estimated time of arrival",
+            "**scheduledTimeOfDeparture**: Estimated time of arrival",
+            "**stationName**: Station name",
+            [
+              "**timing**",
+              {
+                "$ul": [
+                  "**countdownServerAdjustment**",
+                  "**insert**",
+                  "**read**",
+                  "**received**",
+                  "**sent**",
+                  "**source**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

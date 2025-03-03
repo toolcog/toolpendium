@@ -1,0 +1,88 @@
+{
+  "name": "repoListTags",
+  "description": "List a repository's tags",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "owner of the repo"
+      },
+      "repo": {
+        "type": "string",
+        "description": "name of the repo"
+      },
+      "page": {
+        "type": "integer",
+        "description": "page number of results to return (1-based)"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "page size of results, default maximum page size is 50"
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/repos/{owner}/{repo}/tags{?page,limit}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Tag represents a repository tag",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**commit**",
+              {
+                "$ul": [
+                  "**created**",
+                  "**sha**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**id**",
+            "**message**",
+            "**name**",
+            "**tarball_url**",
+            "**zipball_url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

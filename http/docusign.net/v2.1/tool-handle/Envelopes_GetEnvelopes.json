@@ -1,0 +1,206 @@
+{
+  "name": "Envelopes_GetEnvelopes",
+  "description": "This method lets you\n[search for envelopes](/docs/esign-rest-api/esign101/concepts/envelopes/)\nin your accounts.\nA large set of filters let you narrow the scope of your search\nby date,\nby envelope ID,\nor by status codes.\nYour request must include one or more of the following parameters:\n\n* `from_date`\n* `envelope_ids`\n* `transaction_ids`\n\n\nTo avoid unnecessary database queries, the DocuSign\nsignature platform first checks requests to ensure that the\nfilter set supplied does not result in a zero-size response\nbefore querying the database.\n\nFor example, for a request with a `from_to_status` of\n`delivered` and a current `status` of `created,sent`,\nDocuSign will always return an empty list.\nThis is because the request translates to: find the\nenvelopes that were delivered between the `from_date` and\n`to_date` dates that have a current status of `created` or\n`sent`. Since an envelope that has been delivered can\nnever have a status of `created` or `sent`, a zero-size\nresponse would be generated.\nIn this case, DocuSign does not query the database\nand returns an empty list immediately.\n\nGetting envelope status using `transaction_ids` is useful\nfor offline signing situations where it can be used\ndetermine if an envelope was created or not. It can be used\nfor the cases where a network connection was lost, before\nthe envelope status could be returned.\n\n\nThe following table shows the valid current envelope\nstatuses (`status` parameter) for the different status\nqualifiers (`from_to_status` parameter) in the request. If\nthe status and status qualifiers in the API request do not\ncontain any of the values shown in the Valid Current\nStatuses column, then an empty list is returned.\n\nClient applications should check that the statuses (`status`\nparameter) they are requesting make sense for a given\n`from_to_status` parameter value.\n\n| Status Qualifier<br>(`from_to_status`) | Effective Status Qualifier | Valid Current Statuses                                                      |\n| :------------------------------------- | :------------------------- | :-------------------------------------------------------------------------- |\n| any (changed)                          | StatusChanged              | any, created, sent, delivered, signed, completed, declined, voided, deleted |\n| created                                | Created                    | any, created, sent, delivered, signed, completed, declined, voided, deleted |\n| sent                                   | Sent                       | any, sent, delivered, signed, completed, declined, voided, deleted          |\n| delivered                              | StatusChanged              | any, delivered, signed, completed, declined, voided, deleted                |\n| signed                                 | StatusChanged              | any, signed, completed, declined, voided, deleted                           |\n| completed                              | Completed                  | any, completed, declined, voided, deleted                                   |\n| declined                               | StatusChanged              | any, declined, voided, deleted                                              |\n| timedout<br>always return zero results | StatusChanged              | any, voided, deleted                                                        |\n| voided                                 | Voided                     | any, voided, deleted                                                        |\n| deleted                                | StatusChanged              | any, deleted                                                                |\n\n## Extraneous results\n\nIn some cases, a request for a specific envelope status will\ninclude envelopes with additional statuses. For example, in\na request with a `from_date` of 2017-01-01, a `to_date` of\n2017-01-07 and the status qualifier (`from_to_status`) set\nto `delivered`, the response set might contain envelopes\nthat were created during that time period, but not delivered\nduring the time period. As a workaround, check the envelope\nstatus values in the result set as needed.\n\n\n### Related topics\n\n- [Searching for envelopes](/docs/esign-rest-api/esign101/concepts/envelopes/search/)\n- [How to list envelope status changes](/docs/esign-rest-api/how-to/list-envelope-status-changes/)\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "ac_status": {
+        "type": "string",
+        "description": "Specifies the Authoritative Copy Status for the envelopes. Valid values: Unknown, Original, Transferred, AuthoritativeCopy, AuthoritativeCopyExportPending, AuthoritativeCopyExported, DepositPending, Deposited, DepositedEO, or DepositFailed."
+      },
+      "block": {
+        "type": "string",
+        "description": "Reserved for DocuSign.\n"
+      },
+      "cdse_mode": {
+        "type": "string",
+        "description": "Reserved for DocuSign.\n"
+      },
+      "continuation_token": {
+        "type": "string",
+        "description": "Reserved for DocuSign."
+      },
+      "count": {
+        "type": "string",
+        "description": "The maximum number of results to return.\n\nUse `start_position` to specify the number of results to skip.\n"
+      },
+      "custom_field": {
+        "type": "string",
+        "description": "Optional. Specifies an envelope custom field name and value searched for in the envelopes. Format: `custom_envelope_field_name=desired_value`\n\nExample: If you have an envelope custom field named \"Region\" and you want to search for all envelopes where the value is \"West\" you would use set this parameter to `Region=West`. \n \n"
+      },
+      "email": {
+        "type": "string",
+        "description": "Limit results to envelopes\nsent by the account user\nwith this email address.\n\n`user_name` must be given as well,\nand both `email` and `user_name`\nmust refer to an existing account user.\n"
+      },
+      "envelope_ids": {
+        "type": "string",
+        "description": "Comma separated list of `envelopeId` values."
+      },
+      "exclude": {
+        "type": "string",
+        "description": "Excludes information from the response. Enter  as a comma-separated list (e.g., `folders,powerforms`). Valid values are:\n\n- `recipients`\n- `powerforms`\n- `folders`"
+      },
+      "folder_ids": {
+        "type": "string",
+        "description": "Returns the envelopes from specific folders. Enter as a comma-separated list of either valid folder Guids or the following values: \n\n- `awaiting_my_signature`\n- `completed`\n- `draft`\n- `drafts`\n- `expiring_soon`\n- `inbox`\n- `out_for_signature`\n- `recyclebin`\n- `sentitems`\n- `waiting_for_others`"
+      },
+      "folder_types": {
+        "type": "string",
+        "description": "A comma-separated list of folder types you want to retrieve envelopes from. Valid values are: \n\n- `normal`\n- `inbox`\n- `sentitems`\n- `draft`\n- `templates`"
+      },
+      "from_date": {
+        "type": "string",
+        "description": "Specifies the date and time\nto start looking for status changes.\nThis parameter is required\nunless `envelopeIds` or `transactionIds`\nare set.\n\n\nAlthough you can use any date format\nsupported by the .NET system library's\n[`DateTime.Parse()`][msoft] function,\nDocuSign recommends\nusing [ISO 8601][] format dates\nwith an explicit time zone offset\nIf you do not provide\na time zone offset,\nthe method uses the server's time zone.\n\nFor example, the following dates and times refer to the same instant:\n\n* `2017-05-02T01:44Z`\n* `2017-05-01T21:44-04:00`\n* `2017-05-01T18:44-07:00`\n\n\n[msoft]: https://docs.microsoft.com/en-us/dotnet/api/system.datetime.parse?redirectedfrom=MSDN&view=net-5.0#overloads\n[ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601"
+      },
+      "from_to_status": {
+        "type": "string",
+        "description": "This is the status type checked for in the `from_date`/`to_date` period. If `changed` is specified, then envelopes that changed status during the period are found. If for example, `created` is specified, then envelopes created during the period are found. Default is `changed`. \n\nPossible values are: Voided, Changed, Created, Deleted, Sent, Delivered, Signed, Completed, Declined, TimedOut and Processing."
+      },
+      "include": {
+        "type": "string",
+        "description": "Specifies additional information to return  about the envelopes.\nUse a comma-separated list, such as `folders, recipients` to specify information.\nValid values are:\n\n- `custom_fields`: The custom fields associated with the envelope.\n- `documents`: The documents associated with the envelope.\n- `attachments`: The attachments associated with the envelope.\n- `extensions`: Information about the email settings associated with the envelope.\n- `folders`: The folders where the envelope exists.\n- `recipients`: The recipients associated with the envelope.\n- `powerform`: The PowerForms associated with the envelope.\n- `payment_tabs`: The payment tabs associated with the envelope.\n"
+      },
+      "include_purge_information": {
+        "type": "string",
+        "description": "When **true,** information about envelopes that have been deleted is included in the response."
+      },
+      "intersecting_folder_ids": {
+        "type": "string",
+        "description": "A comma-separated list of folders that you want want to get envelopes from. Valid values are: \n\n- `normal`\n- `inbox`\n- `sentitems`\n- `draft`\n- `templates`"
+      },
+      "last_queried_date": {
+        "type": "string",
+        "description": "Returns envelopes that were modified prior to the specified date and time. \n\nExample: `2020-05-09T21:56:12.2500000Z`"
+      },
+      "order": {
+        "type": "string",
+        "description": "Returns envelopes in either ascending (`asc`) or descending (`desc`) order."
+      },
+      "order_by": {
+        "type": "string",
+        "description": "Sorts results according to a specific property. Valid values are:\n\n- `last_modified`\n- `action_required`\n- `created`\n- `completed`\n- `envelope_name`\n- `expire`\n- `sent`\n- `signer_list`\n- `status`\n- `subject`\n- `user_name`\n- `status_changed`\n- `last_modified`"
+      },
+      "powerformids": {
+        "type": "string",
+        "description": "A comma-separated list of `PowerFormId` values."
+      },
+      "query_budget": {
+        "type": "string",
+        "description": "The time in seconds that the query should run before returning data."
+      },
+      "requester_date_format": {
+        "type": "string",
+        "description": ""
+      },
+      "search_text": {
+        "type": "string",
+        "description": "Free text search criteria that you can use to filter the list of envelopes that is returned."
+      },
+      "start_position": {
+        "type": "string",
+        "description": "The zero-based index of the\nresult from which to start returning results.\n\nUse with `count` to limit the number\nof results.\n\nThe default value is `0`.\n"
+      },
+      "status": {
+        "type": "string",
+        "description": "A comma-separated list of current envelope statuses to included in the response. Possible values are:\n\n* `completed`\n* `created`\n* `declined`\n* `deleted`\n* `delivered`\n* `processing`\n* `sent`\n* `signed`\n* `timedout`\n* `voided`\n\nThe `any` value is equivalent to any status.\n"
+      },
+      "to_date": {
+        "type": "string",
+        "description": "Specifies the date and time\nto stop looking for status changes.\nThe default is the current date and time.\n\nAlthough you can use any date format\nsupported by the .NET system library's\n[`DateTime.Parse()`][msoft] function,\nDocuSign recommends\nusing [ISO 8601][] format dates\nwith an explicit time zone offset\nIf you do not provide\na time zone offset,\nthe method uses the server's time zone.\n\nFor example, the following dates and times refer to the same instant:\n\n* `2017-05-02T01:44Z`\n* `2017-05-01T21:44-04:00`\n* `2017-05-01T18:44-07:00`\n\n\n[msoft]: https://docs.microsoft.com/en-us/dotnet/api/system.datetime.parse?redirectedfrom=MSDN&view=net-5.0#overloads\n[ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601\n"
+      },
+      "transaction_ids": {
+        "type": "string",
+        "description": "If included in the query string, this is a comma separated list of envelope `transactionId`s. \n\nIf included in the `request_body`, this is a list of envelope `transactionId`s. \n\n###### Note: `transactionId`s are only valid in the DocuSign system for seven days.\n"
+      },
+      "user_filter": {
+        "type": "string",
+        "description": "Returns envelopes where the current user is the recipient, the sender, or the recipient only. (For example, `user_filter=sender`.) Valid values are:\n\n- `sender`\n- `recipient`\n- `recipient_only`"
+      },
+      "user_id": {
+        "type": "string",
+        "description": "The ID of the user who created the envelopes to be retrieved. Note that an account can have multiple users, and any user with account access can retrieve envelopes by user_id from the account."
+      },
+      "user_name": {
+        "type": "string",
+        "description": "Limit results to envelopes\nsent by the account user\nwith this user name.\n\n`email` must be given as well,\nand both `email` and `user_name`\nmust refer to an existing account user.\n"
+      }
+    },
+    "required": [
+      "accountId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes{?ac_status,block,cdse_mode,continuation_token,count,custom_field,email,envelope_ids,exclude,folder_ids,folder_types,from_date,from_to_status,include,include_purge_information,intersecting_folder_ids,last_queried_date,order,order_by,powerformids,query_budget,requester_date_format,search_text,start_position,status,to_date,transaction_ids,user_filter,user_id,user_name}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Result set for the Envelopes: listStatusChanges method",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**continuationToken**: Reserved for DocuSign.",
+            "**endPosition**: The last index position in the result set. ",
+            "**envelopeTransactionStatuses**: Array of envelope statuses and transaction IDs in the result set.",
+            "**envelopes**: Array of envelope information.",
+            "**folders**: A list of folder objects.",
+            "**lastQueriedDateTime**: The last time that a query was performed.",
+            "**nextUri**: The URI for the next chunk of records based on the search request. It is `null` if this is the last set of results for the search. ",
+            "**previousUri**: The URI for the prior chunk of records based on the search request. It is `null` if this is the first set of results for the search. ",
+            "**resultSetSize**: The number of results in this response. Because you can filter which entries are included in the response, this value is always less than or equal to the `totalSetSize`.",
+            "**startPosition**: The starting index position of the current result set.",
+            "**totalSetSize**: The total number of items in the result set. This value is always greater than or equal to the value of `resultSetSize`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

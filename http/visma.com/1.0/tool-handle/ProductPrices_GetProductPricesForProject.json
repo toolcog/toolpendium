@@ -1,0 +1,199 @@
+{
+  "name": "ProductPrices_GetProductPricesForProject",
+  "description": "Get all the productPrices for a project.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectGuid": {
+        "type": "string",
+        "description": "ID of the project."
+      },
+      "fromPricelistOnly": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true return only prices from the price list, if false also returns prices from the products. Default is false."
+      },
+      "firstRow": {
+        "default": 0,
+        "format": "int32",
+        "nullable": true,
+        "type": "integer",
+        "description": "Optional: first row to fetch. Default 0 = first row."
+      },
+      "rowCount": {
+        "format": "int32",
+        "nullable": true,
+        "type": "integer",
+        "description": "Optional: How many rows to fetch, Default 20, maximum 100."
+      },
+      "textToSearch": {
+        "default": "",
+        "nullable": true,
+        "type": "string",
+        "description": "Optional: Text to search from Product name."
+      },
+      "calculateRowCount": {
+        "default": false,
+        "type": "boolean",
+        "description": "Optional: Calculate the number of total rows. Default false = total row count is returned as zero."
+      },
+      "isAvailable": {
+        "nullable": true,
+        "type": "boolean",
+        "description": "Optional: If true, returns only prices that are available for the project, false returns price that are not available. Default all."
+      },
+      "productCode": {
+        "default": "",
+        "nullable": true,
+        "type": "string",
+        "description": "Optional: Absolute search for products with specified product code."
+      },
+      "productGuids": {
+        "items": {
+          "type": "string"
+        },
+        "nullable": true,
+        "type": "array",
+        "description": "Optional: Search all product price(s) by products guid(s)."
+      },
+      "isVolumePriced": {
+        "nullable": true,
+        "type": "boolean",
+        "description": "Optional: If true, return only volume priced products. If false, return all non volume priced products. Default is null, which means return all products."
+      },
+      "productCategoryGuids": {
+        "items": {
+          "type": "string"
+        },
+        "nullable": true,
+        "type": "array",
+        "description": "Optional: Search product prices according to product category / categories by product category guid(s)."
+      },
+      "productTypes": {
+        "items": {
+          "$ref": "#/$defs/ProductType"
+        },
+        "nullable": true,
+        "type": "array",
+        "description": "Optional: Search product prices according to product type / types."
+      }
+    },
+    "required": [
+      "projectGuid"
+    ],
+    "$defs": {
+      "ProductType": {
+        "description": "",
+        "enum": [
+          "FixedFees",
+          "Materials",
+          "Subcontracting"
+        ],
+        "type": "string",
+        "x-enumNames": [
+          "OwnWork",
+          "Products",
+          "Subcontracting"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.severa.visma.com/rest-api/v1/projects/{projectGuid}/productprices{?fromPricelistOnly,firstRow,rowCount,textToSearch,calculateRowCount,isAvailable,productCode,productGuids,isVolumePriced,productCategoryGuids,productTypes}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**isAvailable**",
+            "**isVolumePriced**",
+            "**prices**",
+            [
+              "**product**",
+              {
+                "$ul": [
+                  "**guid**",
+                  "**name**",
+                  [
+                    "**productCategory**",
+                    {
+                      "$ul": [
+                        "**guid**",
+                        "**name**"
+                      ]
+                    }
+                  ],
+                  "**productCode**",
+                  "**productType**: "
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**details**",
+                  "**httpStatusCode**",
+                  "**stack**",
+                  "**type**: "
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

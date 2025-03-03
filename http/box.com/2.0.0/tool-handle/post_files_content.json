@@ -1,0 +1,233 @@
+{
+  "name": "post_files_content",
+  "description": "Uploads a small file to Box. For file sizes over 50MB we recommend\nusing the Chunk Upload APIs.\n\n# Request body order\n\nThe `attributes` part of the body must come **before** the\n`file` part. Requests that do not follow this format when\nuploading the file will receive a HTTP `400` error with a\n`metadata_after_file_contents` error code.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma-separated list of attributes to include in the\nresponse. This can be used to request fields that are\nnot normally returned in a standard response.\n\nBe aware that specifying this parameter will have the\neffect that none of the standard fields are returned in\nthe response unless explicitly specified, instead only\nfields for the mini representation are returned, additional\nto the fields requested."
+      },
+      "content-md5": {
+        "type": "string",
+        "description": "An optional header containing the SHA1 hash of the file to\nensure that the file was not corrupted in transit."
+      },
+      "body": {
+        "properties": {
+          "attributes": {
+            "description": "The additional attributes of the file being uploaded. Mainly the\nname and the parent folder. These attributes are part of the multi\npart request body and are in JSON format.\n\n<Message warning>\n\n  The `attributes` part of the body must come **before** the\n  `file` part. Requests that do not follow this format when\n  uploading the file will receive a HTTP `400` error with a\n  `metadata_after_file_contents` error code.\n\n</Message>",
+            "properties": {
+              "content_created_at": {
+                "description": "Defines the time the file was originally created at.\n\nIf not set, the upload time will be used.",
+                "example": "2012-12-12T10:53:43-08:00",
+                "format": "date-time",
+                "type": "string"
+              },
+              "content_modified_at": {
+                "description": "Defines the time the file was last modified at.\n\nIf not set, the upload time will be used.",
+                "example": "2012-12-12T10:53:43-08:00",
+                "format": "date-time",
+                "type": "string"
+              },
+              "name": {
+                "description": "The name of the file",
+                "example": "Photo.png",
+                "type": "string"
+              },
+              "parent": {
+                "description": "The parent folder to upload the file to",
+                "properties": {
+                  "id": {
+                    "description": "The id of the parent folder. Use\n`0` for the user's root folder.",
+                    "example": "124132",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "name",
+              "parent"
+            ],
+            "type": "object"
+          },
+          "file": {
+            "description": "The content of the file to upload to Box.\n\n<Message warning>\n\n  The `attributes` part of the body must come **before** the\n  `file` part. Requests that do not follow this format when\n  uploading the file will receive a HTTP `400` error with a\n  `metadata_after_file_contents` error code.\n\n</Message>",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attributes",
+          "file"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://upload.box.com/api/2.0/files/content{?fields}"
+    },
+    "headers": {
+      "content-md5": {
+        "$": "content-md5"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Files"
+        },
+        "A list of files",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**entries**: A list of files",
+            "**total_count**: The number of files."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

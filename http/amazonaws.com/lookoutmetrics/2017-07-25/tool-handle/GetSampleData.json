@@ -1,0 +1,388 @@
+{
+  "name": "GetSampleData",
+  "description": "Returns a selection of sample records from an Amazon S3 datasource.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "S3SourceConfig": {
+            "description": "Contains information about the source configuration in Amazon S3.",
+            "type": "object",
+            "properties": {
+              "RoleArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Arn"
+                  },
+                  {
+                    "description": "The Amazon Resource Name (ARN) of the role."
+                  }
+                ]
+              },
+              "TemplatedPathList": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TemplatedPathList"
+                  },
+                  {
+                    "description": "An array of strings containing the list of templated paths."
+                  }
+                ]
+              },
+              "HistoricalDataPathList": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HistoricalDataPathList"
+                  },
+                  {
+                    "description": "An array of strings containing the historical set of data paths."
+                  }
+                ]
+              },
+              "FileFormatDescriptor": {
+                "$ref": "#/$defs/FileFormatDescriptor"
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:([a-z\\d-]+):.*:.*:.*:.+",
+        "maxLength": 256
+      },
+      "TemplatedPathList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/TemplatedPath"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "TemplatedPath": {
+        "type": "string",
+        "pattern": "^s3://[a-zA-Z0-9_\\-\\/ {}=]+$",
+        "maxLength": 1024
+      },
+      "HistoricalDataPathList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HistoricalDataPath"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "HistoricalDataPath": {
+        "type": "string",
+        "pattern": "^s3://[a-z0-9].+$",
+        "maxLength": 1024
+      },
+      "FileFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "CsvFormatDescriptor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CsvFormatDescriptor"
+              },
+              {
+                "description": "Contains information about how a source CSV data file should be analyzed."
+              }
+            ]
+          },
+          "JsonFormatDescriptor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonFormatDescriptor"
+              },
+              {
+                "description": "Contains information about how a source JSON data file should be analyzed."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about a source file's formatting."
+      },
+      "CsvFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "FileCompression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CSVFileCompression"
+              },
+              {
+                "description": "The level of compression of the source CSV file."
+              }
+            ]
+          },
+          "Charset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Charset"
+              },
+              {
+                "description": "The character set in which the source CSV file is written."
+              }
+            ]
+          },
+          "ContainsHeader": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Whether or not the source CSV file contains a header."
+              }
+            ]
+          },
+          "Delimiter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Delimiter"
+              },
+              {
+                "description": "The character used to delimit the source CSV file."
+              }
+            ]
+          },
+          "HeaderList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderList"
+              },
+              {
+                "description": "A list of the source CSV file's headers, if any."
+              }
+            ]
+          },
+          "QuoteSymbol": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QuoteSymbol"
+              },
+              {
+                "description": "The character used as a quote character."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about how a source CSV data file should be analyzed."
+      },
+      "CSVFileCompression": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "GZIP"
+        ]
+      },
+      "Charset": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+        "maxLength": 63
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "Delimiter": {
+        "type": "string",
+        "pattern": "[^\\r\\n]",
+        "maxLength": 1
+      },
+      "HeaderList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ColumnName"
+        }
+      },
+      "ColumnName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "QuoteSymbol": {
+        "type": "string",
+        "pattern": "[^\\r\\n]|^$",
+        "maxLength": 1
+      },
+      "JsonFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "FileCompression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonFileCompression"
+              },
+              {
+                "description": "The level of compression of the source CSV file."
+              }
+            ]
+          },
+          "Charset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Charset"
+              },
+              {
+                "description": "The character set in which the source JSON file is written."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about how a source JSON data file should be analyzed."
+      },
+      "JsonFileCompression": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "GZIP"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://lookoutmetrics.us-east-1.amazonaws.com/GetSampleData"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**HeaderValues**",
+            "**SampleRows**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

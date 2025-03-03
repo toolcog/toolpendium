@@ -1,0 +1,1352 @@
+{
+  "name": "post-legalEntities",
+  "description": "Creates a legal entity. \n\nThis resource contains information about the user that will be onboarded in your platform. Adyen uses this information to perform verification checks as required by payment industry regulations. Adyen informs you of the verification results through webhooks or API responses. \n\n>If you are using hosted onboarding and just beginning your integration, use v3 for your API requests. Otherwise, use v2.\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "x-requested-verification-code": {
+        "type": "string",
+        "description": "Use a suberror code as your requested verification code. You can include one code at a time in your request header. Requested verification codes can only be used in your test environment."
+      },
+      "body": {
+        "$ref": "#/$defs/LegalEntityInfoRequiredType"
+      }
+    },
+    "$defs": {
+      "LegalEntityInfoRequiredType": {
+        "properties": {
+          "capabilities": {
+            "additionalProperties": {
+              "$ref": "#/$defs/LegalEntityCapability"
+            },
+            "description": "Contains key-value pairs that specify the actions that the legal entity can do in your platform.The key is a capability required for your integration. For example, **issueCard** for Issuing.The value is an object containing the settings for the capability.",
+            "readOnly": true,
+            "type": "object"
+          },
+          "entityAssociations": {
+            "description": "List of legal entities associated with the current legal entity.\nFor example, ultimate beneficial owners associated with an organization through ownership or control, or as signatories.",
+            "items": {
+              "$ref": "#/$defs/LegalEntityAssociation"
+            },
+            "type": "array"
+          },
+          "individual": {
+            "$ref": "#/$defs/Individual"
+          },
+          "organization": {
+            "$ref": "#/$defs/Organization"
+          },
+          "reference": {
+            "description": "Your reference for the legal entity, maximum 150 characters.",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "soleProprietorship": {
+            "$ref": "#/$defs/SoleProprietorship"
+          },
+          "trust": {
+            "$ref": "#/$defs/Trust"
+          },
+          "type": {
+            "description": "The type of legal entity.\n\n Possible values: **individual**, **organization**, **soleProprietorship**, or **trust**.",
+            "enum": [
+              "individual",
+              "organization",
+              "soleProprietorship",
+              "trust",
+              "unincorporatedPartnership"
+            ],
+            "type": "string"
+          },
+          "unincorporatedPartnership": {
+            "$ref": "#/$defs/UnincorporatedPartnership"
+          },
+          "verificationPlan": {
+            "description": "A key-value pair that specifies the [verification process](https://docs.adyen.com/marketplaces-and-platforms/collect-verification-details/) for a legal entity. Set to **upfront** for [upfront verification](https://docs.adyen.com/marketplaces-and-platforms/collect-verification-details#upfront).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "LegalEntityCapability": {
+        "properties": {
+          "allowed": {
+            "description": "Indicates whether the capability is allowed. Adyen sets this to **true** if the verification is successful.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "allowedLevel": {
+            "description": "The capability level that is allowed for the legal entity.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "allowedSettings": {
+            "$ref": "#/$defs/CapabilitySettings"
+          },
+          "requested": {
+            "description": "Indicates whether the capability is requested. To check whether the legal entity is permitted to use the capability, refer to the `allowed` field.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "requestedLevel": {
+            "description": "The requested level of the capability. Some capabilities, such as those used in [card issuing](https://docs.adyen.com/issuing/add-capabilities#capability-levels), have different levels. Levels increase the capability, but also require additional checks and increased monitoring.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "requestedSettings": {
+            "$ref": "#/$defs/CapabilitySettings"
+          },
+          "transferInstruments": {
+            "description": "The capability status of transfer instruments associated with the legal entity.",
+            "items": {
+              "$ref": "#/$defs/SupportingEntityCapability"
+            },
+            "readOnly": true,
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "verificationStatus": {
+            "description": "The status of the verification checks for the capability.\n\nPossible values:\n\n* **pending**: Adyen is running the verification.\n\n* **invalid**: The verification failed. Check if the `errors` array contains more information.\n\n* **valid**: The verification has been successfully completed.\n\n* **rejected**: Adyen has verified the information, but found reasons to not allow the capability.\n",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CapabilitySettings": {
+        "properties": {
+          "amountPerIndustry": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Amount"
+            },
+            "description": "The maximum amount a card holder can spend per industry.",
+            "type": "object"
+          },
+          "authorizedCardUsers": {
+            "description": "The number of card holders who can use the card.",
+            "type": "boolean"
+          },
+          "fundingSource": {
+            "description": "The funding source of the card, for example **debit**.",
+            "items": {
+              "enum": [
+                "credit",
+                "debit",
+                "prepaid"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "interval": {
+            "description": "The period when the rule conditions apply.",
+            "enum": [
+              "daily",
+              "monthly",
+              "weekly"
+            ],
+            "type": "string"
+          },
+          "maxAmount": {
+            "$ref": "#/$defs/Amount"
+          }
+        },
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The type of currency. Must be EUR (or EUR equivalent)",
+            "type": "string"
+          },
+          "value": {
+            "description": "Total value of amount. Must be >= 0",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SupportingEntityCapability": {
+        "properties": {
+          "allowed": {
+            "description": "Indicates whether the capability is allowed for the supporting entity.\n\nIf a capability is allowed for a supporting entity but not for the parent legal entity, this means the legal entity has other supporting entities that failed verification.\n\n**You can use the allowed supporting entity** regardless of the verification status of other supporting entities.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Supporting entity reference ",
+            "readOnly": true,
+            "type": "string"
+          },
+          "requested": {
+            "description": "Indicates whether the supporting entity capability is requested. ",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "verificationStatus": {
+            "description": "The status of the verification checks for the capability of the supporting entity.\n\nPossible values:\n\n* **pending**: Adyen is running the verification.\n\n* **invalid**: The verification failed. Check if the `errors` array contains more information.\n\n* **valid**: The verification has been successfully completed.\n\n* **rejected**: Adyen has verified the information, but found reasons to not allow the capability.\n",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LegalEntityAssociation": {
+        "properties": {
+          "associatorId": {
+            "description": "The unique identifier of another legal entity with which the `legalEntityId` is associated. When the `legalEntityId` is associated to legal entities other than the current one, the response returns all the associations.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "entityType": {
+            "description": "The legal entity type of associated legal entity.\n\nFor example, **organization**, **soleProprietorship** or **individual**.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "jobTitle": {
+            "description": "The individual's job title if the `type` is **uboThroughControl** or **signatory**.",
+            "type": "string"
+          },
+          "legalEntityId": {
+            "description": "The unique identifier of the associated [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities#responses-200-id).",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the associated [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities#responses-200-id).\n\n- For **individual**, `name.firstName` and `name.lastName`.\n- For **organization**, `legalName`.\n- For **soleProprietorship**, `name`.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "settlorExemptionReason": {
+            "description": "Defines the Kyc Exemption Reason for a Settlor associated with a trust.\n\nFor example, **professionalServiceProvider**, **deceased**, or **contributionBelowThreshold**.",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "type": {
+            "description": "Defines the relationship of the legal entity to the current legal entity.\n\nPossible values for organizations: **uboThroughOwnership**, **uboThroughControl**, **director**, **signatory**, or **ultimateParentCompany**.\n\nPossible values for sole proprietorships: **soleProprietorship**.\n\nPossible value for trusts: **trust**\n\nPossible values for trust members: **definedBeneficiary**, **protector**, **secondaryTrustee**, **settlor**, **uboThroughControl**, or **uboThroughOwnership**.",
+            "enum": [
+              "definedBeneficiary",
+              "director",
+              "pciSignatory",
+              "protector",
+              "secondaryTrustee",
+              "settlor",
+              "signatory",
+              "soleProprietorship",
+              "trust",
+              "trustOwnership",
+              "uboThroughControl",
+              "uboThroughOwnership",
+              "ultimateParentCompany",
+              "undefinedBeneficiary"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "legalEntityId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "Individual": {
+        "properties": {
+          "birthData": {
+            "$ref": "#/$defs/BirthData"
+          },
+          "email": {
+            "description": "The email address of the legal entity.",
+            "type": "string"
+          },
+          "identificationData": {
+            "$ref": "#/$defs/IdentificationData"
+          },
+          "name": {
+            "$ref": "#/$defs/Name"
+          },
+          "nationality": {
+            "description": "The individual's nationality.",
+            "type": "string"
+          },
+          "phone": {
+            "$ref": "#/$defs/PhoneNumber"
+          },
+          "residentialAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "taxInformation": {
+            "description": "The tax information of the individual.",
+            "items": {
+              "$ref": "#/$defs/TaxInformation"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "webData": {
+            "$ref": "#/$defs/WebData"
+          }
+        },
+        "required": [
+          "name",
+          "residentialAddress"
+        ],
+        "type": "object"
+      },
+      "BirthData": {
+        "properties": {
+          "dateOfBirth": {
+            "description": "The individual's date of birth, in YYYY-MM-DD format.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IdentificationData": {
+        "properties": {
+          "cardNumber": {
+            "description": "The card number of the document that was issued (AU only).",
+            "type": "string"
+          },
+          "expiryDate": {
+            "description": "The expiry date of the document, in YYYY-MM-DD format.",
+            "type": "string"
+          },
+          "issuerCountry": {
+            "deprecated": true,
+            "description": "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code where the document was issued. For example, **US**.",
+            "type": "string",
+            "x-deprecatedInVersion": "1"
+          },
+          "issuerState": {
+            "description": "The state or province where the document was issued (AU only).",
+            "type": "string"
+          },
+          "nationalIdExempt": {
+            "description": "Applies only to individuals in the US. Set to **true** if the individual does not have an SSN. To verify their identity, Adyen will require them to upload an ID document.",
+            "type": "boolean"
+          },
+          "number": {
+            "description": "The number in the document.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of identity data. For **individual**, the `type` value is **nationalIdNumber**.",
+            "enum": [
+              "nationalIdNumber"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "Name": {
+        "properties": {
+          "firstName": {
+            "description": "The individual's first name.",
+            "type": "string"
+          },
+          "infix": {
+            "description": "The infix in the individual's name, if any.",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The individual's last name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object"
+      },
+      "PhoneNumber": {
+        "properties": {
+          "number": {
+            "description": "The full phone number, including the country code. For example, **+3112345678**.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of phone number.\n Possible values: **mobile**, **landline**, **sip**, **fax.** ",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "type": "object"
+      },
+      "Address": {
+        "properties": {
+          "city": {
+            "description": "The name of the city. Required if `stateOrProvince` is provided.\n\nIf you specify the city, you must also send `postalCode` and `street`.",
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.\n\nIf you specify the state or province, you must also send `city`, `postalCode`, and `street`.",
+            "type": "string"
+          },
+          "street": {
+            "description": "The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+            "type": "string"
+          },
+          "street2": {
+            "description": "The apartment, unit, or suite number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "type": "object"
+      },
+      "TaxInformation": {
+        "properties": {
+          "country": {
+            "description": "The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "number": {
+            "description": "The tax ID number (TIN) of the organization or individual.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The TIN type depending on the country where it was issued. Provide only for countries that have multiple tax IDs, such as Sweden, the UK, or the US. For example, provide **SSN**, **EIN**, or **ITIN** for the US.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebData": {
+        "properties": {
+          "webAddress": {
+            "description": "The URL of the website or the app store URL.",
+            "type": "string"
+          },
+          "webAddressId": {
+            "description": "The unique identifier of the web address.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Organization": {
+        "properties": {
+          "dateOfIncorporation": {
+            "description": "The date when the organization was incorporated in YYYY-MM-DD format.",
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "description": {
+            "description": "Your description for the organization.",
+            "type": "string"
+          },
+          "doingBusinessAs": {
+            "description": "The organization's trading name, if different from the registered legal name.",
+            "type": "string"
+          },
+          "email": {
+            "description": "The email address of the legal entity.",
+            "type": "string"
+          },
+          "legalName": {
+            "description": "The organization's legal name.",
+            "type": "string"
+          },
+          "phone": {
+            "$ref": "#/$defs/PhoneNumber"
+          },
+          "principalPlaceOfBusiness": {
+            "$ref": "#/$defs/Address"
+          },
+          "registeredAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "registrationNumber": {
+            "description": "The organization's registration number.",
+            "type": "string"
+          },
+          "stockData": {
+            "$ref": "#/$defs/StockData"
+          },
+          "taxInformation": {
+            "description": "The tax information of the organization.",
+            "items": {
+              "$ref": "#/$defs/TaxInformation"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "taxReportingClassification": {
+            "$ref": "#/$defs/TaxReportingClassification"
+          },
+          "type": {
+            "description": "Type of organization.\n\nPossible values: **associationIncorporated**, **governmentalOrganization**, **listedPublicCompany**, **nonProfit**, **partnershipIncorporated**, **privateCompany**.",
+            "enum": [
+              "associationIncorporated",
+              "governmentalOrganization",
+              "listedPublicCompany",
+              "nonProfit",
+              "partnershipIncorporated",
+              "privateCompany"
+            ],
+            "type": "string"
+          },
+          "vatAbsenceReason": {
+            "description": "The reason the organization has not provided a VAT number.\n\nPossible values: **industryExemption**, **belowTaxThreshold**.",
+            "enum": [
+              "industryExemption",
+              "belowTaxThreshold"
+            ],
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "vatNumber": {
+            "description": "The organization's VAT number.",
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "webData": {
+            "$ref": "#/$defs/WebData"
+          }
+        },
+        "required": [
+          "legalName",
+          "registeredAddress"
+        ],
+        "type": "object"
+      },
+      "StockData": {
+        "properties": {
+          "marketIdentifier": {
+            "description": "The four-digit [Market Identifier Code](https://en.wikipedia.org/wiki/Market_Identifier_Code) of the stock market where the organization's stocks are traded.",
+            "type": "string"
+          },
+          "stockNumber": {
+            "description": "The 12-digit International Securities Identification Number (ISIN) of the company, without dashes (-).",
+            "type": "string"
+          },
+          "tickerSymbol": {
+            "description": "The stock ticker symbol.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TaxReportingClassification": {
+        "properties": {
+          "businessType": {
+            "description": "The organization's business type.\n\nPossible values: **other**, **listedPublicCompany**, **subsidiaryOfListedPublicCompany**, **governmentalOrganization**, **internationalOrganization**, **financialInstitution**.",
+            "enum": [
+              "other",
+              "listedPublicCompany",
+              "subsidiaryOfListedPublicCompany",
+              "governmentalOrganization",
+              "internationalOrganization",
+              "financialInstitution."
+            ],
+            "type": "string"
+          },
+          "financialInstitutionNumber": {
+            "description": "The Global Intermediary Identification Number (GIIN) required for FATCA. Only required if the organization is a US financial institution and the `businessType` is **financialInstitution**.",
+            "type": "string"
+          },
+          "mainSourceOfIncome": {
+            "description": "The organization's main source of income.\n\nPossible values: **businessOperation**, **realEstateSales**, **investmentInterestOrRoyalty**, **propertyRental**, **other**.",
+            "enum": [
+              "businessOperation",
+              "realEstateSales",
+              "investmentInterestOrRoyalty",
+              "propertyRental",
+              "other"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "The tax reporting classification type.\n\nPossible values: **nonFinancialNonReportable**, **financialNonReportable**, **nonFinancialActive**, **nonFinancialPassive**.",
+            "enum": [
+              "nonFinancialNonReportable",
+              "financialNonReportable",
+              "nonFinancialActive",
+              "nonFinancialPassive"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SoleProprietorship": {
+        "properties": {
+          "countryOfGoverningLaw": {
+            "description": "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+            "type": "string"
+          },
+          "dateOfIncorporation": {
+            "description": "The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "description": {
+            "description": "Short description about the Legal Arrangement.",
+            "type": "string",
+            "x-addedInVersion": "3"
+          },
+          "doingBusinessAs": {
+            "description": "The registered name, if different from the `name`.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The legal name.",
+            "type": "string"
+          },
+          "principalPlaceOfBusiness": {
+            "$ref": "#/$defs/Address"
+          },
+          "registeredAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "registrationNumber": {
+            "description": "The registration number.",
+            "type": "string"
+          },
+          "taxInformation": {
+            "description": "The tax information of the entity.",
+            "items": {
+              "$ref": "#/$defs/TaxInformation"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "vatAbsenceReason": {
+            "description": "The reason for not providing a VAT number.\n\nPossible values: **industryExemption**, **belowTaxThreshold**.",
+            "enum": [
+              "industryExemption",
+              "belowTaxThreshold"
+            ],
+            "type": "string"
+          },
+          "vatNumber": {
+            "description": "The VAT number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "countryOfGoverningLaw",
+          "registeredAddress"
+        ],
+        "type": "object"
+      },
+      "Trust": {
+        "properties": {
+          "countryOfGoverningLaw": {
+            "description": "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+            "type": "string"
+          },
+          "dateOfIncorporation": {
+            "description": "The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "description": {
+            "description": "Short description about the trust.",
+            "type": "string",
+            "x-addedInVersion": "3"
+          },
+          "doingBusinessAs": {
+            "description": "The registered name, if different from the `name`.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The legal name.",
+            "type": "string"
+          },
+          "principalPlaceOfBusiness": {
+            "$ref": "#/$defs/Address"
+          },
+          "registeredAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "registrationNumber": {
+            "description": "The registration number.",
+            "type": "string"
+          },
+          "taxInformation": {
+            "description": "The tax information of the entity.",
+            "items": {
+              "$ref": "#/$defs/TaxInformation"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "type": {
+            "description": "Type of trust.\n\nPossible values for Australian trusts: **cashManagementTrust**, **corporateUnitTrust**, **deceasedEstate**, **discretionaryInvestmentTrust**, **discretionaryServicesManagementTrust**, **discretionaryTradingTrust**, **firstHomeSaverAccountsTrust**, **fixedTrust**, **fixedUnitTrust**, **hybridTrust**, **listedPublicUnitTrust**, **otherTrust**, **pooledSuperannuationTrust**, **publicTradingTrust**, **unlistedPublicUnitTrust**.",
+            "enum": [
+              "cashManagementTrust",
+              "corporateUnitTrust",
+              "deceasedEstate",
+              "discretionaryInvestmentTrust",
+              "discretionaryServicesManagementTrust",
+              "discretionaryTradingTrust",
+              "firstHomeSaverAccountsTrust",
+              "fixedTrust",
+              "fixedUnitTrust",
+              "hybridTrust",
+              "listedPublicUnitTrust",
+              "otherTrust",
+              "pooledSuperannuationTrust",
+              "publicTradingTrust",
+              "unlistedPublicUnitTrust"
+            ],
+            "type": "string"
+          },
+          "undefinedBeneficiaryInfo": {
+            "description": "The undefined beneficiary information of the entity.",
+            "items": {
+              "$ref": "#/$defs/UndefinedBeneficiary"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "vatAbsenceReason": {
+            "description": "The reason for not providing a VAT number.\n\nPossible values: **industryExemption**, **belowTaxThreshold**.",
+            "enum": [
+              "industryExemption",
+              "belowTaxThreshold"
+            ],
+            "type": "string"
+          },
+          "vatNumber": {
+            "description": "The VAT number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "countryOfGoverningLaw",
+          "registeredAddress",
+          "type"
+        ],
+        "type": "object"
+      },
+      "UndefinedBeneficiary": {
+        "properties": {
+          "description": {
+            "description": "The details of the undefined beneficiary.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "The reference of the undefined beneficiary.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UnincorporatedPartnership": {
+        "properties": {
+          "countryOfGoverningLaw": {
+            "description": "The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+            "type": "string"
+          },
+          "dateOfIncorporation": {
+            "description": "The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+            "type": "string",
+            "x-addedInVersion": "2"
+          },
+          "description": {
+            "description": "Short description about the Legal Arrangement.",
+            "type": "string",
+            "x-addedInVersion": "3"
+          },
+          "doingBusinessAs": {
+            "description": "The registered name, if different from the `name`.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The legal name.",
+            "type": "string"
+          },
+          "principalPlaceOfBusiness": {
+            "$ref": "#/$defs/Address"
+          },
+          "registeredAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "registrationNumber": {
+            "description": "The registration number.",
+            "type": "string"
+          },
+          "taxInformation": {
+            "description": "The tax information of the entity.",
+            "items": {
+              "$ref": "#/$defs/TaxInformation"
+            },
+            "type": "array",
+            "x-addedInVersion": "2"
+          },
+          "type": {
+            "description": "Type of Partnership.\n\nPossible values:\n*  **limitedPartnership**\n*  **generalPartnership**\n*  **familyPartnership**\n*  **commercialPartnership**\n*  **publicPartnership**\n*  **otherPartnership**\n*  **gbr**\n*  **gmbh**\n*  **kgaa**\n*  **cv**\n*  **vof**\n*  **maatschap**\n*  **privateFundLimitedPartnership**\n*  **businessTrustEntity**\n*  **businessPartnership**\n*  **limitedLiabilityPartnership**\n*  **eg**\n*  **cooperative**\n*  **vos**\n*  **comunidadDeBienes**\n*  **herenciaYacente**\n*  **comunidadDePropietarios**\n*  **sep**\n*  **sca**\n*  **bt**\n*  **kkt**\n*  **scs**\n*  **snc**\n\n",
+            "enum": [
+              "limitedPartnership",
+              "generalPartnership",
+              "familyPartnership",
+              "commercialPartnership",
+              "publicPartnership",
+              "otherPartnership",
+              "gbr",
+              "gmbh",
+              "kgaa",
+              "cv",
+              "vof",
+              "maatschap",
+              "privateFundLimitedPartnership",
+              "businessTrustEntity",
+              "businessPartnership",
+              "limitedLiabilityPartnership",
+              "eg",
+              "cooperative",
+              "vos",
+              "comunidadDeBienes",
+              "herenciaYacente",
+              "comunidadDePropietarios",
+              "sep",
+              "sca",
+              "bt",
+              "kkt",
+              "scs",
+              "snc"
+            ],
+            "type": "string"
+          },
+          "vatAbsenceReason": {
+            "description": "The reason for not providing a VAT number.\n\nPossible values: **industryExemption**, **belowTaxThreshold**.",
+            "enum": [
+              "industryExemption",
+              "belowTaxThreshold"
+            ],
+            "type": "string"
+          },
+          "vatNumber": {
+            "description": "The VAT number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "countryOfGoverningLaw",
+          "registeredAddress",
+          "type"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://kyc-test.adyen.com/lem/v3/legalEntities"
+    },
+    "headers": {
+      "x-requested-verification-code": {
+        "$": "x-requested-verification-code"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**capabilities**: Contains key-value pairs that specify the actions that the legal entity can do in your platform.The key is a capability required for your integration. For example, **issueCard** for Issuing.The value is an object containing the settings for the capability.",
+            "**documentDetails**: List of documents uploaded for the legal entity.",
+            "**documents**: List of documents uploaded for the legal entity.",
+            "**entityAssociations**: List of legal entities associated with the current legal entity.",
+            "**id**: The unique identifier of the legal entity.",
+            [
+              "**individual**",
+              {
+                "$ul": [
+                  [
+                    "**birthData**",
+                    {
+                      "$ul": [
+                        "**dateOfBirth**: The individual's date of birth, in YYYY-MM-DD format."
+                      ]
+                    }
+                  ],
+                  "**email**: The email address of the legal entity.",
+                  [
+                    "**identificationData**",
+                    {
+                      "$ul": [
+                        "**cardNumber**: The card number of the document that was issued (AU only).",
+                        "**expiryDate**: The expiry date of the document, in YYYY-MM-DD format.",
+                        "**issuerCountry**: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code where the document was issued. For example, **US**.",
+                        "**issuerState**: The state or province where the document was issued (AU only).",
+                        "**nationalIdExempt**: Applies only to individuals in the US. Set to **true** if the individual does not have an SSN. To verify their identity, Adyen will require them to upload an ID document.",
+                        "**number**: The number in the document.",
+                        "**type**: Type of identity data. For **individual**, the `type` value is **nationalIdNumber**."
+                      ]
+                    }
+                  ],
+                  [
+                    "**name**",
+                    {
+                      "$ul": [
+                        "**firstName**: The individual's first name.",
+                        "**infix**: The infix in the individual's name, if any.",
+                        "**lastName**: The individual's last name."
+                      ]
+                    }
+                  ],
+                  "**nationality**: The individual's nationality.",
+                  [
+                    "**phone**",
+                    {
+                      "$ul": [
+                        "**number**: The full phone number, including the country code. For example, **+3112345678**.",
+                        "**type**: The type of phone number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**residentialAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  "**taxInformation**: The tax information of the individual.",
+                  [
+                    "**webData**",
+                    {
+                      "$ul": [
+                        "**webAddress**: The URL of the website or the app store URL.",
+                        "**webAddressId**: The unique identifier of the web address."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**organization**",
+              {
+                "$ul": [
+                  "**dateOfIncorporation**: The date when the organization was incorporated in YYYY-MM-DD format.",
+                  "**description**: Your description for the organization.",
+                  "**doingBusinessAs**: The organization's trading name, if different from the registered legal name.",
+                  "**email**: The email address of the legal entity.",
+                  "**legalName**: The organization's legal name.",
+                  [
+                    "**phone**",
+                    {
+                      "$ul": [
+                        "**number**: The full phone number, including the country code. For example, **+3112345678**.",
+                        "**type**: The type of phone number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**principalPlaceOfBusiness**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**registeredAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  "**registrationNumber**: The organization's registration number.",
+                  [
+                    "**stockData**",
+                    {
+                      "$ul": [
+                        "**marketIdentifier**: The four-digit [Market Identifier Code](https://en.wikipedia.org/wiki/Market_Identifier_Code) of the stock market where the organization's stocks are traded.",
+                        "**stockNumber**: The 12-digit International Securities Identification Number (ISIN) of the company, without dashes (-).",
+                        "**tickerSymbol**: The stock ticker symbol."
+                      ]
+                    }
+                  ],
+                  "**taxInformation**: The tax information of the organization.",
+                  [
+                    "**taxReportingClassification**",
+                    {
+                      "$ul": [
+                        "**businessType**: The organization's business type.",
+                        "**financialInstitutionNumber**: The Global Intermediary Identification Number (GIIN) required for FATCA. Only required if the organization is a US financial institution and the `businessType` is **financialInstitution**.",
+                        "**mainSourceOfIncome**: The organization's main source of income.",
+                        "**type**: The tax reporting classification type."
+                      ]
+                    }
+                  ],
+                  "**type**: Type of organization.",
+                  "**vatAbsenceReason**: The reason the organization has not provided a VAT number.",
+                  "**vatNumber**: The organization's VAT number.",
+                  [
+                    "**webData**",
+                    {
+                      "$ul": [
+                        "**webAddress**: The URL of the website or the app store URL.",
+                        "**webAddressId**: The unique identifier of the web address."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**problems**: List of verification errors related to capabilities for the legal entity.",
+            "**reference**: Your reference for the legal entity, maximum 150 characters.",
+            [
+              "**soleProprietorship**",
+              {
+                "$ul": [
+                  "**countryOfGoverningLaw**: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+                  "**dateOfIncorporation**: The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+                  "**description**: Short description about the Legal Arrangement.",
+                  "**doingBusinessAs**: The registered name, if different from the `name`.",
+                  "**name**: The legal name.",
+                  [
+                    "**principalPlaceOfBusiness**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**registeredAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  "**registrationNumber**: The registration number.",
+                  "**taxInformation**: The tax information of the entity.",
+                  "**vatAbsenceReason**: The reason for not providing a VAT number.",
+                  "**vatNumber**: The VAT number."
+                ]
+              }
+            ],
+            "**transferInstruments**: List of transfer instruments that the legal entity owns.",
+            [
+              "**trust**",
+              {
+                "$ul": [
+                  "**countryOfGoverningLaw**: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+                  "**dateOfIncorporation**: The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+                  "**description**: Short description about the trust.",
+                  "**doingBusinessAs**: The registered name, if different from the `name`.",
+                  "**name**: The legal name.",
+                  [
+                    "**principalPlaceOfBusiness**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**registeredAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  "**registrationNumber**: The registration number.",
+                  "**taxInformation**: The tax information of the entity.",
+                  "**type**: Type of trust.",
+                  "**undefinedBeneficiaryInfo**: The undefined beneficiary information of the entity.",
+                  "**vatAbsenceReason**: The reason for not providing a VAT number.",
+                  "**vatNumber**: The VAT number."
+                ]
+              }
+            ],
+            "**type**: The type of legal entity.",
+            [
+              "**unincorporatedPartnership**",
+              {
+                "$ul": [
+                  "**countryOfGoverningLaw**: The two-character [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code of the governing country.",
+                  "**dateOfIncorporation**: The date when the legal arrangement was incorporated in YYYY-MM-DD format.",
+                  "**description**: Short description about the Legal Arrangement.",
+                  "**doingBusinessAs**: The registered name, if different from the `name`.",
+                  "**name**: The legal name.",
+                  [
+                    "**principalPlaceOfBusiness**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  [
+                    "**registeredAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if `stateOrProvince` is provided.",
+                        "**country**: The two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code.",
+                        "**postalCode**: Postal code. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**stateOrProvince**: The two-letter ISO 3166-2 state or province code. For example, **CA** in the US.",
+                        "**street**: The name of the street, and the house or building number. Required if `stateOrProvince` and/or `city` is provided.",
+                        "**street2**: The apartment, unit, or suite number."
+                      ]
+                    }
+                  ],
+                  "**registrationNumber**: The registration number.",
+                  "**taxInformation**: The tax information of the entity.",
+                  "**type**: Type of Partnership.",
+                  "**vatAbsenceReason**: The reason for not providing a VAT number.",
+                  "**vatNumber**: The VAT number."
+                ]
+              }
+            ],
+            "**verificationDeadlines**: List of verification deadlines and the capabilities that will be disallowed if verification errors are not resolved.",
+            "**verificationPlan**: A key-value pair that specifies the [verification process](https://docs.adyen.com/marketplaces-and-platforms/collect-verification-details/) for a legal entity. Set to **upfront** for [upfront verification](https://docs.adyen.com/marketplaces-and-platforms/collect-verification-details#upfront)."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

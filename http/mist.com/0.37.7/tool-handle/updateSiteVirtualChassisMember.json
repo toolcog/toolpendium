@@ -1,0 +1,164 @@
+{
+  "name": "updateSiteVirtualChassisMember",
+  "description": "The VC creation and adding member switch API will update the device’s virtual chassis config which is applied after VC is formed to create JUNOS pre-provisioned virtual chassis configuration.\n\n## Change to use preprovisioned VC\nTo switch the VC to use preprovisioned VC, enable preprovisioned in virtual_chassis config. Both vc_role master and backup will be matched to routing-engine role in Junos preprovisioned VC config. Member-id will be determined by the sequence of listed members.\n\nNotice: to configure preprovisioned VC, every member of the VC must be in the inventory.\n\n## Add new members\nFor models (e.g. EX4300 and up) having dedicated VC ports, it is easier to add new member switches into a VC by just connecting cables with the dedicated VC ports. Cloud will detect the new members and update the inventory.\n\nFor EX2300 VC, adding new members requires to follow the procedures below:\n1. Powering on the new member switches and ensuring cables are not connected to any VC ports.\n2. Claim or adopt all new member switches under the VC’s organization Inventory\n3. Assign all new member switches to the same Site as the VC\n4. Invoke vc command to add switches to the VC.\n5. Connect the cables to the VC ports for these switches\n6. After a while, the Org’s Inventory shows this new switches has been added into the VC.\n\n## Removing member switch\nTo remove a member switch from the VC, following the procedures below:\n\n1. Ensuring the VC is connected to the cloud first\n2. Unplug the cable from the VC port of the switch\n3. Waiting for the VC state (vc_state) of this switch is changed to not-present\n4. Invoke update_vc with remove to remove this switch from the VC\n5. The Org’s Inventory shows the switch is removed.\n\nPlease notice that member ID 0 (fpc0) cannot be removed. When a VC has two switches left, unpluging the cable may result in the situation that fpc0 becomes a line card (LC). When this situation is happened, please re-plug in the cable, wait for both switches becoming present (show virtual-chassis) and then removing the cable again.\n\n## Renumber a member switch\nWhen a member switch doesn’t work properly and needed to be replaced, the renumber API could be used. The following two types of renumber are supported:\n\n1. Replace a non-fpc0 member switch\n2. Replace fpc0. When fpc0 is relaced, PAPI device config and JUNOS config will be both updated.\n\nFor renumber to work, the following procedures are needed: \n1. Ensuring the VC is connected to the cloud and the state of the member switch to be replaced must be non present. \n2. Adding the new member switch to the VC \n3. Waiting for the VC state (vc_state) of this VC to be updated to API server \n4. Invoke vc with renumber to replace the new member switch from fpc X to",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "device_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/components/schemas/device_switch_vc",
+        "description": "Request Body"
+      }
+    },
+    "required": [
+      "site_id",
+      "device_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.mist.com/api/v1/sites/{site_id}/devices/{device_id}/vc"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**id**: Virtual Chassis",
+              {
+                "$ul": [
+                  "**member**: Only if `op`==`renumber`",
+                  "**members**",
+                  "**new-member**: Only if `op`==`renumber`",
+                  "**op**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

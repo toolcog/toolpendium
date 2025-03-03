@@ -1,0 +1,132 @@
+{
+  "name": "get-singlesend-stat",
+  "description": "**This endpoint allows you to retrieve stats for an individual Single Send using a Single Send ID.**\n\nMultiple Single Send IDs can be retrieved using the \"Get All Single Sends Stats\" endpoint. Once you have an ID, this endpoint will return detailed stats for the Single Send specified.\n\nYou may constrain the stats returned using the `start_date` and `end_date` query string parameters. You can also use the `group_by` and `aggregated_by` query string parameters to further refine the stats returned.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "aggregated_by": {
+        "default": "total",
+        "enum": [
+          "day",
+          "total"
+        ],
+        "type": "string",
+        "description": "Dictates how the stats are time-sliced. Currently, `\"total\"` and `\"day\"` are supported."
+      },
+      "start_date": {
+        "default": "",
+        "format": "date",
+        "type": "string",
+        "description": "Format: `YYYY-MM-DD`. If this parameter is included, the stats' start date is included in the search."
+      },
+      "end_date": {
+        "default": "",
+        "format": "date",
+        "type": "string",
+        "description": "Format: `YYYY-MM-DD`.If this parameter is included, the stats' end date is included in the search."
+      },
+      "timezone": {
+        "default": "UTC",
+        "type": "string",
+        "description": "[IANA Area/Region](https://en.wikipedia.org/wiki/Tz_database#Names_of_time_zones) string representing the timezone in which the stats are to be presented, e.g., \"America/Chicago\"."
+      },
+      "page_size": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of elements you want returned on each page."
+      },
+      "page_token": {
+        "type": "string",
+        "description": "The stats endpoints are paginated. To get the next page, call the passed `_metadata.next` URL. If `_metadata.prev` doesn't exist, you're at the first page. Similarly, if `_metadata.next` is not present, you're at the last page."
+      },
+      "group_by": {
+        "items": {
+          "enum": [
+            "ab_variation",
+            "ab_phase"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A/B Single Sends have multiple variation IDs and phase IDs. Including these additional fields allows further granularity of stats by these fields."
+      },
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/stats/singlesends/{id}{?aggregated_by,start_date,end_date,timezone,page_size,page_token,group_by}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "singlesends-response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_metadata**",
+              {
+                "$ul": [
+                  "**count**: The number of items in the entire list, i.e., across all pages.",
+                  "**next**: The URL of the next page of results. If this field isn't present, you're at the end of the list.",
+                  "**prev**: The URL of the previous page of results. If this field isn't present, you're at the start of the list.",
+                  "**self**: The URL of the current page of results."
+                ]
+              }
+            ],
+            "**results**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

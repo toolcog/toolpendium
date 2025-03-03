@@ -1,0 +1,78 @@
+{
+  "name": "uploadResumable",
+  "description": "Uses [a resumable protocol](https://github.com/kukhariev/node-uploadx/blob/master/proto.md) to continue, pause or resume the upload of a video",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "upload_id": {
+        "type": "string",
+        "description": "Created session id to proceed with. If you didn't send chunks in the last hour, it is\nnot valid anymore and you need to initialize a new upload.\n"
+      },
+      "Content-Range": {
+        "example": "bytes 0-262143/2469036",
+        "type": "string",
+        "description": "Specifies the bytes in the file that the request is uploading.\n\nFor example, a value of `bytes 0-262143/1000000` shows that the request is sending the first\n262144 bytes (256 x 1024) in a 2,469,036 byte file.\n"
+      },
+      "Content-Length": {
+        "example": 262144,
+        "type": "number",
+        "description": "Size of the chunk that the request is sending.\n\nRemember that larger chunks are more efficient. PeerTube's web client uses chunks varying from\n1048576 bytes (~1MB) and increases or reduces size depending on connection health.\n"
+      }
+    },
+    "required": [
+      "upload_id",
+      "Content-Range",
+      "Content-Length"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://peertube2.cpy.re/api/v1/videos/upload-resumable{?upload_id}"
+    },
+    "headers": {
+      "Content-Range": {
+        "$": "Content-Range"
+      },
+      "Content-Length": {
+        "$": "Content-Length"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**video**",
+              {
+                "$ul": [
+                  "**id**: object id for the video",
+                  "**shortUUID**",
+                  "**uuid**: universal identifier for the video, that can be used across instances"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

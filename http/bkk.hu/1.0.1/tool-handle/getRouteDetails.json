@@ -1,0 +1,167 @@
+{
+  "name": "getRouteDetails",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "routeId": {
+        "type": "string",
+        "description": "A járat ID-ja."
+      },
+      "date": {
+        "type": "string",
+        "description": "Az aktív zavarok lekéréséhez használt dátum. Alapértelmezett értéke az aktuális nap."
+      },
+      "related": {
+        "default": false,
+        "type": "boolean",
+        "description": "Ha igaz, akkor az útvonalhoz tartozó kapcsolódó útvonalak is szerepelnek a válaszban."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "routeId",
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/route-details{?routeId,date,related,appVersion,version,includeReferences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+                  [
+                    "**entry**: A lekért adat.",
+                    {
+                      "$ul": [
+                        "**agencyId**: A járatot üzemeltető szolgáltató azonosítója.",
+                        "**alertIds**: A járaton található aktív zavarok azonosítóinak listája.",
+                        "**bikesAllowed**: Kerékpár szállítása engedélyezett-e a járaton.",
+                        "**color**: A járat színe. Deprecated: használjuk a `style` attribútumot helyette.",
+                        "**description**: A járat neve. Ha egy | szerepel a névben, akkor a végállomásokat választja el amelyek külön sorokban megjeleníthetőek. COMPACT referenciák kérése esetében nincs kitöltve.",
+                        "**iconDisplayText**: A járat ikonjának megjelenítési szövege. Deprecated: használjuk a `style` attribútumot helyette.",
+                        "**iconDisplayType**: A járat ikonjának megjelenítési típusa. Deprecated: használjuk a `style` attribútumot helyette.",
+                        "**id**: A járat azonosítója.",
+                        "**longName**: A járat hosszú neve.",
+                        "**shortName**: A járat rövid neve.",
+                        "**sortOrder**: A járat rendezési sorszáma a többi járathoz viszonyítva.",
+                        [
+                          "**style**: A járat megjelenítési stílusa.",
+                          {
+                            "$ul": [
+                              "**color**: A járat színe.",
+                              [
+                                "**icon**: A járathoz tartozó ikon stílusa.",
+                                {
+                                  "$ul": [
+                                    "**text**: Az ikon felirata.",
+                                    "**textColor**: Az ikon feliratának színe.",
+                                    "**type**: Az ikon típusa."
+                                  ]
+                                }
+                              ],
+                              [
+                                "**stop**: A megálló stílusa.",
+                                {
+                                  "$ul": [
+                                    "**colors**: A megálló stílushoz tartozó színek tömbje.",
+                                    "**image**: A megálló stílus képe.",
+                                    "**type**: A megálló stílus típusa."
+                                  ]
+                                }
+                              ],
+                              [
+                                "**vehicleIcon**: A járathoz tartozó jármű ikon stílus.",
+                                {
+                                  "$ul": [
+                                    "**name**: Az ikon neve."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**textColor**: A járat szövegének színe. Deprecated: használjuk a `style` attribútumot helyette.",
+                        "**type**: A járat típusa.",
+                        "**url**: A járat linkje.",
+                        "**variants**: A járathoz tartozó járat variánsok listája."
+                      ]
+                    }
+                  ],
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

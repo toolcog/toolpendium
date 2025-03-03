@@ -1,0 +1,110 @@
+{
+  "name": "Line_Status",
+  "description": "Gets the line status for given line ids during the provided dates e.g Minor Delays",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma-separated list of line ids e.g. victoria,circle,N133. Max. approx. 20 ids."
+      },
+      "detail": {
+        "type": "boolean",
+        "description": "Include details of the disruptions that are causing the line status including the affected stops and routes"
+      },
+      "startDate": {
+        "type": "string"
+      },
+      "endDate": {
+        "type": "string"
+      },
+      "dateRange.startDate": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "dateRange.endDate": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "StartDate": {
+        "type": "string",
+        "description": "Automatically added"
+      },
+      "EndDate": {
+        "type": "string",
+        "description": "Automatically added"
+      }
+    },
+    "required": [
+      "ids",
+      "startDate",
+      "endDate",
+      "StartDate",
+      "EndDate"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/Line/{ids}/Status/{StartDate}/to/{EndDate}{?detail,startDate,endDate,dateRange.startDate,dateRange.endDate}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**",
+            [
+              "**crowding**",
+              {
+                "$ul": [
+                  "**passengerFlows**: Busiest times at a station (static information)",
+                  "**trainLoadings**: Train Loading on a scale 1-6, 1 being \"Very quiet\" and 6 being \"Exceptionally busy\" (static information)"
+                ]
+              }
+            ],
+            "**disruptions**",
+            "**id**",
+            "**lineStatuses**",
+            "**modeName**",
+            "**modified**",
+            "**name**",
+            "**routeSections**",
+            "**serviceTypes**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

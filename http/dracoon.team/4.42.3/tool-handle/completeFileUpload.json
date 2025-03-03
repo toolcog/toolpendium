@@ -1,0 +1,610 @@
+{
+  "name": "completeFileUpload",
+  "description": "<h3 style='padding: 5px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px; display: table-cell;'>&#128679; Deprecated since v4.9.0</h3>\n\n### Use `uploads` API\n\n### Description:\nFinishes an upload and closes the corresponding upload channel.\n\n### Precondition:\nAn upload channel has been created and data has been transmitted.\n\n### Postcondition:\nThe upload is finished and the temporary file is moved to the productive environment.\n\n### Further Information:\nThe provided file name might be changed in accordance with the resolution strategy:  \n* **autorename**: changes the file name and adds a number to avoid conflicts.\n* **overwrite**: deletes any old file with the same file name.\n* **fail**: returns an error; in this case, another `PUT` request with a different file name may be sent.\n\nPlease ensure that all chunks have been transferred correctly before finishing the upload.  \nDownload share id (if exists) gets changed if:\n- node with the same name exists in the target container\n- `resolutionStrategy` is `overwrite`\n- `keepShareLinks` is `true`\n\n### Node naming convention:\n* Node (room, folder, file) names are limited to **150** characters.\n* Illegal names:  \n`'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9', (and any of those with an extension)`\n* Illegal characters in names:  \n`'\\\\', '<','>', ':', '\\\"', '|', '?', '*', '/', leading '-', trailing '.' `",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "upload_id": {
+        "type": "string",
+        "description": "Upload channel ID"
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      },
+      "body": {
+        "$ref": "#/$defs/CompleteUploadRequest"
+      }
+    },
+    "required": [
+      "upload_id"
+    ],
+    "$defs": {
+      "CompleteUploadRequest": {
+        "description": "The body must be empty if public upload token is used.\n\nThe `resolutionStrategy` in that case will be always `autorename`",
+        "properties": {
+          "fileKey": {
+            "$ref": "#/$defs/FileKey"
+          },
+          "fileName": {
+            "description": "New file name to store with",
+            "type": "string"
+          },
+          "keepShareLinks": {
+            "default": false,
+            "description": "Preserve Download Share Links and point them to the new node.",
+            "type": "boolean"
+          },
+          "resolutionStrategy": {
+            "default": "autorename",
+            "description": "Node conflict resolution strategy:\n\n* `autorename`\n\n* `overwrite`\n\n* `fail`",
+            "enum": [
+              "autorename",
+              "overwrite",
+              "fail"
+            ],
+            "type": "string"
+          },
+          "userFileKeyList": {
+            "$ref": "#/$defs/UserFileKeyList"
+          }
+        },
+        "type": "object"
+      },
+      "FileKey": {
+        "description": "File key information",
+        "properties": {
+          "iv": {
+            "description": "Initial vector",
+            "type": "string"
+          },
+          "key": {
+            "description": "Encryption key",
+            "type": "string"
+          },
+          "tag": {
+            "description": "Authentication tag\n\n(needed with authenticated encryption)",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "iv",
+          "key",
+          "tag",
+          "version"
+        ],
+        "type": "object"
+      },
+      "UserFileKeyList": {
+        "deprecated": true,
+        "description": "Mandatory for encrypted shares",
+        "properties": {
+          "items": {
+            "description": "List of user file keys",
+            "items": {
+              "$ref": "#/$defs/UserFileKey"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UserFileKey": {
+        "description": "User file key",
+        "properties": {
+          "fileKey": {
+            "$ref": "#/$defs/FileKey"
+          },
+          "userId": {
+            "description": "Unique identifier for the user",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "fileKey",
+          "userId"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "/api/v4/nodes/files/uploads/{upload_id}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Node information (Node can be a room, folder or file)",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authParentId**: &#128640; Since v4.15.0",
+            "**branchVersion**: Version of last change in this node or a node further down the tree.",
+            "**children**: &#128679; Deprecated since v4.10.0",
+            "**classification**: Classification ID:",
+            "**cntChildren**: &#128679; Deprecated since v4.11.0",
+            "**cntComments**: Returns the number of comments of this node.",
+            "**cntDeletedVersions**: Number of deleted versions of this file / folder",
+            "**cntDownloadShares**: Returns the number of Download Shares of this node.",
+            "**cntFiles**: &#128640; Since v4.11.0",
+            "**cntFolders**: &#128640; Since v4.11.0",
+            "**cntRooms**: &#128640; Since v4.11.0",
+            "**cntUploadShares**: Returns the number of Upload Shares of this node.",
+            "**createdAt**: Creation date",
+            [
+              "**createdBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ],
+            [
+              "**encryptionInfo**: Encryption states",
+              {
+                "$ul": [
+                  "**dataSpaceKeyState**: DRACOON key state",
+                  "**roomKeyState**: Room key state",
+                  "**userKeyState**: User key state"
+                ]
+              }
+            ],
+            "**expireAt**: Expiration date",
+            "**fileType**: File type / extension (for files only)",
+            "**hasActivitiesLog**: Is activities log active (for rooms only) (default: true)",
+            "**hash**: MD5 hash of file",
+            "**id**: Node ID",
+            "**inheritPermissions**: Inherit permissions from parent room",
+            "**isBrowsable**: &#128640; Since v4.11.0",
+            "**isEncrypted**: Encryption state",
+            "**isFavorite**: Node is marked as favorite (for rooms / folders only)",
+            "**mediaToken**: Media server media token",
+            "**mediaType**: File media type (for files only)",
+            "**name**: Name",
+            "**notes**: User notes",
+            "**parentId**: Parent node ID (room or folder)",
+            "**parentPath**: Parent node path",
+            [
+              "**permissions**: Node permissions",
+              {
+                "$ul": [
+                  "**change**: User / Group may update metadata of nodes: rename files and folders, change classification, etc.",
+                  "**create**: User / Group may upload files, create folders and copy / move files to this room, overwriting is not possible.",
+                  "**delete**: User / Group may overwrite and remove files / folders, move files from this room.",
+                  "**deleteRecycleBin**: User / Group may permanently remove files / folders from the recycle bin.",
+                  "**manage**: User / Group may grant all of the above permissions to other users and groups independently,",
+                  "**manageDownloadShare**: User / Group may create Download Shares for files and containers view all previously created Download Shares in this room.",
+                  "**manageUploadShare**: User / Group may create Upload Shares for containers, view all previously created Upload Shares in this room.",
+                  "**read**: User / Group may see all rooms, files and folders in the room and download everything, copy files from this room.",
+                  "**readRecycleBin**: User / Group may look up files / folders in the recycle bin.",
+                  "**restoreRecycleBin**: User / Group may restore files / folders from recycle bin - room permissions required."
+                ]
+              }
+            ],
+            "**quota**: Quota in byte",
+            "**recycleBinRetentionPeriod**: Retention period for deleted nodes in days",
+            "**referenceId**: &#128640; Since v4.37.0",
+            "**size**: Node size in byte",
+            "**timestampCreation**: &#128640; Since v4.22.0",
+            "**timestampModification**: &#128640; Since v4.22.0",
+            "**type**: Node type",
+            "**updatedAt**: Modification date",
+            [
+              "**updatedBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Node information (Node can be a room, folder or file)",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authParentId**: &#128640; Since v4.15.0",
+            "**branchVersion**: Version of last change in this node or a node further down the tree.",
+            "**children**: &#128679; Deprecated since v4.10.0",
+            "**classification**: Classification ID:",
+            "**cntChildren**: &#128679; Deprecated since v4.11.0",
+            "**cntComments**: Returns the number of comments of this node.",
+            "**cntDeletedVersions**: Number of deleted versions of this file / folder",
+            "**cntDownloadShares**: Returns the number of Download Shares of this node.",
+            "**cntFiles**: &#128640; Since v4.11.0",
+            "**cntFolders**: &#128640; Since v4.11.0",
+            "**cntRooms**: &#128640; Since v4.11.0",
+            "**cntUploadShares**: Returns the number of Upload Shares of this node.",
+            "**createdAt**: Creation date",
+            [
+              "**createdBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ],
+            [
+              "**encryptionInfo**: Encryption states",
+              {
+                "$ul": [
+                  "**dataSpaceKeyState**: DRACOON key state",
+                  "**roomKeyState**: Room key state",
+                  "**userKeyState**: User key state"
+                ]
+              }
+            ],
+            "**expireAt**: Expiration date",
+            "**fileType**: File type / extension (for files only)",
+            "**hasActivitiesLog**: Is activities log active (for rooms only) (default: true)",
+            "**hash**: MD5 hash of file",
+            "**id**: Node ID",
+            "**inheritPermissions**: Inherit permissions from parent room",
+            "**isBrowsable**: &#128640; Since v4.11.0",
+            "**isEncrypted**: Encryption state",
+            "**isFavorite**: Node is marked as favorite (for rooms / folders only)",
+            "**mediaToken**: Media server media token",
+            "**mediaType**: File media type (for files only)",
+            "**name**: Name",
+            "**notes**: User notes",
+            "**parentId**: Parent node ID (room or folder)",
+            "**parentPath**: Parent node path",
+            [
+              "**permissions**: Node permissions",
+              {
+                "$ul": [
+                  "**change**: User / Group may update metadata of nodes: rename files and folders, change classification, etc.",
+                  "**create**: User / Group may upload files, create folders and copy / move files to this room, overwriting is not possible.",
+                  "**delete**: User / Group may overwrite and remove files / folders, move files from this room.",
+                  "**deleteRecycleBin**: User / Group may permanently remove files / folders from the recycle bin.",
+                  "**manage**: User / Group may grant all of the above permissions to other users and groups independently,",
+                  "**manageDownloadShare**: User / Group may create Download Shares for files and containers view all previously created Download Shares in this room.",
+                  "**manageUploadShare**: User / Group may create Upload Shares for containers, view all previously created Upload Shares in this room.",
+                  "**read**: User / Group may see all rooms, files and folders in the room and download everything, copy files from this room.",
+                  "**readRecycleBin**: User / Group may look up files / folders in the recycle bin.",
+                  "**restoreRecycleBin**: User / Group may restore files / folders from recycle bin - room permissions required."
+                ]
+              }
+            ],
+            "**quota**: Quota in byte",
+            "**recycleBinRetentionPeriod**: Retention period for deleted nodes in days",
+            "**referenceId**: &#128640; Since v4.37.0",
+            "**size**: Node size in byte",
+            "**timestampCreation**: &#128640; Since v4.22.0",
+            "**timestampModification**: &#128640; Since v4.22.0",
+            "**type**: Node type",
+            "**updatedAt**: Modification date",
+            [
+              "**updatedBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "507": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,791 @@
+{
+  "name": "CreateKxCluster",
+  "description": "Creates a new kdb cluster.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "environmentId": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+$",
+        "minLength": 1,
+        "maxLength": 32,
+        "description": "A unique identifier for the kdb environment."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "clusterName",
+          "clusterType",
+          "capacityConfiguration",
+          "releaseLabel",
+          "azMode"
+        ],
+        "properties": {
+          "clientToken": {
+            "description": "A token that ensures idempotency. This token expires in 10 minutes.",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 36
+          },
+          "clusterName": {
+            "description": "A unique name for the cluster that you want to create.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*[a-zA-Z0-9]$",
+            "minLength": 3,
+            "maxLength": 63
+          },
+          "clusterType": {
+            "description": "<p>Specifies the type of KDB database that is being created. The following types are available: </p> <ul> <li> <p>HDB – A Historical Database. The data is only accessible with read-only permissions from one of the FinSpace managed kdb databases mounted to the cluster.</p> </li> <li> <p>RDB – A Realtime Database. This type of database captures all the data from a ticker plant and stores it in memory until the end of day, after which it writes all of its data to a disk and reloads the HDB. This cluster type requires local storage for temporary storage of data during the savedown process. If you specify this field in your request, you must provide the <code>savedownStorageConfiguration</code> parameter.</p> </li> <li> <p>GATEWAY – A gateway cluster allows you to access data across processes in kdb systems. It allows you to create your own routing logic using the initialization scripts and custom code. This type of cluster does not require a writable local storage.</p> </li> </ul>",
+            "type": "string",
+            "enum": [
+              "HDB",
+              "RDB",
+              "GATEWAY"
+            ]
+          },
+          "databases": {
+            "description": "A list of databases that will be available for querying.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/KxDatabaseConfiguration"
+            }
+          },
+          "cacheStorageConfigurations": {
+            "description": "The configurations for a read only cache storage associated with a cluster. This cache will be stored as an FSx Lustre that reads from the S3 store. ",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/KxCacheStorageConfiguration"
+            }
+          },
+          "autoScalingConfiguration": {
+            "description": "The configuration based on which FinSpace will scale in or scale out nodes in your cluster. ",
+            "type": "object",
+            "properties": {
+              "minNodeCount": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NodeCount"
+                  },
+                  {
+                    "description": "The lowest number of nodes to scale. This value must be at least 1 and less than the <code>maxNodeCount</code>. If the nodes in a cluster belong to multiple availability zones, then <code>minNodeCount</code> must be at least 3."
+                  }
+                ]
+              },
+              "maxNodeCount": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NodeCount"
+                  },
+                  {
+                    "description": "The highest number of nodes to scale. This value cannot be greater than 5."
+                  }
+                ]
+              },
+              "autoScalingMetric": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AutoScalingMetric"
+                  },
+                  {
+                    "description": " The metric your cluster will track in order to scale in and out. For example, <code>CPU_UTILIZATION_PERCENTAGE</code> is the average CPU usage across all the nodes in a cluster."
+                  }
+                ]
+              },
+              "metricTarget": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AutoScalingMetricTarget"
+                  },
+                  {
+                    "description": "The desired value of the chosen <code>autoScalingMetric</code>. When the metric drops below this value, the cluster will scale in. When the metric goes above this value, the cluster will scale out. You can set the target value between 1 and 100 percent."
+                  }
+                ]
+              },
+              "scaleInCooldownSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CooldownTime"
+                  },
+                  {
+                    "description": "The duration in seconds that FinSpace will wait after a scale in event before initiating another scaling event."
+                  }
+                ]
+              },
+              "scaleOutCooldownSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CooldownTime"
+                  },
+                  {
+                    "description": "The duration in seconds that FinSpace will wait after a scale out event before initiating another scaling event."
+                  }
+                ]
+              }
+            }
+          },
+          "clusterDescription": {
+            "description": "A description of the cluster.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\_\\-\\.\\s]+$",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "capacityConfiguration": {
+            "description": "A structure for the metadata of a cluster. It includes information like the CPUs needed, memory of instances, number of instances, and the port used while establishing a connection.",
+            "type": "object",
+            "properties": {
+              "nodeType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NodeType"
+                  },
+                  {
+                    "description": "<p>The type that determines the hardware of the host computer used for your cluster instance. Each node type offers different memory and storage capabilities. Choose a node type based on the requirements of the application or software that you plan to run on your instance.</p> <p>You can only specify one of the following values:</p> <ul> <li> <p> <code>kx.s.large</code> – The node type with a configuration of 12 GiB memory and 2 vCPUs.</p> </li> <li> <p> <code>kx.s.xlarge</code> – The node type with a configuration of 27 GiB memory and 4 vCPUs.</p> </li> <li> <p> <code>kx.s.2xlarge</code> – The node type with a configuration of 54 GiB memory and 8 vCPUs.</p> </li> <li> <p> <code>kx.s.4xlarge</code> – The node type with a configuration of 108 GiB memory and 16 vCPUs.</p> </li> <li> <p> <code>kx.s.8xlarge</code> – The node type with a configuration of 216 GiB memory and 32 vCPUs.</p> </li> <li> <p> <code>kx.s.16xlarge</code> – The node type with a configuration of 432 GiB memory and 64 vCPUs.</p> </li> <li> <p> <code>kx.s.32xlarge</code> – The node type with a configuration of 864 GiB memory and 128 vCPUs.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "nodeCount": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NodeCount"
+                  },
+                  {
+                    "description": "The number of instances running in a cluster."
+                  }
+                ]
+              }
+            }
+          },
+          "releaseLabel": {
+            "description": "The version of FinSpace managed kdb to run.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._-]+",
+            "minLength": 1,
+            "maxLength": 16
+          },
+          "vpcConfiguration": {
+            "description": "Configuration details about the network where the Privatelink endpoint of the cluster resides.",
+            "type": "object",
+            "properties": {
+              "vpcId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/VpcIdString"
+                  },
+                  {
+                    "description": "The identifier of the VPC endpoint."
+                  }
+                ]
+              },
+              "securityGroupIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SecurityGroupIdList"
+                  },
+                  {
+                    "description": "The unique identifier of the VPC security group applied to the VPC endpoint ENI for the cluster."
+                  }
+                ]
+              },
+              "subnetIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SubnetIdList"
+                  },
+                  {
+                    "description": "The identifier of the subnet that the Privatelink VPC endpoint uses to connect to the cluster."
+                  }
+                ]
+              },
+              "ipAddressType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IPAddressType"
+                  },
+                  {
+                    "description": "<p>The IP address type for cluster network configuration parameters. The following type is available:</p> <ul> <li> <p>IP_V4 – IP address version 4</p> </li> </ul>"
+                  }
+                ]
+              }
+            }
+          },
+          "initializationScript": {
+            "description": "Specifies a Q program that will be run at launch of a cluster. It is a relative path within <i>.zip</i> file that contains the custom code, which will be loaded on the cluster. It must include the file name itself. For example, <code>somedir/init.q</code>.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\_\\-\\.\\/\\\\]+$",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "commandLineArguments": {
+            "description": "Defines the key-value pairs to make them available inside the cluster.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/KxCommandLineArgument"
+            }
+          },
+          "code": {
+            "description": "The structure of the customer code available within the running cluster.",
+            "type": "object",
+            "properties": {
+              "s3Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Bucket"
+                  },
+                  {
+                    "description": "A unique name for the S3 bucket."
+                  }
+                ]
+              },
+              "s3Key": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Key"
+                  },
+                  {
+                    "description": "The full S3 path (excluding bucket) to the .zip file. This file contains the code that is loaded onto the cluster when it's started."
+                  }
+                ]
+              },
+              "s3ObjectVersion": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3ObjectVersion"
+                  },
+                  {
+                    "description": "The version of an S3 object."
+                  }
+                ]
+              }
+            }
+          },
+          "executionRole": {
+            "description": "An IAM role that defines a set of permissions associated with a cluster. These permissions are assumed when a cluster attempts to access another cluster.",
+            "type": "string",
+            "pattern": "^arn:aws[a-z0-9-]*:iam::\\d{12}:role\\/[\\w-\\/.@+=,]{1,1017}$",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "savedownStorageConfiguration": {
+            "description": "The size and type of temporary storage that is used to hold data during the savedown process. All the data written to this storage space is lost when the cluster node is restarted.",
+            "type": "object",
+            "properties": {
+              "type": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/KxSavedownStorageType"
+                  },
+                  {
+                    "description": "<p>The type of writeable storage space for temporarily storing your savedown data. The valid values are:</p> <ul> <li> <p>SDS01 – This type represents 3000 IOPS and io2 ebs volume type.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "size": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/KxSavedownStorageSize"
+                  },
+                  {
+                    "description": "The size of temporary storage in bytes."
+                  }
+                ]
+              }
+            }
+          },
+          "azMode": {
+            "description": "<p>The number of availability zones you want to assign per cluster. This can be one of the following </p> <ul> <li> <p> <code>SINGLE</code> – Assigns one availability zone per cluster.</p> </li> <li> <p> <code>MULTI</code> – Assigns all the availability zones per cluster.</p> </li> </ul>",
+            "type": "string",
+            "enum": [
+              "SINGLE",
+              "MULTI"
+            ]
+          },
+          "availabilityZoneId": {
+            "description": "The availability zone identifiers for the requested regions.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "A list of key-value pairs to label the cluster. You can add up to 50 tags to a cluster.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "environmentId",
+      "body"
+    ],
+    "$defs": {
+      "KxDatabaseConfiguration": {
+        "type": "object",
+        "required": [
+          "databaseName"
+        ],
+        "properties": {
+          "databaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabaseName"
+              },
+              {
+                "description": "The name of the kdb database. When this parameter is specified in the structure, S3 with the whole database is included by default."
+              }
+            ]
+          },
+          "cacheConfigurations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxDatabaseCacheConfigurations"
+              },
+              {
+                "description": "Configuration details for the disk cache used to increase performance reading from a kdb database mounted to the cluster."
+              }
+            ]
+          },
+          "changesetId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChangesetId"
+              },
+              {
+                "description": "A unique identifier of the changeset that is associated with the cluster."
+              }
+            ]
+          }
+        },
+        "description": "The configuration of data that is available for querying from this database."
+      },
+      "DatabaseName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*[a-zA-Z0-9]$",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "KxDatabaseCacheConfigurations": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/KxDatabaseCacheConfiguration"
+        }
+      },
+      "KxDatabaseCacheConfiguration": {
+        "type": "object",
+        "required": [
+          "cacheType",
+          "dbPaths"
+        ],
+        "properties": {
+          "cacheType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxCacheStorageType"
+              },
+              {
+                "description": "<p>The type of disk cache. This parameter is used to map the database path to cache storage. The valid values are:</p> <ul> <li> <p>CACHE_1000 – This type provides at least 1000 MB/s disk access throughput. </p> </li> </ul>"
+              }
+            ]
+          },
+          "dbPaths": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DbPaths"
+              },
+              {
+                "description": "Specifies the portions of database that will be loaded into the cache for access."
+              }
+            ]
+          }
+        },
+        "description": "The structure of database cache configuration that is used for mapping database paths to cache types in clusters."
+      },
+      "KxCacheStorageType": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 10
+      },
+      "DbPaths": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/DbPath"
+        }
+      },
+      "DbPath": {
+        "type": "string",
+        "pattern": "^\\/([^\\/]+\\/){0,2}[^\\/]*$",
+        "minLength": 1,
+        "maxLength": 1025
+      },
+      "ChangesetId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 26
+      },
+      "KxCacheStorageConfiguration": {
+        "type": "object",
+        "required": [
+          "type",
+          "size"
+        ],
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxCacheStorageType"
+              },
+              {
+                "description": "<p>The type of cache storage . The valid values are: </p> <ul> <li> <p>CACHE_1000 – This type provides at least 1000 MB/s disk access throughput. </p> </li> </ul>"
+              }
+            ]
+          },
+          "size": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxCacheStorageSize"
+              },
+              {
+                "description": "The size of cache in Gigabytes."
+              }
+            ]
+          }
+        },
+        "description": "The configuration for read only disk cache associated with a cluster."
+      },
+      "KxCacheStorageSize": {
+        "type": "integer",
+        "minimum": 1200,
+        "maximum": 33600
+      },
+      "NodeCount": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5
+      },
+      "AutoScalingMetric": {
+        "type": "string",
+        "enum": [
+          "CPU_UTILIZATION_PERCENTAGE"
+        ]
+      },
+      "AutoScalingMetricTarget": {
+        "type": "number",
+        "format": "double",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "CooldownTime": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "maximum": 100000
+      },
+      "NodeType": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9._]+",
+        "minLength": 1,
+        "maxLength": 32
+      },
+      "VpcIdString": {
+        "type": "string",
+        "pattern": "^vpc-([a-z0-9]{8}$|[a-z0-9]{17}$)",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "SecurityGroupIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SecurityGroupIdString"
+        }
+      },
+      "SecurityGroupIdString": {
+        "type": "string",
+        "pattern": "^sg-([a-z0-9]{8}$|[a-z0-9]{17}$)",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "SubnetIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SubnetIdString"
+        }
+      },
+      "SubnetIdString": {
+        "type": "string",
+        "pattern": "^subnet-([a-z0-9]{8}$|[a-z0-9]{17}$)",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "IPAddressType": {
+        "type": "string",
+        "enum": [
+          "IP_V4"
+        ]
+      },
+      "KxCommandLineArgument": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxCommandLineArgumentKey"
+              },
+              {
+                "description": "The name of the key."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KxCommandLineArgumentValue"
+              },
+              {
+                "description": "The value of the key."
+              }
+            ]
+          }
+        },
+        "description": "Defines the key-value pairs to make them available inside the cluster."
+      },
+      "KxCommandLineArgumentKey": {
+        "type": "string",
+        "pattern": "^(?![Aa][Ww][Ss])(s|([a-zA-Z][a-zA-Z0-9_]+))",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "KxCommandLineArgumentValue": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_:.]*",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "S3Bucket": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9\\.\\-]*[a-z0-9]$",
+        "minLength": 3,
+        "maxLength": 255
+      },
+      "S3Key": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\/\\!\\-_\\.\\*'\\(\\)]+$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "S3ObjectVersion": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      },
+      "KxSavedownStorageType": {
+        "type": "string",
+        "enum": [
+          "SDS01"
+        ]
+      },
+      "KxSavedownStorageSize": {
+        "type": "integer",
+        "minimum": 4,
+        "maximum": 16000
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9+-=._:@ ]+$",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://finspace.us-east-1.amazonaws.com/kx/environments/{environmentId}/clusters"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**environmentId**",
+            "**status**",
+            "**statusReason**",
+            "**clusterName**",
+            "**clusterType**",
+            "**databases**",
+            "**cacheStorageConfigurations**",
+            "**autoScalingConfiguration**",
+            "**clusterDescription**",
+            "**capacityConfiguration**",
+            "**releaseLabel**",
+            "**vpcConfiguration**",
+            "**initializationScript**",
+            "**commandLineArguments**",
+            "**code**",
+            "**executionRole**",
+            "**lastModifiedTimestamp**",
+            "**savedownStorageConfiguration**",
+            "**azMode**",
+            "**availabilityZoneId**",
+            "**createdTimestamp**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

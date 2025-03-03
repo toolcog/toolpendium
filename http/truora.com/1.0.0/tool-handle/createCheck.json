@@ -1,0 +1,208 @@
+{
+  "name": "createCheck",
+  "description": "Creates a background check and queues it to start collecting information. The full details of background checks can be retrieved with their respective Check IDs using getCheck endpoint. Keep in mind that, depending on the check type, input document, and country of a search, certain inputs are required. You should always provide as many inputs as possible in order to get the highest accuracy.\n\nIf your check type is not referenced in the following table, please reach out to find out the fields that apply for you.\n\n| Country | Person-National | PersonForeigner | Company | Vehicle-National | Vehicle-Foreigner |\n|:-------:|:---------------:|:---------------:|:-------:|:----------------:|:-----------------:|\n| Chile<br>CL | national_id*<br>date_of_birth<br>phone_number | foreign_id*<br>date_of_birth*<br>phone_number<br>first_name*<br>last_name*<br>native_country* | N/A | national_id*<br>license_plate*<br>payment_date (Santiago only)<br>driver_license (Santiago only) | foreign_id*<br>first_name*<br>last_name*<br>date_of_birth*<br>native_country*<br>license_plate*<br>payment_date (Santiago only)<br>driver_license (Santiago only) |\n| Colombia<br>CO | national_id*<br>date_of_birth<br>issue_date<br>phone_number | foreign_id* or PEP*<br>date_of_birth<br>phone_number<br>issue_date* | tax_id*<br>national_id | national_id*<br>date_of_birth<br>phone_number<br>license_plate*<br>owner_document_type<br>owner_document_id | foreign_id*<br>date_of_birth<br>phone_number<br>license_plate*<br>issue_date* |\n| Mexico<br>MX | national_id*<br>phone_number | foreign_id* | tax_id* | license_plate*<br>national_id<br>vehicle_id<br>driver_license(Estado de Mexico only) | N/A |\n| Brazil<br>BR | national_id*<br>date_of_birth*<br>region*<br>phone_number | N/A | tax_id* | license_plate* | N/A |\n| Costa Rica<br>CR | national_id*<br>phone_number | foreign_id* | N/A | license_plate* | N/A |\n| Ecuador<br>EC | national_id*<br>phone_number | foreign_id* | tax_id* | license_plate* | N/A |\n| Peru<br>PE | national_id*<br>date_of_birth<br>phone_number | foreign_id*<br>ptp<br>date_of_birth*<br>phone_number | N/A | national_id*<br>date_of_birth<br>license_plate* | foreign_id*<br>ptp<br>date_of_birth*<br>license_plate* |\n| Argentina<br>AR | national_id* | N/A | N/A | national_id* | N/A |\n| International<br>ALL | name* | name* | company_name* | N/A | N/A |\n\n(*) Required field",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Truora-Priority": {
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "type": "string",
+        "description": "Describes the background check priority. The amount of high priority checks is limited by country. Medium priority is used by default"
+      },
+      "body": {
+        "$ref": "#/components/schemas/CreateCheckInput",
+        "description": "Request body create a background check"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.truora.com/v1/checks"
+    },
+    "headers": {
+      "Truora-Priority": {
+        "$": "Truora-Priority"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents the result of a background check search",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**check**: Represents a background check",
+              {
+                "$ul": [
+                  "**birth_certificate**: Person birth certificate",
+                  "**check_id**: Background check ID",
+                  [
+                    "**company_summary**: Represents the summary of a company background check",
+                    {
+                      "$ul": [
+                        "**names_found**: Names found during the background check process"
+                      ]
+                    }
+                  ],
+                  "**country**: ID Document country",
+                  "**creation_date**: Background check creation date",
+                  "**date_of_birth**: Person birthdate. Shown only if provided during check creation. YYYY-MM-DD format",
+                  "**diplomatic_id**: Person diplomatic id",
+                  "**driver_license**: Person driver's license",
+                  "**first_name**: Person or entity first name. Shown only if provided during check creation",
+                  "**foreign_id**: Person foreign identification",
+                  "**homonym_probability**: [Experimental] Analyzes the probability that the results by name are attributed to a homonym. Number between 0 and 1 where 1 is the the greatest probability",
+                  "**homonym_score**: Background check score including results by name only. This might contain homonym information",
+                  "**homonym_scores**: Background check scores by name for each profile group. [Deprecated for API key V1]",
+                  "**id_score**: Background check score regarding results by ID number only. It is a number between 0 and 1 where 1 is the best score. This result is a weighted average of the id_scores listed under scores.",
+                  "**issue_date**: Issue date of the person ID",
+                  "**last_name**: Person or entity last name. Shown only if provided during check creation",
+                  "**license_plate**: Vehicle license plate",
+                  "**national_id**: Person national identification",
+                  "**native_country**: Person origin country",
+                  "**owner_document_id**: Vehicle owner identification",
+                  "**owner_document_type**: Vehicle owner document type",
+                  "**passport**: Person passport",
+                  "**payment_date**: Vehicle license payment date",
+                  "**pep**: Colombian PEP idenfitication for Venezuelans",
+                  "**phone_number**: Person phone number. Required by law in order to notify the person their background is being checked",
+                  "**professional_card**: Person professional card number",
+                  "**ptp**: Temporary residence permit of the person",
+                  "**region**: Region where the background is to be checked. By default, background checks in Brazil are performed in region where the person is from. Applies for some Brazil collectors only. Allowed values are: DF: Distrito Federal, AC: Acre, AL: Alagoas, AP: Amapá, AM: Amazonas, BA: Bahía, CE: Ceará, ES: Espírito Santo, GO: Goiás, MA: Maranhão, MT: Mato Grosso, MS: Mato Grosso do Sul, MG: Minas Gerais, PA: Pará, PB: Paraíba, PR: Paraná, PE: Pernambuco, PI: Piauí, RJ: Río de Janeiro, RN: Río Grande do Norte, RS: Río Grande do Sul, RO: Rondônia, RR: Roraima, SC: Santa Catarina, SP: São Paulo, SE: Sergipe, TO : Tocantins.\r",
+                  "**report_id**: Report ID the background check is associated with",
+                  "**score**: Background check score. Number between 0 and 1 where 1 is the best score",
+                  "**scores**: Background check score of each profile group and dataset",
+                  "**status**: Result status of the background check. **Not_started** means the background check is still in queue, since there is a limit of background checks that can be processed simultaneously, **completed** means the check finished successfully, **error** means the check failed, **in_progress** means the check is currently being processed, **delayed** means the check is waiting for an additional requirement to be met, this can last up to 3 days. **Completed** and **error** are the two only final statuses",
+                  "**statuses**: Database status list",
+                  [
+                    "**summary**: Represents a background check summary",
+                    {
+                      "$ul": [
+                        "**date_of_birth**: Person date of birth in RFC3339 format",
+                        "**death_date**: Person date of death",
+                        "**drivers_license**: Person driver's license",
+                        "**gender**: Person gender",
+                        "**identity_status**: Indicates whether a person was found, found as dead or not found at all",
+                        "**names_found**: Names found during the background check process",
+                        "**nss**: Social security number of the person (Mexico)",
+                        "**rfc**: Federal taxpayer registration number of the person"
+                      ]
+                    }
+                  ],
+                  "**tax_id**: Person or company tax id",
+                  "**type**: Background check type",
+                  "**update_date**: Background check update date",
+                  "**vehicle_id**: Vehicle identification",
+                  [
+                    "**vehicle_summary**: Represents the summary of a vehicle background check",
+                    {
+                      "$ul": [
+                        "**capacity**: Number of passengers allowed to travel in the vehicle",
+                        "**color**: Vehicle color",
+                        "**license_plate**: Vehicle license plate",
+                        "**manufacturer**: Vehicle manufacturer",
+                        "**model**: Vehicle model",
+                        "**number_of_doors**: Vehicle door count",
+                        "**obligatory_insurance_expiration_date**: Expiration date of the vehicle compulsory insurance ",
+                        "**obligatory_insurance_status**: Status of the vehicle compulsory insurances",
+                        "**service_type**: Vehicle service type",
+                        "**vehicle_category**: Vehicle category",
+                        "**vehicle_id**: Vehicle ID",
+                        "**vehicle_type**: Vehicle type",
+                        "**year**: Vehicle model year"
+                      ]
+                    }
+                  ],
+                  "**wrong_inputs**: List of parameters entered during background check creation that do not match the information obtained"
+                ]
+              }
+            ],
+            "**details**: Detail path",
+            "**self**: Background check URL"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The error type is returned when an error occurred in the platform.\n\nError codes include:\n\n- 10404: resource was not found",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code",
+            "**message**: Message describing the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The error type is returned when an error occurred in the platform.\n\nError codes include:\n\n- 10404: resource was not found",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code",
+            "**message**: Message describing the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

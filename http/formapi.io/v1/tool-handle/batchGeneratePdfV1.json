@@ -1,0 +1,302 @@
+{
+  "name": "batchGeneratePdfV1",
+  "description": "Generates multiple PDFs",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "template_id": {
+        "type": "string"
+      },
+      "body": {
+        "example": [
+          {
+            "data": {
+              "first_name": "Johnny",
+              "last_name": "Smith"
+            },
+            "metadata": {
+              "submission_number": 1
+            }
+          },
+          {
+            "data": {
+              "first_name": "Jane",
+              "last_name": "Doe"
+            },
+            "metadata": {
+              "submission_number": 2
+            }
+          }
+        ],
+        "items": {
+          "title": "submission_data",
+          "type": "object"
+        },
+        "properties": {
+          "css": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "data_requests": {
+            "items": {
+              "properties": {
+                "auth_phone_number_hash": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "auth_provider": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "auth_second_factor_type": {
+                  "enum": [
+                    "none",
+                    "phone_number",
+                    "totp",
+                    "mobile_push",
+                    "security_key",
+                    "fingerprint"
+                  ],
+                  "type": "string"
+                },
+                "auth_session_id_hash": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "auth_session_started_at": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "auth_type": {
+                  "enum": [
+                    "none",
+                    "password",
+                    "oauth",
+                    "email_link",
+                    "phone_number",
+                    "ldap",
+                    "saml"
+                  ],
+                  "type": "string"
+                },
+                "auth_user_id_hash": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "auth_username_hash": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "email": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "fields": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "nullable": true,
+                  "type": "array"
+                },
+                "metadata": {
+                  "type": "object"
+                },
+                "name": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "order": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "email",
+                "auth_type"
+              ],
+              "title": "create_submission_data_request_data",
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "html": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "test": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "create_submission_batch_v1",
+        "type": "array"
+      }
+    },
+    "required": [
+      "template_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.docspring.com/api/v1/templates/{template_id}/submissions/batch"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "create_submission_response list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**status**",
+            [
+              "**submission**",
+              {
+                "$ul": [
+                  "**actions**",
+                  "**batch_id**",
+                  "**data**",
+                  "**data_requests**",
+                  "**download_url**",
+                  "**editable**",
+                  "**expired**",
+                  "**expires_at**",
+                  "**id**",
+                  "**metadata**",
+                  "**pdf_hash**",
+                  "**permanent_download_url**",
+                  "**processed_at**",
+                  "**referrer**",
+                  "**source**",
+                  "**state**",
+                  "**template_id**",
+                  "**test**",
+                  "**truncated_text**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "error_response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "authentication_error_response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "invalid_request_response list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**status**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

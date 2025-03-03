@@ -1,0 +1,107 @@
+{
+  "name": "get_groups_by_ids",
+  "description": "Retrieve multiple groups",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "group_ids": {
+        "type": "string",
+        "description": "The IDs of the groups to retrieve.  If more than 20 group IDs are passed, only the first 20 groups will be returned."
+      }
+    },
+    "required": [
+      "group_ids"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://trashnothing.com/api/v1.3/groups/multiple{?group_ids}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Groups are run by volunteer moderators and provide a way to group activity in a specific location. Because each group is usually run by different people, there can be variations in rules from group to group (eg. who is allowed to join, what is allowed to be posted, how often reposts are allowed).\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**country**: Provides information about the country that is associated with a group.  May be null.",
+              {
+                "$ul": [
+                  "**abbreviation**: A 2 letter country code for the country (see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 ).",
+                  "**name**: The name of the country."
+                ]
+              }
+            ],
+            "**group_id**",
+            "**has_questions**: When true, anyone requesting membership to this group will be required to answer a new membership questionnaire.",
+            "**homepage**: A URL to the group homepage.",
+            "**identifier**: A unique identifier for the group that is used in URLs.",
+            "**latitude**",
+            "**longitude**",
+            "**member_count**: The number of members who belong to the group.",
+            [
+              "**membership**: Provides information about the current users' active or pending membership to this group (if any).  Will be null if there is no active or pending membership to this group.",
+              {
+                "$ul": [
+                  "**date**: The UTC date and time when the membership was last updated.",
+                  [
+                    "**questionnaire**: Membership questionnaire data.  Will be null unless the membership status is pending-questions.",
+                    {
+                      "$ul": [
+                        "**message**: A message from the group moderators to be displayed above the questions (may be null).",
+                        "**questions**: The list of questions."
+                      ]
+                    }
+                  ],
+                  "**status**: One of: subscribed, pending, pending-questions"
+                ]
+              }
+            ],
+            "**name**: The name of the group (not guaranteed to be unique).",
+            "**open_archives**: When true, the group posts are viewable by anyone.  When false, the group posts can only be viewed by members of the group.",
+            "**open_membership**: When true, the group allows anyone to join.  When false, the group moderators review and approve applicants.",
+            [
+              "**region**: Provides information about an area within a country that a group is associated with (eg. a state in the US or a province in Canada).  May be null.",
+              {
+                "$ul": [
+                  "**abbreviation**: A 2 letter abbreviation for the region (is not guaranteed to be globally unique but is unique among all the regions in the country).",
+                  "**name**: The name of the region."
+                ]
+              }
+            ],
+            "**timezone**: The timezone that the group is in (eg. America/New_York)."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

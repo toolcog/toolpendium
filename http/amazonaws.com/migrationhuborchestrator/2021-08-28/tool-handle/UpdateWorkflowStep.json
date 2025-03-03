@@ -1,0 +1,492 @@
+{
+  "name": "UpdateWorkflowStep",
+  "description": "Update a step in a migration workflow.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9-]+",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "The ID of the step."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "stepGroupId",
+          "workflowId"
+        ],
+        "properties": {
+          "stepGroupId": {
+            "description": "The ID of the step group.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9-]+",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "workflowId": {
+            "description": "The ID of the migration workflow.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9-]+",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "name": {
+            "description": "The name of the step.",
+            "type": "string",
+            "pattern": "[-a-zA-Z0-9_.+]+[-a-zA-Z0-9_.+ ]*",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "description": {
+            "description": "The description of the step.",
+            "type": "string",
+            "pattern": "[-a-zA-Z0-9_.+, ]*",
+            "minLength": 0,
+            "maxLength": 500
+          },
+          "stepActionType": {
+            "description": "The action type of the step. You must run and update the status of a manual step for the workflow to continue after the completion of the step.",
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "AUTOMATED"
+            ]
+          },
+          "workflowStepAutomationConfiguration": {
+            "description": "The custom script to run tests on source or target environments.",
+            "type": "object",
+            "properties": {
+              "scriptLocationS3Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Bucket"
+                  },
+                  {
+                    "description": "The Amazon S3 bucket where the script is located."
+                  }
+                ]
+              },
+              "scriptLocationS3Key": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlatformScriptKey"
+                  },
+                  {
+                    "description": "The Amazon S3 key for the script location."
+                  }
+                ]
+              },
+              "command": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PlatformCommand"
+                  },
+                  {
+                    "description": "The command required to run the script."
+                  }
+                ]
+              },
+              "runEnvironment": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RunEnvironment"
+                  },
+                  {
+                    "description": "The source or target environment."
+                  }
+                ]
+              },
+              "targetType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TargetType"
+                  },
+                  {
+                    "description": "The servers on which to run the script."
+                  }
+                ]
+              }
+            }
+          },
+          "stepTarget": {
+            "description": "The servers on which a step will be run.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/StringListMember"
+            }
+          },
+          "outputs": {
+            "description": "The outputs of a step.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/WorkflowStepOutput"
+            }
+          },
+          "previous": {
+            "description": "The previous step.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/StringListMember"
+            }
+          },
+          "next": {
+            "description": "The next step.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/StringListMember"
+            }
+          },
+          "status": {
+            "description": "The status of the step.",
+            "type": "string",
+            "enum": [
+              "AWAITING_DEPENDENCIES",
+              "READY",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "FAILED",
+              "PAUSED",
+              "USER_ATTENTION_REQUIRED"
+            ]
+          }
+        }
+      }
+    },
+    "required": [
+      "id",
+      "body"
+    ],
+    "$defs": {
+      "S3Bucket": {
+        "type": "string",
+        "pattern": "[0-9a-z]+[0-9a-z\\.\\-]*[0-9a-z]+",
+        "minLength": 0,
+        "maxLength": 63
+      },
+      "PlatformScriptKey": {
+        "type": "object",
+        "properties": {
+          "linux": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Key"
+              },
+              {
+                "description": "The script location for Linux."
+              }
+            ]
+          },
+          "windows": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Key"
+              },
+              {
+                "description": "The script location for Windows."
+              }
+            ]
+          }
+        },
+        "description": "The script location for a particular operating system."
+      },
+      "S3Key": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024
+      },
+      "PlatformCommand": {
+        "type": "object",
+        "properties": {
+          "linux": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "Command for Linux."
+              }
+            ]
+          },
+          "windows": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "Command for Windows."
+              }
+            ]
+          }
+        },
+        "description": "Command to be run on a particular operating system."
+      },
+      "String": {
+        "type": "string"
+      },
+      "RunEnvironment": {
+        "type": "string",
+        "enum": [
+          "AWS",
+          "ONPREMISE"
+        ]
+      },
+      "TargetType": {
+        "type": "string",
+        "enum": [
+          "SINGLE",
+          "ALL",
+          "NONE"
+        ]
+      },
+      "StringListMember": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 100
+      },
+      "WorkflowStepOutput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WorkflowStepOutputName"
+              },
+              {
+                "description": "The name of the step."
+              }
+            ]
+          },
+          "dataType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DataType"
+              },
+              {
+                "description": "The data type of the output."
+              }
+            ]
+          },
+          "required": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Determine if an output is required from a step."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WorkflowStepOutputUnion"
+              },
+              {
+                "description": "The value of the output."
+              }
+            ]
+          }
+        },
+        "description": "The output of a step."
+      },
+      "WorkflowStepOutputName": {
+        "type": "string",
+        "pattern": "[-a-zA-Z0-9_.+]+[-a-zA-Z0-9_.+ ]*",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "DataType": {
+        "type": "string",
+        "enum": [
+          "STRING",
+          "INTEGER",
+          "STRINGLIST",
+          "STRINGMAP"
+        ]
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "WorkflowStepOutputUnion": {
+        "type": "object",
+        "properties": {
+          "integerValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The integer value. "
+              }
+            ]
+          },
+          "stringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringValue"
+              },
+              {
+                "description": "The string value."
+              }
+            ]
+          },
+          "listOfStringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "The list of string value."
+              }
+            ]
+          }
+        },
+        "description": "A structure to hold multiple values of an output."
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "StringValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 100
+      },
+      "StringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/StringListMember"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://migrationhub-orchestrator.us-east-1.amazonaws.com/workflowstep/{id}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**stepGroupId**",
+            "**workflowId**",
+            "**name**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

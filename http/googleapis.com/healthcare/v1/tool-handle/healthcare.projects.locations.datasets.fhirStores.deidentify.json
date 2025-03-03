@@ -1,0 +1,406 @@
+{
+  "name": "healthcare_projects_locations_datasets_fhirStores_deidentify",
+  "description": "De-identifies data from the source store and writes it to the destination store. The metadata field type is OperationMetadata. If the request is successful, the response field type is DeidentifyFhirStoreSummary. If errors occur, error is set. Error details are also logged to Cloud Logging (see [Viewing error logs in Cloud Logging](https://cloud.google.com/healthcare/docs/how-tos/logging)).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "sourceStore": {
+        "type": "string",
+        "description": "Required. Source FHIR store resource name. For example, `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}`."
+      },
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/DeidentifyFhirStoreRequest"
+      }
+    },
+    "required": [
+      "sourceStore"
+    ],
+    "$defs": {
+      "DeidentifyFhirStoreRequest": {
+        "description": "Creates a new FHIR store with sensitive information de-identified.",
+        "properties": {
+          "config": {
+            "$ref": "#/$defs/DeidentifyConfig"
+          },
+          "destinationStore": {
+            "description": "Required. The name of the FHIR store to create and write the redacted data to. For example, `projects/{project_id}/locations/{location_id}/datasets/{dataset_id}/fhirStores/{fhir_store_id}`. * The destination dataset must exist. * The source dataset and destination dataset must both reside in the same location. De-identifying data across multiple locations is not supported. * The destination FHIR store must exist. * The caller must have the healthcare.fhirResources.update permission to write to the destination FHIR store.",
+            "type": "string"
+          },
+          "gcsConfigUri": {
+            "description": "Cloud Storage location to read the JSON cloud.healthcare.deidentify.DeidentifyConfig from, overriding the default config. Must be of the form `gs://{bucket_id}/path/to/object`. The Cloud Storage location must grant the Cloud IAM role `roles/storage.objectViewer` to the project's Cloud Healthcare Service Agent service account. Only one of `config` and `gcs_config_uri` can be specified.",
+            "type": "string"
+          },
+          "resourceFilter": {
+            "$ref": "#/$defs/FhirFilter"
+          },
+          "skipModifiedResources": {
+            "description": "If true, skips resources that are created or modified after the de-identify operation is created.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "DeidentifyConfig": {
+        "description": "Configures de-id options specific to different types of content. Each submessage customizes the handling of an https://tools.ietf.org/html/rfc6838 media type or subtype. Configs are applied in a nested manner at runtime.",
+        "properties": {
+          "dicom": {
+            "$ref": "#/$defs/DicomConfig"
+          },
+          "fhir": {
+            "$ref": "#/$defs/FhirConfig"
+          },
+          "image": {
+            "$ref": "#/$defs/ImageConfig"
+          },
+          "text": {
+            "$ref": "#/$defs/TextConfig"
+          },
+          "useRegionalDataProcessing": {
+            "description": "Ensures in-flight data remains in the region of origin during de-identification. Using this option results in a significant reduction of throughput, and is not compatible with `LOCATION` or `ORGANIZATION_NAME` infoTypes. `LOCATION` must be excluded within TextConfig, and must also be excluded within ImageConfig if image redaction is required.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "DicomConfig": {
+        "description": "Specifies the parameters needed for de-identification of DICOM stores.",
+        "properties": {
+          "filterProfile": {
+            "description": "Tag filtering profile that determines which tags to keep/remove.",
+            "enum": [
+              "TAG_FILTER_PROFILE_UNSPECIFIED",
+              "MINIMAL_KEEP_LIST_PROFILE",
+              "ATTRIBUTE_CONFIDENTIALITY_BASIC_PROFILE",
+              "KEEP_ALL_PROFILE",
+              "DEIDENTIFY_TAG_CONTENTS"
+            ],
+            "type": "string"
+          },
+          "keepList": {
+            "$ref": "#/$defs/TagFilterList"
+          },
+          "removeList": {
+            "$ref": "#/$defs/TagFilterList"
+          },
+          "skipIdRedaction": {
+            "description": "If true, skip replacing StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID, and MediaStorageSOPInstanceUID and leave them untouched. The Cloud Healthcare API regenerates these UIDs by default based on the DICOM Standard's reasoning: \"Whilst these UIDs cannot be mapped directly to an individual out of context, given access to the original images, or to a database of the original images containing the UIDs, it would be possible to recover the individual's identity.\" http://dicom.nema.org/medical/dicom/current/output/chtml/part15/sect_E.3.9.html",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "TagFilterList": {
+        "description": "List of tags to be filtered.",
+        "properties": {
+          "tags": {
+            "description": "Tags to be filtered. Tags must be DICOM Data Elements, File Meta Elements, or Directory Structuring Elements, as defined at: http://dicom.nema.org/medical/dicom/current/output/html/part06.html#table_6-1,. They may be provided by \"Keyword\" or \"Tag\". For example \"PatientID\", \"00100010\".",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FhirConfig": {
+        "description": "Specifies how to handle de-identification of a FHIR store.",
+        "properties": {
+          "defaultKeepExtensions": {
+            "description": "The behaviour for handling FHIR extensions that aren't otherwise specified for de-identification. If true, all extensions are preserved during de-identification by default. If false or unspecified, all extensions are removed during de-identification by default.",
+            "type": "boolean"
+          },
+          "fieldMetadataList": {
+            "description": "Specifies FHIR paths to match and how to transform them. Any field that is not matched by a FieldMetadata is passed through to the output dataset unmodified. All extensions will be processed according to `default_keep_extensions`.",
+            "items": {
+              "$ref": "#/$defs/FieldMetadata"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "FieldMetadata": {
+        "description": "Specifies FHIR paths to match, and how to handle de-identification of matching fields.",
+        "properties": {
+          "action": {
+            "description": "Deidentify action for one field.",
+            "enum": [
+              "ACTION_UNSPECIFIED",
+              "TRANSFORM",
+              "INSPECT_AND_TRANSFORM",
+              "DO_NOT_TRANSFORM"
+            ],
+            "type": "string"
+          },
+          "paths": {
+            "description": "List of paths to FHIR fields to be redacted. Each path is a period-separated list where each component is either a field name or FHIR type name, for example: Patient, HumanName. For \"choice\" types (those defined in the FHIR spec with the form: field[x]) we use two separate components. For example, \"deceasedAge.unit\" is matched by \"Deceased.Age.unit\". Supported types are: AdministrativeGenderCode, Base64Binary, Boolean, Code, Date, DateTime, Decimal, HumanName, Id, Instant, Integer, LanguageCode, Markdown, Oid, PositiveInt, String, UnsignedInt, Uri, Uuid, Xhtml.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ImageConfig": {
+        "description": "Specifies how to handle de-identification of image pixels.",
+        "properties": {
+          "textRedactionMode": {
+            "description": "Determines how to redact text from image.",
+            "enum": [
+              "TEXT_REDACTION_MODE_UNSPECIFIED",
+              "REDACT_ALL_TEXT",
+              "REDACT_SENSITIVE_TEXT",
+              "REDACT_NO_TEXT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TextConfig": {
+        "properties": {
+          "additionalTransformations": {
+            "description": "Transformations to apply to the detected data, overridden by `exclude_info_types`.",
+            "items": {
+              "$ref": "#/$defs/InfoTypeTransformation"
+            },
+            "type": "array"
+          },
+          "excludeInfoTypes": {
+            "description": "InfoTypes to skip transforming, overriding `additional_transformations`.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "transformations": {
+            "description": "The transformations to apply to the detected data. Deprecated. Use `additional_transformations` instead.",
+            "items": {
+              "$ref": "#/$defs/InfoTypeTransformation"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "InfoTypeTransformation": {
+        "description": "A transformation to apply to text that is identified as a specific info_type.",
+        "properties": {
+          "characterMaskConfig": {
+            "$ref": "#/$defs/CharacterMaskConfig"
+          },
+          "cryptoHashConfig": {
+            "$ref": "#/$defs/CryptoHashConfig"
+          },
+          "dateShiftConfig": {
+            "$ref": "#/$defs/DateShiftConfig"
+          },
+          "infoTypes": {
+            "description": "InfoTypes to apply this transformation to. If this is not specified, the transformation applies to any info_type.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "redactConfig": {
+            "$ref": "#/$defs/RedactConfig"
+          },
+          "replaceWithInfoTypeConfig": {
+            "$ref": "#/$defs/ReplaceWithInfoTypeConfig"
+          }
+        },
+        "type": "object"
+      },
+      "CharacterMaskConfig": {
+        "description": "Mask a string by replacing its characters with a fixed character.",
+        "properties": {
+          "maskingCharacter": {
+            "description": "Character to mask the sensitive values. If not supplied, defaults to \"*\".",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CryptoHashConfig": {
+        "description": "Pseudonymization method that generates surrogates via cryptographic hashing. Uses SHA-256. Outputs a base64-encoded representation of the hashed output (for example, `L7k0BHmF1ha5U3NfGykjro4xWi1MPVQPjhMAZbSV9mM=`).",
+        "properties": {
+          "cryptoKey": {
+            "description": "An AES 128/192/256 bit key. Causes the hash to be computed based on this key. A default key is generated for each Deidentify operation and is used when neither `crypto_key` nor `kms_wrapped` is specified. Must not be set if `kms_wrapped` is set.",
+            "format": "byte",
+            "type": "string"
+          },
+          "kmsWrapped": {
+            "$ref": "#/$defs/KmsWrappedCryptoKey"
+          }
+        },
+        "type": "object"
+      },
+      "KmsWrappedCryptoKey": {
+        "description": "Include to use an existing data crypto key wrapped by KMS. The wrapped key must be a 128-, 192-, or 256-bit key. The key must grant the Cloud IAM permission `cloudkms.cryptoKeyVersions.useToDecrypt` to the project's Cloud Healthcare Service Agent service account. For more information, see [Creating a wrapped key] (https://cloud.google.com/dlp/docs/create-wrapped-key).",
+        "properties": {
+          "cryptoKey": {
+            "description": "Required. The resource name of the KMS CryptoKey to use for unwrapping. For example, `projects/{project_id}/locations/{location_id}/keyRings/{keyring}/cryptoKeys/{key}`.",
+            "type": "string"
+          },
+          "wrappedKey": {
+            "description": "Required. The wrapped data crypto key.",
+            "format": "byte",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DateShiftConfig": {
+        "description": "Shift a date forward or backward in time by a random amount which is consistent for a given patient and crypto key combination.",
+        "properties": {
+          "cryptoKey": {
+            "description": "An AES 128/192/256 bit key. The date shift is computed based on this key and the patient ID. If the patient ID is empty for a DICOM resource, the date shift is computed based on this key and the study instance UID. If `crypto_key` is not set, then `kms_wrapped` is used to calculate the date shift. If neither is set, a default key is generated for each de-identify operation. Must not be set if `kms_wrapped` is set.",
+            "format": "byte",
+            "type": "string"
+          },
+          "kmsWrapped": {
+            "$ref": "#/$defs/KmsWrappedCryptoKey"
+          }
+        },
+        "type": "object"
+      },
+      "RedactConfig": {
+        "description": "Define how to redact sensitive values. Default behaviour is erase. For example, \"My name is Jane.\" becomes \"My name is .\"",
+        "properties": {},
+        "type": "object"
+      },
+      "ReplaceWithInfoTypeConfig": {
+        "description": "When using the INSPECT_AND_TRANSFORM action, each match is replaced with the name of the info_type. For example, \"My name is Jane\" becomes \"My name is [PERSON_NAME].\" The TRANSFORM action is equivalent to redacting.",
+        "properties": {},
+        "type": "object"
+      },
+      "FhirFilter": {
+        "description": "Filter configuration.",
+        "properties": {
+          "resources": {
+            "$ref": "#/$defs/Resources"
+          }
+        },
+        "type": "object"
+      },
+      "Resources": {
+        "description": "A list of FHIR resources.",
+        "properties": {
+          "resources": {
+            "description": "List of resources IDs. For example, \"Patient/1234\".",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://healthcare.googleapis.com//v1/{sourceStore}:deidentify{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This resource represents a long-running operation that is the result of a network API call.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**done**: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.",
+            [
+              "**error**: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).",
+              {
+                "$ul": [
+                  "**code**: The status code, which should be an enum value of google.rpc.Code.",
+                  "**details**: A list of messages that carry the error details. There is a common set of message types for APIs to use.",
+                  "**message**: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client."
+                ]
+              }
+            ],
+            "**metadata**: Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.",
+            "**name**: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.",
+            "**response**: The normal, successful response of the operation. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

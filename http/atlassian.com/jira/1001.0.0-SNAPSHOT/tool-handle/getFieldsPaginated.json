@@ -1,0 +1,163 @@
+{
+  "name": "getFieldsPaginated",
+  "description": "Returns a [paginated](#pagination) list of fields for Classic Jira projects. The list can include:\n\n *  all fields\n *  specific fields, by defining `id`\n *  fields that contain a string in the field name or description, by defining `query`\n *  specific fields that contain a string in the field name or description, by defining `id` and `query`\n\nOnly custom fields can be queried, `type` must be set to `custom`.\n\n**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "startAt": {
+        "default": 0,
+        "format": "int64",
+        "type": "integer",
+        "description": "The index of the first item to return in a page of results (page offset)."
+      },
+      "maxResults": {
+        "default": 50,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of items to return per page."
+      },
+      "type": {
+        "items": {
+          "enum": [
+            "custom",
+            "system"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The type of fields to search."
+      },
+      "id": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "description": "The IDs of the custom fields to return or, where `query` is specified, filter."
+      },
+      "query": {
+        "type": "string",
+        "description": "String used to perform a case-insensitive partial match with field names or descriptions."
+      },
+      "orderBy": {
+        "enum": [
+          "contextsCount",
+          "-contextsCount",
+          "+contextsCount",
+          "lastUsed",
+          "-lastUsed",
+          "+lastUsed",
+          "name",
+          "-name",
+          "+name",
+          "screensCount",
+          "-screensCount",
+          "+screensCount",
+          "projectsCount",
+          "-projectsCount",
+          "+projectsCount"
+        ],
+        "type": "string",
+        "description": "[Order](#ordering) the results by a field:\n\n *  `contextsCount` sorts by the number of contexts related to a field\n *  `lastUsed` sorts by the date when the value of the field last changed\n *  `name` sorts by the field name\n *  `screensCount` sorts by the number of screens related to a field"
+      },
+      "expand": {
+        "type": "string",
+        "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `key` returns the key for each field\n *  `lastUsed` returns the date when the value of the field last changed\n *  `screensCount` returns the number of screens related to a field\n *  `contextsCount` returns the number of contexts related to a field\n *  `isLocked` returns information about whether the field is [locked](https://confluence.atlassian.com/x/ZSN7Og)\n *  `searcherKey` returns the searcher key for each custom field"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/field/search{?startAt,maxResults,type,id,query,orderBy,expand}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A page of items.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**isLast**: Whether this is the last page.",
+            "**maxResults**: The maximum number of items that could be returned.",
+            "**nextPage**: If there is another page of results, the URL of the next page.",
+            "**self**: The URL of the page.",
+            "**startAt**: The index of the first item returned.",
+            "**total**: The number of items returned.",
+            "**values**: The list of items."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

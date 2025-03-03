@@ -1,0 +1,116 @@
+{
+  "name": "listNotifications",
+  "description": "Get a list of all the [notifications](/docs/account/06-notifications) you have access to. You can use sorting and filtering to limit the returned list.\n\n**Notes:**\n  - Authenticated user should have [notifications permission](/docs/account/04-users/00-introduction#managing-user-roles-and-permissions)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "type": "string",
+        "description": "API Key required to make the API call. "
+      },
+      "ev-access-token": {
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "type": {
+        "enum": [
+          "file",
+          "folder",
+          "shared_folder",
+          "send_receipt",
+          "share_receipt",
+          "file_drop"
+        ],
+        "type": "string",
+        "description": "Type of notification include in the list. Valid options are **file**, **folder**, **send_receipt**, **share_receipt**, **file_drop**\n\nIf this parameter is not used, only **file** and **folder** type notifications are included in the list."
+      },
+      "offset": {
+        "default": 0,
+        "format": "int32",
+        "type": "integer",
+        "description": "Starting notification record in the result set. Can be used for pagination."
+      },
+      "sort": {
+        "type": "string",
+        "description": "What order the list of matches should be in. Valid sort fields are **resourcename**, **date**, **action** and **type**. The sort order for each sort field is ascending unless it is prefixed with a minus (“-“), in which case it will be descending.\n\nYou can chose multiple options for the sort by separating them with commmas, such as \"type,-date\" to sort by type, then most recent."
+      },
+      "limit": {
+        "default": 25,
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of notification records to return. Can be used for pagination."
+      },
+      "include": {
+        "enum": [
+          "resource",
+          "share",
+          "user"
+        ],
+        "type": "string",
+        "description": "Related records to include in the response. Valid options are **ownerUser**, **resource**, **share**"
+      },
+      "action": {
+        "enum": [
+          "connect",
+          "download",
+          "upload",
+          "delete",
+          "all"
+        ],
+        "example": "all",
+        "type": "string",
+        "description": "The kind of action which triggers the notification. Valid choices are **connect** (only for delivery receipts), **download**, **upload**, **delete**, or **all** \n\n**Note** The **all** action matches notifications set to \"all\", not all notifications. For example, notifications set to trigger only on delete are not included if you filter for action=all"
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/notifications{?type,offset,sort,limit,include,action}"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "NotificationCollectionResponse"
+        },
+        "Response object for notifications collection.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**included**",
+            "**responseStatus**: Http status code of the response.",
+            "**returnedResults**: Number of returned results.",
+            "**totalResults**: Total results found. "
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

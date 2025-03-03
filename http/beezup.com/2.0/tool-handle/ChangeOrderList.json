@@ -1,0 +1,228 @@
+{
+  "name": "ChangeOrderList",
+  "description": "The purpose of this operation is to reduce the amount of request to the API. \nMax 100 items per call.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "changeOrderType": {
+        "type": "string",
+        "description": "The Order change type"
+      },
+      "userName": {
+        "type": "string",
+        "description": "Sometimes the user in the e-commerce application is not the same as user associated with the current subscription key. We recommend providing your application's user login."
+      },
+      "testMode": {
+        "default": "false",
+        "type": "boolean",
+        "description": "If true, the operation will be not be sent to marketplace. But the validation will be taken in account."
+      },
+      "body": {
+        "$ref": "#/$defs/changeOrderListRequest"
+      }
+    },
+    "required": [
+      "changeOrderType",
+      "userName",
+      "body"
+    ],
+    "$defs": {
+      "changeOrderListRequest": {
+        "description": "Contains all change order operations you want to make.  (max 100 items per call)",
+        "properties": {
+          "changeOrders": {
+            "description": "The change order operations",
+            "items": {
+              "$ref": "#/$defs/changeOrderListRequestItem"
+            },
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "changeOrders"
+        ],
+        "type": "object"
+      },
+      "changeOrderListRequestItem": {
+        "description": "Contains the order identifier and the change order request",
+        "properties": {
+          "changeOrderRequest": {
+            "$ref": "#/$defs/changeOrderRequest"
+          },
+          "order": {
+            "$ref": "#/$defs/orderIdentifierWithETag"
+          }
+        },
+        "required": [
+          "order"
+        ],
+        "type": "object"
+      },
+      "changeOrderRequest": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "All properties with the prefix order_ are translated in the list of values /user/lov#OrderMetaInfoPosted",
+        "example": {
+          "order_Shipping_CarrierName": "La poste",
+          "order_Shipping_EstimatedDeliveryDate": "2014-09-24T09:58:00Z",
+          "order_Shipping_FulfillmentDate": "2014-09-23T09:58:00Z",
+          "order_Shipping_ShipperTrackingNumber": "1H01845163783",
+          "order_Shipping_ShippingUrl": "https://trackingpackage.com?number=1H01845163783"
+        },
+        "type": "object"
+      },
+      "orderIdentifierWithETag": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/orderIdentifier"
+          },
+          {
+            "properties": {
+              "etag": {
+                "$ref": "#/$defs/etag"
+              }
+            },
+            "required": [
+              "marketplaceTechnicalCode",
+              "accountId",
+              "beezUPOrderId",
+              "etag"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "orderIdentifier": {
+        "properties": {
+          "accountId": {
+            "$ref": "#/$defs/accountId"
+          },
+          "beezUPOrderId": {
+            "$ref": "#/$defs/beezUPOrderId"
+          },
+          "marketplaceTechnicalCode": {
+            "$ref": "#/$defs/BeezUP.Common.MarketplaceTechnicalCode"
+          }
+        },
+        "required": [
+          "marketplaceTechnicalCode",
+          "accountId",
+          "beezUPOrderId"
+        ],
+        "type": "object"
+      },
+      "accountId": {
+        "description": "The marketplace account identifier in BeezUP. This account identifier is based on your api settings.",
+        "example": "1234",
+        "format": "int32",
+        "type": "integer"
+      },
+      "beezUPOrderId": {
+        "description": "The BeezUP Order identifier",
+        "example": "00000000000000000000000000000000000000000000000",
+        "format": "uuid",
+        "type": "string"
+      },
+      "BeezUP.Common.MarketplaceTechnicalCode": {
+        "description": "The technical code of the marketplace.",
+        "example": "Amazon",
+        "type": "string",
+        "x-lov": "OMMarketplaceTechnicalCode"
+      },
+      "etag": {
+        "description": "ETag value to identify the order.\\\nThis information is required for the operation GetOrder and ChangeOrder.\\\nFor more details go to this link: http://tools.ietf.org/html/rfc7232#section-2.3\n",
+        "example": "\"ca071a4580129f932a03971968ffef69\"",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.beezup.com/v2/user/marketplaces/orders/batches/changeOrders/{changeOrderType}{?userName,testMode}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response given by the batch operation",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**operations**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

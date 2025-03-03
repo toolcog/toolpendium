@@ -1,0 +1,398 @@
+{
+  "name": "CreateEphemeris",
+  "description": "Creates an Ephemeris with the specified <code>EphemerisData</code>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "satelliteId"
+        ],
+        "properties": {
+          "enabled": {
+            "description": "<p>Whether to set the ephemeris status to <code>ENABLED</code> after validation.</p> <p>Setting this to false will set the ephemeris status to <code>DISABLED</code> after validation.</p>",
+            "type": "boolean"
+          },
+          "ephemeris": {
+            "description": "Ephemeris data.",
+            "type": "object",
+            "properties": {
+              "oem": {
+                "$ref": "#/$defs/OEMEphemeris"
+              },
+              "tle": {
+                "$ref": "#/$defs/TLEEphemeris"
+              }
+            }
+          },
+          "expirationTime": {
+            "description": "An overall expiration time for the ephemeris in UTC, after which it will become <code>EXPIRED</code>.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "kmsKeyArn": {
+            "description": "The ARN of a KMS key used to encrypt the ephemeris in Ground Station.",
+            "type": "string"
+          },
+          "name": {
+            "description": "A name string associated with the ephemeris. Used as a human-readable identifier for the ephemeris.",
+            "type": "string",
+            "pattern": "^[ a-zA-Z0-9_:-]{1,256}$",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "priority": {
+            "description": "<p>Customer-provided priority score to establish the order in which overlapping ephemerides should be used.</p> <p>The default for customer-provided ephemeris priority is 1, and higher numbers take precedence.</p> <p>Priority must be 1 or greater</p>",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999
+          },
+          "satelliteId": {
+            "description": "AWS Ground Station satellite ID for this ephemeris.",
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "tags": {
+            "description": "Tags assigned to an ephemeris.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/String"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "OEMEphemeris": {
+        "type": "object",
+        "properties": {
+          "oemData": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UnboundedString"
+              },
+              {
+                "description": "The data for an OEM ephemeris, supplied directly in the request rather than through an S3 object."
+              }
+            ]
+          },
+          "s3Object": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Object"
+              },
+              {
+                "description": "Identifies the S3 object to be used as the ephemeris."
+              }
+            ]
+          }
+        },
+        "description": "Ephemeris data in Orbit Ephemeris Message (OEM) format."
+      },
+      "UnboundedString": {
+        "type": "string",
+        "pattern": "^[\\s\\S]+$",
+        "minLength": 1
+      },
+      "S3Object": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3BucketName"
+              },
+              {
+                "description": "An Amazon S3 Bucket name."
+              }
+            ]
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3ObjectKey"
+              },
+              {
+                "description": "An Amazon S3 key for the ephemeris."
+              }
+            ]
+          },
+          "version": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3VersionId"
+              },
+              {
+                "description": "For versioned S3 objects, the version to use for the ephemeris."
+              }
+            ]
+          }
+        },
+        "description": "Object stored in S3 containing ephemeris data."
+      },
+      "S3BucketName": {
+        "type": "string",
+        "pattern": "^[a-z0-9.-]{3,63}$",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "S3ObjectKey": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9!*'\\)\\(./_-]{1,1024}$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "S3VersionId": {
+        "type": "string",
+        "pattern": "^[\\s\\S]{1,1024}$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "TLEEphemeris": {
+        "type": "object",
+        "properties": {
+          "s3Object": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Object"
+              },
+              {
+                "description": "Identifies the S3 object to be used as the ephemeris."
+              }
+            ]
+          },
+          "tleData": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TLEDataList"
+              },
+              {
+                "description": "The data for a TLE ephemeris, supplied directly in the request rather than through an S3 object."
+              }
+            ]
+          }
+        },
+        "description": "Two-line element set (TLE) ephemeris."
+      },
+      "TLEDataList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/TLEData"
+        },
+        "minItems": 1,
+        "maxItems": 500
+      },
+      "TLEData": {
+        "type": "object",
+        "required": [
+          "tleLine1",
+          "tleLine2",
+          "validTimeRange"
+        ],
+        "properties": {
+          "tleLine1": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TleLineOne"
+              },
+              {
+                "description": "First line of two-line element set (TLE) data."
+              }
+            ]
+          },
+          "tleLine2": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TleLineTwo"
+              },
+              {
+                "description": "Second line of two-line element set (TLE) data."
+              }
+            ]
+          },
+          "validTimeRange": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimeRange"
+              },
+              {
+                "description": "The valid time range for the TLE. Gaps or overlap are not permitted."
+              }
+            ]
+          }
+        },
+        "description": "Two-line element set (TLE) data."
+      },
+      "TleLineOne": {
+        "type": "string",
+        "pattern": "^1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) [ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]$",
+        "minLength": 69,
+        "maxLength": 69
+      },
+      "TleLineTwo": {
+        "type": "string",
+        "pattern": "^2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]$",
+        "minLength": 69,
+        "maxLength": 69
+      },
+      "TimeRange": {
+        "type": "object",
+        "required": [
+          "endTime",
+          "startTime"
+        ],
+        "properties": {
+          "endTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "Time in UTC at which the time range ends."
+              }
+            ]
+          },
+          "startTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "Time in UTC at which the time range starts."
+              }
+            ]
+          }
+        },
+        "description": "A time range with a start and end time."
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "String": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://groundstation.us-east-1.amazonaws.com/ephemeris"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ephemerisId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

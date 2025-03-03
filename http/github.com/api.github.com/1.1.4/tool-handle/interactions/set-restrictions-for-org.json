@@ -1,0 +1,127 @@
+{
+  "name": "interactions_set-restrictions-for-org",
+  "description": "Temporarily restricts interactions to a certain type of GitHub user in any public repository in the given organization. You must be an organization owner to set these restrictions. Setting the interaction limit at the organization level will overwrite any interaction limits that are set for individual repositories owned by the organization.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org": {
+        "type": "string",
+        "description": "The organization name. The name is not case sensitive."
+      },
+      "body": {
+        "$ref": "#/$defs/interaction-limit"
+      }
+    },
+    "required": [
+      "org",
+      "body"
+    ],
+    "$defs": {
+      "interaction-limit": {
+        "description": "Limit interactions to a specific type of user for a specified duration",
+        "properties": {
+          "expiry": {
+            "$ref": "#/$defs/interaction-expiry"
+          },
+          "limit": {
+            "$ref": "#/$defs/interaction-group"
+          }
+        },
+        "required": [
+          "limit"
+        ],
+        "title": "Interaction Restrictions",
+        "type": "object"
+      },
+      "interaction-expiry": {
+        "description": "The duration of the interaction restriction. Default: `one_day`.",
+        "enum": [
+          "one_day",
+          "three_days",
+          "one_week",
+          "one_month",
+          "six_months"
+        ],
+        "example": "one_month",
+        "type": "string"
+      },
+      "interaction-group": {
+        "description": "The type of GitHub user that can comment, open issues, or create pull requests while the interaction limit is in effect.",
+        "enum": [
+          "existing_users",
+          "contributors_only",
+          "collaborators_only"
+        ],
+        "example": "collaborators_only",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.github.com/orgs/{org}/interaction-limits"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Interaction Limits"
+        },
+        "Interaction limit settings.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**expires_at**",
+            "**limit**: The type of GitHub user that can comment, open issues, or create pull requests while the interaction limit is in effect.",
+            "**origin**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

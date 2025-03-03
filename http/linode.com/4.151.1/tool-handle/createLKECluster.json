@@ -1,0 +1,247 @@
+{
+  "name": "createLKECluster",
+  "description": "Creates a Kubernetes cluster. The Kubernetes cluster will be created\nasynchronously. You can use the events system to determine when the\nKubernetes cluster is ready to use. Please note that it often takes 2-5 minutes before the\n[Kubernetes API server endpoint](/docs/api/linode-kubernetes-engine-lke/#kubernetes-api-endpoints-list) and\nthe [Kubeconfig file](/docs/api/linode-kubernetes-engine-lke/#kubeconfig-view) for the new cluster\nare ready.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "control_plane": {
+            "description": "Defines settings for the Kubernetes Control Plane. Allows for the enabling of High Availability (HA) for Control Plane Components. Enabling High Availability for LKE is an **irreversible** change.\n",
+            "properties": {
+              "high_availability": {
+                "description": "Defines whether High Availability is enabled for the Control Plane Components of the cluster. Defaults to `false`.\n",
+                "example": true,
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "k8s_version": {
+            "$ref": "#/$defs/k8s_version"
+          },
+          "label": {
+            "$ref": "#/$defs/label"
+          },
+          "node_pools": {
+            "items": {
+              "$ref": "#/$defs/LKENodePoolRequestBody"
+            },
+            "required": [
+              "type",
+              "count"
+            ],
+            "type": "array"
+          },
+          "region": {
+            "$ref": "#/$defs/region"
+          },
+          "tags": {
+            "$ref": "#/$defs/tags"
+          }
+        },
+        "required": [
+          "label",
+          "region",
+          "k8s_version",
+          "node_pools"
+        ],
+        "type": "object",
+        "description": "Configuration for the Kubernetes cluster"
+      }
+    },
+    "$defs": {
+      "k8s_version": {
+        "description": "The desired Kubernetes version for this Kubernetes cluster in the format of &lt;major&gt;.&lt;minor&gt;, and the latest supported patch version will be deployed.\n",
+        "example": "1.25",
+        "type": "string",
+        "x-linode-cli-display": 4,
+        "x-linode-filterable": true
+      },
+      "label": {
+        "description": "This Kubernetes cluster's unique label for display purposes only.\nLabels have the following constraints:\n\n  * UTF-8 characters will be returned by the API using escape\n    sequences of their Unicode code points. For example, the\n    Japanese character *か* is 3 bytes in UTF-8 (`0xE382AB`). Its\n    Unicode code point is 2 bytes (`0x30AB`). APIv4 supports this\n    character and the API will return it as the escape sequence\n    using six 1 byte characters which represent 2 bytes of Unicode\n    code point (`\"\\u30ab\"`).\n  * 4 byte UTF-8 characters are not supported.\n  * If the label is entirely composed of UTF-8 characters, the API\n    response will return the code points using up to 193 1 byte\n    characters.\n",
+        "example": "lkecluster12345",
+        "maxLength": 32,
+        "minLength": 1,
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      },
+      "LKENodePoolRequestBody": {
+        "description": "Specifies a collection of Linodes which will be members of a Kubernetes cluster.\n",
+        "properties": {
+          "autoscaler": {
+            "description": "When enabled, the number of nodes autoscales within the defined minimum and maximum values.\n\nWhen making a request, `max` and `min` require each other.\n",
+            "properties": {
+              "enabled": {
+                "description": "Whether autoscaling is enabled for this Node Pool. Defaults to `false`.",
+                "example": true,
+                "type": "boolean"
+              },
+              "max": {
+                "description": "The maximum number of nodes to autoscale to. Defaults to the Node Pool's `count`. Defaults to the value provided by the `count` field.\n",
+                "example": 12,
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "min": {
+                "description": "The minimum number of nodes to autoscale to. Defaults to the Node Pool's `count`.",
+                "example": 3,
+                "maximum": 100,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "count": {
+            "$ref": "#/$defs/count"
+          },
+          "disks": {
+            "description": "**Note**: This field should be omitted except for special use cases. The disks specified here are\npartitions in *addition* to the primary partition and reduce the size of the primary partition,\nwhich can lead to stability problems for the Node.\n\nThis Node Pool's custom disk layout. Each item in this array will create a new disk\npartition for each node in this Node Pool.\n\n  * The custom disk layout is applied to each node in this Node Pool.\n  * The maximum number of custom disk partitions that can be configured is 7.\n  * Once the requested disk paritions are allocated, the remaining disk space is allocated to the node's boot disk.\n  * A Node Pool's custom disk layout is immutable over the lifetime of the Node Pool.\n",
+            "items": {
+              "$ref": "#/$defs/items"
+            },
+            "type": "array",
+            "x-linode-cli-format": "json"
+          },
+          "tags": {
+            "$ref": "#/$defs/tags"
+          },
+          "type": {
+            "$ref": "#/$defs/type"
+          }
+        },
+        "type": "object"
+      },
+      "count": {
+        "description": "The number of nodes in the Node Pool.",
+        "example": 6,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "items": {
+        "description": "The values to assign to each partition in this Node Pool's custom disk layout.\n",
+        "properties": {
+          "size": {
+            "description": "The size of this custom disk partition in MB.\n\n  * The size of this disk partition must not exceed the capacity of the node's plan type.\n",
+            "example": 1024,
+            "type": "integer"
+          },
+          "type": {
+            "description": "This custom disk partition's filesystem type.\n",
+            "enum": [
+              "raw",
+              "ext4"
+            ],
+            "example": "ext-4",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "tags": {
+        "description": "An array of tags applied to this object. Tags are for organizational purposes only.\n",
+        "example": [
+          "example tag",
+          "another example"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "x-linode-filterable": true
+      },
+      "type": {
+        "description": "The Linode Type for all of the nodes in the Node Pool.",
+        "example": "g6-standard-4",
+        "type": "string"
+      },
+      "region": {
+        "description": "This Kubernetes cluster's location.",
+        "example": "us-central",
+        "type": "string",
+        "x-linode-cli-display": 3,
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/lke/clusters"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A Kubernetes cluster.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**control_plane**: Defines settings for the Kubernetes Control Plane. Allows for the enabling of High Availability (HA) for Control Plane Components. Enabling High Avaialability for LKE is an **irreversible** change.",
+              {
+                "$ul": [
+                  "**high_availability**: Defines whether High Availability is enabled for the Control Plane Components of the cluster. Defaults to `false`."
+                ]
+              }
+            ],
+            "**created**: When this Kubernetes cluster was created.",
+            "**id**: This Kubernetes cluster's unique ID.",
+            "**k8s_version**: The desired Kubernetes version for this Kubernetes cluster in the format of &lt;major&gt;.&lt;minor&gt;, and the latest supported patch version will be deployed.",
+            "**label**: This Kubernetes cluster's unique label for display purposes only.",
+            "**region**: This Kubernetes cluster's location.",
+            "**tags**: An array of tags applied to the Kubernetes cluster. Tags are for organizational purposes only.",
+            "**updated**: When this Kubernetes cluster was updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

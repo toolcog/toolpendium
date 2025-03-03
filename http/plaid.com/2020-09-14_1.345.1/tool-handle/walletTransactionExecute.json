@@ -1,0 +1,229 @@
+{
+  "name": "walletTransactionExecute",
+  "description": "Execute a transaction using the specified e-wallet.\nSpecify the e-wallet to debit from, the counterparty to credit to, the idempotency key to prevent duplicate transactions, the amount and reference for the transaction.\nTransactions will settle in seconds to several days, depending on the underlying payment rail.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/WalletTransactionExecuteRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "WalletTransactionExecuteRequest": {
+        "description": "WalletTransactionExecuteRequest defines the request schema for `/wallet/transaction/execute`",
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/WalletTransactionAmount"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "counterparty": {
+            "$ref": "#/$defs/WalletTransactionCounterparty"
+          },
+          "idempotency_key": {
+            "$ref": "#/$defs/WalletTransactionIdempotencyKey"
+          },
+          "reference": {
+            "description": "A reference for the transaction. This must be an alphanumeric string with 6 to 18 characters and must not contain any special characters or spaces.\nEnsure that the `reference` field is unique for each transaction.",
+            "maxLength": 18,
+            "minLength": 6,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "wallet_id": {
+            "description": "The ID of the e-wallet to debit from",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "idempotency_key",
+          "wallet_id",
+          "counterparty",
+          "amount",
+          "reference"
+        ],
+        "type": "object"
+      },
+      "WalletTransactionAmount": {
+        "additionalProperties": true,
+        "description": "The amount and currency of a transaction",
+        "properties": {
+          "iso_currency_code": {
+            "$ref": "#/$defs/WalletISOCurrencyCode"
+          },
+          "value": {
+            "description": "The amount of the transaction. Must contain at most two digits of precision e.g. `1.23`.",
+            "format": "double",
+            "minimum": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "iso_currency_code",
+          "value"
+        ],
+        "title": "WalletTransactionAmount",
+        "type": "object"
+      },
+      "WalletISOCurrencyCode": {
+        "description": "An ISO-4217 currency code, used with e-wallets and transactions.",
+        "enum": [
+          "GBP",
+          "EUR"
+        ],
+        "maxLength": 3,
+        "minLength": 3,
+        "title": "ISO Currency Code",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "WalletTransactionCounterparty": {
+        "additionalProperties": true,
+        "description": "An object representing the e-wallet transaction's counterparty",
+        "properties": {
+          "name": {
+            "description": "The name of the counterparty",
+            "minLength": 1,
+            "type": "string"
+          },
+          "numbers": {
+            "$ref": "#/$defs/WalletTransactionCounterpartyNumbers"
+          }
+        },
+        "required": [
+          "name",
+          "numbers"
+        ],
+        "title": "WalletTransactionCounterparty",
+        "type": "object"
+      },
+      "WalletTransactionCounterpartyNumbers": {
+        "additionalProperties": true,
+        "description": "The counterparty's bank account numbers. Exactly one of IBAN or BACS data is required.",
+        "properties": {
+          "bacs": {
+            "$ref": "#/$defs/WalletTransactionCounterpartyBACS"
+          },
+          "international": {
+            "$ref": "#/$defs/WalletTransactionCounterpartyInternational"
+          }
+        },
+        "title": "WalletTransactionCounterpartyNumbers",
+        "type": "object"
+      },
+      "WalletTransactionCounterpartyBACS": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/RecipientBACS"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        ],
+        "description": "The account number and sort code of the counterparty's account"
+      },
+      "RecipientBACS": {
+        "additionalProperties": true,
+        "description": "An object containing a BACS account number and sort code. If an IBAN is not provided or if you need to accept domestic GBP-denominated payments, BACS data is required.",
+        "nullable": true,
+        "properties": {
+          "account": {
+            "description": "The account number of the account. Maximum of 10 characters.",
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sort_code": {
+            "description": "The 6-character sort code of the account.",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "title": "RecipientBACS",
+        "type": "object"
+      },
+      "WalletTransactionCounterpartyInternational": {
+        "additionalProperties": true,
+        "description": "International Bank Account Number for a Wallet Transaction",
+        "nullable": true,
+        "properties": {
+          "iban": {
+            "$ref": "#/$defs/NumbersIBAN"
+          }
+        },
+        "type": "object"
+      },
+      "NumbersIBAN": {
+        "description": "International Bank Account Number (IBAN).",
+        "maxLength": 34,
+        "minLength": 15,
+        "type": "string"
+      },
+      "WalletTransactionIdempotencyKey": {
+        "description": "A random key provided by the client, per unique wallet transaction. Maximum of 128 characters.\n\nThe API supports idempotency for safely retrying requests without accidentally performing the same operation twice. If a request to execute a wallet transaction fails due to a network connection error, then after a minimum delay of one minute, you can retry the request with the same idempotency key to guarantee that only a single wallet transaction is created. If the request was successfully processed, it will prevent any transaction that uses the same idempotency key, and was received within 24 hours of the first request, from being processed.",
+        "maxLength": 128,
+        "minLength": 1,
+        "title": "WalletTransactionIdempotencyKey",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/wallet/transaction/execute"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "WalletTransactionExecuteResponse defines the response schema for `/wallet/transaction/execute`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**status**: The status of the transaction.",
+            "**transaction_id**: A unique ID identifying the transaction"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

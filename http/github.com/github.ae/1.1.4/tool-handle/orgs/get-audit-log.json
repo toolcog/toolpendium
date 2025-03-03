@@ -1,0 +1,139 @@
+{
+  "name": "orgs_get-audit-log",
+  "description": "Gets the audit log for an organization. For more information, see \"[Reviewing the audit log for your organization](https://docs.github.com/github-ae@latest/github/setting-up-and-managing-organizations-and-teams/reviewing-the-audit-log-for-your-organization).\"\n\nThis endpoint is available for organizations on GitHub Enterprise Cloud. To use this endpoint, you must be an organization owner, and you must use an access token with the `admin:org` scope. GitHub Apps must have the `organization_administration` read permission to use this endpoint.\n\nBy default, the response includes up to 30 events from the past three months. Use the `phrase` parameter to filter results and retrieve older events. For example, use the `phrase` parameter with the `created` qualifier to filter events based on when the events occurred. For more information, see \"[Reviewing the audit log for your organization](https://docs.github.com/github-ae@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/reviewing-the-audit-log-for-your-organization#searching-the-audit-log).\"\n\nUse pagination to retrieve fewer or more than 30 events. For more information, see \"[Resources in the REST API](https://docs.github.com/github-ae@latest/rest/overview/resources-in-the-rest-api#pagination).\"",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org": {
+        "type": "string",
+        "description": "The organization name. The name is not case sensitive."
+      },
+      "phrase": {
+        "type": "string",
+        "description": "A search phrase. For more information, see [Searching the audit log](https://docs.github.com/github-ae@latest/github/setting-up-and-managing-organizations-and-teams/reviewing-the-audit-log-for-your-organization#searching-the-audit-log)."
+      },
+      "after": {
+        "type": "string",
+        "description": "A cursor, as given in the [Link header](https://docs.github.com/github-ae@latest/rest/overview/resources-in-the-rest-api#link-header). If specified, the query only searches for events after this cursor."
+      },
+      "before": {
+        "type": "string",
+        "description": "A cursor, as given in the [Link header](https://docs.github.com/github-ae@latest/rest/overview/resources-in-the-rest-api#link-header). If specified, the query only searches for events before this cursor."
+      },
+      "order": {
+        "enum": [
+          "desc",
+          "asc"
+        ],
+        "type": "string",
+        "description": "The order of audit log events. To list newest events first, specify `desc`. To list oldest events first, specify `asc`.\n\nThe default is `desc`."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      }
+    },
+    "required": [
+      "org"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//orgs/{org}/audit-log{?phrase,after,before,order,per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**@timestamp**: The time the audit log event occurred, given as a [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time).",
+            "**_document_id**: A unique identifier for an audit event.",
+            "**action**: The name of the action that was performed, for example `user.login` or `repo.create`.",
+            "**active**",
+            "**active_was**",
+            "**actor**: The actor who performed the action.",
+            "**actor_id**: The id of the actor who performed the action.",
+            [
+              "**actor_location**",
+              {
+                "$ul": [
+                  "**country_name**"
+                ]
+              }
+            ],
+            "**blocked_user**: The username of the account being blocked.",
+            "**business**",
+            "**business_id**",
+            "**config**",
+            "**config_was**",
+            "**content_type**",
+            "**created_at**: The time the audit log event was recorded, given as a [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time).",
+            "**data**",
+            "**deploy_key_fingerprint**",
+            "**emoji**",
+            "**events**",
+            "**events_were**",
+            "**explanation**",
+            "**fingerprint**",
+            "**hook_id**",
+            "**limited_availability**",
+            "**message**",
+            "**name**",
+            "**old_user**",
+            "**openssh_public_key**",
+            "**operation_type**",
+            "**org**",
+            "**org_id**",
+            "**previous_visibility**",
+            "**read_only**",
+            "**repo**: The name of the repository.",
+            "**repository**: The name of the repository.",
+            "**repository_public**",
+            "**target_login**",
+            "**team**",
+            "**transport_protocol**: The type of protocol (for example, HTTP or SSH) used to transfer Git data.",
+            "**transport_protocol_name**: A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data.",
+            "**user**: The user that was affected by the action performed (if available).",
+            "**user_id**",
+            "**visibility**: The repository visibility, for example `public` or `private`."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

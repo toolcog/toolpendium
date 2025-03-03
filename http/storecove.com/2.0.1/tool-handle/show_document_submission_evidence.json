@@ -1,0 +1,78 @@
+{
+  "name": "show_document_submission_evidence",
+  "description": "Get evidence for a DocumentSubmission by GUID with corresponding status",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "guid": {
+        "format": "uuid",
+        "type": "string",
+        "description": "DocumentSubmission GUID"
+      },
+      "evidence_type": {
+        "default": "sending",
+        "enum": [
+          "sending",
+          "clearing"
+        ],
+        "type": "string",
+        "description": "Type of evidence requested"
+      }
+    },
+    "required": [
+      "guid",
+      "evidence_type"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.storecove.com/api/v2/document_submissions/{guid}/evidence/{evidence_type}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documents**: An array of documents that were sent. For OpenPeppol, this is always a single document (it may contain a PDF inside). For Email, the number of documents depends on the number of attachments, which in turn depends on the country of the receiver. For email, the raw email in RFC822 format is also included.",
+            [
+              "**evidence**",
+              {
+                "$ul": [
+                  "**message_id**: The unique message id used in the OpenPeppol SBDH.",
+                  "**receiving_accesspoint**: An identification of the OpenPeppol accesspoint that the invoice was sent to.",
+                  "**remote_mta_ip**: The IP address of the sending SMTP server.",
+                  "**reporting_mta**: An identification for the sending SMTP.",
+                  "**smtp_response**: The response of the receiving SMTP server.",
+                  "**timestamp**: The timestamp of the delivery to the receiving SMTP server.",
+                  "**transmission_id**: The unique id for this OpenPeppol transmission.",
+                  "**xml**: The XML evidence for the transmission. This is the XML returned by the receiving OpenPeppol accesspoint."
+                ]
+              }
+            ],
+            "**network**: The exchange network that was used to send the document",
+            "**receiver**: The legal identifier of the receiver, or the tax identifier if there is no legal identifier.",
+            "**sender**: The legal identifier of the sender, or the tax identifier if there is no legal identifier."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "name": "PUT_Subscription",
+  "description": "Use this call to make the following kinds of changes to a subscription:\n  * Add a note\n  * Change the renewal term or auto-renewal flag\n  * Change the term length or change between evergreen and termed\n  * Add a new product rate plan\n  * Remove an existing subscription rate plan\n  * Change the quantity or price of an existing subscription rate plan\n\n## Notes\n* The Update Subscription call creates a new subscription, which has the old subscription number but a new subscription ID.  The old subscription is canceled but remains in the system.\n* In one request, this call can make:\n  * Up to 9 combined add, update, and remove changes\n  * No more than 1 change to terms & conditions\n* Updates are performed in the following sequence:\n  1. First change the notes on the existing subscription, if requested.\n  2. Then change the terms and conditions, if requested.\n  3. Then perform the remaining amendments based upon the effective dates specified. If multiple amendments have the same contract-effective dates, then execute adds before updates, and updates before removes.\n* The update operation is atomic. If any of the updates fails, the entire operation is rolled back.\n* The response of the Update Subscription call is based on the REST API minor version you set in the request header. The response structure might be different if you use different minor version numbers. \n* If you have the Invoice Settlement feature enabled, it is best practice to set the `zuora-version` parameter to `211.0` or later. Otherwise, an error occurs.\n\n## Override a Tiered Price\nThere are two ways you override a tiered price:\n\n* Override a specific tier number\nFor example: `tiers[{tier:1,price:8},{tier:2,price:6}]`\n\n* Override the entire tier structure\nFor example:  `tiers[{tier:1,price:8,startingUnit:1,endingUnit:100,priceFormat:\"FlatFee\"},\n{tier:2,price:6,startingUnit:101,priceFormat:\"FlatFee\"}]`\n\nIf you just override a specific tier, do not include the `startingUnit` field in the request.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Zuora-Track-Id": {
+        "maxLength": 64,
+        "type": "string",
+        "description": "A custom identifier for tracing the API call. If you set a value for this header, Zuora returns the same value in the response headers. This header enables you to associate your system process identifiers with Zuora API calls, to assist with troubleshooting in the event of an issue.\n\nThe value of this field must use the US-ASCII character set and must not include any of the following characters: colon (`:`), semicolon (`;`), double quote (`\"`), and quote (`'`).\n"
+      },
+      "Zuora-Entity-Ids": {
+        "type": "string",
+        "description": "An entity ID. If you have [Zuora Multi-entity](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Multi-entity) enabled and the OAuth token is valid for more than one entity, you must use this header to specify which entity to perform the operation in. If the OAuth token is only valid for a single entity, or you do not have Zuora Multi-entity enabled, you do not need to set this header.\n"
+      },
+      "zuora-version": {
+        "type": "string",
+        "description": "\nThe minor version of the Zuora REST API. \n\nYou need to set this parameter if you use the following fields:\n* collect\n* invoice\n* includeExistingDraftDocItems\n* previewType\n* runBilling\n* targetDate\n\n\nIf you have the Invoice Settlement feature enabled, you need to specify this parameter. Otherwise, an error is returned.\n\n\nSee [Zuora REST API Versions](https://www.zuora.com/developer/api-reference/#section/API-Versions) for more information.\n"
+      },
+      "subscription-key": {
+        "type": "string",
+        "description": "Subscription number or ID."
+      }
+    },
+    "required": [
+      "subscription-key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://rest.zuora.com/v1/subscriptions/{subscription-key}"
+    },
+    "headers": {
+      "Zuora-Track-Id": {
+        "$": "Zuora-Track-Id"
+      },
+      "Zuora-Entity-Ids": {
+        "$": "Zuora-Entity-Ids"
+      },
+      "zuora-version": {
+        "$": "zuora-version"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**amount**: Invoice amount. Preview mode only.",
+            "**amountWithoutTax**: Invoice amount minus tax. Preview mode only.",
+            [
+              "**chargeMetrics**: Container for charge metrics.",
+              {
+                "$ul": [
+                  "**dmrr**: Change in total contract value.",
+                  "**dtcv**: Change in monthly recurring revenue.",
+                  "**mrr**: Monthly recurring revenue.",
+                  "**number**: The charge number of the subscription. Only available for update subscription.",
+                  "**originRatePlanId**: The origin rate plan ID. Only available for update subscription.",
+                  "**originalId**: The original rate plan charge ID. Only available for update subscription.",
+                  "**productRatePlanChargeId**: ",
+                  "**productRatePlanId**: ",
+                  "**tcv**: Total contract value."
+                ]
+              }
+            ],
+            [
+              "**creditMemo**: Container for credit memos.",
+              {
+                "$ul": [
+                  "**amount**: Credit memo amount.",
+                  "**amountWithoutTax**: Credit memo amount minus tax.",
+                  "**creditMemoItems**: ",
+                  "**taxAmount**: Tax amount on the credit memo."
+                ]
+              }
+            ],
+            "**creditMemoId**: The credit memo ID, if a credit memo is generated during the subscription process.",
+            "**invoice**: Container for invoices.",
+            "**invoiceId**: Invoice ID, if an invoice is generated during the update.",
+            "**invoiceItems**: Container for invoice items.",
+            "**invoiceTargetDate**: Date through which charges are calculated on the invoice, as yyyy-mm-dd. Preview mode only.",
+            "**paidAmount**: Payment amount, if a payment is collected",
+            "**paymentId**: Payment ID, if a payment is collected.",
+            "**subscriptionId**: The ID of the resulting new subscription.",
+            "**success**: Returns `true` if the request was processed successfully.",
+            "**targetDate**: Date through which to calculate charges if an invoice is generated, as yyyy-mm-dd. Default is current date.",
+            "**taxAmount**: Tax amount on the invoice.",
+            "**totalDeltaMrr**: Change in the subscription monthly recurring revenue as a result of the update.",
+            "**totalDeltaTcv**: Change in the total contracted value of the subscription as a result of the update."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

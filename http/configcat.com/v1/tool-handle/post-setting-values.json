@@ -1,0 +1,266 @@
+{
+  "name": "post-setting-values",
+  "description": "This endpoint replaces the values of a specified Config's Feature Flags or Settings identified by the `configId` parameter\nin a specified Environment identified by the `environmentId` parameter.\n\nOnly the `value`, `rolloutRules` and `percentageRules` attributes are modifiable by this endpoint.\n\n**Important:** As this endpoint is doing a complete replace, it's important to set every other attribute that you don't \nwant to change in its original state. Not listing one means that it will reset.\n\nFor example: We have the following resource.\n```\n{\n    \"settingValues\": [\n\t\t{\n\t\t\t\"rolloutPercentageItems\": [\n\t\t\t\t{\n\t\t\t\t\t\"percentage\": 30,\n\t\t\t\t\t\"value\": true\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"percentage\": 70,\n\t\t\t\t\t\"value\": false\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"rolloutRules\": [],\n\t\t\t\"value\": false,\n\t\t\t\"settingId\": 1\n\t\t}\n\t]\n}\n```\nIf we send a replace request body as below:\n```\n{ \n\t\"settingValues\": [\n\t\t{\n\t\t\t\"value\": true,\n\t\t\t\"settingId\": 1\n\t\t}\n\t]\n}\n```\nThen besides that the default value is set to `true`, all the Percentage Rules are deleted. \nSo we get a response like this:\n```\n{\n\t\"settingValues\": [\n\t\t{\n\t\t\t\"rolloutPercentageItems\": [],\n\t\t\t\"rolloutRules\": [],\n\t\t\t\"value\": true,\n\t\t\t\"setting\": \n\t\t\t{\n\t\t\t\t\"settingId\": 1\n\t\t\t}\n\t\t}\n\t]\n}\n```\n\nThe `rolloutRules` property describes two types of rules:\n\n- **Targeting rules**: When you want to add or update a targenting rule, the `comparator`, `comparisonAttribute`, and `comparisonValue` members are required.\n- **Segment rules**: When you want to add add or update a segment rule, the `segmentId` which identifies the desired segment and the `segmentComparator` members are required.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "configId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The identifier of the Config."
+      },
+      "environmentId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The identifier of the Environment."
+      },
+      "reason": {
+        "type": "string",
+        "description": "The reason note for the Audit Log if the Product's \"Config changes require a reason\" preference is turned on."
+      },
+      "body": {
+        "$ref": "#/$defs/UpdateSettingValuesWithIdModel"
+      }
+    },
+    "required": [
+      "configId",
+      "environmentId",
+      "body"
+    ],
+    "$defs": {
+      "UpdateSettingValuesWithIdModel": {
+        "additionalProperties": false,
+        "properties": {
+          "settingValues": {
+            "description": "The values to update.",
+            "items": {
+              "$ref": "#/$defs/UpdateSettingValueWithSettingIdModel"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateSettingValueWithSettingIdModel": {
+        "additionalProperties": false,
+        "properties": {
+          "rolloutPercentageItems": {
+            "description": "The percentage rule collection.",
+            "items": {
+              "$ref": "#/$defs/RolloutPercentageItemModel"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "rolloutRules": {
+            "description": "The targeting rule collection.",
+            "items": {
+              "$ref": "#/$defs/RolloutRuleModel"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "settingId": {
+            "description": "The id of the Setting.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "value": {
+            "description": "The value to serve. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "RolloutPercentageItemModel": {
+        "additionalProperties": false,
+        "properties": {
+          "percentage": {
+            "description": "The percentage value for the rule.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "value": {
+            "description": "The value to serve when the user falls in the percentage rule. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "percentage"
+        ],
+        "type": "object"
+      },
+      "RolloutRuleModel": {
+        "additionalProperties": false,
+        "properties": {
+          "comparator": {
+            "$ref": "#/$defs/RolloutRuleComparator"
+          },
+          "comparisonAttribute": {
+            "description": "The user attribute to compare.",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "comparisonValue": {
+            "description": "The value to compare against.",
+            "maxLength": 65535,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "segmentComparator": {
+            "$ref": "#/$defs/SegmentComparator"
+          },
+          "segmentId": {
+            "description": "The segment to compare against.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "value": {
+            "description": "The value to serve when the comparison matches. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "RolloutRuleComparator": {
+        "enum": [
+          "isOneOf",
+          "isNotOneOf",
+          "contains",
+          "doesNotContain",
+          "semVerIsOneOf",
+          "semVerIsNotOneOf",
+          "semVerLess",
+          "semVerLessOrEquals",
+          "semVerGreater",
+          "semVerGreaterOrEquals",
+          "numberEquals",
+          "numberDoesNotEqual",
+          "numberLess",
+          "numberLessOrEquals",
+          "numberGreater",
+          "numberGreaterOrEquals",
+          "sensitiveIsOneOf",
+          "sensitiveIsNotOneOf"
+        ],
+        "type": "string"
+      },
+      "SegmentComparator": {
+        "enum": [
+          "isIn",
+          "isNotIn"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.configcat.com/v1/configs/{configId}/environments/{environmentId}/values{?reason}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**config**",
+              {
+                "$ul": [
+                  "**configId**",
+                  "**description**",
+                  "**name**",
+                  "**order**",
+                  [
+                    "**product**",
+                    {
+                      "$ul": [
+                        "**description**",
+                        "**name**",
+                        "**order**",
+                        [
+                          "**organization**",
+                          {
+                            "$ul": [
+                              "**name**",
+                              "**organizationId**"
+                            ]
+                          }
+                        ],
+                        "**productId**",
+                        "**reasonRequired**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**environment**",
+              {
+                "$ul": [
+                  "**color**",
+                  "**description**",
+                  "**environmentId**",
+                  "**name**",
+                  "**order**",
+                  [
+                    "**product**",
+                    {
+                      "$ul": [
+                        "**description**",
+                        "**name**",
+                        "**order**",
+                        [
+                          "**organization**",
+                          {
+                            "$ul": [
+                              "**name**",
+                              "**organizationId**"
+                            ]
+                          }
+                        ],
+                        "**productId**",
+                        "**reasonRequired**"
+                      ]
+                    }
+                  ],
+                  "**reasonRequired**"
+                ]
+              }
+            ],
+            "**readOnly**",
+            "**settingValues**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

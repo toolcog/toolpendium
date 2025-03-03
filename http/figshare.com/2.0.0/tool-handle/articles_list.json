@@ -1,0 +1,171 @@
+{
+  "name": "articles_list",
+  "description": "Returns a list of public articles",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Cursor": {
+        "format": "uuid",
+        "type": "string",
+        "description": "Unique hash used for bypassing the item retrieval limit of 9,000 entities. When using this parameter, please note that the offset parameter will not be available, but the limit parameter will still work as expected."
+      },
+      "page": {
+        "format": "int64",
+        "maximum": 5000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Page number. Used for pagination with page_size"
+      },
+      "page_size": {
+        "default": 10,
+        "format": "int64",
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of results included on a page. Used for pagination with page"
+      },
+      "limit": {
+        "format": "int64",
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Number of results included on a page. Used for pagination with query"
+      },
+      "offset": {
+        "format": "int64",
+        "maximum": 5000,
+        "minimum": 0,
+        "type": "integer",
+        "description": "Where to start the listing(the offset of the first result). Used for pagination with limit"
+      },
+      "order": {
+        "default": "published_date",
+        "enum": [
+          "published_date",
+          "modified_date",
+          "views",
+          "shares",
+          "downloads",
+          "cites"
+        ],
+        "type": "string",
+        "description": "The field by which to order. Default varies by endpoint/resource."
+      },
+      "order_direction": {
+        "default": "desc",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string"
+      },
+      "institution": {
+        "format": "int64",
+        "type": "integer",
+        "description": "only return articles from this institution"
+      },
+      "published_since": {
+        "type": "string",
+        "description": "Filter by article publishing date. Will only return articles published after the date. date(ISO 8601) YYYY-MM-DD"
+      },
+      "modified_since": {
+        "type": "string",
+        "description": "Filter by article modified date. Will only return articles published after the date. date(ISO 8601) YYYY-MM-DD"
+      },
+      "group": {
+        "format": "int64",
+        "type": "integer",
+        "description": "only return articles from this group"
+      },
+      "resource_doi": {
+        "type": "string",
+        "description": "only return articles with this resource_doi"
+      },
+      "item_type": {
+        "format": "int64",
+        "type": "integer",
+        "description": "Only return articles with the respective type. Mapping for item_type is: 1 - Figure, 2 - Media, 3 - Dataset, 5 - Poster, 6 - Journal contribution, 7 - Presentation, 8 - Thesis, 9 - Software, 11 - Online resource, 12 - Preprint, 13 - Book, 14 - Conference contribution, 15 - Chapter, 16 - Peer review, 17 - Educational resource, 18 - Report, 19 - Standard, 20 - Composition, 21 - Funding, 22 - Physical object, 23 - Data management plan, 24 - Workflow, 25 - Monograph, 26 - Performance, 27 - Event, 28 - Service, 29 - Model"
+      },
+      "doi": {
+        "type": "string",
+        "description": "only return articles with this doi"
+      },
+      "handle": {
+        "type": "string",
+        "description": "only return articles with this handle"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.figshare.com/v2/articles{?page,page_size,limit,offset,order,order_direction,institution,published_since,modified_since,group,resource_doi,item_type,doi,handle}"
+    },
+    "headers": {
+      "X-Cursor": {
+        "$": "X-Cursor"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**defined_type**: Type of article identifier",
+            "**defined_type_name**: Name of the article type identifier",
+            "**doi**: DOI",
+            "**group_id**: Group ID",
+            "**handle**: Handle",
+            "**id**: Unique identifier for article",
+            "**published_date**: Posted date",
+            "**thumb**: Thumbnail image",
+            [
+              "**timeline**",
+              {
+                "$ul": [
+                  "**firstOnline**: Online posted date",
+                  "**publisherAcceptance**: Date when the item was accepted for publication",
+                  "**publisherPublication**: Publish date"
+                ]
+              }
+            ],
+            "**title**: Title of article",
+            "**url**: Api endpoint for article",
+            "**url_private_api**: Private Api endpoint for article",
+            "**url_private_html**: Private site endpoint for article",
+            "**url_public_api**: Public Api endpoint for article",
+            "**url_public_html**: Public site endpoint for article"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

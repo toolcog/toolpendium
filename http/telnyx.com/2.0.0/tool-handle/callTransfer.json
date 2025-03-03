@@ -1,0 +1,89 @@
+{
+  "name": "callTransfer",
+  "description": "Transfer a call to a new destination. If the transfer is unsuccessful, a `call.hangup` webhook for the other call (Leg B) will be sent indicating that the transfer could not be completed. The original call will remain active and may be issued additional commands, potentially transfering the call to an alternate destination.\n\n**Expected Webhooks:**\n\n- `call.initiated`\n- `call.bridged` to Leg B\n- `call.answered` or `call.hangup`\n- `call.machine.detection.ended` if `answering_machine_detection` was requested\n- `call.machine.greeting.ended` if `answering_machine_detection` was set to `detect_beep`, `greeting_end` or `detect_words`",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "call_control_id": {
+        "type": "string",
+        "description": "Unique identifier and token for controlling the call"
+      },
+      "body": {
+        "$ref": "#/components/schemas/TransferCallRequest",
+        "description": "Transfer call request"
+      }
+    },
+    "required": [
+      "call_control_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.telnyx.com/v2/calls/{call_control_id}/actions/transfer"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Call Control Command Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**result**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "name": "repos_create-or-update-environment",
+  "description": "Create or update an environment with protection rules, such as required reviewers. For more information about environment protection rules, see \"[Environments](/actions/reference/environments#environment-protection-rules).\"\n\n**Note:** To create or update name patterns that branches must match in order to deploy to this environment, see \"[Deployment branch policies](/rest/deployments/branch-policies).\"\n\n**Note:** To create or update secrets for an environment, see \"[Secrets](/rest/reference/actions#secrets).\"\n\nYou must authenticate using an access token with the `repo` scope to use this endpoint. GitHub Apps must have the `administration:write` permission for the repository to use this endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "environment_name": {
+        "type": "string",
+        "description": "The name of the environment."
+      },
+      "body": {
+        "additionalProperties": false,
+        "nullable": true,
+        "properties": {
+          "deployment_branch_policy": {
+            "$ref": "#/$defs/deployment-branch-policy-settings"
+          },
+          "reviewers": {
+            "description": "The people or teams that may review jobs that reference the environment. You can list up to six users or teams as reviewers. The reviewers must have at least read access to the repository. Only one of the required reviewers needs to approve the job for it to proceed.",
+            "items": {
+              "properties": {
+                "id": {
+                  "description": "The id of the user or team who can review the deployment",
+                  "example": 4532992,
+                  "type": "integer"
+                },
+                "type": {
+                  "$ref": "#/$defs/deployment-reviewer-type"
+                }
+              },
+              "type": "object"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "wait_timer": {
+            "$ref": "#/$defs/wait-timer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "environment_name"
+    ],
+    "$defs": {
+      "deployment-branch-policy-settings": {
+        "description": "The type of deployment branch policy for this environment. To allow all branches to deploy, set to `null`.",
+        "nullable": true,
+        "properties": {
+          "custom_branch_policies": {
+            "description": "Whether only branches that match the specified name patterns can deploy to this environment.  If `custom_branch_policies` is `true`, `protected_branches` must be `false`; if `custom_branch_policies` is `false`, `protected_branches` must be `true`.",
+            "type": "boolean"
+          },
+          "protected_branches": {
+            "description": "Whether only branches with branch protection rules can deploy to this environment. If `protected_branches` is `true`, `custom_branch_policies` must be `false`; if `protected_branches` is `false`, `custom_branch_policies` must be `true`.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "protected_branches",
+          "custom_branch_policies"
+        ],
+        "type": "object"
+      },
+      "deployment-reviewer-type": {
+        "description": "The type of reviewer.",
+        "enum": [
+          "User",
+          "Team"
+        ],
+        "example": "User",
+        "type": "string"
+      },
+      "wait-timer": {
+        "description": "The amount of time to delay a job after the job is initially triggered. The time (in minutes) must be an integer between 0 and 43,200 (30 days).",
+        "example": 30,
+        "type": "integer"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/environments/{environment_name}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Environment"
+        },
+        "Details of a deployment environment",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**: The time that the environment was created, in ISO 8601 format.",
+            [
+              "**deployment_branch_policy**: The type of deployment branch policy for this environment. To allow all branches to deploy, set to `null`.",
+              {
+                "$ul": [
+                  "**custom_branch_policies**: Whether only branches that match the specified name patterns can deploy to this environment.  If `custom_branch_policies` is `true`, `protected_branches` must be `false`; if `custom_branch_policies` is `false`, `protected_branches` must be `true`.",
+                  "**protected_branches**: Whether only branches with branch protection rules can deploy to this environment. If `protected_branches` is `true`, `custom_branch_policies` must be `false`; if `protected_branches` is `false`, `custom_branch_policies` must be `true`."
+                ]
+              }
+            ],
+            "**html_url**",
+            "**id**: The id of the environment.",
+            "**name**: The name of the environment.",
+            "**node_id**",
+            "**protection_rules**",
+            "**updated_at**: The time that the environment was last updated, in ISO 8601 format.",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

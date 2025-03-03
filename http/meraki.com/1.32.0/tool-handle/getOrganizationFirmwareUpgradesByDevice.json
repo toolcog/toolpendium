@@ -1,0 +1,156 @@
+{
+  "name": "getOrganizationFirmwareUpgradesByDevice",
+  "description": "Get firmware upgrade status for the filtered devices",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "perPage": {
+        "type": "integer",
+        "description": "The number of entries per page returned. Acceptable range is 3 - 50. Default is 50."
+      },
+      "startingAfter": {
+        "type": "string",
+        "description": "A token used by the server to indicate the start of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "endingBefore": {
+        "type": "string",
+        "description": "A token used by the server to indicate the end of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "networkIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter by network"
+      },
+      "serials": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter by serial number.  All returned devices will have a serial number that is an exact match."
+      },
+      "macs": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter by one or more MAC addresses belonging to devices. All devices returned belong to MAC addresses that are an exact match."
+      },
+      "firmwareUpgradeIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter by firmware upgrade ids."
+      },
+      "firmwareUpgradeBatchIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter by firmware upgrade batch ids."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/firmware/upgrades/byDevice{?perPage,startingAfter,endingBefore,networkIds,serials,macs,firmwareUpgradeIds,firmwareUpgradeBatchIds}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**deviceStatus**: Status of the device upgrade",
+            "**name**: Name assigned to the device",
+            "**serial**: Serial of the device",
+            [
+              "**upgrade**: The devices upgrade details and status",
+              {
+                "$ul": [
+                  [
+                    "**fromVersion**: The initial version of the device",
+                    {
+                      "$ul": [
+                        "**id**: ID of the initial firmware version",
+                        "**releaseDate**: Release date of the firmware version",
+                        "**releaseType**: Release type of the firmware version",
+                        "**shortName**: Firmware version short name"
+                      ]
+                    }
+                  ],
+                  "**id**: ID of the upgrade",
+                  [
+                    "**staged**: Staged upgrade",
+                    {
+                      "$ul": [
+                        [
+                          "**group**: The staged upgrade group",
+                          {
+                            "$ul": [
+                              "**id**: Id of the staged upgrade group"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**status**: Status of the upgrade",
+                  "**time**: Start time of the upgrade",
+                  [
+                    "**toVersion**: Version the device is upgrading to",
+                    {
+                      "$ul": [
+                        "**id**: ID of the initial firmware version",
+                        "**releaseDate**: Release date of the firmware version",
+                        "**releaseType**: Release type of the firmware version",
+                        "**shortName**: Firmware version short name"
+                      ]
+                    }
+                  ],
+                  "**upgradeBatchId**: ID of the upgrade batch"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

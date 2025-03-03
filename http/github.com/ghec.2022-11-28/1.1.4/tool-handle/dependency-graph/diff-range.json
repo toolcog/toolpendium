@@ -1,0 +1,140 @@
+{
+  "name": "dependency-graph_diff-range",
+  "description": "Gets the diff of the dependency changes between two commits of a repository, based on the changes to the dependency manifests made in those commits.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "basehead": {
+        "type": "string",
+        "description": "The base and head Git revisions to compare. The Git revisions will be resolved to commit SHAs. Named revisions will be resolved to their corresponding HEAD commits, and an appropriate merge base will be determined. This parameter expects the format `{base}...{head}`."
+      },
+      "name": {
+        "type": "string",
+        "description": "The full path, relative to the repository root, of the dependency manifest file."
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "basehead"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/dependency-graph/compare/{basehead}{?name}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Dependency Graph Diff"
+        },
+        "A diff of the dependencies between two commits.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**change_type**",
+            "**ecosystem**",
+            "**license**",
+            "**manifest**",
+            "**name**",
+            "**package_url**",
+            "**scope**: Where the dependency is utilized. `development` means that the dependency is only utilized in the development environment. `runtime` means that the dependency is utilized at runtime and in the development environment.",
+            "**source_repository_url**",
+            "**version**",
+            "**vulnerabilities**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

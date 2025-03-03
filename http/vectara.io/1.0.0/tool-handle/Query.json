@@ -1,0 +1,203 @@
+{
+  "name": "Query",
+  "description": "Query",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "customer-id": {
+        "type": "integer",
+        "description": "The Customer ID to use for the request."
+      },
+      "body": {
+        "$ref": "#/$defs/servingBatchQueryRequest"
+      }
+    },
+    "required": [
+      "customer-id",
+      "body"
+    ],
+    "$defs": {
+      "servingBatchQueryRequest": {
+        "properties": {
+          "query": {
+            "items": {
+              "$ref": "#/$defs/servingQueryRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "servingQueryRequest": {
+        "properties": {
+          "corpusKey": {
+            "items": {
+              "$ref": "#/$defs/servingCorpusKey"
+            },
+            "type": "array"
+          },
+          "numResults": {
+            "description": "The number of results to return.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "query": {
+            "description": "The query text to use from the end user.",
+            "type": "string"
+          },
+          "rerankingConfig": {
+            "$ref": "#/$defs/QueryRequestRerankingConfig"
+          },
+          "start": {
+            "format": "int64",
+            "title": "The start position in the result set",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "servingCorpusKey": {
+        "properties": {
+          "corpusId": {
+            "description": "The Corpus ID.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "customerId": {
+            "description": "The Customer ID.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "dim": {
+            "description": "Weights on custom dimensions for the corpus.",
+            "items": {
+              "$ref": "#/$defs/vectaraservingCustomDimension"
+            },
+            "type": "array"
+          },
+          "metadataFilter": {
+            "type": "string"
+          },
+          "semantics": {
+            "$ref": "#/$defs/CorpusKeySemantics"
+          }
+        },
+        "type": "object"
+      },
+      "vectaraservingCustomDimension": {
+        "description": "Defined the weight of a custom dimension at query time.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "weight": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "CorpusKeySemantics": {
+        "default": "DEFAULT",
+        "description": "Semantics controls the interpretation of the query string by the\nserver, and can be used to override the default semantics assigned\nin the corpus definition.\n\n\n\n\n - DEFAULT: Use corpus-assigned semantics.  This is the most common setting.\n - QUERY: Use query semantics.  This is also common.\n - RESPONSE: Use response semantics.  Usage of this is rare.",
+        "enum": [
+          "DEFAULT",
+          "QUERY",
+          "RESPONSE"
+        ],
+        "type": "string"
+      },
+      "QueryRequestRerankingConfig": {
+        "description": "Configuration options to apply to the reranking.",
+        "properties": {
+          "rerankerId": {
+            "format": "int64",
+            "title": "Which reranking model to use if reranking.  Currently, the only ID\navailable is ID 272725717",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.vectara.io/v1/query"
+    },
+    "headers": {
+      "customer-id": {
+        "$": "customer-id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**metrics**: Basic performance metrics that can be attached to a server response.",
+              {
+                "$ul": [
+                  "**queryEncodeMs**: How long it took to encode the query.",
+                  "**rerankMs**: How long it took to rerank the results.",
+                  "**retrievalMs**: How long it took to retrieve relevant results.",
+                  "**userdataRetrievalMs**: How long it took to retrieve user data."
+                ]
+              }
+            ],
+            "**responseSet**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**details**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

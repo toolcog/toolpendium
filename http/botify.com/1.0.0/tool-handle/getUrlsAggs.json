@@ -1,0 +1,134 @@
+{
+  "name": "getUrlsAggs",
+  "description": "Query aggregator. It accepts multiple queries",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "area": {
+        "default": "current",
+        "enum": [
+          "current",
+          "disappeared",
+          "new",
+          "search_engines_orphans"
+        ],
+        "type": "string",
+        "description": ""
+      },
+      "username": {
+        "type": "string",
+        "description": "User's identifier"
+      },
+      "project_slug": {
+        "type": "string",
+        "description": "Project's identifier"
+      },
+      "analysis_slug": {
+        "type": "string",
+        "description": "Analysis' identifier"
+      },
+      "body": {
+        "$ref": "#/$defs/UrlsAggsQueries"
+      }
+    },
+    "required": [
+      "username",
+      "project_slug",
+      "analysis_slug"
+    ],
+    "$defs": {
+      "UrlsAggsQueries": {
+        "items": {
+          "$ref": "#/$defs/UrlsAggsQuery"
+        },
+        "type": "array"
+      },
+      "UrlsAggsQuery": {
+        "properties": {
+          "aggs": {
+            "description": "",
+            "items": {
+              "type": "object"
+            },
+            "readOnly": false,
+            "type": "array"
+          },
+          "filters": {
+            "description": "",
+            "readOnly": false,
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.botify.com/v1/analyses/{username}/{project_slug}/{analysis_slug}/urls/aggs{?area}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Successful operation",
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.item"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "default payload for object for all HTTP codes that are not covered individually",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**error_code**: Error Code",
+                  "**error_detail**: If available, detailed error",
+                  "**message**: Error Message"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

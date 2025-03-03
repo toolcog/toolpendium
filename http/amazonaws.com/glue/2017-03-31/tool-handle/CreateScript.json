@@ -1,0 +1,357 @@
+{
+  "name": "CreateScript",
+  "description": "Transforms a directed acyclic graph (DAG) into code.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "AWSGlue.CreateScript"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateScriptRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreateScriptRequest": {
+        "type": "object",
+        "title": "CreateScriptRequest",
+        "properties": {
+          "DagNodes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DagNodes"
+              },
+              {
+                "description": "A list of the nodes in the DAG."
+              }
+            ]
+          },
+          "DagEdges": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DagEdges"
+              },
+              {
+                "description": "A list of the edges in the DAG."
+              }
+            ]
+          },
+          "Language": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Language"
+              },
+              {
+                "description": "The programming language of the resulting code from the DAG."
+              }
+            ]
+          }
+        }
+      },
+      "DagNodes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CodeGenNode"
+        }
+      },
+      "CodeGenNode": {
+        "type": "object",
+        "required": [
+          "Id",
+          "NodeType",
+          "Args"
+        ],
+        "properties": {
+          "Id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenIdentifier"
+              },
+              {
+                "description": "A node identifier that is unique within the node's graph."
+              }
+            ]
+          },
+          "NodeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenNodeType"
+              },
+              {
+                "description": "The type of node that this is."
+              }
+            ]
+          },
+          "Args": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenNodeArgs"
+              },
+              {
+                "description": "Properties of the node, in the form of name-value pairs."
+              }
+            ]
+          },
+          "LineNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "description": "The line number of the node."
+              }
+            ]
+          }
+        },
+        "description": "Represents a node in a directed acyclic graph (DAG)"
+      },
+      "CodeGenIdentifier": {
+        "type": "string",
+        "pattern": "[A-Za-z_][A-Za-z0-9_]*",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "CodeGenNodeType": {
+        "type": "string"
+      },
+      "CodeGenNodeArgs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CodeGenNodeArg"
+        },
+        "minItems": 0,
+        "maxItems": 50
+      },
+      "CodeGenNodeArg": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Value"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenArgName"
+              },
+              {
+                "description": "The name of the argument or property."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenArgValue"
+              },
+              {
+                "description": "The value of the argument or property."
+              }
+            ]
+          },
+          "Param": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "True if the value is used as a parameter."
+              }
+            ]
+          }
+        },
+        "description": "An argument or property of a node."
+      },
+      "CodeGenArgName": {
+        "type": "string"
+      },
+      "CodeGenArgValue": {
+        "type": "string"
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "DagEdges": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CodeGenEdge"
+        }
+      },
+      "CodeGenEdge": {
+        "type": "object",
+        "required": [
+          "Source",
+          "Target"
+        ],
+        "properties": {
+          "Source": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenIdentifier"
+              },
+              {
+                "description": "The ID of the node at which the edge starts."
+              }
+            ]
+          },
+          "Target": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenIdentifier"
+              },
+              {
+                "description": "The ID of the node at which the edge ends."
+              }
+            ]
+          },
+          "TargetParameter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CodeGenArgName"
+              },
+              {
+                "description": "The target of the edge."
+              }
+            ]
+          }
+        },
+        "description": "Represents a directional edge in a directed acyclic graph (DAG)."
+      },
+      "Language": {
+        "type": "string",
+        "enum": [
+          "PYTHON",
+          "SCALA"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://glue.us-east-1.amazonaws.com/#X-Amz-Target=AWSGlue.CreateScript"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**PythonScript**",
+            "**ScalaCode**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

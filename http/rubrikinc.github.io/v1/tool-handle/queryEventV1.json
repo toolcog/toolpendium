@@ -1,0 +1,84 @@
+{
+  "name": "queryEventV1",
+  "description": "Returns information for all events. Only Global or Read Only Admins and Support users have authorization to use this endpoint. Accepts filters. For similar functionality to the previous /internal/event endpoint, use the /v1/event/latest endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "format": "int32",
+        "minimum": 0,
+        "type": "integer",
+        "description": "Maximum number of events retrieved."
+      },
+      "after_id": {
+        "type": "string",
+        "description": "An (event_id, time) tuple. When specified, returns all events with timestamps that come after the time value of after_id based on the sort order defined by the order_by_time parameter."
+      },
+      "before_date": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Filter the events occurring after the specified date."
+      },
+      "after_date": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Filter the events occurring before the specified date."
+      },
+      "order_by_time": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "The events are ordered by timestamp. Specify desc to show the latest entries first. Specify asc to show the oldest entries first. The default behavior is asc."
+      },
+      "should_include_event_series": {
+        "type": "boolean",
+        "description": "A Boolean value that determines whether to include event series summary for every event. If set to 'true', a list of event series summary will be returned and each summary has an empty list of events. If set to 'false', an empty list of event series summary will be returned. The default value is 'false'. Setting it to 'true' will increase the response time."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/event{?limit,after_id,before_date,after_date,order_by_time,should_include_event_series}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**currentTime**: Current cluster time.",
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**events**: List of the events.",
+                  "**seriesSummaries**: The event series summaries of all events."
+                ]
+              }
+            ],
+            "**hasMore**: Whether there are more events."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "name": "repos_update-information-about-pages-site",
+  "description": "Updates information for a GitHub Pages site. For more information, see \"[About GitHub Pages](/github/working-with-github-pages/about-github-pages).\n\nTo use this endpoint, you must be a repository administrator, maintainer, or have the 'manage GitHub Pages settings' permission. A token with the `repo` scope or Pages write permission is required. GitHub Apps must have the `administration:write` and `pages:write` permissions.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "body": {
+        "anyOf": [
+          {
+            "required": [
+              "build_type"
+            ]
+          },
+          {
+            "required": [
+              "source"
+            ]
+          },
+          {
+            "required": [
+              "cname"
+            ]
+          },
+          {
+            "required": [
+              "public"
+            ]
+          },
+          {
+            "required": [
+              "https_enforced"
+            ]
+          }
+        ],
+        "properties": {
+          "build_type": {
+            "description": "The process by which the GitHub Pages site will be built. `workflow` means that the site is built by a custom GitHub Actions workflow. `legacy` means that the site is built by GitHub when changes are pushed to a specific branch.",
+            "enum": [
+              "legacy",
+              "workflow"
+            ],
+            "type": "string"
+          },
+          "cname": {
+            "description": "Specify a custom domain for the repository. Sending a `null` value will remove the custom domain. For more about custom domains, see \"[Using a custom domain with GitHub Pages](https://docs.github.com/articles/using-a-custom-domain-with-github-pages/).\"",
+            "nullable": true,
+            "type": "string"
+          },
+          "https_enforced": {
+            "description": "Specify whether HTTPS should be enforced for the repository.",
+            "type": "boolean"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "description": "Update the source for the repository. Must include the branch name, and may optionally specify the subdirectory `/docs`. Possible values are `\"gh-pages\"`, `\"master\"`, and `\"master /docs\"`.",
+                "enum": [
+                  "gh-pages",
+                  "master",
+                  "master /docs"
+                ],
+                "type": "string"
+              },
+              {
+                "description": "Update the source for the repository. Must include the branch name and path.",
+                "properties": {
+                  "branch": {
+                    "description": "The repository branch used to publish your site's source files.",
+                    "type": "string"
+                  },
+                  "path": {
+                    "description": "The repository directory that includes the source files for the Pages site. Allowed paths are `/` or `/docs`.",
+                    "enum": [
+                      "/",
+                      "/docs"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "branch",
+                  "path"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/pages"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

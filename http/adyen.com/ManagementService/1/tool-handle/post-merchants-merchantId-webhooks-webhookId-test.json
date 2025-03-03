@@ -1,0 +1,291 @@
+{
+  "name": "post-merchants-merchantId-webhooks-webhookId-test",
+  "description": "Sends sample notifications to test if the webhook is set up correctly.\n\nWe send four test notifications for each event code you choose. They cover success and failure scenarios for the hard-coded currencies EUR and GBP, regardless of the currencies configured in the merchant accounts. For custom notifications, we only send the specified custom notification.\n\nThe response describes the result of the test. The `status` field tells you if the test was successful or not. You can use the other fields to troubleshoot unsuccessful tests.\n\nTo make this request, your API credential must have the following [roles](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n* Management API—Webhooks read and write",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "merchantId": {
+        "type": "string",
+        "description": "The unique identifier of the merchant account."
+      },
+      "webhookId": {
+        "type": "string",
+        "description": "Unique identifier of the webhook configuration."
+      },
+      "body": {
+        "$ref": "#/$defs/TestWebhookRequest"
+      }
+    },
+    "required": [
+      "merchantId",
+      "webhookId"
+    ],
+    "$defs": {
+      "TestWebhookRequest": {
+        "properties": {
+          "notification": {
+            "$ref": "#/$defs/CustomNotification"
+          },
+          "types": {
+            "description": "List of event codes for which to send test notifications. Only the webhook types below are supported. \n\nPossible values if webhook `type`: **standard**:\n\n* **AUTHORISATION**\n* **CHARGEBACK_REVERSED**\n* **ORDER_CLOSED**\n* **ORDER_OPENED**\n* **PAIDOUT_REVERSED**\n* **PAYOUT_THIRDPARTY**\n* **REFUNDED_REVERSED**\n* **REFUND_WITH_DATA**\n* **REPORT_AVAILABLE**\n* **CUSTOM** - set your custom notification fields in the [`notification`](https://docs.adyen.com/api-explorer/#/ManagementService/v1/post/companies/{companyId}/webhooks/{webhookId}/test__reqParam_notification) object.\n\nPossible values if webhook `type`: **banktransfer-notification**:\n\n* **PENDING**\n\nPossible values if webhook `type`: **report-notification**:\n\n* **REPORT_AVAILABLE**\n\nPossible values if webhook `type`: **ideal-notification**:\n\n* **AUTHORISATION**\n\nPossible values if webhook `type`: **pending-notification**:\n\n* **PENDING**\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CustomNotification": {
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "eventCode": {
+            "description": "The event that caused the notification to be sent.Currently supported values:\n* **AUTHORISATION**\n* **CANCELLATION**\n* **REFUND**\n* **CAPTURE**\n* **REPORT_AVAILABLE**\n* **CHARGEBACK**\n* **REQUEST_FOR_INFORMATION**\n* **NOTIFICATION_OF_CHARGEBACK**\n* **NOTIFICATIONTEST**\n* **ORDER_OPENED**\n* **ORDER_CLOSED**\n* **CHARGEBACK_REVERSED**\n* **REFUNDED_REVERSED**\n* **REFUND_WITH_DATA**",
+            "type": "string"
+          },
+          "eventDate": {
+            "description": "The time of the event. Format: [ISO 8601](http://www.w3.org/TR/NOTE-datetime), YYYY-MM-DDThh:mm:ssTZD.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "merchantReference": {
+            "description": "Your reference for the custom test notification.",
+            "type": "string"
+          },
+          "paymentMethod": {
+            "description": "The payment method for the payment that the notification is about. Possible values:\n* **amex**\n* **visa**\n* **mc**\n* **maestro**\n* **bcmc**\n* **paypal**\n * **sms**\n * **bankTransfer_NL**\n* **bankTransfer_DE**\n* **bankTransfer_BE**\n* **ideal**\n* **elv**\n* **sepadirectdebit**\n",
+            "type": "string"
+          },
+          "reason": {
+            "description": "A descripton of what caused the notification.",
+            "type": "string"
+          },
+          "success": {
+            "description": "The outcome of the event which the notification is about. Set to either **true** or **false**. ",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "currency"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://management-test.adyen.com/v1/merchants/{merchantId}/webhooks/{webhookId}/test"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**: List with test results. Each test webhook we send has a list element with the result."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

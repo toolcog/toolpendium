@@ -1,0 +1,135 @@
+{
+  "name": "paymentInitiationConsentPaymentExecute",
+  "description": "The `/payment_initiation/consent/payment/execute` endpoint can be used to execute payments using payment consent.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/PaymentInitiationConsentPaymentExecuteRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PaymentInitiationConsentPaymentExecuteRequest": {
+        "description": "PaymentInitiationConsentPaymentExecuteRequest defines the request schema for `/payment_initiation/consent/payment/execute`",
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/PaymentAmount"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "consent_id": {
+            "description": "The consent ID.",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "$ref": "#/$defs/ConsentPaymentIdempotencyKey"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "consent_id",
+          "amount",
+          "idempotency_key"
+        ],
+        "type": "object"
+      },
+      "PaymentAmount": {
+        "additionalProperties": true,
+        "description": "The amount and currency of a payment",
+        "properties": {
+          "currency": {
+            "$ref": "#/$defs/PaymentAmountCurrency"
+          },
+          "value": {
+            "description": "The amount of the payment. Must contain at most two digits of precision e.g. `1.23`. Minimum accepted value is `1`.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "currency",
+          "value"
+        ],
+        "title": "PaymentAmount",
+        "type": "object"
+      },
+      "PaymentAmountCurrency": {
+        "description": "The ISO-4217 currency code of the payment. For standing orders and payment consents, `\"GBP\"` must be used.",
+        "enum": [
+          "GBP",
+          "EUR",
+          "PLN",
+          "SEK",
+          "DKK",
+          "NOK"
+        ],
+        "maxLength": 3,
+        "minLength": 3,
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "ConsentPaymentIdempotencyKey": {
+        "description": "A random key provided by the client, per unique consent payment. Maximum of 128 characters.\n\nThe API supports idempotency for safely retrying requests without accidentally performing the same operation twice. If a request to execute a consent payment fails due to a network connection error, you can retry the request with the same idempotency key to guarantee that only a single payment is created. If the request was successfully processed, it will prevent any payment that uses the same idempotency key, and was received within 24 hours of the first request, from being processed.",
+        "maxLength": 128,
+        "minLength": 1,
+        "title": "ConsentPaymentIdempotencyKey",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/payment_initiation/consent/payment/execute"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "PaymentInitiationConsentPaymentExecuteResponse defines the response schema for `/payment_initiation/consent/payment/execute`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**payment_id**: A unique ID identifying the payment",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**status**: The status of the payment."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

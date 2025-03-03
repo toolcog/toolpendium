@@ -1,0 +1,70 @@
+{
+  "name": "mkp-order-cancellation",
+  "description": "This request may be sent from VTEX to the external seller in case of order cancelation. For that, the seller will need to implement the Marketplace order cancellation endpoint. Whenever this request is received by the seler, the order should be canceled and the fulfillment flow should not proceed. \n\nFor the seller to: \n\n- **Evaluate a cancellation request:** it is possible to send an empty body as a response to the cancellation request, meaning that the seller is evaluating whether to proceed with the cancellation or not. \n\n- **Confirm the cancellation request:** it is possible to confirm the order cancellation by the marketplace by responding to the call with a body including only one information: the `marketplaceOrderId`, which identifies the order in the marketplace. The seller should use this ID to trigger the cancellation of the corresponding order. The seller should then respond with the same `marketplaceOrderId` and also with the `orderId`, which identifies the order in the seller, the date and time of the notification receipt, and a protocol code that confirms the receipt of the request (which may have the value `null`). \n\n- **Refuse a cancellation request:** it is possible to to [send the Invoice](https://developers.vtex.com/vtex-rest-api/reference/external-seller#send-invoice), meaning that the cancellation has been denied, and the flow continues to the [Order Invoicing](https://developers.vtex.com/vtex-rest-api/docs/external-seller-integration-connector#order-invoicing) step, and the ones that follow it. \n\nThis call should be made twice: once for the *Evaluate cancellation request* scenario, and a second time to *Confirm cancellation* or *Refuse cancellation*.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fulfillmentEndpoint": {
+        "example": "marketplaceexample.externalseller.com",
+        "type": "string",
+        "description": "This is the fulfillment endpoint registered for each specific external seller in the **seller management** section of VTEX's admin panel."
+      },
+      "Accept": {
+        "example": "application/json",
+        "type": "string",
+        "description": "HTTP Client Negotiation _Accept_ Header. Indicates the types of responses the client can understand."
+      },
+      "Content-Type": {
+        "example": "application/json",
+        "type": "string",
+        "description": "Describes the type of the content being sent."
+      },
+      "orderId": {
+        "default": "1138342255777-01",
+        "type": "string",
+        "description": "ID of the order being fulfilled"
+      },
+      "body": {
+        "properties": {
+          "marketplaceOrderId": {
+            "default": "1138342255777-01",
+            "description": "Identifies the order. The seller should use this ID to trigger the cancellation of the corresponding order.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "marketplaceOrderId"
+        ],
+        "type": "object",
+        "description": ""
+      }
+    },
+    "required": [
+      "fulfillmentEndpoint",
+      "Accept",
+      "Content-Type",
+      "orderId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://vtex.local/{fulfillmentEndpoint}/pvt/orders/{orderId}/cancel"
+    },
+    "headers": {
+      "Accept": {
+        "$": "Accept"
+      },
+      "Content-Type": {
+        "$": "Content-Type"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {}
+}

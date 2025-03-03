@@ -1,0 +1,156 @@
+{
+  "name": "createFineTune",
+  "description": "Creates a job that fine-tunes a specified model from a given dataset.\n\nResponse includes details of the enqueued job including job status and the name of the fine-tuned models once complete.\n\n[Learn more about Fine-tuning](/docs/guides/fine-tuning)\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/CreateFineTuneRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CreateFineTuneRequest": {
+        "properties": {
+          "batch_size": {
+            "default": null,
+            "description": "The batch size to use for training. The batch size is the number of\ntraining examples used to train a single forward and backward pass.\n\nBy default, the batch size will be dynamically configured to be\n~0.2% of the number of examples in the training set, capped at 256 -\nin general, we've found that larger batch sizes tend to work better\nfor larger datasets.\n",
+            "nullable": true,
+            "type": "integer"
+          },
+          "classification_betas": {
+            "default": null,
+            "description": "If this is provided, we calculate F-beta scores at the specified\nbeta values. The F-beta score is a generalization of F-1 score.\nThis is only used for binary classification.\n\nWith a beta of 1 (i.e. the F-1 score), precision and recall are\ngiven the same weight. A larger beta score puts more weight on\nrecall and less on precision. A smaller beta score puts more weight\non precision and less on recall.\n",
+            "example": [
+              0.6,
+              1,
+              1.5,
+              2
+            ],
+            "items": {
+              "type": "number"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "classification_n_classes": {
+            "default": null,
+            "description": "The number of classes in a classification task.\n\nThis parameter is required for multiclass classification.\n",
+            "nullable": true,
+            "type": "integer"
+          },
+          "classification_positive_class": {
+            "default": null,
+            "description": "The positive class in binary classification.\n\nThis parameter is needed to generate precision, recall, and F1\nmetrics when doing binary classification.\n",
+            "nullable": true,
+            "type": "string"
+          },
+          "compute_classification_metrics": {
+            "default": false,
+            "description": "If set, we calculate classification-specific metrics such as accuracy\nand F-1 score using the validation set at the end of every epoch.\nThese metrics can be viewed in the [results file](/docs/guides/fine-tuning/analyzing-your-fine-tuned-model).\n\nIn order to compute classification metrics, you must provide a\n`validation_file`. Additionally, you must\nspecify `classification_n_classes` for multiclass classification or\n`classification_positive_class` for binary classification.\n",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "learning_rate_multiplier": {
+            "default": null,
+            "description": "The learning rate multiplier to use for training.\nThe fine-tuning learning rate is the original learning rate used for\npretraining multiplied by this value.\n\nBy default, the learning rate multiplier is the 0.05, 0.1, or 0.2\ndepending on final `batch_size` (larger learning rates tend to\nperform better with larger batch sizes). We recommend experimenting\nwith values in the range 0.02 to 0.2 to see what produces the best\nresults.\n",
+            "nullable": true,
+            "type": "number"
+          },
+          "model": {
+            "default": "curie",
+            "description": "The name of the base model to fine-tune. You can select one of \"ada\",\n\"babbage\", \"curie\", \"davinci\", or a fine-tuned model created after 2022-04-21.\nTo learn more about these models, see the\n[Models](https://platform.openai.com/docs/models) documentation.\n",
+            "nullable": true,
+            "type": "string"
+          },
+          "n_epochs": {
+            "default": 4,
+            "description": "The number of epochs to train the model for. An epoch refers to one\nfull cycle through the training dataset.\n",
+            "nullable": true,
+            "type": "integer"
+          },
+          "prompt_loss_weight": {
+            "default": 0.01,
+            "description": "The weight to use for loss on the prompt tokens. This controls how\nmuch the model tries to learn to generate the prompt (as compared\nto the completion which always has a weight of 1.0), and can add\na stabilizing effect to training when completions are short.\n\nIf prompts are extremely long (relative to completions), it may make\nsense to reduce this weight so as to avoid over-prioritizing\nlearning the prompt.\n",
+            "nullable": true,
+            "type": "number"
+          },
+          "suffix": {
+            "default": null,
+            "description": "A string of up to 40 characters that will be added to your fine-tuned model name.\n\nFor example, a `suffix` of \"custom-model-name\" would produce a model name like `ada:ft-your-org:custom-model-name-2022-02-15-04-21-04`.\n",
+            "maxLength": 40,
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          },
+          "training_file": {
+            "description": "The ID of an uploaded file that contains training data.\n\nSee [upload file](/docs/api-reference/files/upload) for how to upload a file.\n\nYour dataset must be formatted as a JSONL file, where each training\nexample is a JSON object with the keys \"prompt\" and \"completion\".\nAdditionally, you must upload your file with the purpose `fine-tune`.\n\nSee the [fine-tuning guide](/docs/guides/fine-tuning/creating-training-data) for more details.\n",
+            "example": "file-ajSREls59WBbvgSzJSVWxMCB",
+            "type": "string"
+          },
+          "validation_file": {
+            "description": "The ID of an uploaded file that contains validation data.\n\nIf you provide this file, the data is used to generate validation\nmetrics periodically during fine-tuning. These metrics can be viewed in\nthe [fine-tuning results file](/docs/guides/fine-tuning/analyzing-your-fine-tuned-model).\nYour train and validation data should be mutually exclusive.\n\nYour dataset must be formatted as a JSONL file, where each validation\nexample is a JSON object with the keys \"prompt\" and \"completion\".\nAdditionally, you must upload your file with the purpose `fine-tune`.\n\nSee the [fine-tuning guide](/docs/guides/fine-tuning/creating-training-data) for more details.\n",
+            "example": "file-XjSREls59WBbvgSzJSVWxMCa",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "training_file"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.openai.com/v1/fine-tunes"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "FineTune"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**",
+            "**events**",
+            "**fine_tuned_model**",
+            "**hyperparams**",
+            "**id**",
+            "**model**",
+            "**object**",
+            "**organization_id**",
+            "**result_files**",
+            "**status**",
+            "**training_files**",
+            "**updated_at**",
+            "**validation_files**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

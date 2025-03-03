@@ -1,0 +1,72 @@
+{
+  "name": "getNetworkHealthAlerts",
+  "description": "Return all global alerts on this network",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "networkId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/health/alerts"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**category**: Category of the alert",
+            "**id**: Alert identifier. Value can be empty",
+            [
+              "**scope**: The scope of the alert",
+              {
+                "$ul": [
+                  "**applications**: Applications related to the alert",
+                  "**devices**: Devices related to the alert",
+                  "**peers**: Peers related to the alert"
+                ]
+              }
+            ],
+            "**severity**: Severity of the alert",
+            "**type**: Alert type"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

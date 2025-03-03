@@ -1,0 +1,84 @@
+{
+  "name": "actions_get-pending-deployments-for-run",
+  "description": "Get all deployment environments for a workflow run that are waiting for protection rules to pass.\n\nAnyone with read access to the repository can use this endpoint. If the repository is private, you must use an access token with the `repo` scope. GitHub Apps must have the `actions:read` permission to use this endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "run_id": {
+        "type": "integer",
+        "description": "The unique identifier of the workflow run."
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "run_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/actions/runs/{run_id}/pending_deployments"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Pending Deployment list"
+        },
+        "Details of a deployment that is waiting for protection rules to pass",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**current_user_can_approve**: Whether the currently authenticated user can approve the deployment",
+            [
+              "**environment**",
+              {
+                "$ul": [
+                  "**html_url**",
+                  "**id**: The id of the environment.",
+                  "**name**: The name of the environment.",
+                  "**node_id**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**reviewers**: The people or teams that may approve jobs that reference the environment. You can list up to six users or teams as reviewers. The reviewers must have at least read access to the repository. Only one of the required reviewers needs to approve the job for it to proceed.",
+            "**wait_timer**: The set duration of the wait timer",
+            "**wait_timer_started_at**: The time that the wait timer began."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

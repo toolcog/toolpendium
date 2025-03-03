@@ -1,0 +1,251 @@
+{
+  "name": "create_an_ach_transfer",
+  "description": "Create an ACH Transfer",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/create_an_ach_transfer_parameters"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "create_an_ach_transfer_parameters": {
+        "example": {
+          "account_id": "account_in71c4amph0vgo2qllky",
+          "account_number": "987654321",
+          "amount": 100,
+          "routing_number": "101050001",
+          "statement_descriptor": "New ACH transfer"
+        },
+        "properties": {
+          "account_id": {
+            "description": "The Increase identifier for the account that will send the transfer.",
+            "type": "string"
+          },
+          "account_number": {
+            "description": "The account number for the destination account.",
+            "maxLength": 17,
+            "minLength": 1,
+            "type": "string"
+          },
+          "addendum": {
+            "description": "Additional information that will be sent to the recipient. This is included in the transfer data sent to the receiving bank.",
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "amount": {
+            "description": "The transfer amount in cents. A positive amount originates a credit transfer pushing funds to the receiving account. A negative amount originates a debit transfer pulling funds from the receiving account.",
+            "type": "integer"
+          },
+          "company_descriptive_date": {
+            "description": "The description of the date of the transfer, usually in the format `YYMMDD`. This is included in the transfer data sent to the receiving bank.",
+            "maxLength": 6,
+            "minLength": 1,
+            "type": "string"
+          },
+          "company_discretionary_data": {
+            "description": "The data you choose to associate with the transfer. This is included in the transfer data sent to the receiving bank.",
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          },
+          "company_entry_description": {
+            "description": "A description of the transfer. This is included in the transfer data sent to the receiving bank.",
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "The name by which the recipient knows you. This is included in the transfer data sent to the receiving bank.",
+            "maxLength": 16,
+            "minLength": 1,
+            "type": "string"
+          },
+          "effective_date": {
+            "description": "The transfer effective date in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.",
+            "format": "date",
+            "type": "string"
+          },
+          "external_account_id": {
+            "description": "The ID of an External Account to initiate a transfer to. If this parameter is provided, `account_number`, `routing_number`, and `funding` must be absent.",
+            "type": "string"
+          },
+          "funding": {
+            "description": "The type of the account to which the transfer will be sent.",
+            "enum": [
+              "checking",
+              "savings"
+            ],
+            "type": "string",
+            "x-enum-descriptions": [
+              "A checking account.",
+              "A savings account."
+            ]
+          },
+          "individual_id": {
+            "description": "Your identifer for the transfer recipient.",
+            "maxLength": 15,
+            "minLength": 1,
+            "type": "string"
+          },
+          "individual_name": {
+            "description": "The name of the transfer recipient. This value is informational and not verified by the recipient's bank.",
+            "maxLength": 22,
+            "minLength": 1,
+            "type": "string"
+          },
+          "require_approval": {
+            "description": "Whether the transfer requires explicit approval via the dashboard or API.",
+            "type": "boolean"
+          },
+          "routing_number": {
+            "description": "The American Bankers' Association (ABA) Routing Transit Number (RTN) for the destination account.",
+            "maxLength": 9,
+            "minLength": 9,
+            "type": "string"
+          },
+          "standard_entry_class_code": {
+            "description": "The Standard Entry Class (SEC) code to use for the transfer.",
+            "enum": [
+              "corporate_credit_or_debit",
+              "prearranged_payments_and_deposit",
+              "internet_initiated"
+            ],
+            "type": "string",
+            "x-enum-descriptions": [
+              "Corporate Credit and Debit (CCD).",
+              "Prearranged Payments and Deposits (PPD).",
+              "Internet Initiated (WEB)."
+            ]
+          },
+          "statement_descriptor": {
+            "description": "A description you choose to give the transfer. This will be saved with the transfer details, displayed in the dashboard, and returned by the API. If `individual_name` and `company_name` are not explicitly set by this API, the `statement_descriptor` will be sent in those fields to the receiving bank to help the customer recognize the transfer. You are highly encouraged to pass `individual_name` and `company_name` instead of relying on this fallback.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "amount",
+          "statement_descriptor"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.increase.com/ach_transfers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ACH Transfer"
+        },
+        "ACH transfers move funds between your Increase account and any other account accessible by the Automated Clearing House (ACH).",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_id**: The Account to which the transfer belongs.",
+            "**account_number**: The destination account number.",
+            "**addendum**: Additional information that will be sent to the recipient.",
+            "**amount**: The transfer amount in USD cents. A positive amount indicates a credit transfer pushing funds to the receiving account. A negative amount indicates a debit transfer pulling funds from the receiving account.",
+            [
+              "**approval**: If your account requires approvals for transfers and the transfer was approved, this will contain details of the approval.",
+              {
+                "$ul": [
+                  "**approved_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was approved.",
+                  "**approved_by**: If the Transfer was approved by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            [
+              "**cancellation**: If your account requires approvals for transfers and the transfer was not approved, this will contain details of the cancellation.",
+              {
+                "$ul": [
+                  "**canceled_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the Transfer was canceled.",
+                  "**canceled_by**: If the Transfer was canceled by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            "**company_descriptive_date**: The description of the date of the transfer.",
+            "**company_discretionary_data**: The data you chose to associate with the transfer.",
+            "**company_entry_description**: The description of the transfer you set to be shown to the recipient.",
+            "**company_name**: The name by which the recipient knows you.",
+            "**created_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was created.",
+            "**currency**: The [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code for the transfer's currency. For ACH transfers this is always equal to `usd`.",
+            "**effective_date**: The transfer effective date in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.",
+            "**external_account_id**: The identifier of the External Account the transfer was made to, if any.",
+            "**funding**: The type of the account to which the transfer will be sent.",
+            "**id**: The ACH transfer's identifier.",
+            "**individual_id**: Your identifer for the transfer recipient.",
+            "**individual_name**: The name of the transfer recipient. This value is information and not verified by the recipient's bank.",
+            "**network**: The transfer's network.",
+            "**notifications_of_change**: If the receiving bank accepts the transfer but notifies that future transfers should use different details, this will contain those details.",
+            [
+              "**return**: If your transfer is returned, this will contain details of the return.",
+              {
+                "$ul": [
+                  "**created_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was created.",
+                  "**return_reason_code**: Why the ACH Transfer was returned.",
+                  "**transaction_id**: The identifier of the Tranasaction associated with this return.",
+                  "**transfer_id**: The identifier of the ACH Transfer associated with this return."
+                ]
+              }
+            ],
+            "**routing_number**: The American Bankers' Association (ABA) Routing Transit Number (RTN).",
+            "**standard_entry_class_code**: The Standard Entry Class (SEC) code to use for the transfer.",
+            "**statement_descriptor**: The descriptor that will show on the recipient's bank statement.",
+            "**status**: The lifecycle status of the transfer.",
+            [
+              "**submission**: After the transfer is submitted to FedACH, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**submitted_at**: When the ACH transfer was sent to FedACH.",
+                  "**trace_number**: The trace number for the submission."
+                ]
+              }
+            ],
+            "**transaction_id**: The ID for the transaction funding the transfer.",
+            "**type**: A constant representing the object's type. For this resource it will always be `ach_transfer`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

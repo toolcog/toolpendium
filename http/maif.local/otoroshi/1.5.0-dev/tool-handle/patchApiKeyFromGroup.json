@@ -1,0 +1,100 @@
+{
+  "name": "patchApiKeyFromGroup",
+  "description": "Update an api key for a specified service descriptor with a diff",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "groupId": {
+        "type": "string",
+        "description": "The api key group id"
+      },
+      "clientId": {
+        "type": "string",
+        "description": "the api key id"
+      },
+      "body": {
+        "$ref": "#/$defs/Patch"
+      }
+    },
+    "required": [
+      "groupId",
+      "clientId"
+    ],
+    "$defs": {
+      "Patch": {
+        "description": "A set of changes described in JSON Patch format: http://jsonpatch.com/ (RFC 6902)",
+        "items": {
+          "properties": {
+            "op": {
+              "enum": [
+                "add",
+                "replace",
+                "remove",
+                "copy",
+                "test"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "example": "a string value",
+              "type": "string"
+            },
+            "value": {}
+          },
+          "required": [
+            "op",
+            "path"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://otoroshi-api.oto.tools//api/groups/{groupId}/apikeys/{clientId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An Otoroshi Api Key. An Api Key is defined for a group of services to allow usage of the same Api Key for multiple services.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authorizedEntities**: The group/service ids (prefixed by group_ or service_ on which the key is authorized",
+            "**clientId**: The unique id of the Api Key. Usually 16 random alpha numerical characters, but can be anything",
+            "**clientName**: The name of the api key, for humans ;-)",
+            "**clientSecret**: The secret of the Api Key. Usually 64 random alpha numerical characters, but can be anything",
+            "**dailyQuota**: Authorized number of calls per day",
+            "**enabled**: Whether or not the key is enabled. If disabled, resources won't be available to calls using this key",
+            "**metadata**: Bunch of metadata for the key",
+            "**monthlyQuota**: Authorized number of calls per month",
+            "**throttlingQuota**: Authorized number of calls per second, measured on 10 seconds"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

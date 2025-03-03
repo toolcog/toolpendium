@@ -1,0 +1,576 @@
+{
+  "name": "getAppConfig",
+  "description": "Get the global configuration for an application. Should be called during app statup.\n\nThis includes things like device and playback rules, classifications,\nsitemap and subscriptions.\n\nYou have the option to select specific configuration objects using the 'include'\nparameter, or if unspecified, getting all configuration.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "include": {
+        "items": {
+          "enum": [
+            "classification",
+            "playback",
+            "sitemap",
+            "navigation",
+            "subscription",
+            "general",
+            "display",
+            "i18n",
+            "linear"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma delimited list of config objects to return.\nIf none specified then all configuration is returned.\n"
+      },
+      "system": {
+        "type": "string",
+        "description": "Classification system to load in case include = classification.\n"
+      },
+      "device": {
+        "default": "web_browser",
+        "type": "string",
+        "description": "The type of device the content is targeting."
+      },
+      "sub": {
+        "type": "string",
+        "description": "The active subscription code."
+      },
+      "segments": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of segments to filter the response by."
+      },
+      "ff": {
+        "items": {
+          "enum": [
+            "all",
+            "idp",
+            "ldp",
+            "hb",
+            "rpt",
+            "cas",
+            "lrl",
+            "cd"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of opt in feature flags which cause breaking changes to responses.\n\nWhile Rocket APIs look to avoid breaking changes under the active major version, the formats of responses\nmay need to evolve over this time.\n\nThese feature flags allow clients to select which response formats they expect and avoid breaking\nclients as these formats evolve under the current major version.\n\n### Flags\n\n- `all` - Enable all flags. Useful for testing. _Don't use in production_.\n- `idp` - Dynamic item detail pages with schedulable rows.\n- `ldp` - Dynamic list detail pages with schedulable rows.\n- `hb` - Hubble formatted image urls.\n- `rpt` - Updated resume point threshold logic.\n- `cas` - \"Custom Asset Search\", inlcude `customAssets` in search results.\n- `lrl` - Do not pre-populate related list if more than `max_list_prefetch` down the page.\n- `cd` - Custom Destination support.\n\nSee the `feature-flags.md` for available flag details.\n"
+      },
+      "lang": {
+        "type": "string",
+        "description": "Language code for the preferred language to be returned in the response.\n\nParameter value is case-insensitive and should be\n  - a valid 2 letter language code without region such as en, de\n  - or with region such as en_us, en_au\n\nIf undefined then defaults to 'en', unless the server has been configured\nwith a custom default.\n\nSee https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/config{?include,system,device,sub,segments,ff,lang}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**classification**: The map of classification ratings.",
+            [
+              "**display**",
+              {
+                "$ul": [
+                  "**themes**: An array of globally configured themes."
+                ]
+              }
+            ],
+            [
+              "**general**",
+              {
+                "$ul": [
+                  "**currencyCode**: The currency code to target.",
+                  "**customFields**: A map of custom configuration fields.",
+                  "**defaultTimeZone**: The default time zone of the site. e.g. \"Etc/GMT\"",
+                  "**facebookAppId**: The Facebook application id associated with an environment.",
+                  "**gaToken**: A Google Analytics token to track applicaton user events.",
+                  "**itemImageTypes**: A map of default item image types where the key is the item types.",
+                  "**mandatorySignIn**: Whether to require sign in for customers to access content.",
+                  "**maxUserRating**: The maximum value allowed for user ratings.",
+                  "**stripeKey**: The public Stripe key to use for payment transactions.",
+                  "**websiteUrl**: The url of the primary website."
+                ]
+              }
+            ],
+            [
+              "**i18n**",
+              {
+                "$ul": [
+                  "**languages**: An array of available languages."
+                ]
+              }
+            ],
+            [
+              "**linear**",
+              {
+                "$ul": [
+                  "**scheduleCacheMaxAgeMinutes**: The maximum minutes of schedule cache time.",
+                  "**viewingWindowDaysAfter**: Number of available upcoming day schedules.",
+                  "**viewingWindowDaysBefore**: Number of available day schedules in the past."
+                ]
+              }
+            ],
+            [
+              "**navigation**",
+              {
+                "$ul": [
+                  [
+                    "**account**",
+                    {
+                      "$ul": [
+                        "**children**: Child nav entries.",
+                        [
+                          "**content**",
+                          {
+                            "$ul": [
+                              "**imageType**: The image type to target when rendering items of the list.",
+                              [
+                                "**list**: A pageable list of items.",
+                                {
+                                  "$ul": [
+                                    "**customFields**: A map of custom fields defined by a curator for a list.",
+                                    "**description**: A full description of this list.",
+                                    "**id**: The id of this list",
+                                    "**images**",
+                                    "**itemTypes**: The types of items in the list",
+                                    "**items**: A list of items",
+                                    [
+                                      "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**ContinueWatching**: List data for ContinueWatching List",
+                                            {
+                                              "$ul": [
+                                                "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**paging**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**authorization**",
+                                            {
+                                              "$ul": [
+                                                "**scope**: The token scope required.",
+                                                "**type**: The token type required to load the list."
+                                              ]
+                                            }
+                                          ],
+                                          "**next**: Path to load next page of data, or null if not available",
+                                          [
+                                            "**options**",
+                                            {
+                                              "$ul": [
+                                                "**completed**: Items filtered by whether they've been fully watched or not.",
+                                                "**itemType**: Specific item type filter.",
+                                                "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                                                "**order**: The applied sort order if any.",
+                                                "**orderBy**: The applied sort ordering property if any.",
+                                                "**pageSize**: The number of items to return in a list page."
+                                              ]
+                                            }
+                                          ],
+                                          "**page**: The current page number.",
+                                          "**previous**: Path to load previous page of data, or null if not available.",
+                                          "**size**: The current page size.",
+                                          "**total**: The total number of pages available given the current page size."
+                                        ]
+                                      }
+                                    ],
+                                    "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                                    "**path**: The path of this list",
+                                    "**shortDescription**: A short description of this list.",
+                                    "**size**: The total size of the list",
+                                    "**tagline**: The tagline of the item.",
+                                    "**themes**",
+                                    "**title**: The title of this list"
+                                  ]
+                                }
+                              ],
+                              "**title**: The title of the embedded navigation content."
+                            ]
+                          }
+                        ],
+                        "**customFields**: A map of custom fields defined by a curator for a nav entry.",
+                        "**depth**: The depth of the NavEntry (top level is 0)",
+                        "**featured**: True if this is a featured menu item.",
+                        "**icon**: The icon for this nav entry.",
+                        "**label**: The text label for this nav entry.",
+                        "**path**: The path this nav entry links to."
+                      ]
+                    }
+                  ],
+                  "**copyright**: Copyright information.",
+                  "**customFields**: A map of custom fields defined by a curator for navigation.",
+                  [
+                    "**footer**",
+                    {
+                      "$ul": [
+                        "**children**: Child nav entries.",
+                        [
+                          "**content**",
+                          {
+                            "$ul": [
+                              "**imageType**: The image type to target when rendering items of the list.",
+                              [
+                                "**list**: A pageable list of items.",
+                                {
+                                  "$ul": [
+                                    "**customFields**: A map of custom fields defined by a curator for a list.",
+                                    "**description**: A full description of this list.",
+                                    "**id**: The id of this list",
+                                    "**images**",
+                                    "**itemTypes**: The types of items in the list",
+                                    "**items**: A list of items",
+                                    [
+                                      "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**ContinueWatching**: List data for ContinueWatching List",
+                                            {
+                                              "$ul": [
+                                                "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**paging**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**authorization**",
+                                            {
+                                              "$ul": [
+                                                "**scope**: The token scope required.",
+                                                "**type**: The token type required to load the list."
+                                              ]
+                                            }
+                                          ],
+                                          "**next**: Path to load next page of data, or null if not available",
+                                          [
+                                            "**options**",
+                                            {
+                                              "$ul": [
+                                                "**completed**: Items filtered by whether they've been fully watched or not.",
+                                                "**itemType**: Specific item type filter.",
+                                                "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                                                "**order**: The applied sort order if any.",
+                                                "**orderBy**: The applied sort ordering property if any.",
+                                                "**pageSize**: The number of items to return in a list page."
+                                              ]
+                                            }
+                                          ],
+                                          "**page**: The current page number.",
+                                          "**previous**: Path to load previous page of data, or null if not available.",
+                                          "**size**: The current page size.",
+                                          "**total**: The total number of pages available given the current page size."
+                                        ]
+                                      }
+                                    ],
+                                    "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                                    "**path**: The path of this list",
+                                    "**shortDescription**: A short description of this list.",
+                                    "**size**: The total size of the list",
+                                    "**tagline**: The tagline of the item.",
+                                    "**themes**",
+                                    "**title**: The title of this list"
+                                  ]
+                                }
+                              ],
+                              "**title**: The title of the embedded navigation content."
+                            ]
+                          }
+                        ],
+                        "**customFields**: A map of custom fields defined by a curator for a nav entry.",
+                        "**depth**: The depth of the NavEntry (top level is 0)",
+                        "**featured**: True if this is a featured menu item.",
+                        "**icon**: The icon for this nav entry.",
+                        "**label**: The text label for this nav entry.",
+                        "**path**: The path this nav entry links to."
+                      ]
+                    }
+                  ],
+                  "**header**: The header navigation.",
+                  [
+                    "**mobile**",
+                    {
+                      "$ul": [
+                        "**children**: Child nav entries.",
+                        [
+                          "**content**",
+                          {
+                            "$ul": [
+                              "**imageType**: The image type to target when rendering items of the list.",
+                              [
+                                "**list**: A pageable list of items.",
+                                {
+                                  "$ul": [
+                                    "**customFields**: A map of custom fields defined by a curator for a list.",
+                                    "**description**: A full description of this list.",
+                                    "**id**: The id of this list",
+                                    "**images**",
+                                    "**itemTypes**: The types of items in the list",
+                                    "**items**: A list of items",
+                                    [
+                                      "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**ContinueWatching**: List data for ContinueWatching List",
+                                            {
+                                              "$ul": [
+                                                "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**paging**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**authorization**",
+                                            {
+                                              "$ul": [
+                                                "**scope**: The token scope required.",
+                                                "**type**: The token type required to load the list."
+                                              ]
+                                            }
+                                          ],
+                                          "**next**: Path to load next page of data, or null if not available",
+                                          [
+                                            "**options**",
+                                            {
+                                              "$ul": [
+                                                "**completed**: Items filtered by whether they've been fully watched or not.",
+                                                "**itemType**: Specific item type filter.",
+                                                "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                                                "**order**: The applied sort order if any.",
+                                                "**orderBy**: The applied sort ordering property if any.",
+                                                "**pageSize**: The number of items to return in a list page."
+                                              ]
+                                            }
+                                          ],
+                                          "**page**: The current page number.",
+                                          "**previous**: Path to load previous page of data, or null if not available.",
+                                          "**size**: The current page size.",
+                                          "**total**: The total number of pages available given the current page size."
+                                        ]
+                                      }
+                                    ],
+                                    "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                                    "**path**: The path of this list",
+                                    "**shortDescription**: A short description of this list.",
+                                    "**size**: The total size of the list",
+                                    "**tagline**: The tagline of the item.",
+                                    "**themes**",
+                                    "**title**: The title of this list"
+                                  ]
+                                }
+                              ],
+                              "**title**: The title of the embedded navigation content."
+                            ]
+                          }
+                        ],
+                        "**customFields**: A map of custom fields defined by a curator for a nav entry.",
+                        "**depth**: The depth of the NavEntry (top level is 0)",
+                        "**featured**: True if this is a featured menu item.",
+                        "**icon**: The icon for this nav entry.",
+                        "**label**: The text label for this nav entry.",
+                        "**path**: The path this nav entry links to."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**playback**",
+              {
+                "$ul": [
+                  "**chainPlayCountdown**: The number of seconds before autoplay of next video.",
+                  "**chainPlaySqueezeback**: The number of seconds before the end of playback when the current video",
+                  "**chainPlayTimeout**: The number of minutes of user inactivity before autoplay is paused.",
+                  "**heartbeatFrequency**: How often a heartbeat should be renewed during playback.",
+                  "**viewEventPoints**: An array of percentage points in which to fire off plabyack view events."
+                ]
+              }
+            ],
+            "**sitemap**",
+            [
+              "**subscription**",
+              {
+                "$ul": [
+                  "**plans**: The available public plans a user can subscribe to."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

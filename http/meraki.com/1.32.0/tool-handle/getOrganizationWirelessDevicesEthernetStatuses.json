@@ -1,0 +1,121 @@
+{
+  "name": "getOrganizationWirelessDevicesEthernetStatuses",
+  "description": "Endpoint to see power status for wireless devices",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "perPage": {
+        "type": "integer",
+        "description": "The number of entries per page returned. Acceptable range is 3 - 1000. Default is 100."
+      },
+      "startingAfter": {
+        "type": "string",
+        "description": "A token used by the server to indicate the start of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "endingBefore": {
+        "type": "string",
+        "description": "A token used by the server to indicate the end of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "networkIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A list of Meraki network IDs to filter results to contain only specified networks. E.g.: networkIds[]=N_12345678&networkIds[]=L_3456"
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/wireless/devices/ethernet/statuses{?perPage,startingAfter,endingBefore,networkIds}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**aggregation**: Aggregation details object",
+              {
+                "$ul": [
+                  "**enabled**: Link Aggregation enabled flag",
+                  "**speed**: Link Aggregation speed"
+                ]
+              }
+            ],
+            "**name**: The name of the AP",
+            [
+              "**network**: Network details object",
+              {
+                "$ul": [
+                  "**id**: The network ID the AP is associated to"
+                ]
+              }
+            ],
+            "**ports**: List of port details",
+            [
+              "**power**: Power details object",
+              {
+                "$ul": [
+                  [
+                    "**ac**: AC power details object",
+                    {
+                      "$ul": [
+                        "**isConnected**: AC power connected"
+                      ]
+                    }
+                  ],
+                  "**mode**: The PoE power mode for the AP. Can be 'full' or 'low'",
+                  [
+                    "**poe**: PoE power details object",
+                    {
+                      "$ul": [
+                        "**isConnected**: PoE power connected"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**serial**: The serial number of the AP"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

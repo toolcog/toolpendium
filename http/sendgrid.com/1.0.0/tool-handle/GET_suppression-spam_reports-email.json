@@ -1,0 +1,70 @@
+{
+  "name": "GET_suppression-spam_reports-email",
+  "description": "**This endpoint allows you to retrieve a specific spam report by email address.**",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "email": {
+        "format": "email",
+        "type": "string",
+        "description": "The email address of a specific spam report that you want to retrieve."
+      }
+    },
+    "required": [
+      "email"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/suppression/spam_reports/{email}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Spam Reports Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: A Unix timestamp that indicates when the recipient marked your message as spam.",
+            "**email**: The email address of the recipient that marked your message as spam.",
+            "**ip**: The IP address that the message was sent from."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,381 @@
+{
+  "name": "GET_PutMetricStream",
+  "description": "<p>Creates or updates a metric stream. Metric streams can automatically stream CloudWatch metrics to Amazon Web Services destinations, including Amazon S3, and to many third-party solutions.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Metric-Streams.html\"> Using Metric Streams</a>.</p> <p>To create a metric stream, you must be signed in to an account that has the <code>iam:PassRole</code> permission and either the <code>CloudWatchFullAccess</code> policy or the <code>cloudwatch:PutMetricStream</code> permission.</p> <p>When you create or update a metric stream, you choose one of the following:</p> <ul> <li> <p>Stream metrics from all metric namespaces in the account.</p> </li> <li> <p>Stream metrics from all metric namespaces in the account, except for the namespaces that you list in <code>ExcludeFilters</code>.</p> </li> <li> <p>Stream metrics from only the metric namespaces that you list in <code>IncludeFilters</code>.</p> </li> </ul> <p>By default, a metric stream always sends the <code>MAX</code>, <code>MIN</code>, <code>SUM</code>, and <code>SAMPLECOUNT</code> statistics for each metric that is streamed. You can use the <code>StatisticsConfigurations</code> parameter to have the metric stream send additional statistics in the stream. Streaming additional statistics incurs additional costs. For more information, see <a href=\"https://aws.amazon.com/cloudwatch/pricing/\">Amazon CloudWatch Pricing</a>. </p> <p>When you use <code>PutMetricStream</code> to create a new metric stream, the stream is created in the <code>running</code> state. If you use it to update an existing stream, the state of the stream is not changed.</p> <p>If you are using CloudWatch cross-account observability and you create a metric stream in a monitoring account, you can choose whether to include metrics from source accounts in the stream. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Unified-Cross-Account.html\">CloudWatch cross-account observability</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "<p>If you are creating a new metric stream, this is the name for the new stream. The name must be different than the names of other metric streams in this account and Region.</p> <p>If you are updating a metric stream, specify the name of that stream here.</p> <p>Valid characters are A-Z, a-z, 0-9, \"-\" and \"_\".</p>"
+      },
+      "IncludeFilters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricStreamFilter"
+        },
+        "description": "<p>If you specify this parameter, the stream sends only the metrics from the metric namespaces that you specify here.</p> <p>You cannot include <code>IncludeFilters</code> and <code>ExcludeFilters</code> in the same operation.</p>"
+      },
+      "ExcludeFilters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricStreamFilter"
+        },
+        "description": "<p>If you specify this parameter, the stream sends metrics from all metric namespaces except for the namespaces that you specify here.</p> <p>You cannot include <code>ExcludeFilters</code> and <code>IncludeFilters</code> in the same operation.</p>"
+      },
+      "FirehoseArn": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "description": "The ARN of the Amazon Kinesis Data Firehose delivery stream to use for this metric stream. This Amazon Kinesis Data Firehose delivery stream must already exist and must be in the same account as the metric stream."
+      },
+      "RoleArn": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "description": "<p>The ARN of an IAM role that this metric stream will use to access Amazon Kinesis Data Firehose resources. This IAM role must already exist and must be in the same account as the metric stream. This IAM role must include the following permissions:</p> <ul> <li> <p>firehose:PutRecord</p> </li> <li> <p>firehose:PutRecordBatch</p> </li> </ul>"
+      },
+      "OutputFormat": {
+        "type": "string",
+        "enum": [
+          "json",
+          "opentelemetry0.7"
+        ],
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The output format for the stream. Valid values are <code>json</code> and <code>opentelemetry0.7</code>. For more information about metric stream output formats, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-formats.html\"> Metric streams output formats</a>."
+      },
+      "Tags": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Tag"
+        },
+        "description": "<p>A list of key-value pairs to associate with the metric stream. You can associate as many as 50 tags with a metric stream.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>You can use this parameter only when you are creating a new metric stream. If you are using this operation to update an existing metric stream, any tags you specify in this parameter are ignored. To change the tags of an existing metric stream, use <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_TagResource.html\">TagResource</a> or <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_UntagResource.html\">UntagResource</a>.</p>"
+      },
+      "StatisticsConfigurations": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricStreamStatisticsConfiguration"
+        },
+        "description": "<p>By default, a metric stream always sends the <code>MAX</code>, <code>MIN</code>, <code>SUM</code>, and <code>SAMPLECOUNT</code> statistics for each metric that is streamed. You can use this parameter to have the metric stream also send additional statistics in the stream. This array can have up to 100 members.</p> <p>For each entry in this array, you specify one or more metrics and the list of additional statistics to stream for those metrics. The additional statistics that you can stream depend on the stream's <code>OutputFormat</code>. If the <code>OutputFormat</code> is <code>json</code>, you can stream any additional statistic that is supported by CloudWatch, listed in <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Statistics-definitions.html.html\"> CloudWatch statistics definitions</a>. If the <code>OutputFormat</code> is <code>opentelemetry0.7</code>, you can stream percentile statistics such as p95, p99.9, and so on.</p>"
+      },
+      "IncludeLinkedAccountsMetrics": {
+        "type": "boolean",
+        "description": "If you are creating a metric stream in a monitoring account, specify <code>true</code> to include metrics from source accounts in the metric stream."
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "PutMetricStream"
+        ]
+      },
+      "Version": {
+        "type": "string",
+        "enum": [
+          "2010-08-01"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "Name",
+      "FirehoseArn",
+      "RoleArn",
+      "OutputFormat",
+      "Action",
+      "Version"
+    ],
+    "$defs": {
+      "MetricStreamFilter": {
+        "type": "object",
+        "properties": {
+          "Namespace": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Namespace"
+              },
+              {
+                "description": "<p>The name of the metric namespace for this filter.</p> <p>The namespace can contain only ASCII printable characters (ASCII range 32 through 126). It must contain at least one non-whitespace character.</p>"
+              }
+            ]
+          },
+          "MetricNames": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricStreamFilterMetricNames"
+              },
+              {
+                "description": "<p>The names of the metrics to either include or exclude from the metric stream. </p> <p>If you omit this parameter, all metrics in the namespace are included or excluded, depending on whether this filter is specified as an exclude filter or an include filter.</p> <p>Each metric name can contain only ASCII printable characters (ASCII range 32 through 126). Each metric name must contain at least one non-whitespace character.</p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>This structure contains a metric namespace and optionally, a list of metric names, to either include in a metric stream or exclude from a metric stream.</p> <p>A metric stream's filters can include up to 1000 total names. This limit applies to the sum of namespace names and metric names in the filters. For example, this could include 10 metric namespace filters with 99 metrics each, or 20 namespace filters with 49 metrics specified in each filter.</p>"
+      },
+      "Namespace": {
+        "type": "string",
+        "pattern": "[^:].*",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "MetricStreamFilterMetricNames": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricName"
+        }
+      },
+      "MetricName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "A string that you can use to assign a value. The combination of tag keys and values can help you organize and categorize your resources."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The value for the specified tag key."
+              }
+            ]
+          }
+        },
+        "description": "A key-value pair associated with a CloudWatch resource."
+      },
+      "TagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "MetricStreamStatisticsConfiguration": {
+        "type": "object",
+        "required": [
+          "IncludeMetrics",
+          "AdditionalStatistics"
+        ],
+        "properties": {
+          "IncludeMetrics": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricStreamStatisticsIncludeMetrics"
+              },
+              {
+                "description": "<p>An array of metric name and namespace pairs that stream the additional statistics listed in the value of the <code>AdditionalStatistics</code> parameter. There can be as many as 100 pairs in the array.</p> <p>All metrics that match the combination of metric name and namespace will be streamed with the additional statistics, no matter their dimensions.</p>"
+              }
+            ]
+          },
+          "AdditionalStatistics": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricStreamStatisticsAdditionalStatistics"
+              },
+              {
+                "description": "<p>The list of additional statistics that are to be streamed for the metrics listed in the <code>IncludeMetrics</code> array in this structure. This list can include as many as 20 statistics.</p> <p>If the <code>OutputFormat</code> for the stream is <code>opentelemetry0.7</code>, the only valid values are <code>p<i>??</i> </code> percentile statistics such as <code>p90</code>, <code>p99</code> and so on.</p> <p>If the <code>OutputFormat</code> for the stream is <code>json</code>, the valid values include the abbreviations for all of the statistics listed in <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Statistics-definitions.html.html\"> CloudWatch statistics definitions</a>. For example, this includes <code>tm98, </code> <code>wm90</code>, <code>PR(:300)</code>, and so on.</p>"
+              }
+            ]
+          }
+        },
+        "description": "By default, a metric stream always sends the <code>MAX</code>, <code>MIN</code>, <code>SUM</code>, and <code>SAMPLECOUNT</code> statistics for each metric that is streamed. This structure contains information for one metric that includes additional statistics in the stream. For more information about statistics, see CloudWatch, listed in <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Statistics-definitions.html.html\"> CloudWatch statistics definitions</a>."
+      },
+      "MetricStreamStatisticsIncludeMetrics": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricStreamStatisticsMetric"
+        }
+      },
+      "MetricStreamStatisticsMetric": {
+        "type": "object",
+        "required": [
+          "Namespace",
+          "MetricName"
+        ],
+        "properties": {
+          "Namespace": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Namespace"
+              },
+              {
+                "description": "The namespace of the metric."
+              }
+            ]
+          },
+          "MetricName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricName"
+              },
+              {
+                "description": "The name of the metric."
+              }
+            ]
+          }
+        },
+        "description": "This object contains the information for one metric that is to be streamed with additional statistics."
+      },
+      "MetricStreamStatisticsAdditionalStatistics": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MetricStreamStatistic"
+        }
+      },
+      "MetricStreamStatistic": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://monitoring.us-east-1.amazonaws.com/#Action=PutMetricStream{?Name,IncludeFilters,ExcludeFilters,FirehoseArn,RoleArn,OutputFormat,Tags,StatisticsConfigurations,IncludeLinkedAccountsMetrics,Action,Version}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Arn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

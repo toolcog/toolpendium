@@ -1,0 +1,160 @@
+{
+  "name": "repos_update-status-check-protection",
+  "description": "Protected branches are available in public repositories with GitHub Free and GitHub Free for organizations, and in public and private repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and GitHub Enterprise Server. For more information, see [GitHub's products](https://docs.github.com/github/getting-started-with-github/githubs-products) in the GitHub Help documentation.\n\nUpdating required status checks requires admin or owner permissions to the repository and branch protection to be enabled.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "branch": {
+        "type": "string",
+        "description": "The name of the branch. Cannot contain wildcard characters. To use wildcard characters in branch names, use [the GraphQL API](https://docs.github.com/graphql)."
+      },
+      "body": {
+        "properties": {
+          "checks": {
+            "description": "The list of status checks to require in order to merge into this branch.",
+            "items": {
+              "properties": {
+                "app_id": {
+                  "description": "The ID of the GitHub App that must provide this check. Omit this field to automatically select the GitHub App that has recently provided this check, or any app if it was not set by a GitHub App. Pass -1 to explicitly allow any app to set the status.",
+                  "type": "integer"
+                },
+                "context": {
+                  "description": "The name of the required check",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "context"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "contexts": {
+            "deprecated": true,
+            "description": "**Deprecated**: The list of status checks to require in order to merge into this branch. If any of these checks have recently been set by a particular GitHub App, they will be required to come from that app in future for the branch to merge. Use `checks` instead of `contexts` for more fine-grained control.\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "strict": {
+            "description": "Require branches to be up to date before merging.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "branch"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Status Check Policy"
+        },
+        "Status Check Policy",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**checks**",
+            "**contexts**",
+            "**contexts_url**",
+            "**strict**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

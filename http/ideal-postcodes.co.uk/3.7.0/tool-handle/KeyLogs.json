@@ -1,0 +1,81 @@
+{
+  "name": "KeyLogs",
+  "description": "Reports lookup information on a key for paid lookups.\n\nThis method requires a `user_token`, which can be found on your [accounts page](https://ideal-postcodes.co.uk/account).\n\nA maximum interval of 90 days can be provided for analysis. If no start or end date is provided, the last 21 days will be used as the default interval.\n\n## Download Usage History (CSV)\n\n`GET /keys/:key/lookups`\n\nReturns a CSV download of lookups performed and associated information.\n\nNote that the Content-Type returned will be CSV (text/csv). For a non 200 response, the `Content-Type` will revert to JSON with the error code and message embedded.\n\n## Data Redaction\n\nPersonally Identifiable Data (PII) caught in this your usage log (including IP, search term and URL data) will be redacted on a weekly basis.\n\nBy default, PII will be redacted if it is older than 21 days. This timeframe can be configured from your dashboard.\n\nYou may prevent PII collection altogether by setting the interval to `0` days.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "$ref": "#/$defs/ApiKeyParam"
+      },
+      "start": {
+        "$ref": "#/components/schemas/StartParam",
+        "description": "An start date/time in the form of a UNIX Timestamp in milliseconds, e.g. `1418556452651`. If no start time is provided, the start time will be assigned to a time 21 days prior to the end time."
+      },
+      "end": {
+        "$ref": "#/components/schemas/EndParam",
+        "description": "An end date/time in the form of a UNIX Timestamp in milliseconds, e.g. `1418556452651`. If no end time is provided, the current time will be used."
+      },
+      "licensee": {
+        "$ref": "#/components/schemas/LicenseeParam",
+        "description": "Sublicensed keys only. This will restrict the analysed dataset to a specific licensee."
+      }
+    },
+    "required": [
+      "key"
+    ],
+    "$defs": {
+      "ApiKeyParam": {
+        "description": "Your API Key. Typically beings `ak_`.\n\nAvailable from your dashboard\n",
+        "example": "ak_test",
+        "title": "API Key",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.ideal-postcodes.co.uk/v1/keys/{key}/lookups{?start,end,licensee}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: `400X` type error response code",
+            "**message**: Bad request error description",
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

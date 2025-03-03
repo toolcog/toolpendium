@@ -1,0 +1,125 @@
+{
+  "name": "emotion",
+  "description": "Detect the emotions of the text.\n\nSupported Langauges: [`en`, `de`, `es`]\n\nReturned labels:\n* anger\n* joy\n* love\n* sadness\n* surprise\n* uncategorized",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "all": {
+        "default": false,
+        "type": "boolean"
+      },
+      "body": {
+        "$ref": "#/$defs/PostRequest"
+      }
+    },
+    "$defs": {
+      "PostRequest": {
+        "items": {
+          "$ref": "#/$defs/Post"
+        },
+        "maxItems": 32,
+        "minItems": 1,
+        "title": "Posts",
+        "type": "array"
+      },
+      "Post": {
+        "properties": {
+          "id": {
+            "description": "id of the post.",
+            "example": "1",
+            "type": "string"
+          },
+          "language": {
+            "description": "language_code of the text.",
+            "example": "en",
+            "type": "string"
+          },
+          "text": {
+            "description": "the text to be analysed.",
+            "example": "I love the service",
+            "type": "string"
+          }
+        },
+        "required": [
+          "language",
+          "text"
+        ],
+        "title": "Post",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.symanto.net/emotion{?all}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Prediction Results"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: id of the post.",
+            "**predictions**: the list of predictions."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ValidationErrors"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

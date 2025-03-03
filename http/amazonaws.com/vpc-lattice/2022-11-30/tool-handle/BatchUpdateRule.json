@@ -1,0 +1,603 @@
+{
+  "name": "BatchUpdateRule",
+  "description": "Updates the listener rules in a batch. You can use this operation to change the priority of listener rules. This can be useful when bulk updating or swapping rule priority. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "listenerIdentifier": {
+        "type": "string",
+        "pattern": "^((listener-[0-9a-z]{17})|(^arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:service/svc-[0-9a-z]{17}/listener/listener-[0-9a-z]{17}$))$",
+        "minLength": 20,
+        "maxLength": 2048,
+        "description": "The ID or Amazon Resource Name (ARN) of the listener."
+      },
+      "serviceIdentifier": {
+        "type": "string",
+        "pattern": "^((svc-[0-9a-z]{17})|(arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:service/svc-[0-9a-z]{17}))$",
+        "minLength": 17,
+        "maxLength": 2048,
+        "description": "The ID or Amazon Resource Name (ARN) of the service."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "rules"
+        ],
+        "properties": {
+          "rules": {
+            "description": "The rules for the specified listener.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RuleUpdate"
+            },
+            "minItems": 1,
+            "maxItems": 5
+          }
+        }
+      }
+    },
+    "required": [
+      "listenerIdentifier",
+      "serviceIdentifier",
+      "body"
+    ],
+    "$defs": {
+      "RuleUpdate": {
+        "type": "object",
+        "required": [
+          "ruleIdentifier"
+        ],
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleAction"
+              },
+              {
+                "description": "The rule action."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleMatch"
+              },
+              {
+                "description": "The rule match."
+              }
+            ]
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RulePriority"
+              },
+              {
+                "description": "The rule priority. A listener can't have multiple rules with the same priority."
+              }
+            ]
+          },
+          "ruleIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleIdentifier"
+              },
+              {
+                "description": "The ID or Amazon Resource Name (ARN) of the rule."
+              }
+            ]
+          }
+        },
+        "description": "Represents an object when updating a rule."
+      },
+      "RuleAction": {
+        "type": "object",
+        "properties": {
+          "fixedResponse": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FixedResponseAction"
+              },
+              {
+                "description": " Describes the rule action that returns a custom HTTP response. "
+              }
+            ]
+          },
+          "forward": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ForwardAction"
+              },
+              {
+                "description": "The forward action. Traffic that matches the rule is forwarded to the specified target groups."
+              }
+            ]
+          }
+        },
+        "description": "Describes the action for a rule. Each rule must include exactly one of the following types of actions: <code>forward </code>or <code>fixed-response</code>, and it must be the last action to be performed."
+      },
+      "FixedResponseAction": {
+        "type": "object",
+        "required": [
+          "statusCode"
+        ],
+        "properties": {
+          "statusCode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpStatusCode"
+              },
+              {
+                "description": "The HTTP response code."
+              }
+            ]
+          }
+        },
+        "description": "Information about an action that returns a custom HTTP response. "
+      },
+      "HttpStatusCode": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 599
+      },
+      "ForwardAction": {
+        "type": "object",
+        "required": [
+          "targetGroups"
+        ],
+        "properties": {
+          "targetGroups": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WeightedTargetGroupList"
+              },
+              {
+                "description": "<p>The target groups. Traffic matching the rule is forwarded to the specified target groups. With forward actions, you can assign a weight that controls the prioritization and selection of each target group. This means that requests are distributed to individual target groups based on their weights. For example, if two target groups have the same weight, each target group receives half of the traffic.</p> <p>The default value is 1. This means that if only one target group is provided, there is no need to set the weight; 100% of traffic will go to that target group.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Describes a forward action. You can use forward actions to route requests to one or more target groups. "
+      },
+      "WeightedTargetGroupList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/WeightedTargetGroup"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "WeightedTargetGroup": {
+        "type": "object",
+        "required": [
+          "targetGroupIdentifier"
+        ],
+        "properties": {
+          "targetGroupIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetGroupIdentifier"
+              },
+              {
+                "description": "The ID or Amazon Resource Name (ARN) of the target group."
+              }
+            ]
+          },
+          "weight": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetGroupWeight"
+              },
+              {
+                "description": "Only required if you specify multiple target groups for a forward action. The \"weight\" determines how requests are distributed to the target group. For example, if you specify two target groups, each with a weight of 10, each target group receives half the requests. If you specify two target groups, one with a weight of 10 and the other with a weight of 20, the target group with a weight of 20 receives twice as many requests as the other target group. If there's only one target group specified, then the default value is 100."
+              }
+            ]
+          }
+        },
+        "description": "Describes the weight of a target group."
+      },
+      "TargetGroupIdentifier": {
+        "type": "string",
+        "pattern": "^((tg-[0-9a-z]{17})|(arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:targetgroup/tg-[0-9a-z]{17}))$",
+        "minLength": 17,
+        "maxLength": 2048
+      },
+      "TargetGroupWeight": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999
+      },
+      "RuleMatch": {
+        "type": "object",
+        "properties": {
+          "httpMatch": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpMatch"
+              },
+              {
+                "description": "The HTTP criteria that a rule must match."
+              }
+            ]
+          }
+        },
+        "description": "Describes a rule match."
+      },
+      "HttpMatch": {
+        "type": "object",
+        "properties": {
+          "headerMatches": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchList"
+              },
+              {
+                "description": "The header matches. Matches incoming requests with rule based on request header value before applying rule action."
+              }
+            ]
+          },
+          "method": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpMethod"
+              },
+              {
+                "description": "The HTTP method type."
+              }
+            ]
+          },
+          "pathMatch": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathMatch"
+              },
+              {
+                "description": "The path match."
+              }
+            ]
+          }
+        },
+        "description": "Describes criteria that can be applied to incoming requests."
+      },
+      "HeaderMatchList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HeaderMatch"
+        },
+        "minItems": 1,
+        "maxItems": 5
+      },
+      "HeaderMatch": {
+        "type": "object",
+        "required": [
+          "match",
+          "name"
+        ],
+        "properties": {
+          "caseSensitive": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether the match is case sensitive. Defaults to false."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchType"
+              },
+              {
+                "description": "The header match type."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchName"
+              },
+              {
+                "description": "The name of the header."
+              }
+            ]
+          }
+        },
+        "description": "Describes the constraints for a header match. Matches incoming requests with rule based on request header value before applying rule action."
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "HeaderMatchType": {
+        "type": "object",
+        "properties": {
+          "contains": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchContains"
+              },
+              {
+                "description": "Specifies a contains type match."
+              }
+            ]
+          },
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchExact"
+              },
+              {
+                "description": "Specifies an exact type match."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderMatchPrefix"
+              },
+              {
+                "description": "Specifies a prefix type match. Matches the value with the prefix."
+              }
+            ]
+          }
+        },
+        "description": "Describes a header match type. Only one can be provided."
+      },
+      "HeaderMatchContains": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "HeaderMatchExact": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "HeaderMatchPrefix": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "HeaderMatchName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "HttpMethod": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 16
+      },
+      "PathMatch": {
+        "type": "object",
+        "required": [
+          "match"
+        ],
+        "properties": {
+          "caseSensitive": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether the match is case sensitive. Defaults to false."
+              }
+            ]
+          },
+          "match": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathMatchType"
+              },
+              {
+                "description": "The type of path match."
+              }
+            ]
+          }
+        },
+        "description": "Describes the conditions that can be applied when matching a path for incoming requests."
+      },
+      "PathMatchType": {
+        "type": "object",
+        "properties": {
+          "exact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathMatchExact"
+              },
+              {
+                "description": "An exact match of the path."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathMatchPrefix"
+              },
+              {
+                "description": "A prefix match of the path."
+              }
+            ]
+          }
+        },
+        "description": "Describes a path match type. Each rule can include only one of the following types of paths."
+      },
+      "PathMatchExact": {
+        "type": "string",
+        "pattern": "^/[a-zA-Z0-9@:%_+.~#?&/=-]*$",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "PathMatchPrefix": {
+        "type": "string",
+        "pattern": "^/[a-zA-Z0-9@:%_+.~#?&/=-]*$",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "RulePriority": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "RuleIdentifier": {
+        "type": "string",
+        "pattern": "^((rule-[0-9a-z]{17})|(^arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:service/svc-[0-9a-z]{17}/listener/listener-[0-9a-z]{17}/rule/rule-[0-9a-z]{17}$))$",
+        "minLength": 20,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://vpc-lattice.us-east-1.amazonaws.com/services/{serviceIdentifier}/listeners/{listenerIdentifier}/rules"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**successful**",
+            "**unsuccessful**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "name": "Destiny2_GetHistoricalStats",
+  "description": "Gets historical stats for indicated character.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "characterId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The id of the character to retrieve. You can omit this character ID or set it to 0 to get aggregate stats across all characters."
+      },
+      "dayend": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Last day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request."
+      },
+      "daystart": {
+        "format": "date-time",
+        "type": "string",
+        "description": "First day to return when daily stats are requested. Use the format YYYY-MM-DD. Currently, we cannot allow more than 31 days of daily data to be requested in a single request."
+      },
+      "destinyMembershipId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The Destiny membershipId of the user to retrieve."
+      },
+      "groups": {
+        "items": {
+          "description": "If the enum value is > 100, it is a \"special\" group that cannot be queried for directly (special cases apply to when they are returned, and are not relevant in general cases)",
+          "format": "int32",
+          "type": "integer",
+          "x-enum-reference": {
+            "$ref": "#/components/schemas/schema3"
+          }
+        },
+        "type": "array",
+        "description": "Group of stats to include, otherwise only general stats are returned. Comma separated list is allowed. Values: General, Weapons, Medals"
+      },
+      "membershipType": {
+        "format": "int32",
+        "type": "integer",
+        "description": "A valid non-BungieNet membership type."
+      },
+      "modes": {
+        "items": {
+          "description": "For historical reasons, this list will have both D1 and D2-relevant Activity Modes in it. Please don't take this to mean that some D1-only feature is coming back!",
+          "format": "int32",
+          "type": "integer",
+          "x-enum-reference": {
+            "$ref": "#/components/schemas/schema4"
+          }
+        },
+        "type": "array",
+        "description": "Game modes to return. See the documentation for DestinyActivityModeType for valid values, and pass in string representation, comma delimited."
+      },
+      "periodType": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Indicates a specific period type to return. Optional. May be: Daily, AllTime, or Activity"
+      }
+    },
+    "required": [
+      "characterId",
+      "destinyMembershipId",
+      "membershipType"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.bungie.net/Platform/Destiny2/{membershipType}/Account/{destinyMembershipId}/Character/{characterId}/Stats/{?dayend,daystart,groups,modes,periodType}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**DetailedErrorTrace**",
+            "**ErrorCode**",
+            "**ErrorStatus**",
+            "**Message**",
+            "**MessageData**",
+            "**Response**",
+            "**ThrottleSeconds**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

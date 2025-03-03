@@ -1,0 +1,193 @@
+{
+  "name": "transferIntentGet",
+  "description": "Use the `/transfer/intent/get` endpoint to retrieve more information about a transfer intent.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferIntentGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransferIntentGetRequest": {
+        "additionalProperties": true,
+        "description": "Defines the request schema for `/transfer/intent/get`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "transfer_intent_id": {
+            "description": "Plaid's unique identifier for a transfer intent object.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transfer_intent_id"
+        ],
+        "title": "TransferIntentGetRequest",
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transfer/intent/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TransferIntentGetResponse"
+        },
+        "Defines the response schema for `/transfer/intent/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            [
+              "**transfer_intent**: Represents a transfer intent within Transfer UI.",
+              {
+                "$ul": [
+                  "**account_id**: The Plaid `account_id` for the account that will be debited or credited. Returned only if `account_id` was set on intent creation.",
+                  "**ach_class**: Specifies the use case of the transfer. Required for transfers on an ACH network.",
+                  "**amount**: The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+                  "**authorization_decision**: ",
+                  [
+                    "**authorization_decision_rationale**: The rationale for Plaid's decision regarding a proposed transfer. It is always set for `declined` decisions, and may or may not be null for `approved` decisions.",
+                    {
+                      "$ul": [
+                        "**code**: A code representing the rationale for approving or declining the proposed transfer. Possible values are:",
+                        "**description**: A human-readable description of the code associated with a transfer approval or transfer decline."
+                      ]
+                    }
+                  ],
+                  "**created**: The datetime the transfer was created. This will be of the form `2006-01-02T15:04:05Z`.",
+                  "**description**: A description for the underlying transfer. Maximum of 8 characters.",
+                  [
+                    "**failure_reason**: The reason for a failed transfer intent. Returned only if the transfer intent status is `failed`. Null otherwise.",
+                    {
+                      "$ul": [
+                        "**error_code**: A code representing the reason for a failed transfer intent (i.e., an API error or the authorization being declined).",
+                        "**error_message**: A human-readable description of the code associated with a failed transfer intent.",
+                        "**error_type**: A broad categorization of the error."
+                      ]
+                    }
+                  ],
+                  "**funding_account_id**: The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited.",
+                  "**guarantee_decision**: Indicates whether the transfer is guaranteed by Plaid (Guarantee customers only). This field will contain either `GUARANTEED` or `NOT_GUARANTEED` indicating whether Plaid will guarantee the transfer. If the transfer is not guaranteed, additional information will be provided in the `guarantee_decision_rationale` field. Refer to the `code` field in `guarantee_decision_rationale` for details.",
+                  [
+                    "**guarantee_decision_rationale**: The rationale for Plaid's decision to not guarantee a transfer. Will be `null` unless `guarantee_decision` is `NOT_GUARANTEED`.",
+                    {
+                      "$ul": [
+                        "**code**: A code representing the reason Plaid declined to guarantee this transfer:",
+                        "**description**: A human-readable description of why the transfer cannot be guaranteed."
+                      ]
+                    }
+                  ],
+                  "**id**: Plaid's unique identifier for a transfer intent object.",
+                  "**iso_currency_code**: The currency of the transfer amount, e.g. \"USD\"",
+                  "**metadata**: The Metadata object is a mapping of client-provided string fields to any string value. The following limitations apply:",
+                  "**mode**: The direction of the flow of transfer funds.",
+                  "**network**: The network or rails used for the transfer. Defaults to `same-day-ach`. (default: same-day-ach)",
+                  "**origination_account_id**: Plaid’s unique identifier for the origination account used for the transfer.",
+                  "**require_guarantee**: When `true`, the transfer requires a `GUARANTEED` decision by Plaid to proceed (Guarantee customers only).",
+                  "**status**: The status of the transfer intent.",
+                  "**transfer_id**: Plaid's unique identifier for the transfer created through the UI. Returned only if the transfer was successfully created. Null value otherwise.",
+                  [
+                    "**user**: The legal name and other information for the account holder.",
+                    {
+                      "$ul": [
+                        [
+                          "**address**: The address associated with the account holder.",
+                          {
+                            "$ul": [
+                              "**city**: Ex. \"San Francisco\"",
+                              "**country**: A two-letter country code (e.g., \"US\").",
+                              "**postal_code**: The postal code (e.g., \"94103\").",
+                              "**region**: The state or province (e.g., \"CA\").",
+                              "**street**: The street number and name (i.e., \"100 Market St.\")."
+                            ]
+                          }
+                        ],
+                        "**email_address**: The user's email address.",
+                        "**legal_name**: The user's legal name.",
+                        "**phone_number**: The user's phone number."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

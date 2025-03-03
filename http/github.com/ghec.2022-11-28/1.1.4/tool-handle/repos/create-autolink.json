@@ -1,0 +1,112 @@
+{
+  "name": "repos_create-autolink",
+  "description": "Users with admin access to the repository can create an autolink.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "body": {
+        "properties": {
+          "is_alphanumeric": {
+            "default": "true",
+            "description": "Whether this autolink reference matches alphanumeric characters. If true, the `<num>` parameter of the `url_template` matches alphanumeric characters `A-Z` (case insensitive), `0-9`, and `-`. If false, this autolink reference only matches numeric characters.",
+            "type": "boolean"
+          },
+          "key_prefix": {
+            "description": "This prefix appended by certain characters will generate a link any time it is found in an issue, pull request, or commit.",
+            "type": "string"
+          },
+          "url_template": {
+            "description": "The URL must contain `<num>` for the reference number. `<num>` matches different characters depending on the value of `is_alphanumeric`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_prefix",
+          "url_template"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/autolinks"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Autolink reference"
+        },
+        "An autolink reference.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**is_alphanumeric**: Whether this autolink reference matches alphanumeric characters. If false, this autolink reference only matches numeric characters.",
+            "**key_prefix**: The prefix of a key that is linkified.",
+            "**url_template**: A template for the target URL that is generated if a key was found."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

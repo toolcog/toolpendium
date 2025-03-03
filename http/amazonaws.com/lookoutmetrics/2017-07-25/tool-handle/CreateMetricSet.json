@@ -1,0 +1,1163 @@
+{
+  "name": "CreateMetricSet",
+  "description": "Creates a dataset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "AnomalyDetectorArn",
+          "MetricSetName",
+          "MetricList",
+          "MetricSource"
+        ],
+        "properties": {
+          "AnomalyDetectorArn": {
+            "description": "The ARN of the anomaly detector that will use the dataset.",
+            "type": "string",
+            "pattern": "arn:([a-z\\d-]+):.*:.*:.*:.+",
+            "maxLength": 256
+          },
+          "MetricSetName": {
+            "description": "The name of the dataset.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+            "minLength": 1,
+            "maxLength": 63
+          },
+          "MetricSetDescription": {
+            "description": "A description of the dataset you are creating.",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "MetricList": {
+            "description": "A list of metrics that the dataset will contain.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Metric"
+            },
+            "minItems": 1
+          },
+          "Offset": {
+            "description": "After an interval ends, the amount of seconds that the detector waits before importing data. Offset is only supported for S3, Redshift, Athena and datasources.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 432000
+          },
+          "TimestampColumn": {
+            "description": "Contains information about the column used to track time in a source data file.",
+            "type": "object",
+            "properties": {
+              "ColumnName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ColumnName"
+                  },
+                  {
+                    "description": "The name of the timestamp column."
+                  }
+                ]
+              },
+              "ColumnFormat": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DateTimeFormat"
+                  },
+                  {
+                    "description": "The format of the timestamp column."
+                  }
+                ]
+              }
+            }
+          },
+          "DimensionList": {
+            "description": "A list of the fields you want to treat as dimensions.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ColumnName"
+            },
+            "minItems": 1
+          },
+          "MetricSetFrequency": {
+            "description": "The frequency with which the source data will be analyzed for anomalies.",
+            "type": "string",
+            "enum": [
+              "P1D",
+              "PT1H",
+              "PT10M",
+              "PT5M"
+            ]
+          },
+          "MetricSource": {
+            "description": "Contains information about source data used to generate metrics.",
+            "type": "object",
+            "properties": {
+              "S3SourceConfig": {
+                "$ref": "#/$defs/S3SourceConfig"
+              },
+              "AppFlowConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AppFlowConfig"
+                  },
+                  {
+                    "description": "Details about an AppFlow datasource."
+                  }
+                ]
+              },
+              "CloudWatchConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CloudWatchConfig"
+                  },
+                  {
+                    "description": "Details about an Amazon CloudWatch monitoring datasource."
+                  }
+                ]
+              },
+              "RDSSourceConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RDSSourceConfig"
+                  },
+                  {
+                    "description": "Details about an Amazon Relational Database Service (RDS) datasource."
+                  }
+                ]
+              },
+              "RedshiftSourceConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RedshiftSourceConfig"
+                  },
+                  {
+                    "description": "Details about an Amazon Redshift database datasource."
+                  }
+                ]
+              },
+              "AthenaSourceConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AthenaSourceConfig"
+                  },
+                  {
+                    "description": "Details about an Amazon Athena datasource."
+                  }
+                ]
+              }
+            }
+          },
+          "Timezone": {
+            "description": "The time zone in which your source data was recorded.",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "maxLength": 60
+          },
+          "Tags": {
+            "description": "A list of <a href=\"https://docs.aws.amazon.com/lookoutmetrics/latest/dev/detectors-tags.html\">tags</a> to apply to the dataset.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "DimensionFilterList": {
+            "description": "A list of filters that specify which data is kept for anomaly detection.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MetricSetDimensionFilter"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Metric": {
+        "type": "object",
+        "required": [
+          "MetricName",
+          "AggregationFunction"
+        ],
+        "properties": {
+          "MetricName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnName"
+              },
+              {
+                "description": "The name of the metric."
+              }
+            ]
+          },
+          "AggregationFunction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AggregationFunction"
+              },
+              {
+                "description": "The function with which the metric is calculated."
+              }
+            ]
+          },
+          "Namespace": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Namespace"
+              },
+              {
+                "description": "The namespace for the metric."
+              }
+            ]
+          }
+        },
+        "description": "A calculation made by contrasting a measure and a dimension from your source data."
+      },
+      "ColumnName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "AggregationFunction": {
+        "type": "string",
+        "enum": [
+          "AVG",
+          "SUM"
+        ]
+      },
+      "Namespace": {
+        "type": "string",
+        "pattern": "[^:].*",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DateTimeFormat": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "maxLength": 63
+      },
+      "S3SourceConfig": {
+        "type": "object",
+        "properties": {
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The ARN of an IAM role that has read and write access permissions to the source S3 bucket."
+              }
+            ]
+          },
+          "TemplatedPathList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TemplatedPathList"
+              },
+              {
+                "description": "A list of templated paths to the source files."
+              }
+            ]
+          },
+          "HistoricalDataPathList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HistoricalDataPathList"
+              },
+              {
+                "description": "A list of paths to the historical data files."
+              }
+            ]
+          },
+          "FileFormatDescriptor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FileFormatDescriptor"
+              },
+              {
+                "description": "Contains information about a source file's formatting."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about the configuration of the S3 bucket that contains source files."
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:([a-z\\d-]+):.*:.*:.*:.+",
+        "maxLength": 256
+      },
+      "TemplatedPathList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/TemplatedPath"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "TemplatedPath": {
+        "type": "string",
+        "pattern": "^s3://[a-zA-Z0-9_\\-\\/ {}=]+$",
+        "maxLength": 1024
+      },
+      "HistoricalDataPathList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/HistoricalDataPath"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "HistoricalDataPath": {
+        "type": "string",
+        "pattern": "^s3://[a-z0-9].+$",
+        "maxLength": 1024
+      },
+      "FileFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "CsvFormatDescriptor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CsvFormatDescriptor"
+              },
+              {
+                "description": "Contains information about how a source CSV data file should be analyzed."
+              }
+            ]
+          },
+          "JsonFormatDescriptor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonFormatDescriptor"
+              },
+              {
+                "description": "Contains information about how a source JSON data file should be analyzed."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about a source file's formatting."
+      },
+      "CsvFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "FileCompression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CSVFileCompression"
+              },
+              {
+                "description": "The level of compression of the source CSV file."
+              }
+            ]
+          },
+          "Charset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Charset"
+              },
+              {
+                "description": "The character set in which the source CSV file is written."
+              }
+            ]
+          },
+          "ContainsHeader": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Whether or not the source CSV file contains a header."
+              }
+            ]
+          },
+          "Delimiter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Delimiter"
+              },
+              {
+                "description": "The character used to delimit the source CSV file."
+              }
+            ]
+          },
+          "HeaderList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderList"
+              },
+              {
+                "description": "A list of the source CSV file's headers, if any."
+              }
+            ]
+          },
+          "QuoteSymbol": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QuoteSymbol"
+              },
+              {
+                "description": "The character used as a quote character."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about how a source CSV data file should be analyzed."
+      },
+      "CSVFileCompression": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "GZIP"
+        ]
+      },
+      "Charset": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+        "maxLength": 63
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "Delimiter": {
+        "type": "string",
+        "pattern": "[^\\r\\n]",
+        "maxLength": 1
+      },
+      "HeaderList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ColumnName"
+        }
+      },
+      "QuoteSymbol": {
+        "type": "string",
+        "pattern": "[^\\r\\n]|^$",
+        "maxLength": 1
+      },
+      "JsonFormatDescriptor": {
+        "type": "object",
+        "properties": {
+          "FileCompression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonFileCompression"
+              },
+              {
+                "description": "The level of compression of the source CSV file."
+              }
+            ]
+          },
+          "Charset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Charset"
+              },
+              {
+                "description": "The character set in which the source JSON file is written."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about how a source JSON data file should be analyzed."
+      },
+      "JsonFileCompression": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "GZIP"
+        ]
+      },
+      "AppFlowConfig": {
+        "type": "object",
+        "properties": {
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "An IAM role that gives Amazon Lookout for Metrics permission to access the flow."
+              }
+            ]
+          },
+          "FlowName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FlowName"
+              },
+              {
+                "description": " name of the flow."
+              }
+            ]
+          }
+        },
+        "description": "Details about an Amazon AppFlow flow datasource."
+      },
+      "FlowName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9][\\w!@#.-]+",
+        "maxLength": 256
+      },
+      "CloudWatchConfig": {
+        "type": "object",
+        "properties": {
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "An IAM role that gives Amazon Lookout for Metrics permission to access data in Amazon CloudWatch."
+              }
+            ]
+          },
+          "BackTestConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BackTestConfiguration"
+              },
+              {
+                "description": "Settings for backtest mode."
+              }
+            ]
+          }
+        },
+        "description": "Details about an Amazon CloudWatch datasource."
+      },
+      "BackTestConfiguration": {
+        "type": "object",
+        "required": [
+          "RunBackTestMode"
+        ],
+        "properties": {
+          "RunBackTestMode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Run a backtest instead of monitoring new data."
+              }
+            ]
+          }
+        },
+        "description": "Settings for backtest mode."
+      },
+      "RDSSourceConfig": {
+        "type": "object",
+        "properties": {
+          "DBInstanceIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RDSDatabaseIdentifier"
+              },
+              {
+                "description": "A string identifying the database instance."
+              }
+            ]
+          },
+          "DatabaseHost": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabaseHost"
+              },
+              {
+                "description": "The host name of the database."
+              }
+            ]
+          },
+          "DatabasePort": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabasePort"
+              },
+              {
+                "description": "The port number where the database can be accessed."
+              }
+            ]
+          },
+          "SecretManagerArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PoirotSecretManagerArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the AWS Secrets Manager role."
+              }
+            ]
+          },
+          "DatabaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RDSDatabaseName"
+              },
+              {
+                "description": "The name of the RDS database."
+              }
+            ]
+          },
+          "TableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TableName"
+              },
+              {
+                "description": "The name of the table in the database."
+              }
+            ]
+          },
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the role."
+              }
+            ]
+          },
+          "VpcConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VpcConfiguration"
+              },
+              {
+                "description": "An object containing information about the Amazon Virtual Private Cloud (VPC) configuration."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about the Amazon Relational Database Service (RDS) configuration."
+      },
+      "RDSDatabaseIdentifier": {
+        "type": "string",
+        "pattern": "^[a-zA-Z](?!.*--)(?!.*-$)[0-9a-zA-Z\\-]*$",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "DatabaseHost": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 253
+      },
+      "DatabasePort": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "PoirotSecretManagerArn": {
+        "type": "string",
+        "pattern": "arn:([a-z\\d-]+):.*:.*:secret:AmazonLookoutMetrics-.+",
+        "maxLength": 256
+      },
+      "RDSDatabaseName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.]+",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "TableName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_.]*$",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "VpcConfiguration": {
+        "type": "object",
+        "required": [
+          "SubnetIdList",
+          "SecurityGroupIdList"
+        ],
+        "properties": {
+          "SubnetIdList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SubnetIdList"
+              },
+              {
+                "description": "An array of strings containing the Amazon VPC subnet IDs (e.g., <code>subnet-0bb1c79de3EXAMPLE</code>."
+              }
+            ]
+          },
+          "SecurityGroupIdList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SecurityGroupIdList"
+              },
+              {
+                "description": "An array of strings containing the list of security groups."
+              }
+            ]
+          }
+        },
+        "description": "Contains configuration information about the Amazon Virtual Private Cloud (VPC)."
+      },
+      "SubnetIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SubnetId"
+        }
+      },
+      "SubnetId": {
+        "type": "string",
+        "pattern": "[\\-0-9a-zA-Z]+",
+        "maxLength": 255
+      },
+      "SecurityGroupIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SecurityGroupId"
+        }
+      },
+      "SecurityGroupId": {
+        "type": "string",
+        "pattern": "[-0-9a-zA-Z]+",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "RedshiftSourceConfig": {
+        "type": "object",
+        "properties": {
+          "ClusterIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RedshiftClusterIdentifier"
+              },
+              {
+                "description": "A string identifying the Redshift cluster."
+              }
+            ]
+          },
+          "DatabaseHost": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabaseHost"
+              },
+              {
+                "description": "The name of the database host."
+              }
+            ]
+          },
+          "DatabasePort": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabasePort"
+              },
+              {
+                "description": "The port number where the database can be accessed."
+              }
+            ]
+          },
+          "SecretManagerArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PoirotSecretManagerArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the AWS Secrets Manager role."
+              }
+            ]
+          },
+          "DatabaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RedshiftDatabaseName"
+              },
+              {
+                "description": "The Redshift database name."
+              }
+            ]
+          },
+          "TableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TableName"
+              },
+              {
+                "description": "The table name of the Redshift database."
+              }
+            ]
+          },
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the role providing access to the database."
+              }
+            ]
+          },
+          "VpcConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VpcConfiguration"
+              },
+              {
+                "description": "Contains information about the Amazon Virtual Private Cloud (VPC) configuration."
+              }
+            ]
+          }
+        },
+        "description": "Provides information about the Amazon Redshift database configuration."
+      },
+      "RedshiftClusterIdentifier": {
+        "type": "string",
+        "pattern": "^[a-z](?!.*--)(?!.*-$)[0-9a-z\\-]*$",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "RedshiftDatabaseName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.]+",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "AthenaSourceConfig": {
+        "type": "object",
+        "properties": {
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "An IAM role that gives Amazon Lookout for Metrics permission to access the data."
+              }
+            ]
+          },
+          "DatabaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AthenaDatabaseName"
+              },
+              {
+                "description": "The database's name."
+              }
+            ]
+          },
+          "DataCatalog": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AthenaDataCatalog"
+              },
+              {
+                "description": "The database's data catalog."
+              }
+            ]
+          },
+          "TableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AthenaTableName"
+              },
+              {
+                "description": "The database's table name."
+              }
+            ]
+          },
+          "WorkGroupName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AthenaWorkGroupName"
+              },
+              {
+                "description": "The database's work group name."
+              }
+            ]
+          },
+          "S3ResultsPath": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AthenaS3ResultsPath"
+              },
+              {
+                "description": "The database's results path."
+              }
+            ]
+          },
+          "BackTestConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BackTestConfiguration"
+              },
+              {
+                "description": "Settings for backtest mode."
+              }
+            ]
+          }
+        },
+        "description": "Details about an Amazon Athena datasource."
+      },
+      "AthenaDatabaseName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_]+",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "AthenaDataCatalog": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+      },
+      "AthenaTableName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_]+",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "AthenaWorkGroupName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9._-]{1,128}",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "AthenaS3ResultsPath": {
+        "type": "string",
+        "pattern": "^s3://[a-z0-9].+$",
+        "maxLength": 1024
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "MetricSetDimensionFilter": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnName"
+              },
+              {
+                "description": "The dimension that you want to filter on."
+              }
+            ]
+          },
+          "FilterList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterList"
+              },
+              {
+                "description": "The list of filters that you are applying."
+              }
+            ]
+          }
+        },
+        "description": "Describes a list of filters for choosing a subset of dimension values. Each filter consists of the dimension and one of its values that you want to include. When multiple dimensions or values are specified, the dimensions are joined with an AND operation and the values are joined with an OR operation. "
+      },
+      "FilterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Filter"
+        },
+        "minItems": 1
+      },
+      "Filter": {
+        "type": "object",
+        "properties": {
+          "DimensionValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DimensionValue"
+              },
+              {
+                "description": "The value that you want to include in the filter."
+              }
+            ]
+          },
+          "FilterOperation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterOperation"
+              },
+              {
+                "description": "The condition to apply."
+              }
+            ]
+          }
+        },
+        "description": "Describes a filter for choosing a subset of dimension values. Each filter consists of the dimension that you want to include and the condition statement. The condition statement is specified in the <code>FilterOperation</code> object."
+      },
+      "DimensionValue": {
+        "type": "string"
+      },
+      "FilterOperation": {
+        "type": "string",
+        "enum": [
+          "EQUALS"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://lookoutmetrics.us-east-1.amazonaws.com/CreateMetricSet"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**MetricSetArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

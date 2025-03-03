@@ -1,0 +1,111 @@
+{
+  "name": "language-detection",
+  "description": "Identifies what language a text is written in. Only languages that our API supports can be analyzed.\n\nReturned labels:\n* language_code of the detected language",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/LanguageDetectionRequest"
+      }
+    },
+    "$defs": {
+      "LanguageDetectionRequest": {
+        "items": {
+          "$ref": "#/$defs/LanguageDetection"
+        },
+        "maxItems": 64,
+        "minItems": 1,
+        "type": "array"
+      },
+      "LanguageDetection": {
+        "properties": {
+          "id": {
+            "description": "id of the text.",
+            "type": "string"
+          },
+          "text": {
+            "description": "the text itself.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.symanto.net/language-detection"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "LanguagePredicted list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detected_language**: the detected language_code corresponding to the input text.",
+            "**id**: id of the post."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ValidationErrors"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

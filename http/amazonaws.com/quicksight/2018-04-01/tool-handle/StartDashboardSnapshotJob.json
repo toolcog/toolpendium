@@ -1,0 +1,804 @@
+{
+  "name": "StartDashboardSnapshotJob",
+  "description": "<p>Starts an asynchronous job that generates a dashboard snapshot. You can request up to one paginated PDF and up to five CSVs per API call.</p> <p>Poll job descriptions with a <code>DescribeDashboardSnapshotJob</code> API call. Once the job succeeds, use the <code>DescribeDashboardSnapshotJobResult</code> API to obtain the download URIs that the job generates.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "AwsAccountId": {
+        "type": "string",
+        "pattern": "^[0-9]{12}$",
+        "minLength": 12,
+        "maxLength": 12,
+        "description": "The ID of the Amazon Web Services account that the dashboard snapshot job is executed in."
+      },
+      "DashboardId": {
+        "type": "string",
+        "pattern": "[\\w\\-]+",
+        "minLength": 1,
+        "maxLength": 512,
+        "description": "The ID of the dashboard that you want to start a snapshot job for. "
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "SnapshotJobId",
+          "UserConfiguration",
+          "SnapshotConfiguration"
+        ],
+        "properties": {
+          "SnapshotJobId": {
+            "description": "An ID for the dashboard snapshot job. This ID is unique to the dashboard while the job is running. This ID can be used to poll the status of a job with a <code>DescribeDashboardSnapshotJob</code> while the job runs. You can reuse this ID for another job 24 hours after the current job is completed.",
+            "type": "string",
+            "pattern": "[\\w\\-]+",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "UserConfiguration": {
+            "description": "A structure that contains information about the users that the dashboard snapshot is generated for.",
+            "type": "object",
+            "properties": {
+              "AnonymousUsers": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotAnonymousUserList"
+                  },
+                  {
+                    "description": "An array of records that describe the anonymous users that the dashboard snapshot is generated for."
+                  }
+                ]
+              }
+            }
+          },
+          "SnapshotConfiguration": {
+            "description": "Describes the configuration of the dashboard snapshot.",
+            "type": "object",
+            "properties": {
+              "FileGroups": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotFileGroupList"
+                  },
+                  {
+                    "description": "A list of <code>SnapshotJobResultFileGroup</code> objects that contain information about the snapshot that is generated. This list can hold a maximum of 6 <code>FileGroup</code> configurations."
+                  }
+                ]
+              },
+              "DestinationConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotDestinationConfiguration"
+                  },
+                  {
+                    "description": "A structure that contains information on the Amazon S3 bucket that the generated snapshot is stored in."
+                  }
+                ]
+              },
+              "Parameters": {
+                "$ref": "#/$defs/Parameters"
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "AwsAccountId",
+      "DashboardId",
+      "body"
+    ],
+    "$defs": {
+      "SnapshotAnonymousUserList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnapshotAnonymousUser"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SnapshotAnonymousUser": {
+        "type": "object",
+        "properties": {
+          "RowLevelPermissionTags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTagList"
+              },
+              {
+                "description": "<p>The tags to be used for row-level security (RLS). Make sure that the relevant datasets have RLS tags configured before you start a snapshot export job. You can configure the RLS tags of a dataset with a <code>DataSet$RowLevelPermissionTagConfiguration</code> API call.</p> <p>These are not the tags that are used for Amazon Web Services resource tagging. For more information on row level security in Amazon QuickSight, see <a href=\"https://docs.aws.amazon.com/quicksight/latest/user/quicksight-dev-rls-tags.html\">Using Row-Level Security (RLS) with Tags</a>in the <i>Amazon QuickSight User Guide</i>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains information on the anonymous user configuration."
+      },
+      "SessionTagList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SessionTag"
+        },
+        "minItems": 1,
+        "maxItems": 50
+      },
+      "SessionTag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTagKey"
+              },
+              {
+                "description": "The key for the tag."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTagValue"
+              },
+              {
+                "description": "The value that you want to assign the tag."
+              }
+            ]
+          }
+        },
+        "description": "The key-value pair used for the row-level security tags feature."
+      },
+      "SessionTagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "SessionTagValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "SnapshotFileGroupList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnapshotFileGroup"
+        },
+        "minItems": 1,
+        "maxItems": 6
+      },
+      "SnapshotFileGroup": {
+        "type": "object",
+        "properties": {
+          "Files": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotFileList"
+              },
+              {
+                "description": "A list of <code>SnapshotFile</code> objects that contain the information on the snapshot files that need to be generated. This structure can hold 1 configuration at a time."
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains the information on the snapshot files."
+      },
+      "SnapshotFileList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnapshotFile"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SnapshotFile": {
+        "type": "object",
+        "required": [
+          "SheetSelections",
+          "FormatType"
+        ],
+        "properties": {
+          "SheetSelections": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotFileSheetSelectionList"
+              },
+              {
+                "description": "A list of <code>SnapshotFileSheetSelection</code> objects that contain information on the dashboard sheet that is exported. These objects provide information about the snapshot artifacts that are generated during the job. This structure can hold a maximum of 5 CSV configurations or 1 configuration for PDF."
+              }
+            ]
+          },
+          "FormatType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotFileFormatType"
+              },
+              {
+                "description": "The format of the snapshot file to be generated. You can choose between <code>CSV</code> and <code>PDF</code>."
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains the information for the snapshot that you want to generate. This information is provided by you when you start a new snapshot job."
+      },
+      "SnapshotFileSheetSelectionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnapshotFileSheetSelection"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SnapshotFileSheetSelection": {
+        "type": "object",
+        "required": [
+          "SheetId",
+          "SelectionScope"
+        ],
+        "properties": {
+          "SheetId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShortRestrictiveResourceId"
+              },
+              {
+                "description": "The sheet ID of the dashboard to generate the snapshot artifact from. This value is required for CSV or PDF format types."
+              }
+            ]
+          },
+          "SelectionScope": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotFileSheetSelectionScope"
+              },
+              {
+                "description": "<p>The selection scope of the visuals on a sheet of a dashboard that you are generating a snapthot of. You can choose one of the following options.</p> <ul> <li> <p> <code>ALL_VISUALS</code> - Selects all visuals that are on the sheet. This value is required if the snapshot is a PDF.</p> </li> <li> <p> <code>SELECTED_VISUALS</code> - Select the visual that you want to add to the snapshot. This value is required if the snapshot is a CSV.</p> </li> </ul>"
+              }
+            ]
+          },
+          "VisualIds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotFileSheetSelectionVisualIdList"
+              },
+              {
+                "description": " A structure that lists the IDs of the visuals in the selected sheet. Supported visual types are table, pivot table visuals. This value is required if you are generating a CSV. This value supports a maximum of 1 visual ID. "
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains information that identifies the snapshot that needs to be generated."
+      },
+      "ShortRestrictiveResourceId": {
+        "type": "string",
+        "pattern": "[\\w\\-]+",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "SnapshotFileSheetSelectionScope": {
+        "type": "string",
+        "enum": [
+          "ALL_VISUALS",
+          "SELECTED_VISUALS"
+        ]
+      },
+      "SnapshotFileSheetSelectionVisualIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ShortRestrictiveResourceId"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SnapshotFileFormatType": {
+        "type": "string",
+        "enum": [
+          "CSV",
+          "PDF"
+        ]
+      },
+      "SnapshotDestinationConfiguration": {
+        "type": "object",
+        "properties": {
+          "S3Destinations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SnapshotS3DestinationConfigurationList"
+              },
+              {
+                "description": " A list of <code>SnapshotS3DestinationConfiguration</code> objects that contain Amazon S3 destination configurations. This structure can hold a maximum of 1 <code>S3DestinationConfiguration</code>. "
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains information on the Amazon S3 destinations of the generated snapshot."
+      },
+      "SnapshotS3DestinationConfigurationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnapshotS3DestinationConfiguration"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SnapshotS3DestinationConfiguration": {
+        "type": "object",
+        "properties": {
+          "BucketConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3BucketConfiguration"
+              },
+              {
+                "description": "A structure that contains details about the Amazon S3 bucket that the generated dashboard snapshot is saved in."
+              }
+            ]
+          }
+        },
+        "description": "A structure that describes the Amazon S3 settings to use to save the generated dashboard snapshot."
+      },
+      "S3BucketConfiguration": {
+        "type": "object",
+        "required": [
+          "BucketName",
+          "BucketPrefix",
+          "BucketRegion"
+        ],
+        "properties": {
+          "BucketName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The name of an existing Amazon S3 bucket where the generated snapshot artifacts are sent."
+              }
+            ]
+          },
+          "BucketPrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The prefix of the Amazon S3 bucket that the generated snapshots are stored in."
+              }
+            ]
+          },
+          "BucketRegion": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The region that the Amazon S3 bucket is located in. The bucket must be located in the same region that the <code>StartDashboardSnapshotJob</code> API call is made."
+              }
+            ]
+          }
+        },
+        "description": "An optional structure that contains the Amazon S3 bucket configuration that the generated snapshots are stored in. If you don't provide this information, generated snapshots are stored in the default Amazon QuickSight bucket."
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "pattern": ".*\\S.*"
+      },
+      "Parameters": {
+        "type": "object",
+        "properties": {
+          "StringParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringParameterList"
+              },
+              {
+                "description": "The parameters that have a data type of string."
+              }
+            ]
+          },
+          "IntegerParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IntegerParameterList"
+              },
+              {
+                "description": "The parameters that have a data type of integer."
+              }
+            ]
+          },
+          "DecimalParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DecimalParameterList"
+              },
+              {
+                "description": "The parameters that have a data type of decimal."
+              }
+            ]
+          },
+          "DateTimeParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DateTimeParameterList"
+              },
+              {
+                "description": "The parameters that have a data type of date-time."
+              }
+            ]
+          }
+        },
+        "description": "A list of Amazon QuickSight parameters and the list's override values."
+      },
+      "StringParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/StringParameter"
+        },
+        "maxItems": 100
+      },
+      "StringParameter": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Values"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "A display name for a string parameter."
+              }
+            ]
+          },
+          "Values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SensitiveStringList"
+              },
+              {
+                "description": "The values of a string parameter."
+              }
+            ]
+          }
+        },
+        "description": "A string parameter."
+      },
+      "SensitiveStringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SensitiveString"
+        }
+      },
+      "SensitiveString": {
+        "type": "string",
+        "format": "password"
+      },
+      "IntegerParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/IntegerParameter"
+        },
+        "maxItems": 100
+      },
+      "IntegerParameter": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Values"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The name of the integer parameter."
+              }
+            ]
+          },
+          "Values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SensitiveLongList"
+              },
+              {
+                "description": "The values for the integer parameter."
+              }
+            ]
+          }
+        },
+        "description": "An integer parameter."
+      },
+      "SensitiveLongList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SensitiveLong"
+        }
+      },
+      "SensitiveLong": {
+        "type": "integer"
+      },
+      "DecimalParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/DecimalParameter"
+        },
+        "maxItems": 100
+      },
+      "DecimalParameter": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Values"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "A display name for the decimal parameter."
+              }
+            ]
+          },
+          "Values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SensitiveDoubleList"
+              },
+              {
+                "description": "The values for the decimal parameter."
+              }
+            ]
+          }
+        },
+        "description": "A decimal parameter."
+      },
+      "SensitiveDoubleList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SensitiveDouble"
+        }
+      },
+      "SensitiveDouble": {
+        "type": "number",
+        "format": "double"
+      },
+      "DateTimeParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/DateTimeParameter"
+        },
+        "maxItems": 100
+      },
+      "DateTimeParameter": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Values"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "A display name for the date-time parameter."
+              }
+            ]
+          },
+          "Values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SensitiveTimestampList"
+              },
+              {
+                "description": "The values for the date-time parameter."
+              }
+            ]
+          }
+        },
+        "description": "A date-time parameter."
+      },
+      "SensitiveTimestampList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SensitiveTimestamp"
+        }
+      },
+      "SensitiveTimestamp": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://quicksight.us-east-1.amazonaws.com/accounts/{AwsAccountId}/dashboards/{DashboardId}/snapshot-jobs"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Arn**",
+            "**SnapshotJobId**",
+            "**RequestId**",
+            "**Status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

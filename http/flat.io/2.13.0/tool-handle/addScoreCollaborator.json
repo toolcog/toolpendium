@@ -1,0 +1,267 @@
+{
+  "name": "addScoreCollaborator",
+  "description": "Share a score with a single user or a group. This API call allows to add, invite and update the collaborators of a resource.\n- To add an existing Flat user to the resource, specify its unique identifier in the `user` property.\n- To invite an external user to the resource, specify its email in the `userEmail` property.\n- To add a Flat group to the resource, specify its unique identifier in the `group` property.\n- To update an existing collaborator, process the same request with different rights.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "score": {
+        "type": "string",
+        "description": "Unique identifier of the score document. This can be a Flat Score unique identifier (i.e. `ScoreDetails.id`) or, if the score is also a Google Drive file, the Drive file unique identifier prefixed with `drive-` (e.g. `drive-0B000000000`).\n"
+      },
+      "body": {
+        "$ref": "#/$defs/ResourceCollaboratorCreation"
+      }
+    },
+    "required": [
+      "score",
+      "body"
+    ],
+    "$defs": {
+      "ResourceCollaboratorCreation": {
+        "description": "Add a collaborator to a resource.",
+        "example": {
+          "aclAdmin": false,
+          "aclRead": true,
+          "aclWrite": true,
+          "userEmail": "jdoe@flat.io"
+        },
+        "properties": {
+          "aclAdmin": {
+            "default": false,
+            "description": "`True` if the related user can can manage the current document, i.e. changing the document permissions and deleting the document\n",
+            "type": "boolean"
+          },
+          "aclRead": {
+            "default": true,
+            "description": "`True` if the related user can read the score. (probably true if the user has a permission on the document).\n",
+            "type": "boolean"
+          },
+          "aclWrite": {
+            "default": false,
+            "description": "`True` if the related user can modify the score.\n",
+            "type": "boolean"
+          },
+          "group": {
+            "description": "The unique identifier of a Flat group",
+            "type": "string"
+          },
+          "user": {
+            "description": "The unique identifier of a Flat user",
+            "type": "string"
+          },
+          "userEmail": {
+            "description": "Fill this field to invite an individual user by email.\n",
+            "type": "string"
+          },
+          "userToken": {
+            "description": "Token received in an invitation to join the score.\n",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.flat.io/v2/scores/{score}/collaborators"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The rights of the current user on a score or collection",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**aclAdmin**: `True` if the current user can manage the current document (i.e. share, delete) (default: false)",
+            "**aclRead**: `True` if the current user can read the current document (default: false)",
+            "**aclWrite**: `True` if the current user can modify the current document. (default: false)",
+            "**isCollaborator**: `True` if the current user is a collaborator of the current document (direct or via group). (default: false)",
+            "**collection**: If this object is a permission of a collection, this property will contain the unique identifier of the collection",
+            [
+              "**group**: A group of users",
+              {
+                "$ul": [
+                  "**creationDate**: The creation date of the group",
+                  "**id**: The unique identifier of the group",
+                  "**name**: The display name of the group",
+                  "**organization**: If the group is related to an organization, this field will contain",
+                  "**readOnly**: `True` if the group is set in read-only",
+                  "**type**: The type of the group:",
+                  "**usersCount**: The number of users in this group"
+                ]
+              }
+            ],
+            "**id**: The unique identifier of the permission",
+            "**invited**: If this property is `true`, this is still a pending invitation",
+            "**score**: If this object is a permission of a score, this property will contain the unique identifier of the score",
+            [
+              "**user**",
+              {
+                "$ul": [
+                  "**firstname**: Firstname of the user (for education users)",
+                  "**id**: The user unique identifier",
+                  "**isFlatTeam**: Will be 'true' if user is part of the Flat Team",
+                  "**isPowerUser**: User license status. 'true' if user is an individual Power user",
+                  "**lastname**: Lastname of the user (for education users)",
+                  "**name**: A displayable name for the user (for consumer users)",
+                  "**picture**: The URL of the picture to display",
+                  "**printableName**: The name that can be directly printed (name, firstname & lastname, or username)",
+                  "**type**: The type of user account",
+                  "**username**: The user name (unique for the organization)",
+                  "**classRole**: User's Class Role (for Edu users only)",
+                  "**htmlUrl**: Link to user profile (for Indiv. users only)",
+                  "**organization**: Organization ID (for Edu users only)",
+                  "**organizationRole**: User's Organization Role (for Edu users only)",
+                  "**bio**: User's biography",
+                  "**coverPicture**: Cover picture (backgroud) for the profile",
+                  "**followersCount**: Number of followers the user have",
+                  "**followingCount**: Number of people the user follow",
+                  "**instruments**: An array of the instrument identifiers.",
+                  "**likedScoresCount**: Number of the scores liked by the user",
+                  "**ownedPublicScoresCount**: Number of public scores the user have",
+                  "**profileTheme**: Theme (background) for the profile",
+                  "**registrationDate**: Date the user signed up"
+                ]
+              }
+            ],
+            "**userEmail**: If the collaborator is not a user of Flat yet, this field will contain his email."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

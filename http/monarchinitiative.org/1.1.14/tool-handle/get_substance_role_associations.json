@@ -1,0 +1,189 @@
+{
+  "name": "get_substance_role_associations",
+  "description": "Roles may be human-oriented (e.g. pesticide) or molecular (e.g. enzyme inhibitor)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "rows": {
+        "default": 100,
+        "type": "integer",
+        "description": "number of rows"
+      },
+      "start": {
+        "type": "integer",
+        "description": "beginning row"
+      },
+      "facet": {
+        "default": false,
+        "type": "boolean",
+        "description": "Enable faceting"
+      },
+      "facet_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Fields to facet on"
+      },
+      "unselect_evidence": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, excludes evidence objects in response"
+      },
+      "exclude_automatic_assertions": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, excludes associations that involve IEAs (ECO:0000501)"
+      },
+      "fetch_objects": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, returns a distinct set of association.objects (typically ontology terms). This appears at the top level of the results payload"
+      },
+      "use_compact_associations": {
+        "default": false,
+        "type": "boolean",
+        "description": "If true, returns results in compact associations format"
+      },
+      "slim": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Map objects up (slim) to a higher level category. Value can be ontology class ID or subset ID"
+      },
+      "evidence": {
+        "type": "string",
+        "description": "Object id, e.g. ECO:0000501 (for IEA; Includes inferred by default) or a specific publication or other supporting object, e.g. ZFIN:ZDB-PUB-060503-2"
+      },
+      "direct": {
+        "default": false,
+        "type": "boolean",
+        "description": "Set true to only include direct associations, and false to include inferred (via subclass or subclass|part of), default=False"
+      },
+      "id": {
+        "type": "string",
+        "description": "CURIE identifier of substance, e.g. CHEBI:40036"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/bioentity/substance/{id}/roles{?rows,start,facet,facet_fields,unselect_evidence,exclude_automatic_assertions,fetch_objects,use_compact_associations,slim,evidence,direct}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**evidence_graph**",
+              {
+                "$ul": [
+                  "**edges**: All edges in graph",
+                  "**nodes**: All nodes in graph"
+                ]
+              }
+            ],
+            "**evidence_types**: Evidence types (ECO classes)",
+            "**id**: Association/annotation unique ID",
+            "**negated**: True if association is negated",
+            [
+              "**object**",
+              {
+                "$ul": [
+                  "**category**",
+                  "**id**: ID or CURIE e.g. MGI:1201606",
+                  "**iri**: IRI",
+                  "**label**: RDFS Label",
+                  [
+                    "**taxon**",
+                    {
+                      "$ul": [
+                        "**id**: CURIE ID, e.g. NCBITaxon:9606",
+                        "**label**: RDFS Label"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**object_eq**: Equivalent identifiers to object node",
+            "**object_extensions**",
+            "**provided_by**: Provider of association, e.g. Orphanet, ClinVar",
+            "**publications**: Publications supporting association, extracted from evidence graph",
+            "**qualifiers**: Qualifier on the association",
+            [
+              "**relation**",
+              {
+                "$ul": [
+                  "**category**",
+                  "**id**: ID or CURIE e.g. MGI:1201606",
+                  "**iri**: IRI",
+                  "**label**: RDFS Label",
+                  "**inverse**: is relation inverted (default: false)"
+                ]
+              }
+            ],
+            "**slim**: Objects mapped to a slim",
+            [
+              "**subject**",
+              {
+                "$ul": [
+                  "**category**",
+                  "**id**: ID or CURIE e.g. MGI:1201606",
+                  "**iri**: IRI",
+                  "**label**: RDFS Label",
+                  [
+                    "**taxon**",
+                    {
+                      "$ul": [
+                        "**id**: CURIE ID, e.g. NCBITaxon:9606",
+                        "**label**: RDFS Label"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**subject_eq**: Equivalent identifiers to subject node",
+            "**subject_extensions**",
+            "**type**: Type of association, e.g. gene-phenotype"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

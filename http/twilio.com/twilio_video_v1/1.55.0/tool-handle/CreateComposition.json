@@ -1,0 +1,137 @@
+{
+  "name": "CreateComposition",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "AudioSources": {
+            "description": "An array of track names from the same group room to merge into the new composition. Can include zero or more track names. The new composition includes all audio sources specified in `audio_sources` except for those specified in `audio_sources_excluded`. The track names in this parameter can include an asterisk as a wild card character, which will match zero or more characters in a track name. For example, `student*` includes `student` as well as `studentTeam`. Please, be aware that either video_layout or audio_sources have to be provided to get a valid creation request",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "AudioSourcesExcluded": {
+            "description": "An array of track names to exclude. The new composition includes all audio sources specified in `audio_sources` except for those specified in `audio_sources_excluded`. The track names in this parameter can include an asterisk as a wild card character, which will match zero or more characters in a track name. For example, `student*` excludes `student` as well as `studentTeam`. This parameter can also be empty.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "Format": {
+            "$ref": "#/$defs/composition_enum_format"
+          },
+          "Resolution": {
+            "description": "A string that describes the columns (width) and rows (height) of the generated composed video in pixels. Defaults to `640x480`. \nThe string's format is `{width}x{height}` where: \n\n* 16 <= `{width}` <= 1280\n* 16 <= `{height}` <= 1280\n* `{width}` * `{height}` <= 921,600\n\nTypical values are: \n\n* HD = `1280x720`\n* PAL = `1024x576`\n* VGA = `640x480`\n* CIF = `320x240`\n\nNote that the `resolution` imposes an aspect ratio to the resulting composition. When the original video tracks are constrained by the aspect ratio, they are scaled to fit. See [Specifying Video Layouts](https://www.twilio.com/docs/video/api/compositions-resource#specifying-video-layouts) for more info.",
+            "type": "string"
+          },
+          "RoomSid": {
+            "description": "The SID of the Group Room with the media tracks to be used as composition sources.",
+            "maxLength": 34,
+            "minLength": 34,
+            "pattern": "^RM[0-9a-fA-F]{32}$",
+            "type": "string"
+          },
+          "StatusCallback": {
+            "description": "The URL we should call using the `status_callback_method` to send status information to your application on every composition event. If not provided, status callback events will not be dispatched.",
+            "format": "uri",
+            "type": "string"
+          },
+          "StatusCallbackMethod": {
+            "description": "The HTTP method we should use to call `status_callback`. Can be: `POST` or `GET` and the default is `POST`.",
+            "enum": [
+              "HEAD",
+              "GET",
+              "POST",
+              "PATCH",
+              "PUT",
+              "DELETE"
+            ],
+            "format": "http-method",
+            "type": "string"
+          },
+          "Trim": {
+            "description": "Whether to clip the intervals where there is no active media in the composition. The default is `true`. Compositions with `trim` enabled are shorter when the Room is created and no Participant joins for a while as well as if all the Participants leave the room and join later, because those gaps will be removed. See [Specifying Video Layouts](https://www.twilio.com/docs/video/api/compositions-resource#specifying-video-layouts) for more info.",
+            "type": "boolean"
+          },
+          "VideoLayout": {
+            "description": "An object that describes the video layout of the composition in terms of regions. See [Specifying Video Layouts](https://www.twilio.com/docs/video/api/compositions-resource#specifying-video-layouts) for more info. Please, be aware that either video_layout or audio_sources have to be provided to get a valid creation request"
+          }
+        },
+        "required": [
+          "RoomSid"
+        ],
+        "title": "CreateCompositionRequest",
+        "type": "object"
+      }
+    },
+    "$defs": {
+      "composition_enum_format": {
+        "enum": [
+          "mp4",
+          "webm"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://video.twilio.com/v1/Compositions"
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_sid**: The SID of the [Account](https://www.twilio.com/docs/iam/api/account) that created the Composition resource.",
+            "**audio_sources**: The array of track names to include in the composition. The composition includes all audio sources specified in `audio_sources` except those specified in `audio_sources_excluded`. The track names in this property can include an asterisk as a wild card character, which matches zero or more characters in a track name. For example, `student*` includes tracks named `student` as well as `studentTeam`.",
+            "**audio_sources_excluded**: The array of track names to exclude from the composition. The composition includes all audio sources specified in `audio_sources` except for those specified in `audio_sources_excluded`. The track names in this property can include an asterisk as a wild card character, which matches zero or more characters in a track name. For example, `student*` excludes `student` as well as `studentTeam`. This parameter can also be empty.",
+            "**bitrate**: The average bit rate of the composition's media.",
+            "**date_completed**: The date and time in GMT when the composition's media processing task finished, specified in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.",
+            "**date_created**: The date and time in GMT when the resource was created specified in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.",
+            "**date_deleted**: The date and time in GMT when the composition generated media was deleted, specified in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.",
+            "**duration**: The duration of the composition's media file in seconds.",
+            "**format**",
+            "**links**: The URL of the media file associated with the composition.",
+            "**media_external_location**: The URL of the media file associated with the composition when stored externally. See [External S3 Compositions](/docs/video/api/external-s3-compositions) for more details.",
+            "**resolution**: The dimensions of the video image in pixels expressed as columns (width) and rows (height). The string's format is `{width}x{height}`, such as `640x480`.",
+            "**room_sid**: The SID of the Group Room that generated the audio and video tracks used in the composition. All media sources included in a composition must belong to the same Group Room.",
+            "**sid**: The unique string that we created to identify the Composition resource.",
+            "**size**: The size of the composed media file in bytes.",
+            "**status**",
+            "**status_callback**: The URL called using the `status_callback_method` to send status information on every composition event.",
+            "**status_callback_method**: The HTTP method used to call `status_callback`. Can be: `POST` or `GET`, defaults to `POST`.",
+            "**trim**: Whether to remove intervals with no media, as specified in the POST request that created the composition. Compositions with `trim` enabled are shorter when the Room is created and no Participant joins for a while as well as if all the Participants leave the room and join later, because those gaps will be removed. See [Specifying Video Layouts](https://www.twilio.com/docs/video/api/compositions-resource#specifying-video-layouts) for more info.",
+            "**url**: The absolute URL of the resource.",
+            "**video_layout**: An object that describes the video layout of the composition in terms of regions. See [Specifying Video Layouts](https://www.twilio.com/docs/video/api/compositions-resource#specifying-video-layouts) for more info."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

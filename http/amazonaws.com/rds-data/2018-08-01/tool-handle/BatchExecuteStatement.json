@@ -1,0 +1,454 @@
+{
+  "name": "BatchExecuteStatement",
+  "description": "<p>Runs a batch SQL statement over an array of data.</p> <p>You can run bulk update and insert operations for multiple records using a DML statement with different parameter sets. Bulk operations can provide a significant performance improvement over individual insert and update operations.</p> <note> <p>If a call isn't part of a transaction because it doesn't include the <code>transactionID</code> parameter, changes that result from the call are committed automatically.</p> <p>There isn't a fixed upper limit on the number of parameter sets. However, the maximum size of the HTTP request submitted through the Data API is 4 MiB. If the request exceeds this limit, the Data API returns an error and doesn't process the request. This 4-MiB limit includes the size of the HTTP headers and the JSON notation in the request. Thus, the number of parameter sets that you can include depends on a combination of factors, such as the size of the SQL statement and the size of each parameter set.</p> <p>The response size limit is 1 MiB. If the call returns more than 1 MiB of response data, the call is terminated.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "resourceArn",
+          "secretArn",
+          "sql"
+        ],
+        "properties": {
+          "resourceArn": {
+            "description": "The Amazon Resource Name (ARN) of the Aurora Serverless DB cluster.",
+            "type": "string",
+            "minLength": 11,
+            "maxLength": 100
+          },
+          "secretArn": {
+            "description": "<p>The ARN of the secret that enables access to the DB cluster. Enter the database user name and password for the credentials in the secret.</p> <p>For information about creating the secret, see <a href=\"https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_database_secret.html\">Create a database secret</a>.</p>",
+            "type": "string",
+            "minLength": 11,
+            "maxLength": 100
+          },
+          "sql": {
+            "description": "The SQL statement to run. Don't include a semicolon (;) at the end of the SQL statement.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 65536
+          },
+          "database": {
+            "description": "The name of the database.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 64
+          },
+          "schema": {
+            "description": "<p>The name of the database schema.</p> <note> <p>Currently, the <code>schema</code> parameter isn't supported.</p> </note>",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 64
+          },
+          "parameterSets": {
+            "description": "<p>The parameter set for the batch operation.</p> <p>The SQL statement is executed as many times as the number of parameter sets provided. To execute a SQL statement with no parameters, use one of the following options:</p> <ul> <li> <p>Specify one or more empty parameter sets.</p> </li> <li> <p>Use the <code>ExecuteStatement</code> operation instead of the <code>BatchExecuteStatement</code> operation.</p> </li> </ul> <note> <p>Array parameters are not supported.</p> </note>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SqlParametersList"
+            }
+          },
+          "transactionId": {
+            "description": "<p>The identifier of a transaction that was started by using the <code>BeginTransaction</code> operation. Specify the transaction ID of the transaction that you want to include the SQL statement in.</p> <p>If the SQL statement is not part of a transaction, don't set this parameter.</p>",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 192
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "SqlParametersList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SqlParameter"
+        }
+      },
+      "SqlParameter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterName"
+              },
+              {
+                "description": "The name of the parameter."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Field"
+              },
+              {
+                "description": "The value of the parameter."
+              }
+            ]
+          },
+          "typeHint": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TypeHint"
+              },
+              {
+                "description": "<p>A hint that specifies the correct object type for data type mapping. Possible values are as follows:</p> <ul> <li> <p> <code>DATE</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>DATE</code> type to the database. The accepted format is <code>YYYY-MM-DD</code>.</p> </li> <li> <p> <code>DECIMAL</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>DECIMAL</code> type to the database.</p> </li> <li> <p> <code>JSON</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>JSON</code> type to the database.</p> </li> <li> <p> <code>TIME</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>TIME</code> type to the database. The accepted format is <code>HH:MM:SS[.FFF]</code>.</p> </li> <li> <p> <code>TIMESTAMP</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>TIMESTAMP</code> type to the database. The accepted format is <code>YYYY-MM-DD HH:MM:SS[.FFF]</code>.</p> </li> <li> <p> <code>UUID</code> - The corresponding <code>String</code> parameter value is sent as an object of <code>UUID</code> type to the database. </p> </li> </ul>"
+              }
+            ]
+          }
+        },
+        "description": "A parameter used in a SQL statement."
+      },
+      "ParameterName": {
+        "type": "string"
+      },
+      "Field": {
+        "type": "object",
+        "properties": {
+          "isNull": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BoxedBoolean"
+              },
+              {
+                "description": "A NULL value."
+              }
+            ]
+          },
+          "booleanValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BoxedBoolean"
+              },
+              {
+                "description": "A value of Boolean data type."
+              }
+            ]
+          },
+          "longValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BoxedLong"
+              },
+              {
+                "description": "A value of long data type."
+              }
+            ]
+          },
+          "doubleValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BoxedDouble"
+              },
+              {
+                "description": "A value of double data type."
+              }
+            ]
+          },
+          "stringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "A value of string data type."
+              }
+            ]
+          },
+          "blobValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Blob"
+              },
+              {
+                "description": "A value of BLOB data type."
+              }
+            ]
+          },
+          "arrayValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ArrayValue"
+              },
+              {
+                "description": "An array of values."
+              }
+            ]
+          }
+        },
+        "description": "Contains a value."
+      },
+      "BoxedBoolean": {
+        "type": "boolean"
+      },
+      "BoxedLong": {
+        "type": "integer"
+      },
+      "BoxedDouble": {
+        "type": "number",
+        "format": "double"
+      },
+      "String": {
+        "type": "string"
+      },
+      "Blob": {
+        "type": "string"
+      },
+      "ArrayValue": {
+        "type": "object",
+        "properties": {
+          "booleanValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BooleanArray"
+              },
+              {
+                "description": "An array of Boolean values."
+              }
+            ]
+          },
+          "longValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LongArray"
+              },
+              {
+                "description": "An array of integers."
+              }
+            ]
+          },
+          "doubleValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DoubleArray"
+              },
+              {
+                "description": "An array of floating-point numbers."
+              }
+            ]
+          },
+          "stringValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringArray"
+              },
+              {
+                "description": "An array of strings."
+              }
+            ]
+          },
+          "arrayValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ArrayOfArray"
+              },
+              {
+                "description": "An array of arrays."
+              }
+            ]
+          }
+        },
+        "description": "Contains an array."
+      },
+      "BooleanArray": {
+        "type": "array",
+        "description": "<p>An array of Boolean values.</p> <note> <p>Some array entries can be null.</p> </note>",
+        "items": {
+          "$ref": "#/$defs/BoxedBoolean"
+        }
+      },
+      "LongArray": {
+        "type": "array",
+        "description": "<p>An array of integers.</p> <note> <p>Some array entries can be null.</p> </note>",
+        "items": {
+          "$ref": "#/$defs/BoxedLong"
+        }
+      },
+      "DoubleArray": {
+        "type": "array",
+        "description": "<p>An array of floating-point numbers.</p> <note> <p>Some array entries can be null.</p> </note>",
+        "items": {
+          "$ref": "#/$defs/BoxedDouble"
+        }
+      },
+      "StringArray": {
+        "type": "array",
+        "description": "<p>An array of strings.</p> <note> <p>Some array entries can be null.</p> </note>",
+        "items": {
+          "$ref": "#/$defs/String"
+        }
+      },
+      "ArrayOfArray": {
+        "type": "array",
+        "description": "<p>An array of arrays.</p> <note> <p>Some array entries can be null.</p> </note>",
+        "items": {
+          "$ref": "#/$defs/ArrayValue"
+        }
+      },
+      "TypeHint": {
+        "type": "string",
+        "enum": [
+          "JSON",
+          "UUID",
+          "TIMESTAMP",
+          "DATE",
+          "TIME",
+          "DECIMAL"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://rds-data.us-east-1.amazonaws.com/BatchExecute"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response elements represent the output of a SQL statement over an array of data.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**updateResults**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

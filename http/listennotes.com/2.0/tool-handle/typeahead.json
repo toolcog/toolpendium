@@ -1,0 +1,100 @@
+{
+  "name": "typeahead",
+  "description": "Suggest search terms, podcast genres, and podcasts.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-ListenAPI-Key": {
+        "type": "string",
+        "description": "Get API Key on listennotes.com/api"
+      },
+      "q": {
+        "examples": [
+          "star wars"
+        ],
+        "type": "string",
+        "description": "Search term, e.g., person, place, topic... You can use double quotes to do verbatim match, e.g., \"game of thrones\". Otherwise, it's fuzzy search.\n"
+      },
+      "show_podcasts": {
+        "default": 0,
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          1
+        ],
+        "type": "integer",
+        "description": "Autosuggest podcasts. This only searches podcast title and publisher and returns very limited info of 5 podcasts. 1 is yes, 0 is no. It's a bit slow to autosuggest podcasts, so we turn it off by default. If show_podcasts=1, you can also pass iTunes id (e.g., 474722933) to the q parameter to fetch podcast meta data.\n"
+      },
+      "show_genres": {
+        "default": 0,
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          1
+        ],
+        "type": "integer",
+        "description": "Whether or not to autosuggest genres. 1 is yes, 0 is no.\n"
+      },
+      "safe_mode": {
+        "default": 0,
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          0
+        ],
+        "type": "integer",
+        "description": "Whether or not to exclude podcasts/episodes with explicit language. 1 is yes and 0 is no. It works only when **show_podcasts** is *1*.\n"
+      }
+    },
+    "required": [
+      "X-ListenAPI-Key",
+      "q"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://listen-api.listennotes.com/api/v2/typeahead{?q,show_podcasts,show_genres,safe_mode}"
+    },
+    "headers": {
+      "X-ListenAPI-Key": {
+        "$": "X-ListenAPI-Key"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**genres**: Genre suggestions. It'll show up when the **show_genres** parameter is *1*.",
+            "**podcasts**: Podcast suggestions. It'll show up when the **show_podcasts** parameter is 1.",
+            "**terms**: Search term suggestions."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

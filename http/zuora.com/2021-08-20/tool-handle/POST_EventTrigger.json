@@ -1,0 +1,131 @@
+{
+  "name": "POST_EventTrigger",
+  "description": "When you create an event trigger, you must specify the base object and define the trigger condition.\n\n### Specify the base object\nUse `baseObject` field to specify which object to define a trigger on. You can define an event trigger on any of the following objects:\n\n  * Account\n  * AccountingCode\n  * AccountingPeriod\n  * Amendment\n  * BillingRun\n  * Contact\n  * CreditBalanceAdjustment\n  * CreditMemo\n  * CreditMemoApplication\n  * CreditMemoApplicationItem\n  * CreditMemoItem\n  * DebitMemo\n  * DebitMemoItem\n  * Feature\n  * Invoice\n  * InvoiceAdjustment\n  * InvoiceItem\n  * InvoiceItemAdjustment\n  * JournalEntry\n  * JournalEntryItem\n  * Order\n  * OrderAction\n  * Payment\n  * PaymentApplication\n  * PaymentMethod\n  * PaymentPart\n  * Product\n  * ProductFeature\n  * ProductRatePlan\n  * ProductRatePlanCharge\n  * RatePlan\n  * RatePlanCharge\n  * Refund\n  * RefundApplication\n  * RevenueEvent\n  * RevenueEventItem\n  * RevenueSchedule\n  * RevenueScheduleItem\n  * Subscription\n  * SubscriptionProductFeature\n  * TaxationItem\n  * Usage\n\n#### Tenant level base objects and tenant level event triggers\nZuora identifies the following base objects as the tenant level base objects:\n\n  * AccountingCode\n  * AccountingPeriod\n  * BillingRun\n  * Feature\n  * JournalEntry\n  * JournalEntryItem\n  * Product\n  * ProductFeature\n  * ProductRatePlan\n  * ProductRatePlanCharge\n\nEvent triggers defined on tenant level base objects are tenant level event triggers. Notifications associated with tenant level events are system notifications. \n\n**Note:** Tenant level event triggers and system notifications are only available in the default profile.        \n\n### Define the trigger condition\nThe `condition` field is a [JEXL](http://commons.apache.org/proper/commons-jexl/) expression that specifies when to trigger events. The expression can contain fields from the object that the trigger is defined on.\n\n**Note:** The condition cannot contain fields from [data source](https://knowledgecenter.zuora.com/DC_Developers/M_Export_ZOQL) objects that are joined to the object that the trigger is defined on.\n\nFor example, the following condition causes an event to be triggered whenever an invoice is posted with an amount greater than 1000:\n\n```changeType == 'UPDATE' && Invoice.Status == 'Posted' && Invoice.Status_old != 'Posted' && Invoice.Amount > 1000```\n\nWhere:\n\n  * `changeType` is a keyword that specifies the type of change that occurred to the Invoice object. For all objects, the supported values of `changeType` are `INSERT`, `UPDATE`,  and `DELETE`.\n  * `Invoice.Status` is the value of the Invoice object's `Status` field after the change occurred.\n  * `Invoice.Status_old` is the value of the Invoice object's `Status` field before the change occurred.\n\nIn the above example, the value of `baseObject` is `Invoice`.\n\n### Limitations \n\nThis event trigger has the following limitations:\n\n* The maximum number of event triggers is 20. If you want to increase the limit, submit a request at [Zuora Global Support](https://support.zuora.com).\n\n* The INSERT change type is not supported on RatePlan base objects.\n\n* The INSERT change type is not supported on SubscriptionProductFeature base objects.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Authorization": {
+        "type": "string",
+        "description": "`Bearer {token}` for a valid OAuth token.\n"
+      },
+      "Zuora-Entity-Ids": {
+        "type": "string",
+        "description": "An entity ID. If you have [Zuora Multi-entity](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Multi-entity) enabled and the OAuth token is valid for more than one entity, you must use this header to specify which entity to perform the operation in. If the OAuth token is only valid for a single entity, or you do not have Zuora Multi-entity enabled, you do not need to set this header.\n"
+      },
+      "Zuora-Track-Id": {
+        "maxLength": 64,
+        "type": "string",
+        "description": "A custom identifier for tracing the API call. If you set a value for this header, Zuora returns the same value in the response headers. This header enables you to associate your system process identifiers with Zuora API calls, to assist with troubleshooting in the event of an issue.\n\nThe value of this field must use the US-ASCII character set and must not include any of the following characters: colon (`:`), semicolon (`;`), double quote (`\"`), and quote (`'`).\n"
+      }
+    },
+    "required": [
+      "Authorization"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rest.zuora.com/events/event-triggers"
+    },
+    "headers": {
+      "Authorization": {
+        "$": "Authorization"
+      },
+      "Zuora-Entity-Ids": {
+        "$": "Zuora-Entity-Ids"
+      },
+      "Zuora-Track-Id": {
+        "$": "Zuora-Track-Id"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: The status of the trigger.",
+            "**baseObject**: The base object that the trigger rule is defined upon. Should be specified in the pattern: ^[A-Z][\\\\w\\\\-]*$",
+            "**condition**: The JEXL expression to be evaluated against object changes. See above for more information and an example.",
+            "**description**: The description of the trigger.",
+            [
+              "**eventType**",
+              {
+                "$ul": [
+                  "**description**: The description of the event type.",
+                  "**displayName**: The display name for the event type.",
+                  "**name**: The name of the event. Should be unique, contain no space, and be in the pattern: ^[A-Za-z]{1,}[\\\\w\\\\-]*$"
+                ]
+              }
+            ],
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**reasons**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**reasons**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

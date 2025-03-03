@@ -1,0 +1,531 @@
+{
+  "name": "updateUser",
+  "description": "### Description:  \nUpdate user's metadata.\n\n### Precondition:\nRight <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128275; change users</span> required.\n\n### Postcondition:\nUser's metadata is updated.\n\n### Further Information:\n* If a user should **NOT** expire, leave `expireAt` empty.\n* All input fields are limited to **150** characters\n* **All** characters are allowed.\n\n### Authentication Method Options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| Authentication Method | Option Key | Option Value |\n| :--- | :--- | :--- |\n| `basic` / `sql` | `username` | Unique user identifier |\n| `active_directory` | `ad_config_id` (optional) | Active Directory configuration ID |\n|  | `username` | Active Directory username according to authentication setting `userFilter` |\n| `radius` | `username` | RADIUS username |\n| `openid` | `openid_config_id` (optional) | OpenID Connect configuration ID |\n|  | `username` | OpenID Connect username according to authentication setting `mappingClaim` |\n\n</details>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "user_id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "User ID"
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      },
+      "body": {
+        "$ref": "#/$defs/UpdateUserRequest"
+      }
+    },
+    "required": [
+      "user_id",
+      "body"
+    ],
+    "$defs": {
+      "UpdateUserRequest": {
+        "description": "Request model for updating user's metadata",
+        "properties": {
+          "authData": {
+            "$ref": "#/$defs/UserAuthDataUpdateRequest"
+          },
+          "authMethods": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nAuthentication methods:\n\n* `sql`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`\n\nuse `authData` instead",
+            "items": {
+              "$ref": "#/$defs/UserAuthMethod"
+            },
+            "type": "array"
+          },
+          "email": {
+            "description": "Email ",
+            "type": "string"
+          },
+          "expiration": {
+            "$ref": "#/$defs/ObjectExpiration"
+          },
+          "firstName": {
+            "description": "User first name",
+            "type": "string"
+          },
+          "gender": {
+            "default": "n",
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.12.0\n\nGender\n\nDo NOT use `gender`! It will be ignored.",
+            "type": "string"
+          },
+          "isLocked": {
+            "default": false,
+            "description": "User is locked:\n\n* `false` - unlocked\n\n* `true` - locked\n\n\n\nUser is locked and can not login anymore.",
+            "type": "boolean"
+          },
+          "lastName": {
+            "description": "User last name",
+            "type": "string"
+          },
+          "lockStatus": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.7.0\n\nUser lock status:\n\n* `0` - locked\n\n* `1` - Web access allowed\n\n* `2` - Web and mobile access allowed\n\n\n\nPlease use `isLocked` instead.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "mfaConfig": {
+            "$ref": "#/$defs/MfaConfig"
+          },
+          "phone": {
+            "description": "Phone number",
+            "type": "string"
+          },
+          "receiverLanguage": {
+            "description": "IETF language tag",
+            "type": "string"
+          },
+          "title": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.18.0\n\nJob title",
+            "type": "string"
+          },
+          "userName": {
+            "description": "&#128640; Since v4.13.0\n\nUsername",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserAuthDataUpdateRequest": {
+        "description": "User Authentication Data Update Request",
+        "properties": {
+          "adConfigId": {
+            "description": "ID of the user's Active Directory.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "login": {
+            "description": "User login name",
+            "type": "string"
+          },
+          "method": {
+            "description": "Authentication method\n\n\n\nAuthentication methods:\n\n* `basic`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`",
+            "type": "string"
+          },
+          "oidConfigId": {
+            "description": "ID of the user's OIDC provider.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UserAuthMethod": {
+        "deprecated": true,
+        "description": "Authentication method",
+        "properties": {
+          "authId": {
+            "description": "Authentication method\n\n\n\nAuthentication methods:\n\n* `basic`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`",
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Is enabled",
+            "type": "boolean"
+          },
+          "options": {
+            "description": "Authentication method options",
+            "items": {
+              "$ref": "#/$defs/KeyValueEntry"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "authId",
+          "isEnabled"
+        ],
+        "type": "object"
+      },
+      "KeyValueEntry": {
+        "description": "Key-value pair",
+        "properties": {
+          "key": {
+            "description": "Entry key",
+            "type": "string"
+          },
+          "value": {
+            "description": "Entry value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
+      "ObjectExpiration": {
+        "description": "Expiration information",
+        "properties": {
+          "enableExpiration": {
+            "description": "enabled / disabled",
+            "type": "boolean"
+          },
+          "expireAt": {
+            "description": "Expiration date",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enableExpiration"
+        ],
+        "type": "object"
+      },
+      "MfaConfig": {
+        "description": "Multi-factor authentication configuration",
+        "properties": {
+          "mfaEnforced": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "/api/v4/users/{user_id}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "User information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**authData**: User Authentication Data",
+              {
+                "$ul": [
+                  "**adConfigId**: ID of the user's Active Directory.",
+                  "**login**: User login name",
+                  "**method**: Authentication method",
+                  "**mustChangePassword**: Determines whether user has to change his / her password",
+                  "**oidConfigId**: ID of the user's OIDC provider.",
+                  "**password**: Password (only relevant for `basic` authentication type)"
+                ]
+              }
+            ],
+            "**authMethods**: &#128679; Deprecated since v4.13.0",
+            "**avatarUuid**: &#128640; Since v4.11.0",
+            "**email**: Email ",
+            "**expireAt**: Expiration date",
+            "**firstName**: User first name",
+            "**gender**: &#128679; Deprecated since v4.12.0 (default: n)",
+            "**hasManageableRooms**: User has manageable rooms",
+            "**homeRoomId**: Homeroom ID",
+            "**id**: Unique identifier for the user",
+            "**isEncryptionEnabled**: User has generated private key.",
+            "**isLocked**: User is locked: (default: false)",
+            "**isMfaEnabled**: Determines whether multi-factor authentication is enabled",
+            "**isMfaEnforced**: Determines whether multi-factor authentication is enforced",
+            "**lastLoginSuccessAt**: Last successful logon date",
+            "**lastName**: User last name",
+            "**lockStatus**: &#128679; Deprecated since v4.7.0",
+            "**login**: &#128679; Deprecated since v4.13.0",
+            "**phone**: Phone number",
+            [
+              "**publicKeyContainer**: Public key container",
+              {
+                "$ul": [
+                  "**createdAt**: &#128640; Since v4.24.0",
+                  "**createdBy**: &#128640; Since v4.24.0",
+                  "**publicKey**: Public key",
+                  "**version**: Version"
+                ]
+              }
+            ],
+            "**title**: &#128679; Deprecated since v4.18.0",
+            [
+              "**userAttributes**: User custom attributes (list of key-value pairs)",
+              {
+                "$ul": [
+                  "**items**: List of key-value pairs"
+                ]
+              }
+            ],
+            "**userName**: &#128640; Since v4.13.0",
+            [
+              "**userRoles**: List of roles",
+              {
+                "$ul": [
+                  "**items**: List of roles"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,289 @@
+{
+  "name": "CreateProject",
+  "description": "<p>Creates a project, which is the logical object in Evidently that can contain features, launches, and experiments. Use projects to group similar features together.</p> <p>To update an existing project, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateProject.html\">UpdateProject</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "appConfigResource": {
+            "description": "<p>Use this parameter to configure client-side evaluation for your project. Client-side evaluation allows your application to assign variations to user sessions locally instead of by calling the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation to assign the variations. This mitigates the latency and availability risks that come with an API call.</p> <p> <code>ProjectAppConfigResource</code> is a structure that defines the configuration of how your application integrates with AppConfig to run client-side evaluation.</p>",
+            "type": "object",
+            "properties": {
+              "applicationId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AppConfigResourceId"
+                  },
+                  {
+                    "description": "The ID of the AppConfig application to use for client-side evaluation. "
+                  }
+                ]
+              },
+              "environmentId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AppConfigResourceId"
+                  },
+                  {
+                    "description": "The ID of the AppConfig environment to use for client-side evaluation. This must be an environment that is within the application that you specify for <code>applicationId</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "dataDelivery": {
+            "description": "A structure that contains information about where Evidently is to store evaluation events for longer term storage.",
+            "type": "object",
+            "properties": {
+              "cloudWatchLogs": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CloudWatchLogsDestinationConfig"
+                  },
+                  {
+                    "description": "If the project stores evaluation events in CloudWatch Logs, this structure stores the log group name."
+                  }
+                ]
+              },
+              "s3Destination": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3DestinationConfig"
+                  },
+                  {
+                    "description": "If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix."
+                  }
+                ]
+              }
+            }
+          },
+          "description": {
+            "description": "An optional description of the project.",
+            "type": "string",
+            "pattern": ".*",
+            "minLength": 0,
+            "maxLength": 160
+          },
+          "name": {
+            "description": "The name for the project.",
+            "type": "string",
+            "pattern": "^[-a-zA-Z0-9._]*$",
+            "minLength": 1,
+            "maxLength": 127
+          },
+          "tags": {
+            "description": "<p>Assigns one or more tags (key-value pairs) to the project.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with a project.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AppConfigResourceId": {
+        "type": "string",
+        "pattern": "[a-z0-9]{4,7}"
+      },
+      "CloudWatchLogsDestinationConfig": {
+        "type": "object",
+        "properties": {
+          "logGroup": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CwLogGroupSafeName"
+              },
+              {
+                "description": "The name of the log group where the project stores evaluation events."
+              }
+            ]
+          }
+        },
+        "description": "A structure containing the CloudWatch Logs log group where the project stores evaluation events."
+      },
+      "CwLogGroupSafeName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._/]+$",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "S3DestinationConfig": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3BucketSafeName"
+              },
+              {
+                "description": "The name of the bucket in which Evidently stores evaluation events."
+              }
+            ]
+          },
+          "prefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3PrefixSafeName"
+              },
+              {
+                "description": "The bucket prefix in which Evidently stores evaluation events."
+              }
+            ]
+          }
+        },
+        "description": "If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix."
+      },
+      "S3BucketSafeName": {
+        "type": "string",
+        "pattern": "^[a-z0-9][-a-z0-9]*[a-z0-9]$",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "S3PrefixSafeName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9!_.*'()/]*$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://evidently.us-east-1.amazonaws.com/projects"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**project**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

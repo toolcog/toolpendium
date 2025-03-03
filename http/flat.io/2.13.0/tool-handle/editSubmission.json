@@ -1,0 +1,242 @@
+{
+  "name": "editSubmission",
+  "description": "Use this method as a teacher to update the different submission and give feedback.\nTeachers can only set `return`, `draftGrade` and `grade`\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "class": {
+        "type": "string",
+        "description": "Unique identifier of the class"
+      },
+      "assignment": {
+        "type": "string",
+        "description": "Unique identifier of the assignment"
+      },
+      "submission": {
+        "type": "string",
+        "description": "Unique identifier of the submission"
+      },
+      "body": {
+        "$ref": "#/$defs/AssignmentSubmissionUpdate"
+      }
+    },
+    "required": [
+      "class",
+      "assignment",
+      "submission",
+      "body"
+    ],
+    "$defs": {
+      "AssignmentSubmissionUpdate": {
+        "description": "Assignment Submission creation",
+        "example": {
+          "attachments": [
+            {
+              "score": "58c4955a226ffff257211a8d",
+              "title": "Hello - Student",
+              "type": "flat"
+            }
+          ],
+          "submit": true
+        },
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/$defs/ClassAttachmentCreation"
+            },
+            "type": "array"
+          },
+          "comments": {
+            "properties": {
+              "total": {
+                "description": "The total number of comments added to the submission",
+                "type": "number"
+              },
+              "unread": {
+                "description": "The number of unread comments for the current user",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "draftGrade": {
+            "description": "Optional grade. If unset, no grade was set. This value is only visible by the teacher, and we will be set to `grade` once the teacher returns the submission",
+            "maximum": 100,
+            "minimum": 0,
+            "nullable": true,
+            "type": "number"
+          },
+          "grade": {
+            "description": "Optional grade. If unset, no grade was set.",
+            "maximum": 100,
+            "minimum": 0,
+            "nullable": true,
+            "type": "number"
+          },
+          "return": {
+            "description": "If `true`, the submission will be marked as done",
+            "type": "boolean"
+          },
+          "submit": {
+            "description": "If `true`, the submission will be marked as done",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ClassAttachmentCreation": {
+        "description": "Attachment creation for an assignment or stream post.\nThis attachment must contain a `score` or an `url`, all the details of this one will be resolved and returned as `ClassAttachment` once the assignment or stream post is created.\n",
+        "example": {
+          "score": "000000000000000001",
+          "sharingMode": "copy",
+          "type": "flat"
+        },
+        "properties": {
+          "googleDriveFileId": {
+            "description": "The ID of the Google Drive File",
+            "type": "string"
+          },
+          "lockScoreTemplate": {
+            "description": "To be used with a score attached in `sharingMode` `copy` (score used as template). If true, students won't be able to change the original notes of the template.",
+            "type": "boolean"
+          },
+          "score": {
+            "description": "A unique Flat score identifier. The user creating the assignment must at least have read access to the document. If the user has admin rights, new group permissions will be automatically added for the\nteachers and students of the class.\n",
+            "type": "string"
+          },
+          "sharingMode": {
+            "$ref": "#/$defs/MediaScoreSharingMode"
+          },
+          "type": {
+            "description": "The type of the attachment posted",
+            "enum": [
+              "flat",
+              "link",
+              "googleDrive",
+              "worksheet"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "description": "The URL of the attachment.",
+            "type": "string"
+          },
+          "worksheet": {
+            "description": "An unique worksheet identifier",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MediaScoreSharingMode": {
+        "default": "read",
+        "description": "The sharing mode of the score for classes post and assignments",
+        "enum": [
+          "read",
+          "write",
+          "copy",
+          "performance"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.flat.io/v2/classes/{class}/assignments/{assignment}/submissions/{submission}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Assignment Submission",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**assignment**: Unique identifier of the assignment",
+            "**attachments**",
+            "**classroom**: Unique identifier of the classroom where the assignment was posted",
+            "**creationDate**: The date when the submission was created",
+            "**creator**: The User identifier of the student who created the submission",
+            "**draftGrade**: Optional grade. If unset, no grade was set. This value is only visible by the teacher, and we will be set to `grade` once the teacher returns the submission",
+            [
+              "**googleClassroom**: A coursework submission on Google Classroom",
+              {
+                "$ul": [
+                  "**alternateLink**: Absolute link to this coursework in the Classroom web UI",
+                  "**id**: Identifier of the coursework submission assigned by Classroom",
+                  "**state**: State of the submission on Google Classroom"
+                ]
+              }
+            ],
+            "**grade**: Optional grade. If unset, no grade was set.",
+            "**id**: Unique identifier of the submission",
+            "**maxPoints**: Optional max points for the grade. If set, a corresponding `draftGrade` or `grade` will be set.",
+            [
+              "**microsoftGraph**: A Microsoft Teams submission",
+              {
+                "$ul": [
+                  "**alternateLink**: Absolute link to this submission in the Microsoft Teams web UI",
+                  "**id**: Identifier of the submission assigned by Microsoft Teams",
+                  "**state**: State of the submission"
+                ]
+              }
+            ],
+            "**returnCreator**: The User unique identifier of the teacher who returned the submission",
+            "**returnDate**: The date when the teacher returned the work",
+            "**state**: State of the submission",
+            "**submissionDate**: The date when the student submitted his work"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

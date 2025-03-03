@@ -1,0 +1,5492 @@
+{
+  "name": "PostPaymentInstrument",
+  "description": "Create a payment instrument.\nIf such payment card or bank account payment instrument already exists then updates it instead.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "body": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/PaymentInstrumentCreateToken"
+          },
+          {
+            "$ref": "#/$defs/PaymentCardCreatePlain"
+          },
+          {
+            "$ref": "#/$defs/BankAccountCreatePlain"
+          },
+          {
+            "$ref": "#/$defs/PayPalAccount"
+          }
+        ],
+        "description": "PaymentInstrument resource."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PaymentInstrumentCreateToken": {
+        "properties": {
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The customer's ID."
+          },
+          "token": {
+            "description": "Payment token ID.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customerId",
+          "token"
+        ],
+        "type": "object"
+      },
+      "ResourceCustomFields": {
+        "default": {},
+        "description": "Custom Fields list as a map `{\"custom field name\": \"custom field value\", ...}`. The format must follow the saved format (see Custom Fields section for the formats).\n",
+        "example": {
+          "foo": "bar"
+        },
+        "type": "object"
+      },
+      "ResourceId": {
+        "description": "The resource ID. Defaults to UUID v4.",
+        "example": "4f6cf35x-2c4y-483z-a0a9-158621f77a21",
+        "maxLength": 50,
+        "type": "string"
+      },
+      "PaymentCardCreatePlain": {
+        "properties": {
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The Customer's ID."
+          },
+          "cvv": {
+            "description": "Card's cvv (card verification value).",
+            "type": "string",
+            "writeOnly": true
+          },
+          "expMonth": {
+            "description": "Card's expiration month.",
+            "type": "integer"
+          },
+          "expYear": {
+            "description": "Card's expiration year.",
+            "type": "integer"
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "payment-card"
+            ],
+            "type": "string"
+          },
+          "pan": {
+            "description": "The card PAN (Primary Account Number).",
+            "type": "string",
+            "writeOnly": true
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          }
+        },
+        "required": [
+          "method",
+          "customerId",
+          "pan",
+          "expYear",
+          "expMonth",
+          "billingAddress"
+        ],
+        "type": "object"
+      },
+      "ContactObject": {
+        "properties": {
+          "address": {
+            "description": "The contact street address.",
+            "example": "36 Craven St",
+            "maxLength": 60,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          },
+          "address2": {
+            "description": "The contact street address (second line).",
+            "maxLength": 60,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          },
+          "city": {
+            "description": "The contact city.",
+            "example": "London",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "country": {
+            "description": "The contact country ISO Alpha-2 code.",
+            "example": "GB",
+            "maxLength": 2,
+            "nullable": true,
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          "emails": {
+            "$ref": "#/$defs/ContactEmails"
+          },
+          "firstName": {
+            "description": "The contact first name.",
+            "example": "Benjamin",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "hash": {
+            "description": "A hash that can be used to compare multiple contacts for identical attribute values.",
+            "example": "056ae6d97c788b9e98b049ebafd7b229bf852221",
+            "maxLength": 40,
+            "readOnly": true,
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The contact last name.",
+            "example": "Franklin",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "organization": {
+            "description": "The contact organization.",
+            "example": {
+              "$ref": "#/components/schemas/ReadyToPayMethods/example/2/feature"
+            },
+            "maxLength": 255,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\pL,.']+$",
+            "type": "string"
+          },
+          "phoneNumbers": {
+            "$ref": "#/$defs/ContactPhoneNumbers"
+          },
+          "postalCode": {
+            "description": "The contact postal code.",
+            "example": "WC2N 5NF",
+            "maxLength": 10,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-]+$",
+            "type": "string"
+          },
+          "region": {
+            "description": "The contact region (state).",
+            "example": "London",
+            "maxLength": 45,
+            "nullable": true,
+            "pattern": "^[\\w\\s\\-\\/\\pL,.#;:()']+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContactEmails": {
+        "description": "The list of emails.",
+        "items": {
+          "properties": {
+            "label": {
+              "description": "The email label.",
+              "example": "main",
+              "maxLength": 45,
+              "type": "string"
+            },
+            "primary": {
+              "description": "True if email is primary.",
+              "example": true,
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The email value.",
+              "example": "rebilly@example.com",
+              "format": "email",
+              "maxLength": 255,
+              "type": "string"
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "ContactPhoneNumbers": {
+        "description": "The list of phone numbers.",
+        "items": {
+          "properties": {
+            "label": {
+              "description": "The phone label.",
+              "example": "main",
+              "maxLength": 45,
+              "type": "string"
+            },
+            "primary": {
+              "description": "True if phone is primary.",
+              "example": true,
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The phone value.",
+              "example": "512-710-1640",
+              "maxLength": 50,
+              "type": "string"
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "RiskMetadata": {
+        "description": "Risk metadata used for 3DS and risk scoring.",
+        "properties": {
+          "accuracyRadius": {
+            "description": "Accuracy radius for specified ipAddress (kilometers).",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "browserData": {
+            "$ref": "#/$defs/BrowserData"
+          },
+          "city": {
+            "description": "City for specified ipAddress.",
+            "example": "New York",
+            "readOnly": true,
+            "type": "string"
+          },
+          "country": {
+            "description": "Country ISO Alpha-2 code for specified ipAddress.",
+            "example": "US",
+            "maxLength": 2,
+            "readOnly": true,
+            "type": "string"
+          },
+          "deviceVelocity": {
+            "description": "Number of transactions for this device (based on fingerprint) in the last 24 hours.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "distance": {
+            "description": "Distance between IP Address and Billing Address geolocation (kilometers).",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "fingerprint": {
+            "description": "The fingerprint.",
+            "example": "pIUt3xbgX3l9g3YDiLbx",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "hasMismatchedBankCountry": {
+            "description": "True if the bank country and geo-IP address are not the same.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "hasMismatchedBillingAddressCountry": {
+            "description": "True if the billing address country and geo-IP address are not the same.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "hasMismatchedHolderName": {
+            "description": "True if the customer's name from billing address and from customer's primary address are not the same.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "hasMismatchedTimeZone": {
+            "description": "True if the browser time zone and IP address associated time zone are not the same.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "httpHeaders": {
+            "$ref": "#/$defs/HttpHeaders"
+          },
+          "ipAddress": {
+            "description": "The customer's IP.",
+            "example": "93.92.91.90",
+            "format": "ipv4 or ipv6",
+            "type": "string"
+          },
+          "isHosting": {
+            "description": "True if customer's ip address is related to hosting.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isProxy": {
+            "description": "True if customer's ip address is related to proxy.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isTor": {
+            "description": "True if customer's ip address is related to TOR.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isVpn": {
+            "description": "True if customer's ip address is related to VPN.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isp": {
+            "description": "Internet Service Provider name, if available.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "latitude": {
+            "description": "Latitude for specified ipAddress.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Longitude for specified ipAddress.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number"
+          },
+          "paymentInstrumentVelocity": {
+            "description": "Number of transactions for this payment instrument (based on fingerprint) in the last 24 hours.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "postalCode": {
+            "description": "Postal code for specified ipAddress.",
+            "maxLength": 10,
+            "readOnly": true,
+            "type": "string"
+          },
+          "region": {
+            "description": "Region for specified ipAddress.",
+            "example": "NY",
+            "readOnly": true,
+            "type": "string"
+          },
+          "score": {
+            "description": "Risk score computed per all the factors.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "timeZone": {
+            "description": "Time zone for specified ipAddress.",
+            "example": "America/New_York",
+            "readOnly": true,
+            "type": "string"
+          },
+          "vpnServiceName": {
+            "description": "VPN service name, if available.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "title": "Risk metadata",
+        "type": "object"
+      },
+      "BrowserData": {
+        "description": "Browser data used for 3DS and risk scoring.",
+        "properties": {
+          "colorDepth": {
+            "description": "The browser's color depth in bits per pixel obtained using the `screen.colorDepth` property.",
+            "example": 24,
+            "maximum": 48,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "isJavaEnabled": {
+            "description": "Whether Java is enabled in a browser or not. Value is returned from the `navigator.javaEnabled` property.",
+            "type": "boolean"
+          },
+          "language": {
+            "description": "The browser's language settings returned from the `navigator.language` property.",
+            "example": "en-US",
+            "maxLength": 8,
+            "type": "string"
+          },
+          "screenHeight": {
+            "description": "The browser's screen height returned from the `screen.height` property.",
+            "example": 1080,
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "screenWidth": {
+            "description": "The browser's screen width returned from the `screen.width` property.",
+            "example": 1920,
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timeZoneOffset": {
+            "description": "The browser's time zone offset in minutes from UTC.\nA positive offset indicates the local time is behind UTC, and negative is ahead.\nCan find it with `(new Date()).getTimezoneOffset()` property.\n",
+            "example": 300,
+            "maximum": 1410,
+            "minimum": -1410,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "colorDepth",
+          "isJavaEnabled",
+          "language",
+          "screenWidth",
+          "screenHeight",
+          "timeZoneOffset"
+        ],
+        "title": "Browser data",
+        "type": "object"
+      },
+      "HttpHeaders": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "The HTTP headers.",
+        "example": {
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Content-Type": "application/json"
+        },
+        "type": "object"
+      },
+      "BankAccountCreatePlain": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/BBANType"
+          },
+          {
+            "$ref": "#/$defs/IBANType"
+          }
+        ]
+      },
+      "BBANType": {
+        "description": "BBAN type object.",
+        "properties": {
+          "accountNumber": {
+            "description": "Bank's account number.",
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          },
+          "accountNumberType": {
+            "default": "BBAN",
+            "description": "Bank's Account Number type. A valid value is basic bank account number (BBAN) or international bank account number (IBAN).\nThis is the object for the BBAN.",
+            "enum": [
+              "IBAN",
+              "BBAN"
+            ],
+            "type": "string"
+          },
+          "accountType": {
+            "description": "Bank's account type.",
+            "enum": [
+              "checking",
+              "savings",
+              "other"
+            ],
+            "type": "string"
+          },
+          "bankName": {
+            "description": "Bank's name.",
+            "type": "string"
+          },
+          "bic": {
+            "description": "Bank Identifier Code.",
+            "type": "string"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "Customer's ID."
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "ach"
+            ],
+            "type": "string"
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          },
+          "routingNumber": {
+            "description": "Bank's routing number.",
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "customerId",
+          "accountNumberType",
+          "accountNumber",
+          "routingNumber",
+          "accountType",
+          "billingAddress"
+        ],
+        "type": "object"
+      },
+      "IBANType": {
+        "description": "IBAN type object.",
+        "properties": {
+          "accountNumber": {
+            "description": "Bank's account number. Detailed information about all ISO 13616-compliant national IBAN formats is available in the [SWIFT IBAN Registry](https://www.swift.com/standards/data-standards/iban).\n",
+            "type": "string"
+          },
+          "accountNumberType": {
+            "default": "BBAN",
+            "description": "Bank's Account Number type. A valid value is basic bank account number (BBAN) or international bank account number (IBAN).\nThis is the object for the IBAN.",
+            "enum": [
+              "IBAN",
+              "BBAN"
+            ],
+            "type": "string"
+          },
+          "bankName": {
+            "description": "Bank's name.",
+            "type": "string"
+          },
+          "bic": {
+            "description": "Bank Identifier Code.",
+            "type": "string"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "Customer's ID."
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "ach"
+            ],
+            "type": "string"
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          }
+        },
+        "required": [
+          "method",
+          "customerId",
+          "accountNumberType",
+          "accountNumber",
+          "billingAddress"
+        ],
+        "type": "object"
+      },
+      "PayPalAccount": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonPayPalAccount"
+          },
+          {
+            "properties": {
+              "_embedded": {
+                "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/AuthTransactionEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerEmbed"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerLink"
+                    },
+                    {
+                      "$ref": "#/$defs/AuthTransactionLink"
+                    },
+                    {
+                      "$ref": "#/$defs/ApprovalUrlLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              }
+            }
+          }
+        ]
+      },
+      "CommonPayPalAccount": {
+        "properties": {
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "PayPal account created time."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The customer's ID."
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The payment instrument ID.",
+            "readOnly": true
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "paypal"
+            ],
+            "type": "string"
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          },
+          "status": {
+            "description": "PayPal account status.",
+            "enum": [
+              "inactive",
+              "active",
+              "deactivated"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "PayPal account updated time."
+          },
+          "username": {
+            "description": "PayPal username.",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "customerId",
+          "billingAddress"
+        ],
+        "title": "PayPal Account",
+        "type": "object"
+      },
+      "ServerTimestamp": {
+        "description": "Read-only timestamp, automatically assigned on back-end.",
+        "format": "date-time",
+        "readOnly": true,
+        "type": "string"
+      },
+      "AuthTransactionEmbed": {
+        "description": "Auth Transaction object.",
+        "properties": {
+          "authTransaction": {
+            "$ref": "#/$defs/Transaction"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Transaction": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonTransaction"
+          },
+          {
+            "properties": {
+              "_embedded": {
+                "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ParentTransactionEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/RetriedTransactionEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/GatewayAccountEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/LeadSourceEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/WebsiteEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/PaymentCardEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/BankAccountEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/InvoicesEmbed"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/WebsiteLink"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerLink"
+                    },
+                    {
+                      "$ref": "#/$defs/GatewayAccountLink"
+                    },
+                    {
+                      "$ref": "#/$defs/PaymentCardLink"
+                    },
+                    {
+                      "$ref": "#/$defs/ParentTransactionLink"
+                    },
+                    {
+                      "$ref": "#/$defs/RetriedTransactionLink"
+                    },
+                    {
+                      "$ref": "#/$defs/LeadSourceLink"
+                    },
+                    {
+                      "$ref": "#/$defs/ApprovalUrlLink"
+                    },
+                    {
+                      "$ref": "#/$defs/RefundUrlLink"
+                    },
+                    {
+                      "$ref": "#/$defs/TransactionUpdateUrlLink"
+                    },
+                    {
+                      "$ref": "#/$defs/DisputeLink"
+                    },
+                    {
+                      "$ref": "#/$defs/InvoicesLink"
+                    },
+                    {
+                      "$ref": "#/$defs/QueryUrlLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "acquirerName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AcquirerName"
+                  }
+                ],
+                "description": "Acquirer name, available only when transaction use gateway, else null.",
+                "readOnly": true
+              },
+              "arn": {
+                "description": "The acquirer reference number.",
+                "example": "74836950144358910018150",
+                "readOnly": true,
+                "type": "string",
+                "x-label": "ARN"
+              },
+              "bin": {
+                "description": "Payment Card BIN.",
+                "format": "bin",
+                "readOnly": true,
+                "type": "string",
+                "x-label": "BIN"
+              },
+              "bumpOffer": {
+                "description": "Bump offer information. Null if hasBumpOffer is false.",
+                "properties": {
+                  "language": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/LanguageIsoCode"
+                      }
+                    ],
+                    "description": "The language of the bump offer that was displayed to user (useful for finding any translation problems)."
+                  },
+                  "order": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/Money"
+                      }
+                    ],
+                    "description": "Initial amount and currency."
+                  },
+                  "outcome": {
+                    "$ref": "#/$defs/PurchaseBumpStatus"
+                  },
+                  "presentedOffers": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/PurchaseBumpOfferList"
+                      }
+                    ],
+                    "description": "Offers presented to a customer."
+                  },
+                  "selectedOffer": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/PurchaseBumpOffer"
+                      }
+                    ],
+                    "description": "Offer selected by a customer. Null if bump offer outcome is not `selected`."
+                  },
+                  "version": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/PurchaseBumpSplitVersionName"
+                      }
+                    ],
+                    "description": "The name of the version that was picked (useful for measuring split tests)."
+                  }
+                },
+                "readOnly": true,
+                "type": "object"
+              },
+              "dcc": {
+                "description": "Dynamic Currency Conversion detailed information. Null if hasDcc is false.",
+                "properties": {
+                  "base": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/Money"
+                      }
+                    ],
+                    "description": "Initial amount and currency to convert from."
+                  },
+                  "outcome": {
+                    "description": "Dynamic Currency Conversion outcome.",
+                    "enum": [
+                      "rejected",
+                      "selected",
+                      "unknown"
+                    ],
+                    "type": "string"
+                  },
+                  "quote": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/Money"
+                      }
+                    ],
+                    "description": "Suggested amount and currency to convert to."
+                  },
+                  "usdMarkup": {
+                    "allOf": [
+                      {
+                        "$ref": "#/$defs/MoneyAmount"
+                      }
+                    ],
+                    "description": "The amount of markup translated to USD."
+                  }
+                },
+                "readOnly": true,
+                "type": "object"
+              },
+              "discrepancyTime": {
+                "description": "The time of the most recent discrepancy on the transaction.",
+                "format": "date-time",
+                "nullable": true,
+                "readOnly": true,
+                "type": "string",
+                "x-sortable": true
+              },
+              "disputeStatus": {
+                "description": "The dispute's status, else null.",
+                "enum": [
+                  "response-needed",
+                  "under-review",
+                  "forfeited",
+                  "won",
+                  "lost",
+                  "unknown"
+                ],
+                "nullable": true,
+                "readOnly": true,
+                "type": "string"
+              },
+              "disputeTime": {
+                "description": "Time the dispute was created, else null.",
+                "format": "date-time",
+                "nullable": true,
+                "readOnly": true,
+                "type": "string",
+                "x-sortable": true
+              },
+              "gateway": {
+                "description": "The related gateway information.",
+                "properties": {
+                  "avsResponse": {
+                    "description": "The AVS gateway's response.",
+                    "properties": {
+                      "code": {
+                        "description": "The response code.",
+                        "type": "string"
+                      },
+                      "message": {
+                        "description": "The response message.",
+                        "type": "string"
+                      },
+                      "originalCode": {
+                        "description": "The raw response code.",
+                        "type": "string"
+                      },
+                      "originalMessage": {
+                        "description": "The raw response message.",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "cvvResponse": {
+                    "description": "The CVV gateway's response.",
+                    "properties": {
+                      "code": {
+                        "description": "The response code.",
+                        "type": "string"
+                      },
+                      "message": {
+                        "description": "The response message.",
+                        "type": "string"
+                      },
+                      "originalCode": {
+                        "description": "The raw response code.",
+                        "type": "string"
+                      },
+                      "originalMessage": {
+                        "description": "The raw response message.",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "response": {
+                    "description": "The gateway's response.",
+                    "properties": {
+                      "code": {
+                        "description": "The gateway's response code.",
+                        "type": "string"
+                      },
+                      "message": {
+                        "description": "The gateway's response message.",
+                        "type": "string"
+                      },
+                      "originalCode": {
+                        "description": "The raw, unmapped gateway's response code.",
+                        "type": "string"
+                      },
+                      "originalMessage": {
+                        "description": "The raw, unmapped gateway's response message.",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "The gateway's response type.",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "readOnly": true,
+                "type": "object"
+              },
+              "gatewayAccountId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceId"
+                  }
+                ],
+                "description": "The transaction's Gateway Account ID.",
+                "readOnly": true
+              },
+              "gatewayTransactionId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceId"
+                  }
+                ],
+                "description": "The gateway's transaction ID.",
+                "readOnly": true
+              },
+              "hadDiscrepancy": {
+                "description": "True if the transaction has been updated due to a discrepancy with its. source of truth.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "hasBumpOffer": {
+                "description": "True if transaction has a Bump offer.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "hasDcc": {
+                "description": "True if transaction has Dynamic Currency Conversion applied.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "isDisputed": {
+                "description": "True if transaction is disputed.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "isMerchantInitiated": {
+                "description": "True if the transaction was initiated by the merchant.",
+                "type": "boolean"
+              },
+              "isProcessedOutside": {
+                "description": "True if the transaction was processed outside of Rebilly.",
+                "type": "boolean"
+              },
+              "isReconciled": {
+                "description": "True if the transaction has been verified with gateway batch data.",
+                "readOnly": true,
+                "type": "boolean"
+              },
+              "method": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PaymentMethod"
+                  }
+                ],
+                "deprecated": true,
+                "description": "Payment Method. Use `paymentInstrument.method` instead."
+              },
+              "notificationUrl": {
+                "$ref": "#/$defs/TransactionNotificationUrl"
+              },
+              "orderId": {
+                "deprecated": true,
+                "description": "The transaction's order ID.  This ID must be unique within a 24 hour period. This field was renamed to the `requestId`.",
+                "type": "string",
+                "x-sortable": true
+              },
+              "paymentInstrument": {
+                "$ref": "#/$defs/PaymentInstrument"
+              },
+              "referenceData": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Transaction reference data.",
+                "example": {
+                  "gatewayTransactionId": "GAT123"
+                },
+                "nullable": true,
+                "readOnly": true,
+                "type": "object"
+              },
+              "reportAmount": {
+                "description": "Transaction amount converted to organization&nbsp;selected report currency.",
+                "format": "double",
+                "readOnly": true,
+                "type": "number",
+                "x-currency-field": "reportCurrency",
+                "x-sortable": true,
+                "x-type": "Money"
+              },
+              "reportCurrency": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CurrencyCode"
+                  }
+                ],
+                "readOnly": true
+              },
+              "retriedTransactionId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceId"
+                  }
+                ],
+                "description": "The retried transaction ID.",
+                "readOnly": true
+              },
+              "retriesResult": {
+                "description": "Retries sequence result.",
+                "enum": [
+                  "approved",
+                  "canceled",
+                  "declined",
+                  "scheduled"
+                ],
+                "readOnly": true,
+                "type": "string"
+              },
+              "retryInstruction": {
+                "$ref": "#/$defs/PaymentRetry"
+              },
+              "revision": {
+                "description": "The number of times the transaction data has been modified.\nThe revision is useful when analyzing webhook data to determine if the change takes precedence over the current representation.\n",
+                "readOnly": true,
+                "type": "integer"
+              },
+              "riskMetadata": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RiskMetadata"
+                  }
+                ],
+                "description": "Risk metadata."
+              },
+              "riskScore": {
+                "description": "The transaction's risk score.",
+                "readOnly": true,
+                "type": "integer"
+              },
+              "scheduledTime": {
+                "description": "The time the transaction is scheduled for collection.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "settlementTime": {
+                "description": "The time that the transaction was settled by the banking instuition.",
+                "format": "date-time",
+                "nullable": true,
+                "readOnly": true,
+                "type": "string",
+                "x-sortable": true
+              },
+              "velocity": {
+                "description": "The number of transactions by the same customer in the past 24 hours.",
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "CommonTransaction": {
+        "properties": {
+          "3ds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ThreeDSecureResult"
+              }
+            ]
+          },
+          "amount": {
+            "description": "The transaction's amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-basic": true,
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "Billing address."
+          },
+          "billingDescriptor": {
+            "description": "The billing descriptor that appears on the periodic billing statement. Commonly\n12 or fewer characters for a credit card statement.\n",
+            "readOnly": true,
+            "type": "string"
+          },
+          "childTransactions": {
+            "description": "The child transaction IDs.",
+            "items": {
+              "$ref": "#/$defs/ResourceId"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Transaction created time.",
+            "x-label": "Created On",
+            "x-sortable": true
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "readOnly": true
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The сustomer's ID.",
+            "x-basic": true
+          },
+          "description": {
+            "description": "The payment description.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "gatewayName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GatewayName"
+              }
+            ],
+            "description": "Payment Gateway name, available only after the gateway is selected for the transaction.\n",
+            "readOnly": true,
+            "x-basic": true,
+            "x-label": "Gateway account"
+          },
+          "has3ds": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "hasAmountAdjustment": {
+            "description": "True if transaction has amount adjustment.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The transaction ID.",
+            "readOnly": true
+          },
+          "invoiceIds": {
+            "description": "The invoice IDs related to transaction.",
+            "items": {
+              "$ref": "#/$defs/ResourceId"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "isRebill": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isRetry": {
+            "description": "True if this transaction is retry.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "parentTransactionId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The parent's transaction ID.",
+            "readOnly": true
+          },
+          "paymentInstrument": {
+            "$ref": "#/$defs/InstrumentReference"
+          },
+          "planIds": {
+            "description": "The plan IDs related to transaction's order(s).",
+            "items": {
+              "$ref": "#/$defs/ResourceId"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "processedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Transaction processed time.",
+            "x-basic": true,
+            "x-sortable": true
+          },
+          "purchaseAmount": {
+            "description": "The amount actually purchased which may have differed from the originally requested amount in case of an adjustment.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-currency-field": "purchaseCurrency",
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "purchaseCurrency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "readOnly": true
+          },
+          "rebillNumber": {
+            "description": "The transaction's rebill number.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "redirectUrl": {
+            "description": "The URL to redirect the end-user when an offsite transaction is completed. Defaults to the website's configured URL.",
+            "format": "uri",
+            "type": "string"
+          },
+          "requestAmount": {
+            "description": "The amount in the payment request. If adjusted, the purchase amount and billing amount may vary from it.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-currency-field": "requestCurrency",
+            "x-type": "Money"
+          },
+          "requestCurrency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "readOnly": true
+          },
+          "requestId": {
+            "description": "The transaction's request ID.  This ID must be unique within a 24 hour period. Use this field to prevent duplicated transactions.",
+            "type": "string",
+            "x-sortable": true
+          },
+          "result": {
+            "description": "Transaction result.",
+            "enum": [
+              "abandoned",
+              "approved",
+              "canceled",
+              "declined",
+              "unknown"
+            ],
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true
+          },
+          "retryNumber": {
+            "description": "The position in the sequence of retries.",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "status": {
+            "description": "Transaction status.",
+            "enum": [
+              "completed",
+              "conn-error",
+              "disputed",
+              "never-sent",
+              "offsite",
+              "partially-refunded",
+              "pending",
+              "refunded",
+              "sending",
+              "suspended",
+              "timeout",
+              "voided",
+              "waiting-approval",
+              "waiting-capture",
+              "waiting-gateway",
+              "waiting-refund"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "subscriptionIds": {
+            "description": "The orders IDs related to transaction's invoice(s).",
+            "items": {
+              "$ref": "#/$defs/ResourceId"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "type": {
+            "description": "Transaction type.",
+            "enum": [
+              "3ds-authentication",
+              "authorize",
+              "capture",
+              "credit",
+              "refund",
+              "sale",
+              "void"
+            ],
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Transaction updated time.",
+            "x-label": "Last update time",
+            "x-sortable": true
+          },
+          "websiteId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The website ID.",
+            "readOnly": true
+          }
+        },
+        "type": "object"
+      },
+      "ThreeDSecureResult": {
+        "properties": {
+          "authenticated": {
+            "description": "3D Secure authentication response status.",
+            "enum": [
+              "yes",
+              "no",
+              "not applicable",
+              "attempted"
+            ],
+            "type": "string"
+          },
+          "enrolled": {
+            "description": "Is the cardholder enrolled in 3D Secure.",
+            "enum": [
+              "yes",
+              "no",
+              "invalid card/timeout",
+              "unavailable"
+            ],
+            "type": "string"
+          },
+          "flow": {
+            "description": "3D Secure 2 authentication flow.",
+            "enum": [
+              "frictionless",
+              "challenge"
+            ],
+            "type": "string"
+          },
+          "isDowngraded": {
+            "default": false,
+            "description": "If 3D Secure 2 was attempted but downgraded to 3D Secure 1.",
+            "type": "boolean"
+          },
+          "liability": {
+            "enum": [
+              "protected",
+              "not protected",
+              "protected (attempt)"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "description": "3D Secure version.",
+            "enum": [
+              "1.0.2",
+              "2.1.0",
+              "2.2.0"
+            ],
+            "type": "string"
+          }
+        },
+        "readOnly": true,
+        "required": [
+          "enrolled",
+          "authenticated",
+          "liability",
+          "isDowngraded"
+        ],
+        "type": "object"
+      },
+      "CurrencyCode": {
+        "description": "ISO 4217 alphabetic currency code.",
+        "example": "USD",
+        "maxLength": 3,
+        "minLength": 3,
+        "type": "string"
+      },
+      "GatewayName": {
+        "description": "The payment gateway name.",
+        "enum": [
+          "A1Gateway",
+          "Adyen",
+          "Airpay",
+          "AmexVPC",
+          "ApcoPay",
+          "AsiaPaymentGateway",
+          "AstroPayCard",
+          "AuthorizeNet",
+          "Bambora",
+          "BitPay",
+          "BlueSnap",
+          "BraintreePayments",
+          "Cardknox",
+          "Cashflows",
+          "CASHlib",
+          "CashToCode",
+          "CauriPayment",
+          "Cayan",
+          "CCAvenue",
+          "Chase",
+          "Circle",
+          "Citadel",
+          "Clearhaus",
+          "CODVoucher",
+          "CoinPayments",
+          "Conekta",
+          "Coppr",
+          "Credorax",
+          "Cryptonator",
+          "CyberSource",
+          "DataCash",
+          "Dengi",
+          "Dragonphoenix",
+          "Directa24",
+          "dLocal",
+          "EBANX",
+          "ecoPayz",
+          "EcorePay",
+          "Elavon",
+          "Euteller",
+          "eMerchantPay",
+          "EMS",
+          "EPG",
+          "EPro",
+          "eZeeWallet",
+          "ezyEFT",
+          "Finrax",
+          "Flexepin",
+          "FinTecSystems",
+          "FundSend",
+          "Forte",
+          "GET",
+          "Gigadat",
+          "GlobalOnePay",
+          "Gooney",
+          "Gpaysafe",
+          "Greenbox",
+          "HiPay",
+          "iCanPay",
+          "ICEPAY",
+          "iCheque",
+          "iDebit",
+          "Ilixium",
+          "Ingenico",
+          "INOVAPAY",
+          "Inovio",
+          "Intuit",
+          "InstaDebit",
+          "IpayOptions",
+          "JetPay",
+          "Jeton",
+          "Khelocard",
+          "Konnektive",
+          "loonie",
+          "LPG",
+          "MiFinity",
+          "Moneris",
+          "MtaPay",
+          "MuchBetter",
+          "MyFatoorah",
+          "Neosurf",
+          "Netbanking",
+          "Neteller",
+          "NGenius",
+          "NinjaWallet",
+          "NMI",
+          "NuaPay",
+          "OchaPay",
+          "Onlineueberweisen",
+          "OnRamp",
+          "Pagsmile",
+          "Panamerican",
+          "ParamountEft",
+          "ParamountInterac",
+          "PandaGateway",
+          "Pay4Fun",
+          "PayCash",
+          "PayClub",
+          "Payeezy",
+          "Payflow",
+          "PaymentAsia",
+          "PaymenTechnologies",
+          "PaymentsOS",
+          "Paymero",
+          "PayPal",
+          "Payr",
+          "Paysafe",
+          "Paysafecash",
+          "PayTabs",
+          "PayULatam",
+          "Payvision",
+          "Piastrix",
+          "Plugnpay",
+          "PostFinance",
+          "Prosa",
+          "Rapyd",
+          "Realex",
+          "Realtime",
+          "Redsys",
+          "Rotessa",
+          "RPN",
+          "SaltarPay",
+          "Sagepay",
+          "SeamlessChex",
+          "SecureTrading",
+          "SecurionPay",
+          "Skrill",
+          "SmartInvoice",
+          "SMSVoucher",
+          "Sofort",
+          "SparkPay",
+          "StaticGateway",
+          "Stripe",
+          "TestProcessor",
+          "ToditoCash",
+          "TrustPay",
+          "TrustsPay",
+          "Trustly",
+          "TWINT",
+          "UPayCard",
+          "USAePay",
+          "VantivLitle",
+          "vegaaH",
+          "VCreditos",
+          "Wallet88",
+          "Walpay",
+          "Wirecard",
+          "WorldlineAtosFrankfurt",
+          "Worldpay",
+          "XPay",
+          "Zimpler",
+          "Zotapay"
+        ],
+        "type": "string"
+      },
+      "InstrumentReference": {
+        "properties": {
+          "method": {
+            "$ref": "#/$defs/PaymentMethod"
+          },
+          "paymentInstrumentId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The payment instrument ID."
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      },
+      "PaymentMethod": {
+        "description": "The payment method.",
+        "enum": [
+          "payment-card",
+          "ach",
+          "cash",
+          "check",
+          "paypal",
+          "AdvCash",
+          "Airpay",
+          "Alfa-click",
+          "Alipay",
+          "Apple Pay",
+          "AstroPay Card",
+          "AstroPay-GO",
+          "bank-transfer",
+          "bank-transfer-2",
+          "bank-transfer-3",
+          "bank-transfer-4",
+          "bank-transfer-5",
+          "bank-transfer-6",
+          "bank-transfer-7",
+          "bank-transfer-8",
+          "bank-transfer-9",
+          "Beeline",
+          "Belfius-direct-net",
+          "bitcoin",
+          "Boleto",
+          "Boleto-2",
+          "Boleto-3",
+          "cash-deposit",
+          "CASHlib",
+          "CashToCode",
+          "CCAvenue",
+          "China UnionPay",
+          "CODVoucher",
+          "Conekta-oxxo",
+          "Conekta-spei",
+          "cryptocurrency",
+          "Cupon-de-pagos",
+          "CyberSource",
+          "domestic-cards",
+          "echeck",
+          "ecoPayz",
+          "ecoVoucher",
+          "EPS",
+          "ePay.bg",
+          "Ethereum",
+          "e-wallet",
+          "ezyEFT",
+          "eZeeWallet",
+          "Flexepin",
+          "Giropay",
+          "Google Pay",
+          "Gpaysafe",
+          "iDebit",
+          "iDEAL",
+          "ING-homepay",
+          "INOVAPAY-pin",
+          "INOVAPAY-wallet",
+          "InstaDebit",
+          "instant-bank-transfer",
+          "Interac-online",
+          "Interac-eTransfer",
+          "Interac-express-connect",
+          "Interac",
+          "invoice",
+          "iWallet",
+          "Jeton",
+          "jpay",
+          "Khelocard",
+          "Klarna",
+          "Litecoin",
+          "loonie",
+          "LPG-online",
+          "LPG-payment-card",
+          "Megafon",
+          "MiFinity-eWallet",
+          "miscellaneous",
+          "Bancontact",
+          "MTS",
+          "MuchBetter",
+          "MyFatoorah",
+          "Neosurf",
+          "Netbanking",
+          "Neteller",
+          "Nordea-Solo",
+          "OchaPay",
+          "online-bank-transfer",
+          "Onlineueberweisen",
+          "oriental-wallet",
+          "OXXO",
+          "Pagsmile-lottery",
+          "Pagsmile-deposit-express",
+          "PayCash",
+          "Payeer",
+          "PaymentAsia-crypto",
+          "Paysafecard",
+          "PayTabs",
+          "Pay4Fun",
+          "Paymero",
+          "Paymero-QR",
+          "PayULatam",
+          "Perfect-money",
+          "Piastrix",
+          "PIX",
+          "PinPay",
+          "phone",
+          "PhonePe",
+          "POLi",
+          "PostFinance-card",
+          "PostFinance-e-finance",
+          "Przelewy24",
+          "QIWI",
+          "QQPay",
+          "Resurs",
+          "SEPA",
+          "Siirto",
+          "Skrill",
+          "Skrill Rapid Transfer",
+          "SMSVoucher",
+          "Sofort",
+          "SparkPay",
+          "swift-dbt",
+          "Tele2",
+          "Terminaly-RF",
+          "Tether",
+          "ToditoCash-card",
+          "Trustly",
+          "TWINT",
+          "UniCrypt",
+          "UPayCard",
+          "UPI",
+          "VCreditos",
+          "VenusPoint",
+          "voucher",
+          "voucher-2",
+          "voucher-3",
+          "voucher-4",
+          "Webmoney",
+          "Webpay",
+          "Webpay-2",
+          "Webpay Card",
+          "WeChat Pay",
+          "XPay-P2P",
+          "XPay-QR",
+          "Yandex-money",
+          "Zotapay",
+          "Zimpler"
+        ],
+        "type": "string"
+      },
+      "ParentTransactionEmbed": {
+        "description": "Retried Transaction object.",
+        "properties": {
+          "parentTransaction": {
+            "$ref": "#/$defs/Transaction"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "RetriedTransactionEmbed": {
+        "description": "Parent Transaction object.",
+        "properties": {
+          "retriedTransaction": {
+            "$ref": "#/$defs/Transaction"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "GatewayAccountEmbed": {
+        "description": "Gateway Account object.",
+        "properties": {
+          "gatewayAccount": {
+            "$ref": "#/$defs/GatewayAccount"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "GatewayAccount": {
+        "discriminator": {
+          "mapping": {
+            "A1Gateway": "#/components/schemas/A1Gateway",
+            "Adyen": "#/components/schemas/Adyen",
+            "Airpay": "#/components/schemas/Airpay",
+            "AmexVPC": "#/components/schemas/AmexVPC",
+            "ApcoPay": "#/components/schemas/ApcoPay",
+            "AsiaPaymentGateway": "#/components/schemas/AsiaPaymentGateway",
+            "AstroPayCard": "#/components/schemas/AstroPayCard",
+            "AuthorizeNet": "#/components/schemas/AuthorizeNet",
+            "Bambora": "#/components/schemas/Bambora",
+            "BitPay": "#/components/schemas/BitPay",
+            "BlueSnap": "#/components/schemas/BlueSnap",
+            "BraintreePayments": "#/components/schemas/BraintreePayments",
+            "CASHlib": "#/components/schemas/CASHlib",
+            "CCAvenue": "#/components/schemas/CCAvenue",
+            "CODVoucher": "#/components/schemas/CODVoucher",
+            "Cardknox": "#/components/schemas/Cardknox",
+            "CashToCode": "#/components/schemas/CashToCode",
+            "Cashflows": "#/components/schemas/Cashflows",
+            "CauriPayment": "#/components/schemas/CauriPayment",
+            "Cayan": "#/components/schemas/Cayan",
+            "Chase": "#/components/schemas/Chase",
+            "Circle": "#/components/schemas/Circle",
+            "Citadel": "#/components/schemas/Citadel",
+            "Clearhaus": "#/components/schemas/Clearhaus",
+            "CoinPayments": "#/components/schemas/CoinPayments",
+            "Conekta": "#/components/schemas/Conekta",
+            "Coppr": "#/components/schemas/Coppr",
+            "Credorax": "#/components/schemas/Credorax",
+            "Cryptonator": "#/components/schemas/Cryptonator",
+            "CyberSource": "#/components/schemas/CyberSource",
+            "DataCash": "#/components/schemas/DataCash",
+            "Dengi": "#/components/schemas/Dengi",
+            "Directa24": "#/components/schemas/Directa24",
+            "Dragonphoenix": "#/components/schemas/Dragonphoenix",
+            "EBANX": "#/components/schemas/EBANX",
+            "EMS": "#/components/schemas/EMS",
+            "EPG": "#/components/schemas/EPG",
+            "EPro": "#/components/schemas/EPro",
+            "EcorePay": "#/components/schemas/EcorePay",
+            "Elavon": "#/components/schemas/Elavon",
+            "Euteller": "#/components/schemas/Euteller",
+            "FinTecSystems": "#/components/schemas/FinTecSystems",
+            "Finrax": "#/components/schemas/Finrax",
+            "Flexepin": "#/components/schemas/Flexepin",
+            "Forte": "#/components/schemas/Forte",
+            "FundSend": "#/components/schemas/FundSend",
+            "GET": "#/components/schemas/GET",
+            "Gigadat": "#/components/schemas/Gigadat",
+            "GlobalOne": "#/components/schemas/GlobalOne",
+            "Gooney": "#/components/schemas/Gooney",
+            "Gpaysafe": "#/components/schemas/Gpaysafe",
+            "Greenbox": "#/components/schemas/Greenbox",
+            "HiPay": "#/components/schemas/HiPay",
+            "ICEPAY": "#/components/schemas/ICEPAY",
+            "INOVAPAY": "#/components/schemas/INOVAPAY",
+            "Ilixium": "#/components/schemas/Ilixium",
+            "Ingenico": "#/components/schemas/Ingenico",
+            "Inovio": "#/components/schemas/Inovio",
+            "InstaDebit": "#/components/schemas/InstaDebit",
+            "Intuit": "#/components/schemas/Intuit",
+            "IpayOptions": "#/components/schemas/IpayOptions",
+            "JetPay": "#/components/schemas/JetPay",
+            "Jeton": "#/components/schemas/Jeton",
+            "Khelocard": "#/components/schemas/Khelocard",
+            "Konnektive": "#/components/schemas/Konnektive",
+            "LPG": "#/components/schemas/LPG",
+            "MiFinity": "#/components/schemas/MiFinity",
+            "Moneris": "#/components/schemas/Moneris",
+            "MtaPay": "#/components/schemas/MtaPay",
+            "MuchBetter": "#/components/schemas/MuchBetter",
+            "MyFatoorah": "#/components/schemas/MyFatoorah",
+            "NGenius": "#/components/schemas/NGenius",
+            "NMI": "#/components/schemas/NMI",
+            "Neosurf": "#/components/schemas/Neosurf",
+            "Netbanking": "#/components/schemas/Netbanking",
+            "Neteller": "#/components/schemas/Neteller",
+            "NinjaWallet": "#/components/schemas/NinjaWallet",
+            "NuaPay": "#/components/schemas/NuaPay",
+            "OchaPay": "#/components/schemas/OchaPay",
+            "OnRamp": "#/components/schemas/OnRamp",
+            "Onlineueberweisen": "#/components/schemas/Onlineueberweisen",
+            "Pagsmile": "#/components/schemas/Pagsmile",
+            "Panamerican": "#/components/schemas/Panamerican",
+            "PandaGateway": "#/components/schemas/PandaGateway",
+            "ParamountEft": "#/components/schemas/ParamountEft",
+            "ParamountInterac": "#/components/schemas/ParamountInterac",
+            "Pay4Fun": "#/components/schemas/Pay4Fun",
+            "PayCash": "#/components/schemas/PayCash",
+            "PayClub": "#/components/schemas/PayClub",
+            "PayPal": "#/components/schemas/PayPal",
+            "PayTabs": "#/components/schemas/PayTabs",
+            "PayULatam": "#/components/schemas/PayULatam",
+            "Payeezy": "#/components/schemas/Payeezy",
+            "Payflow": "#/components/schemas/Payflow",
+            "PaymenTechnologies": "#/components/schemas/PaymenTechnologies",
+            "PaymentAsia": "#/components/schemas/PaymentAsia",
+            "PaymentsOS": "#/components/schemas/PaymentsOS",
+            "Paymero": "#/components/schemas/Paymero",
+            "Payr": "#/components/schemas/Payr",
+            "Paysafe": "#/components/schemas/Paysafe",
+            "Paysafecash": "#/components/schemas/Paysafecash",
+            "Payvision": "#/components/schemas/Payvision",
+            "Piastrix": "#/components/schemas/Piastrix",
+            "Plugnpay": "#/components/schemas/Plugnpay",
+            "PostFinance": "#/components/schemas/PostFinance",
+            "Prosa": "#/components/schemas/Prosa",
+            "RPN": "#/components/schemas/RPN",
+            "Rapyd": "#/components/schemas/Rapyd",
+            "Realex": "#/components/schemas/Realex",
+            "Realtime": "#/components/schemas/Realtime",
+            "Redsys": "#/components/schemas/Redsys",
+            "Rotessa": "#/components/schemas/Rotessa",
+            "SMSVoucher": "#/components/schemas/SMSVoucher",
+            "Sagepay": "#/components/schemas/Sagepay",
+            "SaltarPay": "#/components/schemas/SaltarPay",
+            "SeamlessChex": "#/components/schemas/SeamlessChex",
+            "SecureTrading": "#/components/schemas/SecureTrading",
+            "SecurionPay": "#/components/schemas/SecurionPay",
+            "Skrill": "#/components/schemas/Skrill",
+            "SmartInvoice": "#/components/schemas/SmartInvoice",
+            "Sofort": "#/components/schemas/Sofort",
+            "SparkPay": "#/components/schemas/SparkPay",
+            "StaticGateway": "#/components/schemas/StaticGateway",
+            "Stripe": "#/components/schemas/Stripe",
+            "TWINT": "#/components/schemas/TWINT",
+            "TestProcessor": "#/components/schemas/TestProcessor",
+            "ToditoCash": "#/components/schemas/ToditoCash",
+            "TrustPay": "#/components/schemas/TrustPay",
+            "Trustly": "#/components/schemas/Trustly",
+            "TrustsPay": "#/components/schemas/TrustsPay",
+            "UPayCard": "#/components/schemas/UPayCard",
+            "USAePay": "#/components/schemas/USAePay",
+            "VCreditos": "#/components/schemas/VCreditos",
+            "VantivLitle": "#/components/schemas/VantivLitle",
+            "Wallet88": "#/components/schemas/Wallet88",
+            "Walpay": "#/components/schemas/Walpay",
+            "Wirecard": "#/components/schemas/Wirecard",
+            "WorldlineAtosFrankfurt": "#/components/schemas/WorldlineAtosFrankfurt",
+            "Worldpay": "#/components/schemas/Worldpay",
+            "XPay": "#/components/schemas/XPay",
+            "Zimpler": "#/components/schemas/Zimpler",
+            "Zotapay": "#/components/schemas/Zotapay",
+            "dLocal": "#/components/schemas/dLocal",
+            "eMerchantPay": "#/components/schemas/eMerchantPay",
+            "eZeeWallet": "#/components/schemas/eZeeWallet",
+            "ecoPayz": "#/components/schemas/ecoPayz",
+            "ezyEFT": "#/components/schemas/ezyEFT",
+            "iCanPay": "#/components/schemas/iCanPay",
+            "iCheque": "#/components/schemas/iCheque",
+            "iDebit": "#/components/schemas/iDebit",
+            "loonie": "#/components/schemas/loonie",
+            "vegaaH": "#/components/schemas/vegaaH"
+          },
+          "propertyName": "gatewayName"
+        },
+        "properties": {
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                {
+                  "$ref": "#/$defs/OnBoardingUrlLink"
+                },
+                {
+                  "$ref": "#/$defs/DynamicIpnLink"
+                },
+                {
+                  "$ref": "#/$defs/StaticIpnLink"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "acceptedCurrencies": {
+            "description": "Accepted currencies (array of the currency three letter codes).",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "acquirerName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AcquirerName"
+              }
+            ],
+            "default": "Other"
+          },
+          "additionalFilters": {
+            "description": "The additional filters are used to determine whether the gateway account can be selected for the transaction to be processed.\nFor example, the filter may put a maximum amount value. If the transaction is above that amount, this gateway account wouldn't be used.\nThis follows our standard filter format.\n",
+            "example": "amount:1..100;bin:411111,444433",
+            "type": "string"
+          },
+          "approvalWindowTtl": {
+            "default": 3600,
+            "description": "The time window (in seconds) allotted for approving an offsite transaction before it is automatically `abandoned`.",
+            "maximum": 16777215,
+            "minimum": 300,
+            "type": "integer"
+          },
+          "cityField": {
+            "description": "The gateway account's city field (also known as line 2 descriptor).",
+            "type": "string"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Gateway Account created time."
+          },
+          "dccForceCurrency": {
+            "description": "Force dynamic currency conversion to the specified currency on each sale.\nLeave it empty to disable force DCC.\n",
+            "type": "string"
+          },
+          "dccMarkup": {
+            "description": "Dynamic currency conversion markup in basis points.",
+            "maximum": 10000,
+            "minimum": -10000,
+            "type": "integer"
+          },
+          "descriptor": {
+            "description": "The gateway account's descriptor.",
+            "type": "string"
+          },
+          "digitalWallets": {
+            "$ref": "#/$defs/DigitalWallets"
+          },
+          "dynamicDescriptor": {
+            "default": false,
+            "description": "True, if Gateway Account allows dynamic descriptor.",
+            "type": "boolean"
+          },
+          "excludedDccQuoteCurrencies": {
+            "description": "Excluded Dynamic Currency Conversion Quote Currencies.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gatewayName": {
+            "$ref": "#/$defs/GatewayName"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The gateway identifier string.",
+            "readOnly": true
+          },
+          "isDown": {
+            "description": "True if gateway is currently in downtime period.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "merchantCategoryCode": {
+            "default": "0000",
+            "description": "The gateway account's merchant category code.",
+            "pattern": "^[0-9]{4}$",
+            "type": "string"
+          },
+          "method": {
+            "$ref": "#/$defs/PaymentMethod"
+          },
+          "monthlyLimit": {
+            "description": "Monthly Limit.",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "organizationId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "deprecated": true,
+            "description": "Organization ID.",
+            "readOnly": true
+          },
+          "paymentCardSchemes": {
+            "description": "Accepted payment card brands.",
+            "items": {
+              "$ref": "#/$defs/PaymentCardBrand"
+            },
+            "type": "array"
+          },
+          "reconciliationWindowEnabled": {
+            "default": false,
+            "description": "If a transaction is not reconciled within the `reconciliationWindowTtl` time, then the transaction is marked as `abandoned`.",
+            "type": "boolean"
+          },
+          "reconciliationWindowTtl": {
+            "description": "The time window (in seconds) allotted for a reconciliation to occur. If it is not reconciled in that time, then the transaction is marked as `abandoned`.",
+            "maximum": 16777215,
+            "minimum": 300,
+            "type": "integer"
+          },
+          "status": {
+            "description": "The gateway account's status.",
+            "enum": [
+              "active",
+              "inactive",
+              "pending",
+              "closed"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "sticky": {
+            "default": true,
+            "description": "Customer's payment instrument will \"stick\" to the gateway account for future transactions when enabled.",
+            "type": "boolean"
+          },
+          "threeDSecure": {
+            "default": false,
+            "description": "True, if Gateway Account allows 3DSecure.",
+            "type": "boolean"
+          },
+          "timeout": {
+            "description": "Gateway Account request timeout in seconds.",
+            "maximum": 120,
+            "minimum": 10,
+            "nullable": true,
+            "type": "integer"
+          },
+          "token": {
+            "description": "Gateway Account token.",
+            "example": "TwiX3f92k4AiBE27BzTbQ38hHjicBz_w",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Gateway Account updated time."
+          }
+        },
+        "required": [
+          "gatewayName",
+          "method",
+          "acceptedCurrencies"
+        ],
+        "type": "object"
+      },
+      "SelfLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "self"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "Link": {
+        "properties": {
+          "href": {
+            "description": "The link URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "href"
+        ],
+        "type": "object"
+      },
+      "OnBoardingUrlLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "onBoardingUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "DynamicIpnLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "dynamicIpnUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "StaticIpnLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "staticIpnUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "AcquirerName": {
+        "description": "The acquirer name.",
+        "enum": [
+          "Adyen",
+          "Alipay",
+          "AIB",
+          "Airpay",
+          "ApcoPay",
+          "AsiaPaymentGateway",
+          "AstroPay Card",
+          "Ipay Options",
+          "B+S",
+          "Bambora",
+          "BitPay",
+          "Bank of America",
+          "Bank of Moscow",
+          "Bank of Rebilly",
+          "Bank One",
+          "BMO Harris Bank",
+          "Borgun",
+          "BraintreePayments",
+          "Cardknox",
+          "CASHlib",
+          "CashToCode",
+          "Catalunya Caixa",
+          "CCAvenue",
+          "Chase",
+          "ChinaUnionPay",
+          "CIM",
+          "Circle",
+          "Citadel",
+          "Clearhaus",
+          "CODVoucher",
+          "CoinPayments",
+          "Conekta",
+          "Coppr",
+          "Credorax",
+          "Cryptonator",
+          "CyberSource",
+          "dLocal",
+          "Dragonphoenix",
+          "EBANX",
+          "ecoPayz",
+          "EcorePay",
+          "Elavon",
+          "EMS",
+          "EPG",
+          "Euteller",
+          "eZeeWallet",
+          "ezyEFT",
+          "Fifth Third Bank",
+          "Finrax",
+          "First Data Buypass",
+          "First Data Nashville",
+          "First Data North",
+          "First Data Omaha",
+          "FinTecSystems",
+          "Flexepin",
+          "Forte",
+          "FundSend",
+          "Gigadat",
+          "Global East",
+          "Gooney",
+          "Gpaysafe",
+          "Heartland",
+          "HiPay",
+          "HSBC",
+          "iCanPay",
+          "ICEPAY",
+          "iCheque",
+          "Ilixium",
+          "Ingenico",
+          "INOVAPAY",
+          "Intuit",
+          "Jeton",
+          "Khelocard",
+          "Konnektive",
+          "loonie",
+          "LPG",
+          "Masapay",
+          "Merrick",
+          "Mission Valley Bank",
+          "MiFinity",
+          "Moneris",
+          "MuchBetter",
+          "MyFatoorah",
+          "NATWEST",
+          "Neosurf",
+          "Netbanking",
+          "Neteller",
+          "NinjaWallet",
+          "NMI",
+          "NuaPay",
+          "OchaPay",
+          "Onlineueberweisen",
+          "OnRamp",
+          "Other",
+          "Panamerican",
+          "Panda Bank",
+          "Paramount",
+          "ParamountEft",
+          "ParamountInterac",
+          "Pay4fun",
+          "PayCash",
+          "PayClub",
+          "PaymentAsia",
+          "PaymenTechnologies",
+          "PaymentsOS",
+          "Paymero",
+          "Paynetics",
+          "PayPal",
+          "Payr",
+          "PayTabs",
+          "PayULatam",
+          "Payvision",
+          "Piastrix",
+          "Peoples Trust Company",
+          "PostFinance",
+          "Privatbank",
+          "Prosa",
+          "QQPay",
+          "Rapyd",
+          "RBC",
+          "RBS WorldPay",
+          "RealTime",
+          "Rotessa",
+          "SaltarPay",
+          "SecureTrading",
+          "SecurionPay",
+          "Skrill",
+          "SmartInvoice",
+          "SMSVoucher",
+          "Sofort",
+          "SparkPay",
+          "State Bank of Mauritius",
+          "Stripe",
+          "TBI",
+          "TestProcessor",
+          "ToditoCash",
+          "Trustly",
+          "TrustPay",
+          "TrustsPay",
+          "TSYS",
+          "TWINT",
+          "UPayCard",
+          "Vantiv",
+          "VCreditos",
+          "VoicePay",
+          "Wallet88",
+          "WeChat Pay",
+          "Wells Fargo",
+          "Wing Hang Bank",
+          "Wirecard",
+          "WorldPay",
+          "XPay",
+          "Zimpler",
+          "Zotapay"
+        ],
+        "type": "string"
+      },
+      "DigitalWallets": {
+        "description": "Configure which digital wallets are enabled.",
+        "properties": {
+          "applePay": {
+            "description": "The Apple Pay digital wallet configuration. Skip if not using Apple Pay.",
+            "properties": {
+              "isEnabled": {
+                "default": false,
+                "description": "Set true if Apple Pay is enabled.",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isEnabled"
+            ],
+            "type": "object"
+          },
+          "googlePay": {
+            "description": "The Google Pay™ digital wallet configuration. Skip if not using Google Pay™.",
+            "properties": {
+              "isEnabled": {
+                "default": false,
+                "description": "Set true if Google Pay is enabled.",
+                "type": "boolean"
+              },
+              "merchantName": {
+                "description": "The merchant name in Google Pay. Leave blank if using FramePay.",
+                "example": "Test Merchant",
+                "type": "string"
+              },
+              "merchantOrigin": {
+                "description": "The merchant origin in Google Pay. The fully qualified domain name. Leave blank if using FramePay.",
+                "example": "www.example.com",
+                "type": "string"
+              }
+            },
+            "required": [
+              "isEnabled"
+            ],
+            "type": "object"
+          }
+        },
+        "title": "Digital Wallets",
+        "type": "object"
+      },
+      "PaymentCardBrand": {
+        "description": "Payment Card brand.",
+        "enum": [
+          "Visa",
+          "MasterCard",
+          "American Express",
+          "Discover",
+          "Maestro",
+          "Solo",
+          "Electron",
+          "JCB",
+          "Voyager",
+          "Diners Club",
+          "Switch",
+          "Laser",
+          "China UnionPay",
+          "AstroPay Card"
+        ],
+        "type": "string"
+      },
+      "CustomerEmbed": {
+        "description": "Customer object.",
+        "properties": {
+          "customer": {
+            "$ref": "#/$defs/Customer"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Customer": {
+        "properties": {
+          "_embedded": {
+            "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LeadSourceEmbed"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                {
+                  "$ref": "#/$defs/DefaultPaymentInstrumentLink"
+                },
+                {
+                  "$ref": "#/$defs/LeadSourceLink"
+                },
+                {
+                  "$ref": "#/$defs/WebsiteLink"
+                }
+              ]
+            },
+            "minItems": 3,
+            "readOnly": true,
+            "type": "array"
+          },
+          "averageValue": {
+            "$ref": "#/$defs/CustomerAverageValue"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The customer created time.",
+            "x-label": "Creation Time",
+            "x-sortable": true
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "defaultPaymentInstrument": {
+            "$ref": "#/$defs/PaymentInstrument"
+          },
+          "email": {
+            "description": "The customer's email.",
+            "format": "email",
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true,
+            "x-sortable": true
+          },
+          "firstName": {
+            "description": "The customer's first name.",
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The customer identifier string.",
+            "readOnly": true
+          },
+          "invoiceCount": {
+            "description": "An auto-incrementing number based on the sequence of invoices. If set to 0, then this record is a Lead, otherwise is a Customer.",
+            "readOnly": true,
+            "type": "integer",
+            "x-sortable": true
+          },
+          "lastName": {
+            "description": "The customer's last name.",
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true,
+            "x-sortable": true
+          },
+          "lastPaymentTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The most recent time of an approved payment for the customer.",
+            "x-basic": true,
+            "x-label": "Last Payment",
+            "x-sortable": true
+          },
+          "lifetimeRevenue": {
+            "$ref": "#/$defs/CustomerLifetimeRevenue"
+          },
+          "paymentCount": {
+            "description": "The number of approved payments for the customer.",
+            "readOnly": true,
+            "type": "integer",
+            "x-basic": true,
+            "x-label": "Payments",
+            "x-sortable": true
+          },
+          "paymentToken": {
+            "description": "A write-only payment token; if supplied, it will be converted into a\npayment instrument and be set as the `defaultPaymentInstrument`. The\nvalue of this property will override the `defaultPaymentInstrument`\nin the case that both are supplied. The token may only be used once\nbefore it is expired.\n",
+            "type": "string",
+            "writeOnly": true
+          },
+          "primaryAddress": {
+            "$ref": "#/$defs/ContactObject"
+          },
+          "revision": {
+            "description": "The number of times the customer data has been modified.\nThe revision is useful when analyzing webhook data to determine if the change takes precedence over the current representation.\n",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "tags": {
+            "description": "A list of customer's tags.",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The customer updated time.",
+            "x-label": "Last Update Time",
+            "x-sortable": true
+          },
+          "websiteId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The website's ID.",
+            "x-sortable": true
+          }
+        },
+        "type": "object"
+      },
+      "LeadSourceEmbed": {
+        "description": "Lead Source object.",
+        "properties": {
+          "leadSource": {
+            "$ref": "#/$defs/LeadSource"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "LeadSource": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/LeadSourceData"
+          },
+          {
+            "properties": {
+              "original": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LeadSourceData"
+                  }
+                ],
+                "readOnly": true
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "LeadSourceData": {
+        "properties": {
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                {
+                  "$ref": "#/$defs/CustomerLink"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "affiliate": {
+            "description": "Lead source affiliate (eg 123, Bob Smith).",
+            "type": "string"
+          },
+          "campaign": {
+            "description": "Lead source campaign (eg go-big-123).",
+            "type": "string"
+          },
+          "clickId": {
+            "description": "Lead source click id (may come from an ad server).",
+            "type": "string"
+          },
+          "content": {
+            "description": "Lead source content (eg smiley faces).",
+            "type": "string"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Lead source created time."
+          },
+          "medium": {
+            "description": "Lead source medium (eg search, display).",
+            "type": "string"
+          },
+          "path": {
+            "description": "Lead source path url (eg www.example.com/some/landing/path).",
+            "type": "string"
+          },
+          "referrer": {
+            "description": "Lead source [`referer` url](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer) as determined (eg www.example.com/some/landing/path).",
+            "type": "string"
+          },
+          "salesAgent": {
+            "description": "Lead source sales agent (eg James Bond).",
+            "type": "string"
+          },
+          "source": {
+            "description": "Lead source origin (eg google, yahoo).",
+            "type": "string"
+          },
+          "subAffiliate": {
+            "description": "Lead source sub-affiliate also called a sub-id or click id in some circles (eg 123456).",
+            "type": "string"
+          },
+          "term": {
+            "description": "Lead source term (eg salt shakers).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "customer",
+              "targetCustomer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "DefaultPaymentInstrumentLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "defaultPaymentInstrument"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "LeadSourceLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "leadSource"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "WebsiteLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "website"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "CustomerAverageValue": {
+        "properties": {
+          "amount": {
+            "description": "Average approved payment amount in Merchant's reporting currency.",
+            "format": "double",
+            "type": "number",
+            "x-basic": true,
+            "x-label": "Average Value",
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "amountUsd": {
+            "description": "Average approved payment amount in USD.",
+            "format": "double",
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "description": "Merchant's reporting currency."
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "PaymentInstrument": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/VaultedInstrument"
+          },
+          {
+            "$ref": "#/$defs/AlternativePaymentInstrument"
+          },
+          {
+            "$ref": "#/$defs/CashInstrument"
+          },
+          {
+            "$ref": "#/$defs/CheckInstrument"
+          }
+        ],
+        "type": "object"
+      },
+      "VaultedInstrument": {
+        "description": "Vaulted payment instrument.",
+        "properties": {
+          "method": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PaymentMethod"
+              }
+            ],
+            "description": "The payment method supported vault.\nSee [Payment Instruments API](https://api-reference.rebilly.com/tag/Payment-Instruments).\n",
+            "enum": [
+              "payment-card",
+              "ach",
+              "paypal"
+            ],
+            "type": "string"
+          },
+          "paymentInstrumentId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The payment instrument identifier."
+          }
+        },
+        "required": [
+          "method",
+          "paymentInstrumentId"
+        ],
+        "title": "Vaulted instrument"
+      },
+      "AlternativePaymentInstrument": {
+        "description": "Alternative payment method instrument.",
+        "properties": {
+          "method": {
+            "$ref": "#/$defs/PaymentMethod"
+          },
+          "paymentInstrumentId": {
+            "description": "The payment instrument ID."
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "title": "Alternative instrument",
+        "type": "object"
+      },
+      "CashInstrument": {
+        "description": "Cash payment instrument object.",
+        "properties": {
+          "method": {
+            "enum": [
+              "cash"
+            ],
+            "type": "string"
+          },
+          "receivedBy": {
+            "description": "The receiver's name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "title": "Cash",
+        "type": "object"
+      },
+      "CheckInstrument": {
+        "description": "Check payment instrument object.",
+        "properties": {
+          "method": {
+            "enum": [
+              "cash"
+            ],
+            "type": "string"
+          },
+          "reference": {
+            "description": "Reference data.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "title": "Check",
+        "type": "object"
+      },
+      "CustomerLifetimeRevenue": {
+        "properties": {
+          "amount": {
+            "description": "Revenue amount in Merchant's reporting currency.",
+            "format": "double",
+            "type": "number",
+            "x-basic": true,
+            "x-label": "Lifetime Revenue",
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "amountUsd": {
+            "description": "Revenue amount in USD.",
+            "format": "double",
+            "type": "number"
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "description": "Merchant's reporting currency."
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Tag": {
+        "description": "Tag.",
+        "properties": {
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SelfLink"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The tag's created time."
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The tag's identifier string.",
+            "readOnly": true
+          },
+          "name": {
+            "description": "The tag is unique name, which is case-insensitive.",
+            "example": "New",
+            "maxLength": 255,
+            "pattern": "^[@~\\-\\.\\w\\s]+$",
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The tag's updated time."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "WebsiteEmbed": {
+        "description": "Website object.",
+        "properties": {
+          "website": {
+            "type": "object"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "PaymentCardEmbed": {
+        "description": "Payment Card object.",
+        "properties": {
+          "paymentCard": {
+            "$ref": "#/$defs/PaymentCard"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "PaymentCard": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonPaymentCard"
+          },
+          {
+            "properties": {
+              "_embedded": {
+                "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/AuthTransactionEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerEmbed"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerLink"
+                    },
+                    {
+                      "$ref": "#/$defs/AuthTransactionLink"
+                    },
+                    {
+                      "$ref": "#/$defs/ApprovalUrlLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "expirationReminderNumber": {
+                "description": "Number of expiration reminder events triggered.",
+                "readOnly": true,
+                "type": "integer"
+              },
+              "expirationReminderTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ServerTimestamp"
+                  }
+                ],
+                "description": "Time expiration reminder event will be triggered.",
+                "nullable": true
+              },
+              "stickyGatewayAccountId": {
+                "description": "Default gateway account ID used for transactions.",
+                "readOnly": true,
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "CommonPaymentCard": {
+        "properties": {
+          "bankCountry": {
+            "description": "Payment instrument bank country.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "bankName": {
+            "description": "Payment instrument bank name.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "bin": {
+            "description": "The card's bin (the PAN's first 6 digits).",
+            "format": "bin",
+            "readOnly": true,
+            "type": "string"
+          },
+          "brand": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PaymentCardBrand"
+              }
+            ],
+            "readOnly": true
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Payment instrument created time."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The сustomer's ID."
+          },
+          "cvv": {
+            "description": "Card's cvv (card verification value).",
+            "type": "string",
+            "writeOnly": true
+          },
+          "expMonth": {
+            "description": "Card's expiration month.",
+            "type": "integer"
+          },
+          "expYear": {
+            "description": "Card's expiration year.",
+            "type": "integer"
+          },
+          "fingerprint": {
+            "description": "A unique value to identify the payment instrument regardless of variable values. It contains alphanumeric values.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The payment instrument ID.",
+            "readOnly": true
+          },
+          "last4": {
+            "description": "The PAN's last 4 digits.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "payment-card"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "pan": {
+            "description": "The card PAN (primary account number).",
+            "type": "string",
+            "writeOnly": true
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          },
+          "status": {
+            "description": "Payment instrument status. When an instrument is `active` it means it has been used at least once for an approved transaction.\nTo remove an instrument from being in use, set it as `deactivated` (see the deactivation endpoint).\n",
+            "enum": [
+              "active",
+              "inactive",
+              "expired",
+              "deactivated",
+              "verification-needed"
+            ],
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Payment instrument updated time."
+          }
+        },
+        "title": "Payment Card",
+        "type": "object"
+      },
+      "AuthTransactionLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "authTransaction"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "ApprovalUrlLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "approvalUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "BankAccountEmbed": {
+        "description": "Bank Account object.",
+        "properties": {
+          "bankAccount": {
+            "$ref": "#/$defs/BankAccount"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "BankAccount": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonBankAccount"
+          },
+          {
+            "properties": {
+              "_embedded": {
+                "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CustomerEmbed"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              }
+            }
+          }
+        ]
+      },
+      "CommonBankAccount": {
+        "properties": {
+          "accountNumberType": {
+            "default": "BBAN",
+            "description": "Bank's account number type. A valid value is basic bank account number (BBAN) or international bank account number (IBAN).",
+            "enum": [
+              "BBAN",
+              "IBAN"
+            ],
+            "type": "string"
+          },
+          "accountType": {
+            "description": "Bank's account type.",
+            "enum": [
+              "checking",
+              "savings",
+              "other"
+            ],
+            "type": "string"
+          },
+          "bankName": {
+            "description": "Bank's name.",
+            "type": "string"
+          },
+          "bic": {
+            "description": "Bank Identifier Code.",
+            "type": "string"
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "The billing address."
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Bank account created time."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The customer's ID."
+          },
+          "fingerprint": {
+            "description": "A unique value to identify the bank account. It contains alphanumeric values.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The payment instrument ID.",
+            "readOnly": true
+          },
+          "last4": {
+            "description": "The last 4 digits of the bank account.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "method": {
+            "description": "The method of payment instrument.",
+            "enum": [
+              "ach"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "riskMetadata": {
+            "$ref": "#/$defs/RiskMetadata"
+          },
+          "routingNumber": {
+            "description": "Bank's routing number.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Bank account status.",
+            "enum": [
+              "active",
+              "deactivated"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Bank account updated time."
+          }
+        },
+        "title": "Bank Account",
+        "type": "object"
+      },
+      "InvoicesEmbed": {
+        "description": "Invoices collection.",
+        "properties": {
+          "invoices": {
+            "items": {
+              "$ref": "#/$defs/Invoice"
+            },
+            "type": "array"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Invoice": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonInvoice"
+          },
+          {
+            "required": [
+              "customerId"
+            ]
+          },
+          {
+            "properties": {
+              "_embedded": {
+                "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CustomerEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/WebsiteEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/OrganizationEmbed"
+                    },
+                    {
+                      "$ref": "#/$defs/LeadSourceEmbed"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/CustomerLink"
+                    },
+                    {
+                      "$ref": "#/$defs/WebsiteLink"
+                    },
+                    {
+                      "$ref": "#/$defs/OrganizationLink"
+                    },
+                    {
+                      "$ref": "#/$defs/LeadSourceLink"
+                    },
+                    {
+                      "$ref": "#/$defs/TransactionAllocationsLink"
+                    },
+                    {
+                      "$ref": "#/$defs/RecalculateInvoiceLink"
+                    },
+                    {
+                      "$ref": "#/$defs/SubscriptionLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "customerId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceId"
+                  }
+                ],
+                "description": "The сustomer's ID.",
+                "x-basic": true
+              },
+              "dueReminderNumber": {
+                "description": "Number of past due reminder events triggered.",
+                "readOnly": true,
+                "type": "integer"
+              },
+              "dueReminderTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ServerTimestamp"
+                  }
+                ],
+                "description": "Time past due reminder event will be triggered.",
+                "nullable": true
+              },
+              "retryInstruction": {
+                "description": "The invoice retry instruction.",
+                "properties": {
+                  "afterAttemptPolicies": {
+                    "description": "The policy on the attempt finishes.",
+                    "items": {
+                      "enum": [
+                        "change-subscription-renewal-time"
+                      ],
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "afterRetryEndPolicies": {
+                    "description": "The policy on the retry ends.",
+                    "items": {
+                      "enum": [
+                        "abandon-invoice",
+                        "cancel-subscription"
+                      ],
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "attempts": {
+                    "items": {
+                      "properties": {
+                        "scheduleInstruction": {
+                          "$ref": "#/$defs/InvoiceRetryScheduleInstruction"
+                        }
+                      },
+                      "required": [
+                        "scheduleInstruction"
+                      ],
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "attempts",
+                  "afterAttemptPolicies",
+                  "afterRetryEndPolicies"
+                ],
+                "type": "object"
+              },
+              "revision": {
+                "description": "The number of times the invoice data has been modified.\nThe revision is useful when analyzing webhook data to determine if the change takes precedence over the current representation.\n",
+                "readOnly": true,
+                "type": "integer"
+              },
+              "transactions": {
+                "description": "Invoice transactions array.",
+                "items": {
+                  "$ref": "#/$defs/Transaction"
+                },
+                "readOnly": true,
+                "type": "array"
+              },
+              "type": {
+                "description": "Invoice type.",
+                "enum": [
+                  "initial",
+                  "renewal",
+                  "interim",
+                  "cancellation",
+                  "one-time",
+                  "refund",
+                  "charge"
+                ],
+                "readOnly": true,
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "CommonInvoice": {
+        "properties": {
+          "abandonedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice abandoned time.",
+            "x-sortable": true
+          },
+          "amount": {
+            "description": "The invoice's amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-basic": true,
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "amountDue": {
+            "description": "The invoice's due amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "autopayRetryNumber": {
+            "default": 0,
+            "description": "Invoice autopay retry number.",
+            "minimum": 0,
+            "readOnly": true,
+            "type": "integer",
+            "x-sortable": true
+          },
+          "autopayScheduledTime": {
+            "description": "Invoice autopay scheduled time.",
+            "format": "date-time",
+            "type": "string",
+            "x-sortable": true
+          },
+          "billingAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "Invoice's billing address."
+          },
+          "collectionPeriod": {
+            "description": "Collection period - difference between paidTime and issuedTime in days.",
+            "readOnly": true,
+            "type": "integer",
+            "x-sortable": true
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice created time.",
+            "x-sortable": true
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ],
+            "x-basic": true,
+            "x-sortable": true
+          },
+          "delinquentCollectionPeriod": {
+            "description": "Delinquent collection period - difference between paidTime and dueTime in days.",
+            "readOnly": true,
+            "type": "integer",
+            "x-sortable": true
+          },
+          "deliveryAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactObject"
+              }
+            ],
+            "description": "Invoice's delivery address."
+          },
+          "discountAmount": {
+            "description": "The invoice's discounts amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-type": "Money"
+          },
+          "discounts": {
+            "description": "Discounts applied.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/InvoiceDiscount"
+                }
+              ]
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "dueTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice due time.",
+            "x-sortable": true
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The invoice ID.",
+            "readOnly": true
+          },
+          "invoiceNumber": {
+            "description": "An auto-incrementing number based on the sequence of invoices for any particular customer.",
+            "readOnly": true,
+            "type": "integer",
+            "x-basic": true
+          },
+          "issuedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice issued time.",
+            "x-basic": true,
+            "x-label": "Date Issued",
+            "x-sortable": true
+          },
+          "items": {
+            "description": "Invoice items array.",
+            "items": {
+              "$ref": "#/$defs/InvoiceItem"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "notes": {
+            "description": "Notes for the customer which will be displayed on the invoice.",
+            "type": "string"
+          },
+          "paidTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice paid time.",
+            "x-basic": true,
+            "x-label": "Payment Date",
+            "x-sortable": true
+          },
+          "paymentFormUrl": {
+            "description": "URL where the customer can be redirected to pay for the invoice\nwith one of the methods which are available for this customer.\nIt's an alternative to creating a new transaction with empty `methods`.\n",
+            "format": "url",
+            "readOnly": true,
+            "type": "string"
+          },
+          "poNumber": {
+            "description": "Purchase order number which will be displayed on the invoice.",
+            "example": "PO123456",
+            "nullable": true,
+            "type": "string"
+          },
+          "shipping": {
+            "$ref": "#/$defs/InvoiceShipping"
+          },
+          "status": {
+            "description": "Invoice status.",
+            "enum": [
+              "draft",
+              "unpaid",
+              "paid",
+              "past-due",
+              "delinquent",
+              "abandoned",
+              "voided",
+              "partially-refunded",
+              "refunded",
+              "disputed"
+            ],
+            "readOnly": true,
+            "type": "string",
+            "x-basic": true
+          },
+          "subscriptionId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The related order's ID if available, otherwise null.",
+            "readOnly": true
+          },
+          "subtotalAmount": {
+            "description": "The invoice's subtotal amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number",
+            "x-type": "Money"
+          },
+          "tax": {
+            "$ref": "#/$defs/InvoiceTax"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice updated time.",
+            "x-sortable": true
+          },
+          "voidedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice voided time.",
+            "x-sortable": true
+          },
+          "websiteId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The website ID."
+          }
+        },
+        "required": [
+          "currency",
+          "websiteId"
+        ],
+        "type": "object"
+      },
+      "InvoiceDiscount": {
+        "properties": {
+          "amount": {
+            "description": "Total amount that was discounted by this Coupon.",
+            "format": "double",
+            "type": "number"
+          },
+          "couponId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "Coupon's ID."
+          },
+          "description": {
+            "description": "Discount description.",
+            "type": "string"
+          },
+          "redemptionId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "Redemption ID."
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "InvoiceItem": {
+        "properties": {
+          "_embedded": {
+            "description": "Any embedded objects available that are requested by the `expand` querystring parameter.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ProductEmbed"
+                },
+                {
+                  "$ref": "#/$defs/PlanEmbed"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                {
+                  "$ref": "#/$defs/ProductLink"
+                }
+              ]
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice item created time."
+          },
+          "description": {
+            "description": "Invoice item's description.",
+            "type": "string"
+          },
+          "discountAmount": {
+            "description": "Invoice item discount amount.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The website identifier string.",
+            "readOnly": true
+          },
+          "periodEndTime": {
+            "description": "End time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "periodNumber": {
+            "description": "Invoice item subscription order period number.",
+            "type": "integer"
+          },
+          "periodStartTime": {
+            "description": "Start time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "price": {
+            "description": "Invoice item's total price.",
+            "format": "double",
+            "readOnly": true,
+            "type": "number"
+          },
+          "productId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The product's ID."
+          },
+          "quantity": {
+            "description": "Invoice item's quantity.",
+            "type": "integer"
+          },
+          "type": {
+            "description": "Invoice item's type.",
+            "enum": [
+              "debit",
+              "credit"
+            ],
+            "type": "string",
+            "x-basic": true
+          },
+          "unitPrice": {
+            "description": "Invoice item's price.",
+            "format": "double",
+            "type": "number"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Invoice item updated time."
+          }
+        },
+        "required": [
+          "type",
+          "unitPrice"
+        ],
+        "type": "object"
+      },
+      "ProductEmbed": {
+        "description": "Product object.",
+        "properties": {
+          "product": {
+            "$ref": "#/$defs/Product"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonProduct"
+          },
+          {
+            "properties": {
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "accountingCode": {
+                "description": "The product accounting code.",
+                "example": "4010",
+                "type": "string"
+              },
+              "taxCategoryId": {
+                "description": "The product's tax category identifier string.",
+                "enum": [
+                  "00000",
+                  "99999",
+                  "20010",
+                  "40030",
+                  "51020",
+                  "51010",
+                  "31000",
+                  "30070"
+                ],
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "CommonProduct": {
+        "description": "Products include digital goods, services, and physical goods.\nProducts appear on invoice line items. If you set a tax category identifier,\ntaxes will be calculated upon invoice generation. If it is shippable,\nshipping will be calculated upon invoice generation. Pricing and\nvariations are set within Plans.\n",
+        "properties": {
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The product created time."
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "description": {
+            "description": "The product description.",
+            "maxLength": 512,
+            "type": "string"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The product ID.",
+            "example": "membership",
+            "readOnly": true
+          },
+          "name": {
+            "description": "The product name.",
+            "example": "Premium membership",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "options": {
+            "description": "The product options such as color, size, etc. The product options definition does\nnot include option values. Those are defined within the plans.\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requiresShipping": {
+            "description": "If the product requires shipping, shipping calculations will be applied.",
+            "example": false,
+            "type": "boolean"
+          },
+          "unitLabel": {
+            "default": "unit",
+            "description": "The unit label, such as per `seat` or per `unit`.",
+            "example": "seat",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The product updated time."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "PlanEmbed": {
+        "description": "Plan object.",
+        "properties": {
+          "plan": {
+            "$ref": "#/$defs/Plan"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Plan": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonPlan"
+          },
+          {
+            "properties": {
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "$ref": "#/$defs/SelfLink"
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "invoiceTimeShift": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/InvoiceTimeShift"
+                  }
+                ],
+                "description": "You can shift issue time and due time of invoices for this plan."
+              }
+            }
+          }
+        ]
+      },
+      "CommonPlan": {
+        "properties": {
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Plan created time."
+          },
+          "currency": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CurrencyCode"
+              }
+            ]
+          },
+          "currencySign": {
+            "description": "Currency sign.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The plan ID.",
+            "readOnly": true
+          },
+          "isTrialOnly": {
+            "description": "Whether a plan has a trial without recurring instructions.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The plan name, displayed on invoices and receipts.",
+            "type": "string"
+          },
+          "pricing": {
+            "$ref": "#/$defs/PlanPriceFormula"
+          },
+          "productId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The related product ID."
+          },
+          "productOptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Name-value pairs to specify the product options.",
+            "example": {
+              "color": "red",
+              "size": "xxl"
+            },
+            "type": "object"
+          },
+          "recurringInterval": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PlanPeriod"
+              },
+              {
+                "properties": {
+                  "billingTiming": {
+                    "$ref": "#/$defs/PlanBillingTiming"
+                  },
+                  "limit": {
+                    "description": "The number of invoices this subscription order will generate\n(if 1, it will not generate any beyond the initial order creation).\nFor example, set this property to `12`, when the `periodUnit` is month and the\n`periodDuration` is 1, for a 1 year contract billed monthly.\n",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            ],
+            "description": "The service interval. For a one-time item, use `null`."
+          },
+          "revision": {
+            "description": "Increments when the plan is modified. \nCompare to materialized subscription items revision.\n",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "setup": {
+            "description": "The setup. Set `null` if no setup.",
+            "properties": {
+              "price": {
+                "description": "The price of a setup - 0 is a valid value (for free).",
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "required": [
+              "price"
+            ],
+            "type": "object"
+          },
+          "trial": {
+            "description": "The trial. Set `null` if no trial.",
+            "properties": {
+              "period": {
+                "$ref": "#/$defs/PlanPeriod"
+              },
+              "price": {
+                "description": "The price of the trial. For a free trial, use `0`.",
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "required": [
+              "price",
+              "period"
+            ],
+            "type": "object"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Plan updated time."
+          }
+        },
+        "required": [
+          "name",
+          "currency",
+          "productId",
+          "pricing"
+        ],
+        "type": "object"
+      },
+      "PlanPriceFormula": {
+        "discriminator": {
+          "mapping": {
+            "fixed-fee": "#/components/schemas/fixed-fee",
+            "flat-rate": "#/components/schemas/flat-rate",
+            "stairstep": "#/components/schemas/stairstep",
+            "tiered": "#/components/schemas/tiered",
+            "volume": "#/components/schemas/volume"
+          },
+          "propertyName": "formula"
+        },
+        "properties": {
+          "formula": {
+            "description": "The price formula determines what algorithm is used to calculate the invoice price based on a few factors,\n- the quantity in the order (which may be variable if usage pricing, otherwise determined when creating the order)\n- the price brackets data\n\nTo determine which formula is correct, please see the price formula documentation.\n",
+            "enum": [
+              "fixed-fee",
+              "flat-rate",
+              "stairstep",
+              "tiered",
+              "volume"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "formula"
+        ],
+        "type": "object"
+      },
+      "PlanPeriod": {
+        "properties": {
+          "length": {
+            "description": "The length of time.",
+            "type": "integer"
+          },
+          "unit": {
+            "description": "The unit of time.",
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "year"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "unit",
+          "length"
+        ],
+        "type": "object"
+      },
+      "PlanBillingTiming": {
+        "default": "prepaid",
+        "description": "The billing timing in relation to the service period.\nFor `prepaid` plans the customer pays when the service period starts,\nwhereas, for `postpaid` plans, the customer pays when the service period ends.\n",
+        "enum": [
+          "prepaid",
+          "postpaid"
+        ],
+        "type": "string"
+      },
+      "InvoiceTimeShift": {
+        "description": "The invoice time shift in conjunction with `billingTiming` allows to setup different billing use cases such as:\n- Bill immediately when the service period _starts_\n- Bill immediately after the service period _ends_\n- Bill _interval of time_ before the service period _starts_\n- Bill _interval of time_ after the service period _starts_\n- Bill _interval of time_ before the service period _ends_\n- Bill _interval of time_ after the service period _ends_\nIt allows to control the billing time.\n",
+        "properties": {
+          "dueTimeShift": {
+            "$ref": "#/$defs/DueTimeShiftInstruction"
+          },
+          "issueTimeShift": {
+            "$ref": "#/$defs/IssueTimeShiftInstruction"
+          }
+        },
+        "type": "object"
+      },
+      "DueTimeShiftInstruction": {
+        "default": {
+          "duration": 1,
+          "unit": "hour"
+        },
+        "description": "The calculation instruction of due time.\nThis is used in conjunction with the **billing anchor** to calculate due time of invoice.\nThe chronology of due time shift is always **after**.\n",
+        "properties": {
+          "duration": {
+            "description": "The number of the units.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "unit": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TimeUnit"
+              },
+              {
+                "$ref": "#/$defs/TimePluralUnit"
+              }
+            ]
+          }
+        },
+        "required": [
+          "duration",
+          "unit"
+        ],
+        "type": "object"
+      },
+      "TimeUnit": {
+        "enum": [
+          "second",
+          "minute",
+          "hour",
+          "day",
+          "month",
+          "year"
+        ],
+        "type": "string"
+      },
+      "TimePluralUnit": {
+        "enum": [
+          "seconds",
+          "minutes",
+          "hours",
+          "days",
+          "months",
+          "years"
+        ],
+        "type": "string"
+      },
+      "IssueTimeShiftInstruction": {
+        "description": "The calculation instruction of billing time.\nThis is used in conjunction with the **service period anchor** to calculate the time the invoice is issued.\n",
+        "properties": {
+          "chronology": {
+            "description": "The chronology of the billing time relatively to the service period start.",
+            "enum": [
+              "before"
+            ],
+            "type": "string"
+          },
+          "duration": {
+            "description": "The number of the units.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "unit": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TimeUnit"
+              },
+              {
+                "$ref": "#/$defs/TimePluralUnit"
+              }
+            ]
+          }
+        },
+        "required": [
+          "chronology",
+          "duration",
+          "unit"
+        ],
+        "type": "object"
+      },
+      "ProductLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "product"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "InvoiceShipping": {
+        "description": "Invoice shipping.",
+        "discriminator": {
+          "mapping": {
+            "manual": "#/components/schemas/manual",
+            "rebilly": "#/components/schemas/rebilly"
+          },
+          "propertyName": "calculator"
+        },
+        "properties": {
+          "calculator": {
+            "description": "Shipping calculator.",
+            "enum": [
+              "manual",
+              "rebilly"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "calculator"
+        ],
+        "type": "object"
+      },
+      "InvoiceTax": {
+        "description": "Invoice taxes.",
+        "discriminator": {
+          "mapping": {
+            "manual": "#/components/schemas/manual-2",
+            "rebilly": "#/components/schemas/rebilly-taxjar"
+          },
+          "propertyName": "calculator"
+        },
+        "properties": {
+          "amount": {
+            "description": "A sum of all invoice taxes.",
+            "type": "integer",
+            "x-sortable": true,
+            "x-type": "Money"
+          },
+          "calculator": {
+            "description": "Tax calculator.",
+            "enum": [
+              "manual",
+              "rebilly-taxjar"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "calculator"
+        ],
+        "type": "object"
+      },
+      "OrganizationEmbed": {
+        "description": "Organization object.",
+        "properties": {
+          "organization": {
+            "$ref": "#/$defs/Organization"
+          }
+        },
+        "readOnly": true,
+        "type": "object"
+      },
+      "Organization": {
+        "properties": {
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "$ref": "#/$defs/SelfLink"
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "address": {
+            "description": "The organization street address.",
+            "maxLength": 60,
+            "type": "string"
+          },
+          "address2": {
+            "description": "The organization street address.",
+            "maxLength": 60,
+            "type": "string"
+          },
+          "city": {
+            "description": "The organization city.",
+            "maxLength": 45,
+            "type": "string"
+          },
+          "country": {
+            "description": "The organization country ISO Alpha-2 code.",
+            "pattern": "^[A-Z]{2}$",
+            "type": "string"
+          },
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The organization created time."
+          },
+          "emails": {
+            "$ref": "#/$defs/ContactEmails"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The organization identifier string.",
+            "readOnly": true
+          },
+          "invoiceTimeZone": {
+            "description": "Invoice will use this time zone to display time otherwise UTC will be used. Example \"America/New_York\".",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "isPrimary": {
+            "description": "True, if Organization is primary (available to set as true only, other organizations will become as isPrimary=false).",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The organization name.",
+            "maxLength": 60,
+            "type": "string"
+          },
+          "phoneNumbers": {
+            "$ref": "#/$defs/ContactPhoneNumbers"
+          },
+          "postalCode": {
+            "description": "The organization postal code.",
+            "maxLength": 10,
+            "type": "string"
+          },
+          "questionnaire": {
+            "$ref": "#/$defs/OrganizationQuestionnaire"
+          },
+          "region": {
+            "description": "The organization region (state).",
+            "maxLength": 45,
+            "type": "string"
+          },
+          "taxDescriptor": {
+            "description": "The organization's tax label. This will be displayed on the invoice.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "The organization updated time."
+          }
+        },
+        "required": [
+          "name",
+          "country"
+        ],
+        "type": "object"
+      },
+      "OrganizationQuestionnaire": {
+        "properties": {
+          "integrationType": {
+            "description": "What kind of integration organization looks for.",
+            "type": "string"
+          },
+          "launchTiming": {
+            "description": "Desired time to go live.",
+            "type": "string"
+          },
+          "monthlyTransactions": {
+            "description": "The amount of monthly processed transaction.",
+            "type": "string"
+          },
+          "products": {
+            "description": "The list of products organization is interested in.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "description": "The role of the owner.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OrganizationLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "organization"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "TransactionAllocationsLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "transactionAllocations"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "RecalculateInvoiceLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "recalculateInvoice"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "SubscriptionLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "subscription"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "InvoiceRetryScheduleInstruction": {
+        "description": "The calculation instruction of scheduled time.",
+        "discriminator": {
+          "mapping": {
+            "date-interval": "#/components/schemas/date-interval",
+            "day-of-month": "#/components/schemas/day-of-month",
+            "day-of-week": "#/components/schemas/day-of-week",
+            "immediately": "#/components/schemas/immediately",
+            "intelligent": "#/components/schemas/intelligent"
+          },
+          "propertyName": "method"
+        },
+        "properties": {
+          "method": {
+            "enum": [
+              "intelligent",
+              "immediately",
+              "date-interval",
+              "day-of-month",
+              "day-of-week"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      },
+      "GatewayAccountLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "gatewayAccount"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "PaymentCardLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "paymentCard"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "ParentTransactionLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "parentTransaction"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "RetriedTransactionLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "retriedTransaction"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "RefundUrlLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "refundUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "TransactionUpdateUrlLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "updateUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "DisputeLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "dispute"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "InvoicesLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "invoices"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "QueryUrlLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "queryUrl"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "LanguageIsoCode": {
+        "description": "Language (two letter ISO 639-1 code).",
+        "example": "US",
+        "pattern": "[a-zA-Z]{2}",
+        "type": "string"
+      },
+      "Money": {
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/MoneyAmount"
+          },
+          "currency": {
+            "$ref": "#/$defs/CurrencyCode"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "MoneyAmount": {
+        "example": 10,
+        "format": "double",
+        "type": "number",
+        "x-type": "Money"
+      },
+      "PurchaseBumpStatus": {
+        "description": "Bump offer status.",
+        "enum": [
+          "presented",
+          "rejected",
+          "selected",
+          "unknown"
+        ],
+        "type": "string"
+      },
+      "PurchaseBumpOfferList": {
+        "items": {
+          "$ref": "#/$defs/PurchaseBumpOffer"
+        },
+        "minItems": 1,
+        "type": "array"
+      },
+      "PurchaseBumpOffer": {
+        "properties": {
+          "bumpAmount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MoneyAmount"
+              }
+            ],
+            "description": "Bump amount."
+          },
+          "bumpAmountInUsd": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MoneyAmount"
+              }
+            ],
+            "description": "Bump amount in USD.",
+            "readOnly": true
+          },
+          "customFields": {
+            "$ref": "#/$defs/ResourceCustomFields"
+          },
+          "offerId": {
+            "description": "Offer ID.",
+            "type": "string"
+          },
+          "offerType": {
+            "description": "Offer Type.",
+            "example": "bonus",
+            "type": "string"
+          }
+        },
+        "required": [
+          "offerId",
+          "offerType",
+          "bumpAmount"
+        ],
+        "type": "object"
+      },
+      "PurchaseBumpSplitVersionName": {
+        "description": "The name of bump offer version, useful to make split tests.",
+        "type": "string"
+      },
+      "TransactionNotificationUrl": {
+        "description": "The URL where a server-to-server POST notification will be sent.  It  will be sent when the\ntransaction's result is finalized after a timeout or an offsite interaction. Do not trust the\nnotification; follow with a GET request to confirm the result of the transaction. Please\nrespond with a 2xx HTTP status code, or we will reattempt the request again.\nThe 2 placeholders are available to use in this URI: `{id}` and `{result}`.\n",
+        "format": "uri",
+        "type": "string"
+      },
+      "PaymentRetry": {
+        "properties": {
+          "afterAttemptPolicy": {
+            "description": "The policy on the attempt finishes.",
+            "enum": [
+              "none",
+              "change-subscription-renewal-time"
+            ],
+            "type": "string"
+          },
+          "afterRetryEndPolicy": {
+            "description": "The policy on the retry ends.",
+            "enum": [
+              "none",
+              "cancel-subscription"
+            ],
+            "type": "string"
+          },
+          "attempts": {
+            "items": {
+              "properties": {
+                "paymentInstruction": {
+                  "$ref": "#/$defs/AmountAdjustment"
+                },
+                "scheduleInstruction": {
+                  "$ref": "#/$defs/CommonScheduleInstruction"
+                }
+              },
+              "required": [
+                "scheduleInstruction",
+                "paymentInstruction"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "attempts",
+          "afterAttemptPolicy",
+          "afterRetryEndPolicy"
+        ],
+        "type": "object"
+      },
+      "AmountAdjustment": {
+        "discriminator": {
+          "mapping": {
+            "discount": "#/components/schemas/discount",
+            "partial": "#/components/schemas/partial"
+          },
+          "propertyName": "method"
+        },
+        "properties": {
+          "method": {
+            "enum": [
+              "none",
+              "partial",
+              "discount"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      },
+      "CommonScheduleInstruction": {
+        "description": "The calculation instruction of scheduled time.",
+        "discriminator": {
+          "mapping": {
+            "auto": "#/components/schemas/auto",
+            "date-interval": "#/components/schemas/date-interval",
+            "day-of-month": "#/components/schemas/day-of-month",
+            "day-of-week": "#/components/schemas/day-of-week",
+            "immediately": "#/components/schemas/immediately",
+            "intelligent": "#/components/schemas/intelligent"
+          },
+          "propertyName": "method"
+        },
+        "properties": {
+          "method": {
+            "enum": [
+              "auto",
+              "intelligent",
+              "immediately",
+              "date-interval",
+              "day-of-month",
+              "day-of-week"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/payment-instruments"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "303": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**",
+            "**invalidFields**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

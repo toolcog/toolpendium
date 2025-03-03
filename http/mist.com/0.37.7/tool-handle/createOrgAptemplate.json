@@ -1,0 +1,658 @@
+{
+  "name": "createOrgAptemplate",
+  "description": "Create Org AP Template",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/aptemplate"
+      }
+    },
+    "required": [
+      "org_id"
+    ],
+    "$defs": {
+      "aptemplate": {
+        "description": "",
+        "properties": {
+          "ap_matching": {
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "rules": {
+                "items": {
+                  "properties": {
+                    "match_model": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "name": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "port_config": {
+                      "additionalProperties": {
+                        "$ref": "#/$defs/ap_port_config"
+                      },
+                      "description": "The property key is the interface(s) name (e.g. \"eth1,eth2\")",
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "type": "object"
+          },
+          "created_time": {
+            "readOnly": true,
+            "type": "number"
+          },
+          "for_site": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "modified_time": {
+            "readOnly": true,
+            "type": "number"
+          },
+          "org_id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "site_id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "wifi": {
+            "properties": {
+              "cisco_enabled": {
+                "type": "boolean"
+              },
+              "disable_11k": {
+                "default": false,
+                "type": "boolean"
+              },
+              "disable_radios_when_power_constrained": {
+                "type": "boolean"
+              },
+              "enable_arp_spoof": {
+                "type": "boolean"
+              },
+              "enable_shared_radio_scanning": {
+                "default": false,
+                "type": "boolean"
+              },
+              "enabled": {
+                "default": true,
+                "type": "boolean"
+              },
+              "locate_connected": {
+                "default": false,
+                "type": "boolean"
+              },
+              "locate_unconnected": {
+                "default": false,
+                "type": "boolean"
+              },
+              "mesh_allow_dfs": {
+                "default": false,
+                "type": "boolean"
+              },
+              "mesh_enable_crm": {
+                "type": "boolean"
+              },
+              "mesh_enabled": {
+                "type": "boolean"
+              },
+              "proxy_arp": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "ap_matching"
+        ],
+        "type": "object",
+        "x-examples": {}
+      },
+      "ap_port_config": {
+        "description": "",
+        "properties": {
+          "additional_vlan_ids": {
+            "description": "additional VLAN IDs, only valid in mesh base mode",
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "dynamic_vlan": {
+            "description": "optional dynamic vlan",
+            "properties": {
+              "default_vlan_id": {
+                "type": "integer"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "type": {
+                "type": "string"
+              },
+              "vlans": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "enable_mac_auth": {
+            "description": "",
+            "type": "boolean"
+          },
+          "forwarding": {
+            "default": "all",
+            "enum": [
+              "all",
+              "limited",
+              "wxtunnel",
+              "mxtunnel",
+              "site_mxedge"
+            ],
+            "type": "string"
+          },
+          "mx_tunnel_id": {
+            "description": "if `forwarding`==`mxtunnel`, vlan_ids comes from mxtunnel",
+            "format": "uuid",
+            "type": "string"
+          },
+          "mxtunnel_name": {
+            "description": "if `forwarding`==`site_mxedge`, vlan_ids comes from site_mxedge (`mxtunnels` under site setting)",
+            "type": "string"
+          },
+          "port_auth": {
+            "default": "none",
+            "description": "When doing port auth",
+            "enum": [
+              "none",
+              "dot1x"
+            ],
+            "type": "string"
+          },
+          "port_vlan_id": {
+            "description": "if `forwrding`==`limited`",
+            "type": "integer"
+          },
+          "radius_config": {
+            "$ref": "#/$defs/junos_radius_config"
+          },
+          "radsec": {
+            "$ref": "#/$defs/radsec"
+          },
+          "vlan_id": {
+            "description": "optional to specify the vlan id for a tunnel if forwarding is for `wxtunnel`, `mxtunnel` or `site_mxedge`.\n* if vlan_id is not specified then it will use first one in vlan_ids[] of the mxtunnel.\n* if forwarding == site_mxedge, vlan_ids comes from site_mxedge (`mxtunnels` under site setting)",
+            "type": "integer"
+          },
+          "vland_ids": {
+            "description": "if `forwrding`==`limited`",
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "wxtunnel_id": {
+            "description": "if `forwarding`==`wxtunnel`, the port is bridged to the vlan of the session",
+            "type": "string"
+          },
+          "wxtunnel_remote_id": {
+            "description": "if `forwarding`==`wxtunnel`, the port is bridged to the vlan of the session",
+            "type": "string"
+          }
+        },
+        "title": "ap_port_config",
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "disabled": true,
+            "dynamic_vlan": {
+              "default_vlan_id": 1,
+              "enabled": true,
+              "type": "string",
+              "vlans": {
+                "property1": "string",
+                "property2": "string"
+              }
+            },
+            "enable_mac_auth": true,
+            "forwarding": "all",
+            "mx_tunnel_id": "string",
+            "mxtunnel_name": "string",
+            "port_auth": "none",
+            "port_vlan_id": 1,
+            "radius_config": {
+              "acct_interim_interval": 0,
+              "acct_servers": [
+                {
+                  "host": "string",
+                  "port": 0,
+                  "secret": "string"
+                }
+              ],
+              "auth_servers": [
+                {
+                  "host": "string",
+                  "port": 0,
+                  "secret": "string"
+                }
+              ],
+              "auth_servers_retries": 0,
+              "auth_servers_timeout": 0
+            },
+            "radsec": {
+              "enabled": true,
+              "server_name": "string",
+              "servers": [
+                {
+                  "host": "string",
+                  "port": 0
+                }
+              ],
+              "use_mxedge": true
+            },
+            "vland_ids": [
+              0
+            ],
+            "wxtunnel_id": "string",
+            "wxtunnel_remote_id": "string"
+          }
+        }
+      },
+      "junos_radius_config": {
+        "description": "Junos Radius config",
+        "properties": {
+          "acct_interim_interval": {
+            "default": 0,
+            "description": "how frequently should interim accounting be reported, 60-65535. default is 0 (use one specified in Access-Accept request from RADIUS Server). Very frequent messages can affect the performance of the radius server, 600 and up is recommended when enabled",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "acct_servers": {
+            "items": {
+              "$ref": "#/$defs/acct_server"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "auth_servers": {
+            "items": {
+              "$ref": "#/$defs/auth_server"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "auth_servers_retries": {
+            "default": 3,
+            "description": "radius auth session retries",
+            "type": "integer"
+          },
+          "auth_servers_timeout": {
+            "default": 5,
+            "description": "radius auth session timeout",
+            "type": "integer"
+          },
+          "coa_enabled": {
+            "default": false,
+            "type": "boolean"
+          },
+          "coa_port": {
+            "default": 3799,
+            "type": "integer"
+          },
+          "network": {
+            "description": "use `network`or `source_ip`\nwhich network the RADIUS server resides, if there's static IP for this network, we'd use it as source-ip",
+            "type": "string"
+          },
+          "source_ip": {
+            "description": "use `network`or `source_ip`",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "acct_interim_interval": 0,
+            "acct_servers": [
+              {
+                "host": "1.2.3.4",
+                "port": 1812,
+                "secret": "testing123"
+              }
+            ],
+            "auth_servers": [
+              {
+                "host": "1.2.3.4",
+                "port": 1812,
+                "secret": "testing123"
+              },
+              {
+                "host": "radius.internal",
+                "port": 1812,
+                "secret": "testing123"
+              }
+            ],
+            "auth_servers_retries": 3,
+            "auth_servers_timeout": 5
+          }
+        }
+      },
+      "acct_server": {
+        "description": "",
+        "properties": {
+          "host": {
+            "description": "ip / hostname of RADIUS server",
+            "type": "string"
+          },
+          "keywrap_enabled": {
+            "type": "boolean"
+          },
+          "keywrap_format": {
+            "type": "string"
+          },
+          "keywrap_kek": {
+            "type": "string"
+          },
+          "keywrap_mack": {
+            "type": "string"
+          },
+          "port": {
+            "default": 1813,
+            "description": "Acct port of RADIUS server",
+            "type": "integer"
+          },
+          "secret": {
+            "description": "secret of RADIUS server",
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "port",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "auth_server": {
+        "description": "Authentication Server",
+        "properties": {
+          "host": {
+            "description": "ip / hostname of RADIUS server",
+            "type": "string"
+          },
+          "keywrap_enabled": {
+            "type": "boolean"
+          },
+          "keywrap_format": {
+            "type": "string"
+          },
+          "keywrap_kek": {
+            "type": "string"
+          },
+          "keywrap_mack": {
+            "type": "string"
+          },
+          "port": {
+            "default": 1812,
+            "description": "Auth port of RADIUS server",
+            "type": "integer"
+          },
+          "secret": {
+            "description": "secret of RADIUS server",
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "port",
+          "secret"
+        ],
+        "type": "object"
+      },
+      "radsec": {
+        "description": "Radsec settings",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "idle_timeout": {
+            "type": "integer"
+          },
+          "mxcluster_ids": {
+            "description": "To use Org mxedges when this WLAN does not use mxtunnel, specify their mxcluster_ids.\nOrg mxedge(s) identified by mxcluster_ids",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "server_name": {
+            "description": "name of the server to verify (against the cacerts in Org Setting). Only if not Mist Edge.",
+            "type": "string"
+          },
+          "servers": {
+            "description": "List of Radsec Servers. Only if not Mist Edge.",
+            "items": {
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "use_mxedge": {
+            "description": "use mxedge(s) as radsecproxy",
+            "type": "boolean"
+          },
+          "use_site_mxedge": {
+            "default": false,
+            "description": "To use Site mxedges when this WLAN does not use mxtunnel",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.mist.com/api/v1/orgs/{org_id}/aptemplates"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**ap_matching**",
+              {
+                "$ul": [
+                  "**enabled**",
+                  "**rules**"
+                ]
+              }
+            ],
+            "**created_time**",
+            "**for_site**",
+            "**id**",
+            "**modified_time**",
+            "**org_id**",
+            "**site_id**",
+            [
+              "**wifi**",
+              {
+                "$ul": [
+                  "**cisco_enabled**",
+                  "**disable_11k** (default: false)",
+                  "**disable_radios_when_power_constrained**",
+                  "**enable_arp_spoof**",
+                  "**enable_shared_radio_scanning** (default: false)",
+                  "**enabled** (default: true)",
+                  "**locate_connected** (default: false)",
+                  "**locate_unconnected** (default: false)",
+                  "**mesh_allow_dfs** (default: false)",
+                  "**mesh_enable_crm**",
+                  "**mesh_enabled**",
+                  "**proxy_arp** (default: false)"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

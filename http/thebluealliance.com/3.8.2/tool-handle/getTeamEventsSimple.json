@@ -1,0 +1,89 @@
+{
+  "name": "getTeamEventsSimple",
+  "description": "Gets a short-form list of all events this team has competed at.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "team_key": {
+        "type": "string",
+        "description": "TBA Team Key, eg `frc254`"
+      }
+    },
+    "required": [
+      "team_key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/team/{team_key}/events/simple"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**city**: City, town, village, etc. the event is located in.",
+            "**country**: Country the event is located in.",
+            [
+              "**district**",
+              {
+                "$ul": [
+                  "**abbreviation**: The short identifier for the district.",
+                  "**display_name**: The long name for the district.",
+                  "**key**: Key for this district, e.g. `2016ne`.",
+                  "**year**: Year this district participated."
+                ]
+              }
+            ],
+            "**end_date**: Event end date in `yyyy-mm-dd` format.",
+            "**event_code**: Event short code, as provided by FIRST.",
+            "**event_type**: Event Type, as defined here: https://github.com/the-blue-alliance/the-blue-alliance/blob/master/consts/event_type.py#L2",
+            "**key**: TBA event key with the format yyyy[EVENT_CODE], where yyyy is the year, and EVENT_CODE is the event code of the event.",
+            "**name**: Official name of event on record either provided by FIRST or organizers of offseason event.",
+            "**start_date**: Event start date in `yyyy-mm-dd` format.",
+            "**state_prov**: State or Province the event is located in.",
+            "**year**: Year the event data is for."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "name": "getFailedWebhooks",
+  "description": "Returns webhooks that have recently failed to be delivered to the requesting app after the maximum number of retries.\n\nAfter 72 hours the failure may no longer be returned by this operation.\n\nThe oldest failure is returned first.\n\nThis method uses a cursor-based pagination. To request the next page use the failure time of the last webhook on the list as the `failedAfter` value or use the URL provided in `next`.\n\n**[Permissions](#permissions) required:** Only [Connect apps](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) can use this operation.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "maxResults": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of webhooks to return per page. If obeying the maxResults directive would result in records with the same failure time being split across pages, the directive is ignored and all records with the same failure time included on the page."
+      },
+      "after": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The time after which any webhook failure must have occurred for the record to be returned, expressed as milliseconds since the UNIX epoch."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/webhook/failed{?maxResults,after}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A page of failed webhooks.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**maxResults**: The maximum number of items on the page. If the list of values is shorter than this number, then there are no more pages.",
+            "**next**: The URL to the next page of results. Present only if the request returned at least one result.The next page may be empty at the time of receiving the response, but new failed webhooks may appear in time. You can save the URL to the next page and query for new results periodically (for example, every hour).",
+            "**values**: The list of webhooks."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

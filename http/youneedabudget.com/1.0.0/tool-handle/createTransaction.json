@@ -1,0 +1,163 @@
+{
+  "name": "createTransaction",
+  "description": "Creates a single transaction or multiple transactions.  If you provide a body containing a `transaction` object, a single transaction will be created and if you provide a body containing a `transactions` array, multiple transactions will be created.  Scheduled transactions cannot be created on this endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "budget_id": {
+        "type": "string",
+        "description": "The id of the budget. \"last-used\" can be used to specify the last used budget and \"default\" can be used if default budget selection is enabled (see: https://api.ynab.com/#oauth-default-budget)."
+      },
+      "body": {
+        "$ref": "#/components/schemas/PostTransactionsWrapper",
+        "description": "The transaction or transactions to create.  To create a single transaction you can specify a value for the `transaction` object and to create multiple transactions you can specify an array of `transactions`.  It is expected that you will only provide a value for one of these objects."
+      }
+    },
+    "required": [
+      "budget_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.ynab.com/v1/budgets/{budget_id}/transactions"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**duplicate_import_ids**: If multiple transactions were specified, a list of import_ids that were not created because of an existing `import_id` found on the same account",
+                  "**server_knowledge**: The knowledge of the server",
+                  [
+                    "**transaction**",
+                    {
+                      "$ul": [
+                        "**account_id**",
+                        "**amount**: The transaction amount in milliunits format",
+                        "**approved**: Whether or not the transaction is approved",
+                        "**category_id**",
+                        "**cleared**: The cleared status of the transaction",
+                        "**date**: The transaction date in ISO format (e.g. 2016-12-01)",
+                        "**debt_transaction_type**: If the transaction is a debt/loan account transaction, the type of transaction",
+                        "**deleted**: Whether or not the transaction has been deleted.  Deleted transactions will only be included in delta requests.",
+                        "**flag_color**: The transaction flag",
+                        "**id**",
+                        "**import_id**: If the transaction was imported, this field is a unique (by account) import identifier.  If this transaction was imported through File Based Import or Direct Import and not through the API, the import_id will have the format: 'YNAB:[milliunit_amount]:[iso_date]:[occurrence]'.  For example, a transaction dated 2015-12-30 in the amount of -$294.23 USD would have an import_id of 'YNAB:-294230:2015-12-30:1'.  If a second transaction on the same account was imported and had the same date and same amount, its import_id would be 'YNAB:-294230:2015-12-30:2'.",
+                        "**import_payee_name**: If the transaction was imported, the payee name that was used when importing and before applying any payee rename rules",
+                        "**import_payee_name_original**: If the transaction was imported, the original payee name as it appeared on the statement",
+                        "**matched_transaction_id**: If transaction is matched, the id of the matched transaction",
+                        "**memo**",
+                        "**payee_id**",
+                        "**transfer_account_id**: If a transfer transaction, the account to which it transfers",
+                        "**transfer_transaction_id**: If a transfer transaction, the id of transaction on the other side of the transfer",
+                        "**account_name**",
+                        "**category_name**: The name of the category.  If a split transaction, this will be 'Split'.",
+                        "**payee_name**",
+                        "**subtransactions**: If a split transaction, the subtransactions."
+                      ]
+                    }
+                  ],
+                  "**transaction_ids**: The transaction ids that were saved",
+                  "**transactions**: If multiple transactions were specified, the transactions that were saved"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**detail**",
+                  "**id**",
+                  "**name**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**detail**",
+                  "**id**",
+                  "**name**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

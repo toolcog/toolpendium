@@ -1,0 +1,459 @@
+{
+  "name": "CreateDataset",
+  "description": "Creates a new FinSpace Dataset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "datasetTitle",
+          "kind",
+          "permissionGroupParams"
+        ],
+        "properties": {
+          "clientToken": {
+            "description": "Idempotence Token for API operations",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "datasetTitle": {
+            "description": "Title for a given Dataset",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "kind": {
+            "description": "Dataset Kind",
+            "type": "string",
+            "enum": [
+              "TABULAR",
+              "NON_TABULAR"
+            ]
+          },
+          "datasetDescription": {
+            "description": "Description of a dataset",
+            "type": "string",
+            "pattern": "[\\s\\S]*",
+            "maxLength": 1000
+          },
+          "ownerInfo": {
+            "description": "A structure for Dataset owner info.",
+            "type": "object",
+            "properties": {
+              "name": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/OwnerName"
+                  },
+                  {
+                    "description": "The name of the Dataset owner."
+                  }
+                ]
+              },
+              "phoneNumber": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PhoneNumber"
+                  },
+                  {
+                    "description": "Phone number for the Dataset owner."
+                  }
+                ]
+              },
+              "email": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Email"
+                  },
+                  {
+                    "description": "Email address for the Dataset owner."
+                  }
+                ]
+              }
+            }
+          },
+          "permissionGroupParams": {
+            "description": "<p>Permission group parameters for Dataset permissions.</p> <p>Here is an example of how you could specify the <code>PermissionGroupParams</code>:</p> <p> <code> { \"permissionGroupId\": \"0r6fCRtSTUk4XPfXQe3M0g\", \"datasetPermissions\": [ {\"permission\": \"ViewDatasetDetails\"}, {\"permission\": \"AddDatasetData\"}, {\"permission\": \"EditDatasetMetadata\"}, {\"permission\": \"DeleteDataset\"} ] } </code> </p>",
+            "type": "object",
+            "properties": {
+              "permissionGroupId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PermissionGroupId"
+                  },
+                  {
+                    "description": "The unique identifier for the <code>PermissionGroup</code>."
+                  }
+                ]
+              },
+              "datasetPermissions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourcePermissionsList"
+                  },
+                  {
+                    "description": "List of resource permissions."
+                  }
+                ]
+              }
+            }
+          },
+          "alias": {
+            "description": "The unique resource identifier for a Dataset.",
+            "type": "string",
+            "pattern": "^alias\\/\\S+",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "schemaDefinition": {
+            "description": "A union of schema types.",
+            "type": "object",
+            "properties": {
+              "tabularSchemaConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SchemaDefinition"
+                  },
+                  {
+                    "description": "The configuration for a schema on a tabular Dataset."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "OwnerName": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "description": "1 - 250 character String",
+        "minLength": 1,
+        "maxLength": 250
+      },
+      "PhoneNumber": {
+        "type": "string",
+        "pattern": "^[\\+0-9\\#\\,\\(][\\+0-9\\-\\.\\/\\(\\)\\,\\#\\s]+$",
+        "description": "PhoneNumber of Dataset Owner",
+        "minLength": 10,
+        "maxLength": 20
+      },
+      "Email": {
+        "type": "string",
+        "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}",
+        "minLength": 4,
+        "maxLength": 320,
+        "format": "password"
+      },
+      "PermissionGroupId": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 26
+      },
+      "ResourcePermissionsList": {
+        "type": "array",
+        "description": "List of Resource Permissions",
+        "items": {
+          "$ref": "#/$defs/ResourcePermission"
+        }
+      },
+      "ResourcePermission": {
+        "type": "object",
+        "properties": {
+          "permission": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringValueLength1to250"
+              },
+              {
+                "description": "Permission for a resource."
+              }
+            ]
+          }
+        },
+        "description": "<p>Resource permission for a dataset. When you create a dataset, all the other members of the same user group inherit access to the dataset. You can only create a dataset if your user group has application permission for Create Datasets.</p> <p>The following is a list of valid dataset permissions that you can apply: </p> <ul> <li> <p> <code>ViewDatasetDetails</code> </p> </li> <li> <p> <code>ReadDatasetDetails</code> </p> </li> <li> <p> <code>AddDatasetData</code> </p> </li> <li> <p> <code>CreateDataView</code> </p> </li> <li> <p> <code>EditDatasetMetadata</code> </p> </li> <li> <p> <code>DeleteDataset</code> </p> </li> </ul> <p>For more information on the dataset permissions, see <a href=\"https://docs.aws.amazon.com/finspace/latest/userguide/managing-user-permissions.html#supported-dataset-permissions\">Supported Dataset Permissions</a> in the FinSpace User Guide.</p>"
+      },
+      "StringValueLength1to250": {
+        "type": "string",
+        "pattern": "[\\s\\S]*\\S[\\s\\S]*",
+        "description": "1 - 250 character String",
+        "minLength": 1,
+        "maxLength": 250
+      },
+      "SchemaDefinition": {
+        "type": "object",
+        "properties": {
+          "columns": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnList"
+              },
+              {
+                "description": "List of column definitions."
+              }
+            ]
+          },
+          "primaryKeyColumns": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnNameList"
+              },
+              {
+                "description": "List of column names used for primary key."
+              }
+            ]
+          }
+        },
+        "description": "Definition for a schema on a tabular Dataset."
+      },
+      "ColumnList": {
+        "type": "array",
+        "description": "List of Column Definitions",
+        "items": {
+          "$ref": "#/$defs/ColumnDefinition"
+        }
+      },
+      "ColumnDefinition": {
+        "type": "object",
+        "properties": {
+          "dataType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnDataType"
+              },
+              {
+                "description": "<p>Data type of a column.</p> <ul> <li> <p> <code>STRING</code> – A String data type.</p> <p> <code>CHAR</code> – A char data type.</p> <p> <code>INTEGER</code> – An integer data type.</p> <p> <code>TINYINT</code> – A tinyint data type.</p> <p> <code>SMALLINT</code> – A smallint data type.</p> <p> <code>BIGINT</code> – A bigint data type.</p> <p> <code>FLOAT</code> – A float data type.</p> <p> <code>DOUBLE</code> – A double data type.</p> <p> <code>DATE</code> – A date data type.</p> <p> <code>DATETIME</code> – A datetime data type.</p> <p> <code>BOOLEAN</code> – A boolean data type.</p> <p> <code>BINARY</code> – A binary data type.</p> </li> </ul>"
+              }
+            ]
+          },
+          "columnName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnName"
+              },
+              {
+                "description": "The name of a column."
+              }
+            ]
+          },
+          "columnDescription": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnDescription"
+              },
+              {
+                "description": "Description for a column."
+              }
+            ]
+          }
+        },
+        "description": "The definition of a column in a tabular Dataset."
+      },
+      "ColumnDataType": {
+        "type": "string",
+        "enum": [
+          "STRING",
+          "CHAR",
+          "INTEGER",
+          "TINYINT",
+          "SMALLINT",
+          "BIGINT",
+          "FLOAT",
+          "DOUBLE",
+          "DATE",
+          "DATETIME",
+          "BOOLEAN",
+          "BINARY"
+        ],
+        "description": "Data type of a column."
+      },
+      "ColumnName": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "description": "Column Name",
+        "maxLength": 126
+      },
+      "ColumnDescription": {
+        "type": "string",
+        "pattern": "[\\s\\S]*",
+        "description": "Column Description",
+        "maxLength": 512
+      },
+      "ColumnNameList": {
+        "type": "array",
+        "description": "List of Column Names",
+        "items": {
+          "$ref": "#/$defs/ColumnName"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://finspace-api.us-east-1.amazonaws.com/datasetsv2"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response from a CreateDataset operation",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**datasetId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

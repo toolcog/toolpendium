@@ -1,0 +1,425 @@
+{
+  "name": "CreateImagePipeline",
+  "description": "Creates a new image pipeline. Image pipelines enable you to automate the creation and distribution of images.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "infrastructureConfigurationArn",
+          "clientToken"
+        ],
+        "properties": {
+          "name": {
+            "description": "The name of the image pipeline.",
+            "type": "string",
+            "pattern": "^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$"
+          },
+          "description": {
+            "description": "The description of the image pipeline.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "imageRecipeArn": {
+            "description": "The Amazon Resource Name (ARN) of the image recipe that will be used to configure images created by this image pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):image-recipe/[a-z0-9-_]+/[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "containerRecipeArn": {
+            "description": "The Amazon Resource Name (ARN) of the container recipe that is used to configure images created by this container pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):container-recipe/[a-z0-9-_]+/[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "infrastructureConfigurationArn": {
+            "description": "The Amazon Resource Name (ARN) of the infrastructure configuration that will be used to build images created by this image pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):infrastructure-configuration/[a-z0-9-_]+$"
+          },
+          "distributionConfigurationArn": {
+            "description": "The Amazon Resource Name (ARN) of the distribution configuration that will be used to configure and distribute images created by this image pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):distribution-configuration/[a-z0-9-_]+$"
+          },
+          "imageTestsConfiguration": {
+            "description": "Configure image tests for your pipeline build. Tests run after building the image, to verify that the AMI or container image is valid before distributing it.",
+            "type": "object",
+            "properties": {
+              "imageTestsEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NullableBoolean"
+                  },
+                  {
+                    "description": "Determines if tests should run after building the image. Image Builder defaults to enable tests to run following the image build, before image distribution."
+                  }
+                ]
+              },
+              "timeoutMinutes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ImageTestsTimeoutMinutes"
+                  },
+                  {
+                    "description": "<p>The maximum time in minutes that tests are permitted to run.</p> <note> <p>The timeoutMinutes attribute is not currently active. This value is ignored.</p> </note>"
+                  }
+                ]
+              }
+            }
+          },
+          "enhancedImageMetadataEnabled": {
+            "description": "Collects additional information about the image being created, including the operating system (OS) version and package list. This information is used to enhance the overall experience of using EC2 Image Builder. Enabled by default.",
+            "type": "boolean"
+          },
+          "schedule": {
+            "description": "A schedule configures how often and when a pipeline will automatically create a new image.",
+            "type": "object",
+            "properties": {
+              "scheduleExpression": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NonEmptyString"
+                  },
+                  {
+                    "description": "<p>The cron expression determines how often EC2 Image Builder evaluates your <code>pipelineExecutionStartCondition</code>.</p> <p>For information on how to format a cron expression in Image Builder, see <a href=\"https://docs.aws.amazon.com/imagebuilder/latest/userguide/image-builder-cron.html\">Use cron expressions in EC2 Image Builder</a>.</p>"
+                  }
+                ]
+              },
+              "timezone": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Timezone"
+                  },
+                  {
+                    "description": "The timezone that applies to the scheduling expression. For example, \"Etc/UTC\", \"America/Los_Angeles\" in the <a href=\"https://www.joda.org/joda-time/timezones.html\">IANA timezone format</a>. If not specified this defaults to UTC."
+                  }
+                ]
+              },
+              "pipelineExecutionStartCondition": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PipelineExecutionStartCondition"
+                  },
+                  {
+                    "description": "The condition configures when the pipeline should trigger a new image build. When the <code>pipelineExecutionStartCondition</code> is set to <code>EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE</code>, and you use semantic version filters on the base image or components in your image recipe, EC2 Image Builder will build a new image only when there are new versions of the image or components in your recipe that match the semantic version filter. When it is set to <code>EXPRESSION_MATCH_ONLY</code>, it will build a new image every time the CRON expression matches the current time. For semantic version syntax, see <a href=\"https://docs.aws.amazon.com/imagebuilder/latest/APIReference/API_CreateComponent.html\">CreateComponent</a> in the <i> EC2 Image Builder API Reference</i>."
+                  }
+                ]
+              }
+            }
+          },
+          "status": {
+            "description": "The status of the image pipeline.",
+            "type": "string",
+            "enum": [
+              "DISABLED",
+              "ENABLED"
+            ]
+          },
+          "tags": {
+            "description": "The tags of the image pipeline.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "clientToken": {
+            "description": "The idempotency token used to make this request idempotent.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          },
+          "imageScanningConfiguration": {
+            "description": "Contains settings for Image Builder image resource and container image scans.",
+            "type": "object",
+            "properties": {
+              "imageScanningEnabled": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NullableBoolean"
+                  },
+                  {
+                    "description": "A setting that indicates whether Image Builder keeps a snapshot of the vulnerability scans that Amazon Inspector runs against the build instance when you create a new image."
+                  }
+                ]
+              },
+              "ecrConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EcrConfiguration"
+                  },
+                  {
+                    "description": "Contains Amazon ECR settings for vulnerability scans."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "NullableBoolean": {
+        "type": "boolean"
+      },
+      "ImageTestsTimeoutMinutes": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 1440
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "Timezone": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9]{2,}(?:\\/[a-zA-z0-9-_+]+)*",
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "PipelineExecutionStartCondition": {
+        "type": "string",
+        "enum": [
+          "EXPRESSION_MATCH_ONLY",
+          "EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE"
+        ]
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "EcrConfiguration": {
+        "type": "object",
+        "properties": {
+          "repositoryName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The name of the container repository that Amazon Inspector scans to identify findings for your container images. The name includes the path for the repository location. If you don’t provide this information, Image Builder creates a repository in your account named <code>image-builder-image-scanning-repository</code> for vulnerability scans of your output container images."
+              }
+            ]
+          },
+          "containerTags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "Tags for Image Builder to apply to the output container image that &amp;INS; scans. Tags can help you identify and manage your scanned images."
+              }
+            ]
+          }
+        },
+        "description": "Settings that Image Builder uses to configure the ECR repository and the output container images that Amazon Inspector scans."
+      },
+      "StringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NonEmptyString"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://imagebuilder.us-east-1.amazonaws.com/CreateImagePipeline"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**requestId**",
+            "**clientToken**",
+            "**imagePipelineArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "489": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

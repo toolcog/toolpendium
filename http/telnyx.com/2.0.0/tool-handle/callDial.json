@@ -1,0 +1,88 @@
+{
+  "name": "callDial",
+  "description": "Dial a number or SIP URI from a given connection. A successful response will include a `call_leg_id` which can be used to correlate the command with subsequent webhooks.\n\n**Expected Webhooks:**\n\n- `call.initiated`\n- `call.answered` or `call.hangup`\n- `call.machine.detection.ended` if `answering_machine_detection` was requested\n- `call.machine.greeting.ended` if `answering_machine_detection` was set to `detect_beep`, `greeting_end` or `detect_words`",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/components/schemas/CallRequest",
+        "description": "Call request"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.telnyx.com/v2/calls"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Retrieve Call Status Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**call_control_id**: Unique identifier and token for controlling the call.",
+                  "**call_leg_id**: ID that is unique to the call and can be used to correlate webhook events",
+                  "**call_session_id**: ID that is unique to the call session and can be used to correlate webhook events",
+                  "**is_alive**: Indicates whether the call is alive or not. For Dial command it will always be `false` (dialing is asynchronous).",
+                  "**record_type**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

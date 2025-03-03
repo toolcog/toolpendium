@@ -1,0 +1,92 @@
+{
+  "name": "POST_DebitMemoCollect",
+  "description": "**Note:** This operation is only available if you have [Invoice Settlement](https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/Invoice_Settlement) enabled. The Invoice Settlement feature is generally available as of Zuora Billing Release 296 (March 2021). This feature includes Unapplied Payments, Credit and Debit Memo, and Invoice Item Settlement. If you want to enable Invoice Settlement, see [Invoice Settlement Enablement and Checklist Guide](https://knowledgecenter.zuora.com/Billing/Billing_and_Payments/Invoice_Settlement/Invoice_Settlement_Migration_Checklist_and_Guide) for more information.\n\nThis API operation provides an easy way to let the client-side to collect an existing posted debit memo.\nIt supports the following steps:\n  1. Apply unapplied credit memos to the posted debit memo by Oldest-First-Largest-First rule if there are more than one unapplied credit memos.\n  2. Apply unapplied payments to the posted debit memo by Oldest-First-Largest-First rule if there are more than one unapplied payments.\n  3. Process payment to the posted debit memo if there is an open-balance on it.\n\n**Reistrictions**\n\nSince this API will do lots of works, and some of them are resource consuming, we need to resitrict the usage of this API by the following conditions:\n  1. If the target debit memo gets more than 10 debit memo items, the request will be rejected.\n  2. If `CreditMemo` is specified in `applicationOrder`, when there are more than 25 credit memos will be used to apply to the debit memo, the request will be rejected.\n  3. If `CreditMemo` is specified in `applicationOrder`, when there are more than 100 credit memo items will be used to apply to the debit memo, the request will be rejected.\n  4. If `UnappliedPayment` is specified in `applicationOrder`, when there are more than 25 payments will be used to apply to the debit memo, the request will be rejected.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Zuora-Track-Id": {
+        "maxLength": 64,
+        "type": "string",
+        "description": "A custom identifier for tracing the API call. If you set a value for this header, Zuora returns the same value in the response headers. This header enables you to associate your system process identifiers with Zuora API calls, to assist with troubleshooting in the event of an issue.\n\nThe value of this field must use the US-ASCII character set and must not include any of the following characters: colon (`:`), semicolon (`;`), double quote (`\"`), and quote (`'`).\n"
+      },
+      "Zuora-Entity-Ids": {
+        "type": "string",
+        "description": "An entity ID. If you have [Zuora Multi-entity](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/Multi-entity) enabled and the OAuth token is valid for more than one entity, you must use this header to specify which entity to perform the operation in. If the OAuth token is only valid for a single entity, or you do not have Zuora Multi-entity enabled, you do not need to set this header.\n"
+      },
+      "debitMemoId": {
+        "type": "string",
+        "description": "The ID of a posted debit memo. For example, 8a8082e65b27f6c3015ba419f3c2644e.\n"
+      }
+    },
+    "required": [
+      "debitMemoId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rest.zuora.com/v1/debitmemos/{debitMemoId}/collect"
+    },
+    "headers": {
+      "Zuora-Track-Id": {
+        "$": "Zuora-Track-Id"
+      },
+      "Zuora-Entity-Ids": {
+        "$": "Zuora-Entity-Ids"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**appliedCreditMemos**: The information about which credit memo applied to the specific debit memo.",
+            "**appliedPayments**: The information about which payment applied to the specific debit memo.",
+            [
+              "**debitMemo**: The information about the debit memo that just collected.",
+              {
+                "$ul": [
+                  "**id**: The unique ID of the debit memo.",
+                  "**number**: The unique identification number of the debit memo."
+                ]
+              }
+            ],
+            [
+              "**processedPayment**: The information about the payment that newly processed to the debit memo.",
+              {
+                "$ul": [
+                  "**amount**: The total amount of the payment.",
+                  "**gatewayId**: The ID of the gateway instance that processes the payment.",
+                  "**gatewayResponse**: The message returned from the payment gateway for the payment. This message is gateway-dependent.",
+                  "**gatewayResponseCode**: The code returned from the payment gateway for the payment. This code is gateway-dependent.",
+                  "**id**: The unique ID of the created payment. For example, 4028905f5a87c0ff015a87eb6b75007f.",
+                  "**number**: The unique identification number of the payment. For example, P-00000001.",
+                  "**paymentMethodId**: The unique ID of the payment method that the customer used to make the payment.",
+                  "**status**: The status of the payment."
+                ]
+              }
+            ],
+            "**success**: Returns `true` if the request was processed successfully."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

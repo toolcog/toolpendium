@@ -1,0 +1,186 @@
+{
+  "name": "complete_a_sandbox_real_time_payments_transfer",
+  "description": "Simulates submission of a Real Time Payments transfer and handling the response from the destination financial institution. This transfer must first have a `status` of `pending_submission`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "real_time_payments_transfer_id": {
+        "description": "The identifier of the Real Time Payments Transfer you wish to complete.",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/complete_a_sandbox_real_time_payments_transfer_parameters"
+      }
+    },
+    "required": [
+      "real_time_payments_transfer_id",
+      "body"
+    ],
+    "$defs": {
+      "complete_a_sandbox_real_time_payments_transfer_parameters": {
+        "example": {},
+        "properties": {
+          "rejection": {
+            "description": "If set, the simulation will reject the transfer.",
+            "properties": {
+              "reject_reason_code": {
+                "description": "The reason code that the simulated rejection will have.",
+                "enum": [
+                  "account_closed",
+                  "account_blocked",
+                  "invalid_creditor_account_type",
+                  "invalid_creditor_account_number",
+                  "invalid_creditor_financial_institution_identifier",
+                  "end_customer_deceased",
+                  "narrative",
+                  "transaction_forbidden",
+                  "transaction_type_not_supported",
+                  "unexpected_amount",
+                  "amount_exceeds_bank_limits",
+                  "invalid_creditor_address",
+                  "unknown_end_customer",
+                  "invalid_debtor_address",
+                  "timeout",
+                  "unsupported_message_for_recipient",
+                  "recipient_connection_not_available",
+                  "real_time_payments_suspended",
+                  "instructed_agent_signed_off",
+                  "processing_error",
+                  "other"
+                ],
+                "type": "string",
+                "x-enum-descriptions": [
+                  "The destination account is closed. Corresponds to the Real Time Payments reason code `AC04`.",
+                  "The destination account is currently blocked from receiving transactions. Corresponds to the Real Time Payments reason code `AC06`.",
+                  "The destination account is ineligible to receive Real Time Payments transfers. Corresponds to the Real Time Payments reason code `AC14`.",
+                  "The destination account does not exist. Corresponds to the Real Time Payments reason code `AC03`.",
+                  "The destination routing number is invalid. Corresponds to the Real Time Payments reason code `RC04`.",
+                  "The destination account holder is deceased. Corresponds to the Real Time Payments reason code `MD07`.",
+                  "The reason is provided as narrative information in the additional information field.",
+                  "Real Time Payments transfers are not allowed to the destination account. Corresponds to the Real Time Payments reason code `AG01`.",
+                  "Real Time Payments transfers are not enabled for the destination account. Corresponds to the Real Time Payments reason code `AG03`.",
+                  "The amount of the transfer is different than expected by the recipient. Corresponds to the Real Time Payments reason code `AM09`.",
+                  "The amount is higher than the recipient is authorized to send or receive. Corresponds to the Real Time Payments reason code `AM14`.",
+                  "The creditor's address is required, but missing or invalid. Corresponds to the Real Time Payments reason code `BE04`.",
+                  "The specified creditor is unknown. Corresponds to the Real Time Payments reason code `BE06`.",
+                  "The debtor's address is required, but missing or invalid. Corresponds to the Real Time Payments reason code `BE07`.",
+                  "There was a timeout processing the transfer. Corresponds to the Real Time Payments reason code `DS24`.",
+                  "Real Time Payments transfers are not enabled for the destination account. Corresponds to the Real Time Payments reason code `NOAT`.",
+                  "The destination financial institution is currently not connected to Real Time Payments. Corresponds to the Real Time Payments reason code `9912`.",
+                  "Real Time Payments is currently unavailable. Corresponds to the Real Time Payments reason code `9948`.",
+                  "The destination financial institution is currently signed off of Real Time Payments. Corresponds to the Real Time Payments reason code `9910`.",
+                  "The transfer was rejected due to an internal Increase issue. We have been notified.",
+                  "Some other error or issue has occurred."
+                ]
+              }
+            },
+            "required": [
+              "reject_reason_code"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.increase.com/simulations/real_time_payments_transfers/{real_time_payments_transfer_id}/complete"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Real Time Payments Transfer"
+        },
+        "Real Time Payments transfers move funds, within seconds, between your Increase account and any other account on the Real Time Payments network.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_id**: The Account from which the transfer was sent.",
+            "**amount**: The transfer amount in USD cents.",
+            [
+              "**approval**: If your account requires approvals for transfers and the transfer was approved, this will contain details of the approval.",
+              {
+                "$ul": [
+                  "**approved_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was approved.",
+                  "**approved_by**: If the Transfer was approved by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            [
+              "**cancellation**: If your account requires approvals for transfers and the transfer was not approved, this will contain details of the cancellation.",
+              {
+                "$ul": [
+                  "**canceled_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the Transfer was canceled.",
+                  "**canceled_by**: If the Transfer was canceled by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            "**created_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was created.",
+            "**creditor_name**: The name of the transfer's recipient as provided by the sender.",
+            "**currency**: The [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code for the transfer's currency. For real time payments transfers this is always equal to `USD`.",
+            "**destination_account_number**: The destination account number.",
+            "**destination_routing_number**: The destination American Bankers' Association (ABA) Routing Transit Number (RTN).",
+            "**external_account_id**: The identifier of the External Account the transfer was made to, if any.",
+            "**id**: The Real Time Payments Transfer's identifier.",
+            [
+              "**rejection**: If the transfer is rejected by Real Time Payments or the destination financial institution, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**reject_reason_additional_information**: Additional information about the rejection provided by the recipient bank when the `reject_reason_code` is `NARRATIVE`.",
+                  "**reject_reason_code**: The reason the transfer was rejected as provided by the recipient bank or the Real Time Payments network.",
+                  "**rejected_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was rejected."
+                ]
+              }
+            ],
+            "**remittance_information**: Unstructured information that will show on the recipient's bank statement.",
+            "**source_account_number_id**: The Account Number the recipient will see as having sent the transfer.",
+            "**status**: The lifecycle status of the transfer.",
+            [
+              "**submission**: After the transfer is submitted to Real Time Payments, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**submitted_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was submitted to The Clearing House.",
+                  "**transaction_identification**: The Real Time Payments network identification of the transfer."
+                ]
+              }
+            ],
+            "**transaction_id**: The Transaction funding the transfer once it is complete.",
+            "**type**: A constant representing the object's type. For this resource it will always be `real_time_payments_transfer`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

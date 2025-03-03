@@ -1,0 +1,77 @@
+{
+  "name": "getFolders",
+  "description": "By passing in the appropriate options, you can search for available folders",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "sort": {
+        "enum": [
+          "Name",
+          "Size",
+          "CreatedDateUTC"
+        ],
+        "example": "CreatedDateUTC DESC",
+        "type": "string",
+        "description": "values to sort by"
+      },
+      "xero-tenant-id": {
+        "type": "string",
+        "description": "Xero identifier for Tenant"
+      }
+    },
+    "required": [
+      "xero-tenant-id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.xero.com/files.xro/1.0//Folders{?sort}"
+    },
+    "headers": {
+      "xero-tenant-id": {
+        "$": "xero-tenant-id"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Email**: The email address used to email files to the inbox. Only the inbox will have this element.",
+            "**FileCount**: The number of files in the folder",
+            "**Id**: Xero unique identifier for a folder  Files",
+            "**IsInbox**: to indicate if the folder is the Inbox. The Inbox cannot be renamed or deleted.",
+            "**Name**: The name of the folder"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

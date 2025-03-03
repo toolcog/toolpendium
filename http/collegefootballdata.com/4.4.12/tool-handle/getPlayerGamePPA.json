@@ -1,0 +1,104 @@
+{
+  "name": "getPlayerGamePPA",
+  "description": "Predicted Points Added (PPA) by player game",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "year": {
+        "minimum": 2013,
+        "type": "integer",
+        "description": "Year filter"
+      },
+      "week": {
+        "maximum": 16,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Week filter"
+      },
+      "team": {
+        "type": "string",
+        "description": "Team filter"
+      },
+      "position": {
+        "type": "string",
+        "description": "Position abbreviation filter"
+      },
+      "playerId": {
+        "type": "integer",
+        "description": "Player id filter"
+      },
+      "threshold": {
+        "type": "string",
+        "description": "Minimum play threshold filter"
+      },
+      "excludeGarbageTime": {
+        "type": "boolean",
+        "description": "Filter to remove garbage time plays from calculations"
+      },
+      "seasonType": {
+        "default": "regular",
+        "type": "string",
+        "description": "Season type filter (regular or postseason)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.collegefootballdata.com/ppa/players/games{?year,week,team,position,playerId,threshold,excludeGarbageTime,seasonType}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**averagePPA**",
+              {
+                "$ul": [
+                  "**all**",
+                  "**pass**",
+                  "**rush**"
+                ]
+              }
+            ],
+            "**name**",
+            "**opponent**",
+            "**position**",
+            "**season**",
+            "**team**",
+            "**week**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "name": "asp_by_poly_us_v1_airspace_polygon_query_post",
+  "description": "Retrieve selected types of airspace located within given area. Request body parameters are:\n* poly:  [GeoJSON Polygon](https://www.rfc-editor.org/rfc/rfc7946.html#appendix-A) defining the area. Max allowed area is 1000 km^2.\n* asptypes:  list of one or more airspace types you wish to retrieve. Allowed values are 'CAS', 'SUA', 'MAA', and 'MTR'.\n\nSuccessful requests return a list of GeoJSON FeatureCollections, one for each Airspace type indicated in the request. Within each feature collection, there will be a separate Feature for each Airspace instance found. All Features will include a property indicating the *airspace_type*. Additional properties for each *airspace_type* are as follows:\n* CAS (Controlled Airspace)\n    - *name*\n    - *cas_class*: B, C, D, or E2\n    - *floor*: integer value in ft MSL\n    - *ceiling*: integer value in ft MSL\n    - *lannc*: true/false indicating whether or not authorization for this airspace may be obtained via LAANC\n* SUA (Special Use Airspace)\n    - *name*\n    - *sua_type*: AA = Alert Area, MOA = Military Operations Area, NSA = National Security Area, PA = Prohibited Area, RA = Restricted Area, WA = Warning Area\n    - *floor*: lower limit of the airspace\n    - *floor_uom*: unit of measure used for the numeric floor value: FT (feet) or FL (flight level)\n    - *floor_ref*: reference level used for the numeric floor value: AGL, MSL, or STD (standard atmosphere, used for flight level values)\n    - *ceiling*: upper limit of the airspace\n    - *ceiling_uom*: unit of measure used for the numeric floor value: FT (feet) or FL (flight level)\n    - *ceiling_ref*: reference level used for the numeric ceiling value: AGL, MSL, or STD (standard atmosphere, used for flight level values)\n    - *schedule*: default activation days/times (other times by NOTAM)\n* MAA (Miscellaneous Activity Area)\n    - *name*\n    - *maa_type*: one of the following - ULTRALIGHT, PARACHUTE JUMP AREA, AEROBATIC PRACTICE, GLIDER, HANG GLIDER, SPACE LAUNCH ACTIVITY\n    - *use_times*: textual description of days/times when activity in the area should be expected\n* MTR (Military Training Route)\n    - *name*\n    - *use_times*: textual description of days/times when MTR is active/hot\n    - *terrain_following*: boolean value indicating whether terrain following activity occurs on the route\n    - *max_extent_nm*: maximum distance that aircraft can deviate from route centerline",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "x-api-key": {
+        "title": "X-Api-Key",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/AirspaceByPolygon"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AirspaceByPolygon": {
+        "description": "Geometry-defining arguments for polygon requests",
+        "example": {
+          "asptypes": [
+            "CAS"
+          ],
+          "poly": {
+            "coordinates": [
+              [
+                [
+                  -86.337,
+                  41.716
+                ],
+                [
+                  -86.323,
+                  41.718
+                ],
+                [
+                  -86.327,
+                  41.727
+                ],
+                [
+                  -86.337,
+                  41.722
+                ],
+                [
+                  -86.337,
+                  41.716
+                ]
+              ]
+            ],
+            "type": "Polygon"
+          }
+        },
+        "properties": {
+          "asptypes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Asptypes",
+            "type": "array"
+          },
+          "poly": {
+            "title": "Poly",
+            "type": "object"
+          }
+        },
+        "required": [
+          "poly",
+          "asptypes"
+        ],
+        "title": "AirspaceByPolygon",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://dflight-api.ljaero.com//us/v1/airspace/polygon-query"
+    },
+    "headers": {
+      "x-api-key": {
+        "$": "x-api-key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "AirspacePolyResponse"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**found**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "HTTPValidationError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

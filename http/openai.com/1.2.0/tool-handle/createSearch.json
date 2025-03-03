@@ -1,0 +1,113 @@
+{
+  "name": "createSearch",
+  "description": "The search endpoint computes similarity scores between provided query and documents. Documents can be passed directly to the API if there are no more than 200 of them.\n\nTo go beyond the 200 document limit, documents can be processed offline and then used for efficient retrieval at query time. When `file` is set, the search endpoint searches over all the documents in the given file and returns up to the `max_rerank` number of documents. These documents will be returned along with their search scores.\n\nThe similarity score is a positive score that usually ranges from 0 to 300 (but can sometimes go higher), where a score above 200 usually means the document is semantically similar to the query.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "engine_id": {
+        "example": "davinci",
+        "type": "string",
+        "description": "The ID of the engine to use for this request.  You can select one of `ada`, `babbage`, `curie`, or `davinci`."
+      },
+      "body": {
+        "$ref": "#/$defs/CreateSearchRequest"
+      }
+    },
+    "required": [
+      "engine_id",
+      "body"
+    ],
+    "$defs": {
+      "CreateSearchRequest": {
+        "properties": {
+          "documents": {
+            "description": "Up to 200 documents to search over, provided as a list of strings.\n\nThe maximum document length (in tokens) is 2034 minus the number of tokens in the query.\n\nYou should specify either `documents` or a `file`, but not both.\n",
+            "example": "['White House', 'hospital', 'school']",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "nullable": true,
+            "type": "array"
+          },
+          "file": {
+            "description": "The ID of an uploaded file that contains documents to search over.\n\nYou should specify either `documents` or a `file`, but not both.\n",
+            "nullable": true,
+            "type": "string"
+          },
+          "max_rerank": {
+            "default": 200,
+            "description": "The maximum number of documents to be re-ranked and returned by search.\n\nThis flag only takes effect when `file` is set.\n",
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "query": {
+            "description": "Query to search against the documents.",
+            "example": "the president",
+            "minLength": 1,
+            "type": "string"
+          },
+          "return_metadata": {
+            "default": false,
+            "description": "A special boolean flag for showing metadata. If set to `true`, each document entry in the returned JSON will contain a \"metadata\" field.\n\nThis flag only takes effect when `file` is set.\n",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/$defs/user"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "user": {
+        "description": "A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse. [Learn more](/docs/guides/safety-best-practices/end-user-ids).\n",
+        "example": "user-1234",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.openai.com/v1/engines/{engine_id}/search"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**model**",
+            "**object**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

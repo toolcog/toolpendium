@@ -1,0 +1,160 @@
+{
+  "name": "LinkApplication",
+  "description": "Link application to an account",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "provider": {
+        "enum": [
+          "messenger",
+          "viber_service_msg",
+          "whatsapp"
+        ],
+        "type": "string",
+        "description": "Provider of the account you want to assign an application to"
+      },
+      "external_id": {
+        "type": "string",
+        "description": "External id of the account you want to assign an application to. This is channel dependent. For Facebook it will be your Facebook Page ID, for Viber your Viber Service Message ID and for WhatsApp your WhatsApp number."
+      },
+      "body": {
+        "properties": {
+          "application": {
+            "description": "There is just one application allowed per an account. The application type must be type \"messages\". For more information please see [Application API Spec](https://developer.nexmo.com/api/application.v2)",
+            "example": "applicationId",
+            "type": "string"
+          }
+        },
+        "required": [
+          "application"
+        ],
+        "type": "object",
+        "description": "Request body can contain any of the following. Please note, the only one application can be linked to the account."
+      }
+    },
+    "required": [
+      "provider",
+      "external_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.nexmo.com/beta/chatapp-accounts/{provider}/{external_id}/applications"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**access_token**: The provider access token (only for `messenger`)",
+            "**api_key**: The external api key for this account",
+            "**applications**: The array of associated application ids",
+            "**external_id**: The external identifier for this account",
+            "**name**: The account name",
+            "**provider**: The provider (will be one of `messenger, viber_service_msg, whatsapp`)."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**title**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: The application does not exist or the application type is not \"messages\"",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: The account reached limit of maximum number of linked applications. (The only one application is allowed per an account)",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

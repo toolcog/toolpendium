@@ -1,0 +1,566 @@
+{
+  "name": "UpdateFacet",
+  "description": "<p>Does the following:</p> <ol> <li> <p>Adds new <code>Attributes</code>, <code>Rules</code>, or <code>ObjectTypes</code>.</p> </li> <li> <p>Updates existing <code>Attributes</code>, <code>Rules</code>, or <code>ObjectTypes</code>.</p> </li> <li> <p>Deletes existing <code>Attributes</code>, <code>Rules</code>, or <code>ObjectTypes</code>.</p> </li> </ol>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "x-amz-data-partition": {
+        "type": "string",
+        "description": "The Amazon Resource Name (ARN) that is associated with the <a>Facet</a>. For more information, see <a>arns</a>."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "Name": {
+            "description": "The name of the facet.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._-]*$",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "AttributeUpdates": {
+            "description": "List of attributes that need to be updated in a given schema <a>Facet</a>. Each attribute is followed by <code>AttributeAction</code>, which specifies the type of update operation to perform. ",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FacetAttributeUpdate"
+            }
+          },
+          "ObjectType": {
+            "description": "The object type that is associated with the facet. See <a>CreateFacetRequest$ObjectType</a> for more details.",
+            "type": "string",
+            "enum": [
+              "NODE",
+              "LEAF_NODE",
+              "POLICY",
+              "INDEX"
+            ]
+          }
+        }
+      }
+    },
+    "required": [
+      "x-amz-data-partition",
+      "body"
+    ],
+    "$defs": {
+      "FacetAttributeUpdate": {
+        "type": "object",
+        "properties": {
+          "Attribute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FacetAttribute"
+              },
+              {
+                "description": "The attribute to update."
+              }
+            ]
+          },
+          "Action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UpdateActionType"
+              },
+              {
+                "description": "The action to perform when updating the attribute."
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains information used to update an attribute."
+      },
+      "FacetAttribute": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the facet attribute."
+              }
+            ]
+          },
+          "AttributeDefinition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FacetAttributeDefinition"
+              },
+              {
+                "description": "A facet attribute consists of either a definition or a reference. This structure contains the attribute definition. See <a href=\"https://docs.aws.amazon.com/clouddirectory/latest/developerguide/schemas_attributereferences.html\">Attribute References</a> for more information."
+              }
+            ]
+          },
+          "AttributeReference": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FacetAttributeReference"
+              },
+              {
+                "description": "An attribute reference that is associated with the attribute. See <a href=\"https://docs.aws.amazon.com/clouddirectory/latest/developerguide/schemas_attributereferences.html\">Attribute References</a> for more information."
+              }
+            ]
+          },
+          "RequiredBehavior": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RequiredAttributeBehavior"
+              },
+              {
+                "description": "The required behavior of the <code>FacetAttribute</code>."
+              }
+            ]
+          }
+        },
+        "description": "An attribute that is associated with the <a>Facet</a>."
+      },
+      "AttributeName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9._:-]*$",
+        "minLength": 1,
+        "maxLength": 230
+      },
+      "FacetAttributeDefinition": {
+        "type": "object",
+        "required": [
+          "Type"
+        ],
+        "properties": {
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FacetAttributeType"
+              },
+              {
+                "description": "The type of the attribute."
+              }
+            ]
+          },
+          "DefaultValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TypedAttributeValue"
+              },
+              {
+                "description": "The default value of the attribute (if configured)."
+              }
+            ]
+          },
+          "IsImmutable": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Bool"
+              },
+              {
+                "description": "Whether the attribute is mutable or not."
+              }
+            ]
+          },
+          "Rules": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleMap"
+              },
+              {
+                "description": "Validation rules attached to the attribute definition."
+              }
+            ]
+          }
+        },
+        "description": "A facet attribute definition. See <a href=\"https://docs.aws.amazon.com/clouddirectory/latest/developerguide/schemas_attributereferences.html\">Attribute References</a> for more information."
+      },
+      "FacetAttributeType": {
+        "type": "string",
+        "enum": [
+          "STRING",
+          "BINARY",
+          "BOOLEAN",
+          "NUMBER",
+          "DATETIME",
+          "VARIANT"
+        ]
+      },
+      "TypedAttributeValue": {
+        "type": "object",
+        "properties": {
+          "StringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringAttributeValue"
+              },
+              {
+                "description": "A string data value."
+              }
+            ]
+          },
+          "BinaryValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BinaryAttributeValue"
+              },
+              {
+                "description": "A binary data value."
+              }
+            ]
+          },
+          "BooleanValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BooleanAttributeValue"
+              },
+              {
+                "description": "A Boolean data value."
+              }
+            ]
+          },
+          "NumberValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberAttributeValue"
+              },
+              {
+                "description": "A number data value."
+              }
+            ]
+          },
+          "DatetimeValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatetimeAttributeValue"
+              },
+              {
+                "description": "A date and time value."
+              }
+            ]
+          }
+        },
+        "description": "Represents the data for a typed attribute. You can set one, and only one, of the elements. Each attribute in an item is a name-value pair. Attributes have a single value."
+      },
+      "StringAttributeValue": {
+        "type": "string"
+      },
+      "BinaryAttributeValue": {
+        "type": "string"
+      },
+      "BooleanAttributeValue": {
+        "type": "boolean"
+      },
+      "NumberAttributeValue": {
+        "type": "string"
+      },
+      "DatetimeAttributeValue": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Bool": {
+        "type": "boolean"
+      },
+      "RuleMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Rule"
+        }
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleType"
+              },
+              {
+                "description": "The type of attribute validation rule."
+              }
+            ]
+          },
+          "Parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleParameterMap"
+              },
+              {
+                "description": "The minimum and maximum parameters that are associated with the rule."
+              }
+            ]
+          }
+        },
+        "description": "Contains an Amazon Resource Name (ARN) and parameters that are associated with the rule."
+      },
+      "RuleType": {
+        "type": "string",
+        "enum": [
+          "BINARY_LENGTH",
+          "NUMBER_COMPARISON",
+          "STRING_FROM_SET",
+          "STRING_LENGTH"
+        ]
+      },
+      "RuleParameterMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/RuleParameterValue"
+        }
+      },
+      "RuleParameterValue": {
+        "type": "string"
+      },
+      "FacetAttributeReference": {
+        "type": "object",
+        "required": [
+          "TargetFacetName",
+          "TargetAttributeName"
+        ],
+        "properties": {
+          "TargetFacetName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FacetName"
+              },
+              {
+                "description": "The target facet name that is associated with the facet reference. See <a href=\"https://docs.aws.amazon.com/clouddirectory/latest/developerguide/schemas_attributereferences.html\">Attribute References</a> for more information."
+              }
+            ]
+          },
+          "TargetAttributeName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The target attribute name that is associated with the facet reference. See <a href=\"https://docs.aws.amazon.com/clouddirectory/latest/developerguide/schemas_attributereferences.html\">Attribute References</a> for more information."
+              }
+            ]
+          }
+        },
+        "description": "The facet attribute reference that specifies the attribute definition that contains the attribute facet name and attribute name."
+      },
+      "FacetName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9._-]*$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "RequiredAttributeBehavior": {
+        "type": "string",
+        "enum": [
+          "REQUIRED_ALWAYS",
+          "NOT_REQUIRED"
+        ]
+      },
+      "UpdateActionType": {
+        "type": "string",
+        "enum": [
+          "CREATE_OR_UPDATE",
+          "DELETE"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://clouddirectory.us-east-1.amazonaws.com/amazonclouddirectory/2017-01-11/facet#x-amz-data-partition"
+    },
+    "headers": {
+      "x-amz-data-partition": {
+        "$": "x-amz-data-partition"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "489": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "490": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

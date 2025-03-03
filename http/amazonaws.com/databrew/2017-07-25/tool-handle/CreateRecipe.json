@@ -1,0 +1,304 @@
+{
+  "name": "CreateRecipe",
+  "description": "Creates a new DataBrew recipe.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Steps"
+        ],
+        "properties": {
+          "Description": {
+            "description": "A description for the recipe.",
+            "type": "string",
+            "maxLength": 1024
+          },
+          "Name": {
+            "description": "A unique name for the recipe. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "Steps": {
+            "description": "An array containing the steps to be performed by the recipe. Each recipe step consists of one recipe action and (optionally) an array of condition expressions.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RecipeStep"
+            }
+          },
+          "Tags": {
+            "description": "Metadata tags to apply to this recipe.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 200,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "RecipeStep": {
+        "type": "object",
+        "required": [
+          "Action"
+        ],
+        "properties": {
+          "Action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RecipeAction"
+              },
+              {
+                "description": "The particular action to be performed in the recipe step."
+              }
+            ]
+          },
+          "ConditionExpressions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConditionExpressionList"
+              },
+              {
+                "description": "<p>One or more conditions that must be met for the recipe step to succeed.</p> <note> <p>All of the conditions in the array must be met. In other words, all of the conditions must be combined using a logical AND operation.</p> </note>"
+              }
+            ]
+          }
+        },
+        "description": "Represents a single step from a DataBrew recipe to be performed."
+      },
+      "RecipeAction": {
+        "type": "object",
+        "required": [
+          "Operation"
+        ],
+        "properties": {
+          "Operation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Operation"
+              },
+              {
+                "description": "The name of a valid DataBrew transformation to be performed on the data."
+              }
+            ]
+          },
+          "Parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterMap"
+              },
+              {
+                "description": "Contextual parameters for the transformation."
+              }
+            ]
+          }
+        },
+        "description": "Represents a transformation and associated parameters that are used to apply a change to a DataBrew dataset. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/recipe-actions-reference.html\">Recipe actions reference</a>."
+      },
+      "Operation": {
+        "type": "string",
+        "pattern": "^[A-Z\\_]+$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "ParameterMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/ParameterValue"
+        }
+      },
+      "ParameterValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32768
+      },
+      "ConditionExpressionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ConditionExpression"
+        }
+      },
+      "ConditionExpression": {
+        "type": "object",
+        "required": [
+          "Condition",
+          "TargetColumn"
+        ],
+        "properties": {
+          "Condition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Condition"
+              },
+              {
+                "description": "A specific condition to apply to a recipe action. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/recipes.html#recipes.structure\">Recipe structure</a> in the <i>Glue DataBrew Developer Guide</i>."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConditionValue"
+              },
+              {
+                "description": "A value that the condition must evaluate to for the condition to succeed."
+              }
+            ]
+          },
+          "TargetColumn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetColumn"
+              },
+              {
+                "description": "A column to apply this condition to."
+              }
+            ]
+          }
+        },
+        "description": "<p>Represents an individual condition that evaluates to true or false.</p> <p>Conditions are used with recipe actions. The action is only performed for column values where the condition evaluates to true.</p> <p>If a recipe requires more than one condition, then the recipe must specify multiple <code>ConditionExpression</code> elements. Each condition is applied to the rows in a dataset first, before the recipe action is performed.</p>"
+      },
+      "Condition": {
+        "type": "string",
+        "pattern": "^[A-Z\\_]+$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "ConditionValue": {
+        "type": "string",
+        "maxLength": 1024
+      },
+      "TargetColumn": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://databrew.us-east-1.amazonaws.com/recipes"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Name**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "name": "repoGetPullRequestFiles",
+  "description": "Get changed files for a pull request",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "owner of the repo"
+      },
+      "repo": {
+        "type": "string",
+        "description": "name of the repo"
+      },
+      "index": {
+        "format": "int64",
+        "type": "integer",
+        "description": "index of the pull request to get"
+      },
+      "skip-to": {
+        "type": "string",
+        "description": "skip to given file"
+      },
+      "whitespace": {
+        "enum": [
+          "ignore-all",
+          "ignore-change",
+          "ignore-eol",
+          "show-all"
+        ],
+        "type": "string",
+        "description": "whitespace behavior"
+      },
+      "page": {
+        "type": "integer",
+        "description": "page number of results to return (1-based)"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "page size of results"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "index"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/repos/{owner}/{repo}/pulls/{index}/files{?skip-to,whitespace,page,limit}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "ChangedFile store information about files affected by the pull request",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additions**",
+            "**changes**",
+            "**contents_url**",
+            "**deletions**",
+            "**filename**",
+            "**html_url**",
+            "**previous_filename**",
+            "**raw_url**",
+            "**status**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "name": "meetingPollCreate",
+  "description": "Polls allow the meeting host to survey attendees. Use this API to create a [poll](https://support.zoom.us/hc/en-us/articles/213756303-Polling-for-Meetings) for a meeting.<br><br>\n\n**Scopes**: `meeting:write:admin` `meeting:write`<br>\n **[Rate Limit Label](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limits):** `Light`<br>\n**Prerequisites**:<br>\n* Host user type must be **Pro** or higher plan.\n* Polling feature must be enabled in the host's account.\n* Meeting must be a scheduled meeting. Instant meetings do not have polling features enabled.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "meetingId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The meeting ID in **long** format. The data type of this field is \"long\"(represented as int64 in JSON).\n\nWhile storing it in your database, store it as a **long** data type and **not as an integer**, as the Meeting IDs can be longer than 10 digits."
+      },
+      "body": {
+        "allOf": [
+          {
+            "description": "Poll",
+            "properties": {
+              "questions": {
+                "description": "Array of Polls",
+                "items": {
+                  "properties": {
+                    "answers": {
+                      "description": "Answers to the questions",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "name": {
+                      "description": "Question to be asked to the attendees.",
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "Poll Question & Answer type:<br>`single` - Single choice<br>`mutliple` - Multiple choice",
+                      "enum": [
+                        "single",
+                        "multiple"
+                      ],
+                      "type": "string",
+                      "x-enum-descriptions": [
+                        "single answer",
+                        "multiple answer"
+                      ]
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "title": {
+                "description": "Title for the poll.",
+                "type": "string"
+              }
+            },
+            "title": "Poll",
+            "type": "object"
+          }
+        ],
+        "description": "Meeting poll object"
+      }
+    },
+    "required": [
+      "meetingId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.zoom.us/v2/meetings/{meetingId}/polls"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Poll"
+        },
+        "Poll",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: Meeting Poll ID",
+            "**status**: Status of the Meeting Poll:<br>`notstart` - Poll not started<br>`started` - Poll started<br>`ended` - Poll ended<br>`sharing` - Sharing poll results",
+            "**questions**: Array of Polls",
+            "**title**: Title for the poll."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

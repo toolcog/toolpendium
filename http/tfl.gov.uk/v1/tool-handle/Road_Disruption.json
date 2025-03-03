@@ -1,0 +1,170 @@
+{
+  "name": "Road_Disruption",
+  "description": "Get active disruptions, filtered by road ids",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Comma-separated list of road identifiers e.g. \"A406, A2\" use all for all to ignore id filter (a full list of supported road identifiers can be found at the /Road/ endpoint)"
+      },
+      "stripContent": {
+        "type": "boolean",
+        "description": "Optional, defaults to false. When true, removes every property/node except for id, point, severity, severityDescription, startDate, endDate, corridor details, location, comments and streets"
+      },
+      "severities": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "an optional list of Severity names to filter on (a valid list of severities can be obtained from the /Road/Meta/severities endpoint)"
+      },
+      "categories": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "an optional list of category names to filter on (a valid list of categories can be obtained from the /Road/Meta/categories endpoint)"
+      },
+      "closures": {
+        "type": "boolean",
+        "description": "Optional, defaults to true. When true, always includes disruptions that have road closures, regardless of the severity filter. When false, the severity filter works as normal."
+      }
+    },
+    "required": [
+      "ids"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/Road/{ids}/Disruption{?stripContent,severities,categories,closures}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**category**: Describes the nature of disruption e.g. Traffic Incidents, Works",
+            "**comments**: Full text of comments describing the disruption, including details of any road closures and diversions, where appropriate.",
+            "**corridorIds**: The Ids of affected corridors, if any.",
+            "**currentUpdate**: Text of the most recent update from the LSTCC on the state of the\r",
+            "**currentUpdateDateTime**: The time when the last CurrentUpdate description was recorded, \r",
+            "**endDateTime**: The date and time on which the disruption ended. For planned disruptions, this date will have a valid value. For unplanned \r",
+            [
+              "**geography**",
+              {
+                "$ul": [
+                  [
+                    "**geography**",
+                    {
+                      "$ul": [
+                        "**coordinateSystemId**",
+                        "**wellKnownBinary**",
+                        "**wellKnownText**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**geometry**",
+              {
+                "$ul": [
+                  [
+                    "**geography**",
+                    {
+                      "$ul": [
+                        "**coordinateSystemId**",
+                        "**wellKnownBinary**",
+                        "**wellKnownText**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**hasClosures**: True if any of the affected Streets have a \"Full Closure\" status, false otherwise. A RoadDisruption that has HasClosures is considered a \r",
+            "**id**: Unique identifier for the road disruption",
+            "**isProvisional**: True if the disruption is planned on a future date that is open to change",
+            "**lastModifiedTime**: The date and time on which the disruption was last modified in the system. This information can reliably be used by a developer to quickly\r",
+            "**levelOfInterest**: This describes the level of potential impact on traffic operations of the disruption. \r",
+            "**linkText**: The text of any associated link",
+            "**linkUrl**: The url of any associated link",
+            "**location**: Main road name / number (borough) or preset area name where the disruption is located. This might be useful for a map popup where space is limited.",
+            "**ordinal**: An ordinal of the disruption based on severity, level of interest and corridor.",
+            "**point**: Latitude and longitude (WGS84) of the centroid of the disruption, stored in a geoJSON-formatted string.",
+            "**publishEndDate**",
+            "**publishStartDate**: TDM Additional properties",
+            "**recurringSchedules**",
+            "**roadDisruptionImpactAreas**",
+            "**roadDisruptionLines**",
+            [
+              "**roadProject**",
+              {
+                "$ul": [
+                  "**boroughsBenefited**",
+                  "**constructionEndDate**",
+                  "**constructionStartDate**",
+                  "**consultationEndDate**",
+                  "**consultationPageUrl**",
+                  "**consultationStartDate**",
+                  "**contactEmail**",
+                  "**contactName**",
+                  "**cycleSuperhighwayId**",
+                  "**externalPageUrl**",
+                  "**phase**",
+                  "**projectDescription**",
+                  "**projectId**",
+                  "**projectName**",
+                  "**projectPageUrl**",
+                  "**projectSummaryPageUrl**",
+                  "**schemeName**"
+                ]
+              }
+            ],
+            "**severity**: A description of the severity of the disruption.",
+            "**startDateTime**: The date and time which the disruption started. For a planned disruption (i.e. planned road works) this date will be in the future.\r",
+            "**status**: This describes the status of the disruption.  \r",
+            "**streets**: A collection of zero or more streets affected by the disruption.",
+            "**subCategory**: Describes the sub-category of disruption e.g. Collapsed Manhole, Abnormal Load",
+            "**timeFrame**",
+            "**url**: URL to retrieve this road disruption"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

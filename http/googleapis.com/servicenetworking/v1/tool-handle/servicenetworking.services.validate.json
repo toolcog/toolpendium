@@ -1,0 +1,226 @@
+{
+  "name": "servicenetworking_services_validate",
+  "description": "Service producers use this method to validate if the consumer provided network, project and requested range are valid. This allows them to use a fail-fast mechanism for consumer requests, and not have to wait for AddSubnetwork operation completion to determine if user request is invalid.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "parent": {
+        "type": "string",
+        "description": "Required. This is in a form services/{service} where {service} is the name of the private access management service. For example 'service-peering.example.com'."
+      },
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/ValidateConsumerConfigRequest"
+      }
+    },
+    "required": [
+      "parent"
+    ],
+    "$defs": {
+      "ValidateConsumerConfigRequest": {
+        "properties": {
+          "checkServiceNetworkingUsePermission": {
+            "description": "Optional. The IAM permission check determines whether the consumer project has 'servicenetworking.services.use' permission or not.",
+            "type": "boolean"
+          },
+          "consumerNetwork": {
+            "description": "Required. The network that the consumer is using to connect with services. Must be in the form of projects/{project}/global/networks/{network} {project} is a project number, as in '12345' {network} is network name.",
+            "type": "string"
+          },
+          "consumerProject": {
+            "$ref": "#/$defs/ConsumerProject"
+          },
+          "rangeReservation": {
+            "$ref": "#/$defs/RangeReservation"
+          },
+          "validateNetwork": {
+            "description": "The validations will be performed in the order listed in the ValidationError enum. The first failure will return. If a validation is not requested, then the next one will be performed. SERVICE_NETWORKING_NOT_ENABLED and NETWORK_NOT_PEERED checks are performed for all requests where validation is requested. NETWORK_NOT_FOUND and NETWORK_DISCONNECTED checks are done for requests that have validate_network set to true.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ConsumerProject": {
+        "description": "Represents a consumer project.",
+        "properties": {
+          "projectNum": {
+            "description": "Required. Project number of the consumer that is launching the service instance. It can own the network that is peered with Google or, be a service project in an XPN where the host project has the network.",
+            "format": "int64",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RangeReservation": {
+        "description": "Represents a range reservation.",
+        "properties": {
+          "ipPrefixLength": {
+            "description": "Required. The size of the desired subnet. Use usual CIDR range notation. For example, '29' to find unused x.x.x.x/29 CIDR range. The goal is to determine if one of the allocated ranges has enough free space for a subnet of the requested size. GCE disallows subnets with prefix_length > 29",
+            "format": "int32",
+            "type": "integer"
+          },
+          "requestedRanges": {
+            "description": "Optional. The name of one or more allocated IP address ranges associated with this private service access connection. If no range names are provided all ranges associated with this connection will be considered. If a CIDR range with the specified IP prefix length is not available within these ranges the validation fails.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "secondaryRangeIpPrefixLengths": {
+            "description": "Optional. The size of the desired secondary ranges for the subnet. Use usual CIDR range notation. For example, '29' to find unused x.x.x.x/29 CIDR range. The goal is to determine that the allocated ranges have enough free space for all the requested secondary ranges. GCE disallows subnets with prefix_length > 29",
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "subnetworkCandidates": {
+            "description": "Optional. List of subnetwork candidates to validate. The required input fields are `name`, `network`, and `region`. Subnetworks from this list which exist will be returned in the response with the `ip_cidr_range`, `secondary_ip_cider_ranges`, and `outside_allocation` fields set.",
+            "items": {
+              "$ref": "#/$defs/Subnetwork"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Subnetwork": {
+        "description": "Represents a subnet that was created or discovered by a private access management service.",
+        "properties": {
+          "ipCidrRange": {
+            "description": "Subnetwork CIDR range in `10.x.x.x/y` format.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Subnetwork name. See https://cloud.google.com/compute/docs/vpc/",
+            "type": "string"
+          },
+          "network": {
+            "description": "In the Shared VPC host project, the VPC network that's peered with the consumer network. For example: `projects/1234321/global/networks/host-network`",
+            "type": "string"
+          },
+          "outsideAllocation": {
+            "description": "This is a discovered subnet that is not within the current consumer allocated ranges.",
+            "type": "boolean"
+          },
+          "region": {
+            "description": "GCP region where the subnetwork is located.",
+            "type": "string"
+          },
+          "secondaryIpRanges": {
+            "description": "List of secondary IP ranges in this subnetwork.",
+            "items": {
+              "$ref": "#/$defs/SecondaryIpRange"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SecondaryIpRange": {
+        "properties": {
+          "ipCidrRange": {
+            "description": "Secondary IP CIDR range in `x.x.x.x/y` format.",
+            "type": "string"
+          },
+          "rangeName": {
+            "description": "Name of the secondary IP range.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://servicenetworking.googleapis.com//v1/{parent}:validate{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**existingSubnetworkCandidates**: List of subnetwork candidates from the request which exist with the `ip_cidr_range`, `secondary_ip_cider_ranges`, and `outside_allocation` fields set.",
+            "**isValid**: Indicates whether all the requested validations passed.",
+            "**validationError**: The first validation which failed."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

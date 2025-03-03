@@ -1,0 +1,389 @@
+{
+  "name": "UpdatePipeline",
+  "description": "<p> Use the <code>UpdatePipeline</code> operation to update settings for a pipeline.</p> <important> <p>When you change pipeline settings, your changes take effect immediately. Jobs that you have already submitted and that Elastic Transcoder has not started to process are affected in addition to jobs that you submit after you change settings. </p> </important>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Id": {
+        "type": "string",
+        "pattern": "^\\d{13}-\\w{6}$",
+        "description": "The ID of the pipeline that you want to update."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "description": "<p>The name of the pipeline. We recommend that the name be unique within the AWS account, but uniqueness is not enforced.</p> <p>Constraints: Maximum 40 characters</p>",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "InputBucket": {
+            "description": "The Amazon S3 bucket in which you saved the media files that you want to transcode and the graphics that you want to use as watermarks.",
+            "type": "string",
+            "pattern": "^(\\w|\\.|-){1,255}$"
+          },
+          "Role": {
+            "description": "The IAM Amazon Resource Name (ARN) for the role that you want Elastic Transcoder to use to transcode jobs for this pipeline.",
+            "type": "string",
+            "pattern": "^arn:aws:iam::\\w{12}:role/.+$"
+          },
+          "AwsKmsKeyArn": {
+            "description": "<p>The AWS Key Management Service (AWS KMS) key that you want to use with this pipeline.</p> <p>If you use either <code>s3</code> or <code>s3-aws-kms</code> as your <code>Encryption:Mode</code>, you don't need to provide a key with your job because a default key, known as an AWS-KMS key, is created for you automatically. You need to provide an AWS-KMS key only if you want to use a non-default AWS-KMS key, or if you are using an <code>Encryption:Mode</code> of <code>aes-cbc-pkcs7</code>, <code>aes-ctr</code>, or <code>aes-gcm</code>.</p>",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "Notifications": {
+            "description": "<p>The Amazon Simple Notification Service (Amazon SNS) topic or topics to notify in order to report job status.</p> <important> <p>To receive notifications, you must also subscribe to the new topic in the Amazon SNS console.</p> </important>",
+            "type": "object",
+            "properties": {
+              "Progressing": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnsTopic"
+                  },
+                  {
+                    "description": "The Amazon Simple Notification Service (Amazon SNS) topic that you want to notify when Elastic Transcoder has started to process the job."
+                  }
+                ]
+              },
+              "Completed": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnsTopic"
+                  },
+                  {
+                    "description": "The Amazon SNS topic that you want to notify when Elastic Transcoder has finished processing the job."
+                  }
+                ]
+              },
+              "Warning": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnsTopic"
+                  },
+                  {
+                    "description": "The Amazon SNS topic that you want to notify when Elastic Transcoder encounters a warning condition."
+                  }
+                ]
+              },
+              "Error": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SnsTopic"
+                  },
+                  {
+                    "description": "The Amazon SNS topic that you want to notify when Elastic Transcoder encounters an error condition."
+                  }
+                ]
+              }
+            }
+          },
+          "ContentConfig": {
+            "description": "The <code>PipelineOutputConfig</code> structure.",
+            "type": "object",
+            "properties": {
+              "Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/BucketName"
+                  },
+                  {
+                    "description": "<p> The Amazon S3 bucket in which you want Elastic Transcoder to save the transcoded files. Specify this value when all of the following are true:</p> <ul> <li> <p>You want to save transcoded files, thumbnails (if any), and playlists (if any) together in one bucket.</p> </li> <li> <p>You do not want to specify the users or groups who have access to the transcoded files, thumbnails, and playlists.</p> </li> <li> <p>You do not want to specify the permissions that Elastic Transcoder grants to the files.</p> </li> <li> <p>You want to associate the transcoded files and thumbnails with the Amazon S3 Standard storage class.</p> </li> </ul> <p>If you want to save transcoded files and playlists in one bucket and thumbnails in another bucket, specify which users can access the transcoded files or the permissions the users have, or change the Amazon S3 storage class, omit OutputBucket and specify values for <code>ContentConfig</code> and <code>ThumbnailConfig</code> instead. </p>"
+                  }
+                ]
+              },
+              "StorageClass": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/StorageClass"
+                  },
+                  {
+                    "description": " The Amazon S3 storage class, <code>Standard</code> or <code>ReducedRedundancy</code>, that you want Elastic Transcoder to assign to the video files and playlists that it stores in your Amazon S3 bucket. "
+                  }
+                ]
+              },
+              "Permissions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Permissions"
+                  },
+                  {
+                    "description": "<p>Optional. The <code>Permissions</code> object specifies which users and/or predefined Amazon S3 groups you want to have access to transcoded files and playlists, and the type of access you want them to have. You can grant permissions to a maximum of 30 users and/or predefined Amazon S3 groups.</p> <p>If you include <code>Permissions</code>, Elastic Transcoder grants only the permissions that you specify. It does not grant full permissions to the owner of the role specified by <code>Role</code>. If you want that user to have full control, you must explicitly grant full control to the user.</p> <p> If you omit <code>Permissions</code>, Elastic Transcoder grants full control over the transcoded files and playlists to the owner of the role specified by <code>Role</code>, and grants no other permissions to any other user or group.</p>"
+                  }
+                ]
+              }
+            }
+          },
+          "ThumbnailConfig": {
+            "description": "The <code>PipelineOutputConfig</code> structure.",
+            "type": "object",
+            "properties": {
+              "Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/BucketName"
+                  },
+                  {
+                    "description": "<p> The Amazon S3 bucket in which you want Elastic Transcoder to save the transcoded files. Specify this value when all of the following are true:</p> <ul> <li> <p>You want to save transcoded files, thumbnails (if any), and playlists (if any) together in one bucket.</p> </li> <li> <p>You do not want to specify the users or groups who have access to the transcoded files, thumbnails, and playlists.</p> </li> <li> <p>You do not want to specify the permissions that Elastic Transcoder grants to the files.</p> </li> <li> <p>You want to associate the transcoded files and thumbnails with the Amazon S3 Standard storage class.</p> </li> </ul> <p>If you want to save transcoded files and playlists in one bucket and thumbnails in another bucket, specify which users can access the transcoded files or the permissions the users have, or change the Amazon S3 storage class, omit OutputBucket and specify values for <code>ContentConfig</code> and <code>ThumbnailConfig</code> instead. </p>"
+                  }
+                ]
+              },
+              "StorageClass": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/StorageClass"
+                  },
+                  {
+                    "description": " The Amazon S3 storage class, <code>Standard</code> or <code>ReducedRedundancy</code>, that you want Elastic Transcoder to assign to the video files and playlists that it stores in your Amazon S3 bucket. "
+                  }
+                ]
+              },
+              "Permissions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Permissions"
+                  },
+                  {
+                    "description": "<p>Optional. The <code>Permissions</code> object specifies which users and/or predefined Amazon S3 groups you want to have access to transcoded files and playlists, and the type of access you want them to have. You can grant permissions to a maximum of 30 users and/or predefined Amazon S3 groups.</p> <p>If you include <code>Permissions</code>, Elastic Transcoder grants only the permissions that you specify. It does not grant full permissions to the owner of the role specified by <code>Role</code>. If you want that user to have full control, you must explicitly grant full control to the user.</p> <p> If you omit <code>Permissions</code>, Elastic Transcoder grants full control over the transcoded files and playlists to the owner of the role specified by <code>Role</code>, and grants no other permissions to any other user or group.</p>"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "Id",
+      "body"
+    ],
+    "$defs": {
+      "SnsTopic": {
+        "type": "string",
+        "pattern": "(^$)|(^arn:aws:sns:.*:\\w{12}:.+$)"
+      },
+      "BucketName": {
+        "type": "string",
+        "pattern": "^(\\w|\\.|-){1,255}$"
+      },
+      "StorageClass": {
+        "type": "string",
+        "pattern": "(^ReducedRedundancy$)|(^Standard$)"
+      },
+      "Permissions": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Permission"
+        },
+        "maxItems": 30
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "GranteeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GranteeType"
+              },
+              {
+                "description": "<p>The type of value that appears in the Grantee object:</p> <ul> <li> <p> <code>Canonical</code>: Either the canonical user ID for an AWS account or an origin access identity for an Amazon CloudFront distribution.</p> <important> <p>A canonical user ID is not the same as an AWS account number.</p> </important> </li> <li> <p> <code>Email</code>: The registered email address of an AWS account.</p> </li> <li> <p> <code>Group</code>: One of the following predefined Amazon S3 groups: <code>AllUsers</code>, <code>AuthenticatedUsers</code>, or <code>LogDelivery</code>.</p> </li> </ul>"
+              }
+            ]
+          },
+          "Grantee": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Grantee"
+              },
+              {
+                "description": "The AWS user or group that you want to have access to transcoded files and playlists. To identify the user or group, you can specify the canonical user ID for an AWS account, an origin access identity for a CloudFront distribution, the registered email address of an AWS account, or a predefined Amazon S3 group."
+              }
+            ]
+          },
+          "Access": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AccessControls"
+              },
+              {
+                "description": "<p> The permission that you want to give to the AWS user that is listed in Grantee. Valid values include: </p> <ul> <li> <p> <code>READ</code>: The grantee can read the thumbnails and metadata for thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.</p> </li> <li> <p> <code>READ_ACP</code>: The grantee can read the object ACL for thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.</p> </li> <li> <p> <code>WRITE_ACP</code>: The grantee can write the ACL for the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.</p> </li> <li> <p> <code>FULL_CONTROL</code>: The grantee has READ, READ_ACP, and WRITE_ACP permissions for the thumbnails that Elastic Transcoder adds to the Amazon S3 bucket.</p> </li> </ul>"
+              }
+            ]
+          }
+        },
+        "description": "The <code>Permission</code> structure."
+      },
+      "GranteeType": {
+        "type": "string",
+        "pattern": "(^Canonical$)|(^Email$)|(^Group$)"
+      },
+      "Grantee": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "AccessControls": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AccessControl"
+        },
+        "maxItems": 30
+      },
+      "AccessControl": {
+        "type": "string",
+        "pattern": "(^FullControl$)|(^Read$)|(^ReadAcp$)|(^WriteAcp$)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://elastictranscoder.us-east-1.amazonaws.com/2012-09-25/pipelines/{Id}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "When you update a pipeline, Elastic Transcoder returns the values that you specified in the request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Pipeline**",
+            "**Warnings**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

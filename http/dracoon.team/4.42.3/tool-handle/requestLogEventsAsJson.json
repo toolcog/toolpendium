@@ -1,0 +1,288 @@
+{
+  "name": "requestLogEventsAsJson",
+  "description": "<h3 style='padding: 5px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px; display: table-cell;'>&#128640; Since v4.3.0</h3>\n\n### Description: \nRetrieve eventlog (audit log) events.\n\n### Precondition:\nRole <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128100; Log Auditor</span> required.\n\n### Postcondition:\nList of audit log events is returned.\n\n### Further Information:\nOutput is limited to **500** entries.  \nFor more results please use filter criteria and paging (`offset` + `limit`). \n\nAllowed `Accept-Header`:\n* `Accept: application/json`\n* `Accept: text/csv`  \n\n---\n\nSort string syntax: `FIELD_NAME:ORDER`  \n`ORDER` can be `asc` or `desc`.  \nMultiple sort fields are supported.  \n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`time:desc`  \nSort by `time` descending (default sort option).\n\n</details>\n\n### Sorting options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Description |\n| :--- | :--- |\n| `time` | Event timestamp |\n\n</details>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "sort": {
+        "type": "string",
+        "description": "Sort string"
+      },
+      "offset": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range offset"
+      },
+      "limit": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range limit.\n\nMaximum 500.\n\n For more results please use paging (`offset` + `limit`)."
+      },
+      "date_start": {
+        "type": "string",
+        "description": "Filter events from given date \n\ne.g. `2015-12-31T23:59:00`"
+      },
+      "date_end": {
+        "type": "string",
+        "description": "Filter events until given date \n\ne.g. `2015-12-31T23:59:00`"
+      },
+      "type": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Operation ID \n\ncf. `GET /eventlog/operations`"
+      },
+      "user_id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "User ID"
+      },
+      "status": {
+        "enum": [
+          "0",
+          "2"
+        ],
+        "type": "string",
+        "description": "Operation status:\n\n* `0` - Success\n\n* `2` - Error"
+      },
+      "user_client": {
+        "type": "string",
+        "description": "User client"
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v4/eventlog/events{?sort,offset,limit,date_start,date_end,type,user_id,status,user_client}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "List of log events",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**items**: List of log events",
+            [
+              "**range**: Range information",
+              {
+                "$ul": [
+                  "**limit**: Range limit. Maximum 500.",
+                  "**offset**: Range offset",
+                  "**total**: Total items available"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

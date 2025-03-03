@@ -1,0 +1,164 @@
+{
+  "name": "CreatePayments",
+  "description": "create an instance of payments. This will start a new payments session",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "AccountSid": {
+        "maxLength": 34,
+        "minLength": 34,
+        "pattern": "^AC[0-9a-fA-F]{32}$",
+        "type": "string",
+        "description": "The SID of the [Account](https://www.twilio.com/docs/iam/api/account) that will create the resource."
+      },
+      "CallSid": {
+        "maxLength": 34,
+        "minLength": 34,
+        "pattern": "^CA[0-9a-fA-F]{32}$",
+        "type": "string",
+        "description": "The SID of the call that will create the resource. Call leg associated with this sid is expected to provide payment information thru DTMF."
+      },
+      "body": {
+        "properties": {
+          "BankAccountType": {
+            "$ref": "#/$defs/payments_enum_bank_account_type"
+          },
+          "ChargeAmount": {
+            "description": "A positive decimal value less than 1,000,000 to charge against the credit card or bank account. Default currency can be overwritten with `currency` field. Leave blank or set to 0 to tokenize.",
+            "type": "number"
+          },
+          "Currency": {
+            "description": "The currency of the `charge_amount`, formatted as [ISO 4127](http://www.iso.org/iso/home/standards/currency_codes.htm) format. The default value is `USD` and all values allowed from the Pay Connector are accepted.",
+            "type": "string"
+          },
+          "Description": {
+            "description": "The description can be used to provide more details regarding the transaction. This information is submitted along with the payment details to the Payment Connector which are then posted on the transactions.",
+            "type": "string"
+          },
+          "IdempotencyKey": {
+            "description": "A unique token that will be used to ensure that multiple API calls with the same information do not result in multiple transactions. This should be a unique string value per API call and can be a randomly generated.",
+            "type": "string"
+          },
+          "Input": {
+            "description": "A list of inputs that should be accepted. Currently only `dtmf` is supported. All digits captured during a pay session are redacted from the logs.",
+            "type": "string"
+          },
+          "MinPostalCodeLength": {
+            "description": "A positive integer that is used to validate the length of the `PostalCode` inputted by the user. User must enter this many digits.",
+            "type": "integer"
+          },
+          "Parameter": {
+            "description": "A single-level JSON object used to pass custom parameters to payment processors. (Required for ACH payments). The information that has to be included here depends on the <Pay> Connector. [Read more](https://www.twilio.com/console/voice/pay-connectors)."
+          },
+          "PaymentConnector": {
+            "description": "This is the unique name corresponding to the Pay Connector installed in the Twilio Add-ons. Learn more about [<Pay> Connectors](https://www.twilio.com/console/voice/pay-connectors). The default value is `Default`.",
+            "type": "string"
+          },
+          "PaymentMethod": {
+            "$ref": "#/$defs/payments_enum_payment_method"
+          },
+          "PostalCode": {
+            "description": "Indicates whether the credit card postal code (zip code) is a required piece of payment information that must be provided by the caller. The default is `true`.",
+            "type": "boolean"
+          },
+          "SecurityCode": {
+            "description": "Indicates whether the credit card security code is a required piece of payment information that must be provided by the caller. The default is `true`.",
+            "type": "boolean"
+          },
+          "StatusCallback": {
+            "description": "Provide an absolute or relative URL to receive status updates regarding your Pay session. Read more about the [expected StatusCallback values](https://www.twilio.com/docs/voice/api/payment-resource#statuscallback)",
+            "format": "uri",
+            "type": "string"
+          },
+          "Timeout": {
+            "description": "The number of seconds that <Pay> should wait for the caller to press a digit between each subsequent digit, after the first one, before moving on to validate the digits captured. The default is `5`, maximum is `600`.",
+            "type": "integer"
+          },
+          "TokenType": {
+            "$ref": "#/$defs/payments_enum_token_type"
+          },
+          "ValidCardTypes": {
+            "description": "Credit card types separated by space that Pay should accept. The default value is `visa mastercard amex`",
+            "type": "string"
+          }
+        },
+        "required": [
+          "IdempotencyKey",
+          "StatusCallback"
+        ],
+        "title": "CreatePaymentsRequest",
+        "type": "object"
+      }
+    },
+    "required": [
+      "AccountSid",
+      "CallSid"
+    ],
+    "$defs": {
+      "payments_enum_bank_account_type": {
+        "enum": [
+          "consumer-checking",
+          "consumer-savings",
+          "commercial-checking"
+        ],
+        "type": "string"
+      },
+      "payments_enum_payment_method": {
+        "enum": [
+          "credit-card",
+          "ach-debit"
+        ],
+        "type": "string"
+      },
+      "payments_enum_token_type": {
+        "enum": [
+          "one-time",
+          "reusable"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Calls/{CallSid}/Payments.json"
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_sid**: The SID of the [Account](https://www.twilio.com/docs/iam/api/account) that created the Payments resource.",
+            "**call_sid**: The SID of the [Call](https://www.twilio.com/docs/voice/api/call-resource) the Payments resource is associated with. This will refer to the call sid that is producing the payment card (credit/ACH) information thru DTMF.",
+            "**date_created**: The date and time in GMT that the resource was created specified in [RFC 2822](https://www.ietf.org/rfc/rfc2822.txt) format.",
+            "**date_updated**: The date and time in GMT that the resource was last updated specified in [RFC 2822](https://www.ietf.org/rfc/rfc2822.txt) format.",
+            "**sid**: The SID of the Payments resource.",
+            "**uri**: The URI of the resource, relative to `https://api.twilio.com`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

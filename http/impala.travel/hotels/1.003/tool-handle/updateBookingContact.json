@@ -1,0 +1,340 @@
+{
+  "name": "updateBookingContact",
+  "description": "Updates a confirmed booking with the booking contact details you provide in the request body.\n\nIn addition, we require you to supply a `updateBookingVersionAtTimestamp` field with the `updatedAt` timestamp of the booking. You can find this value by looking up the booking via the [Retrieve a booking](https://docs.impala.travel/docs/booking-api/spec/openapi.seller.yaml/paths/~1bookings~1%7BbookingId%7D/get) endpoint. This is to avoid race conditions where another update might have happened since the last time you have checked for the current details of this booking.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "bookingId": {
+        "type": "string",
+        "description": "The unique identifier of the booking you would like to update."
+      },
+      "body": {
+        "$ref": "#/$defs/updateBookingContactRequest"
+      }
+    },
+    "required": [
+      "bookingId"
+    ],
+    "$defs": {
+      "updateBookingContactRequest": {
+        "description": "Request body for update contact booking",
+        "properties": {
+          "bookingContact": {
+            "$ref": "#/$defs/personInfo"
+          },
+          "updateBookingVersionAtTimestamp": {
+            "$ref": "#/$defs/updateBookingVersionAtTimestamp"
+          }
+        },
+        "required": [
+          "bookingContact",
+          "updateBookingVersionAtTimestamp"
+        ],
+        "title": "UpdateBookingContactRequest",
+        "type": "object",
+        "x-examples": {
+          "Example": {
+            "value": {
+              "bookingContact": {
+                "email": "jocelin.carreon.sample@example.com",
+                "firstName": "Jocelín",
+                "lastName": "Carreón Sample"
+              },
+              "updateBookingVersionAtTimestamp": "2021-06-20T11:01:30.745Z"
+            }
+          }
+        }
+      },
+      "personInfo": {
+        "description": "Information on a person and their contact details.",
+        "properties": {
+          "email": {
+            "description": "Email address.",
+            "example": "jocelin.carreon.crespo@example.com",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "First name.",
+            "example": "Jocelín",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "Family name or surname.",
+            "example": "Carreón Sample",
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "email"
+        ],
+        "title": "Person",
+        "type": "object"
+      },
+      "updateBookingVersionAtTimestamp": {
+        "description": "The timestamp of when the booking was last updated",
+        "example": "2020-12-20T11:01:30.745Z",
+        "format": "date-time",
+        "type": "string",
+        "writeOnly": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://sandbox.impala.travel/v1/bookings/{bookingId}/booking-contact"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Booking"
+        },
+        "Details of an existing booking.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**bookedRooms**: List of rooms booked",
+            "**bookingId**: Unique identifier for this booking within the Impala platform.",
+            [
+              "**cancellation**: Returned in case the booking (or parts of it) has been cancelled. Contains information on the cancellation.",
+              {
+                "$ul": [
+                  [
+                    "**fee**: Describes the costs associated with a cancellation and how it is calculated.",
+                    {
+                      "$ul": [
+                        "**count**: The value that is used in calculation of the cost. This could be 50 in case of a 50% fee being charged for a type \"PERCENTAGE\" or 2 in case of the initial two nights of the stay being charged in full as a fee if the type is \"NIGHTS\".",
+                        [
+                          "**price**: An amount of money in the specified currency (used in the context of prices, fees, refunds etc.)",
+                          {
+                            "$ul": [
+                              "**amount**: Amount in the smallest unit of the currency. E.g. 234.56 € is expressed as 23456 (in Euro cents to avoid rounding errors in calculations).",
+                              [
+                                "**currency**: Details of the currency.",
+                                {
+                                  "$ul": [
+                                    "**code**: Three-character currency code in ISO 4217 notation."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**type**: The way in which the cancellation fee is calculated. This can be \"NONE\" in case a full refund is paid out, \"NON_REFUNDABLE\" if no refund is paid out and the full amount is due, \"PERCENTAGE\" if a percentage of the total price for the stay is charged as cancellation fee, \"NIGHTS\" if a defined number of initial nights of the stay are charged in full as cancellation fee or \"FLAT\" in case a flat cancellation fee is charged."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**contact**: Information on a person and their contact details.",
+              {
+                "$ul": [
+                  "**email**: Email address.",
+                  "**firstName**: First name.",
+                  "**lastName**: Family name or surname.",
+                  "**contactId**: Unique identifier of this guest within the Impala platform."
+                ]
+              }
+            ],
+            "**createdAt**: Date and time (in UTC and ISO 8601 format) when the booking was created.",
+            "**end**: The departure date of the booking.",
+            [
+              "**hotel**: Essential information on a hotel returned as part of other resources, linking to the full resource within its `href` field.",
+              {
+                "$ul": [
+                  [
+                    "**address**: Physical address",
+                    {
+                      "$ul": [
+                        "**city**",
+                        "**country**: Three-character country code in ISO alpha-3 format.",
+                        "**countryName**: English name of the country.",
+                        "**line1**: First line of the address.",
+                        "**line2**: Second line of the address.",
+                        "**postalCode**",
+                        "**region**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**checkIn**: A time range. Open-ended time ranges are indicated by omitting either `start` or `end` in the object.",
+                    {
+                      "$ul": [
+                        "**from**: Time in ISO 8601 time format.",
+                        "**to**: Time in ISO 8601 time format."
+                      ]
+                    }
+                  ],
+                  [
+                    "**checkOut**: A time range. Open-ended time ranges are indicated by omitting either `start` or `end` in the object.",
+                    {
+                      "$ul": [
+                        "**from**: Time in ISO 8601 time format.",
+                        "**to**: Time in ISO 8601 time format."
+                      ]
+                    }
+                  ],
+                  "**emails**",
+                  "**hotelId**: Unique identifier for this hotel within the Impala platform.",
+                  "**href**: URI that allows access to the full hotel information.",
+                  "**images**: Photos of the hotel, sorted in the recommended display order (e.g. for photo galleries) starting with the recommended hero image.",
+                  [
+                    "**location**: Precise location on a map (using WGS 84 longitude and latitude notation)",
+                    {
+                      "$ul": [
+                        "**latitude**: WGS 84 latitude.",
+                        "**longitude**: WGS 84 longitude."
+                      ]
+                    }
+                  ],
+                  "**name**: Name of the hotel.",
+                  "**phoneNumbers**: The hotel's phone number(s)",
+                  "**starRating**: The star rating (or star-equivalent rating)",
+                  "**timezone**: The timezone the hotel is in - e.g AST"
+                ]
+              }
+            ],
+            "**hotelConfirmationCode**: The hotel's confirmation identifier for this booking.",
+            [
+              "**notes**: The notes that were transmitted to the hotel as part of this booking.",
+              {
+                "$ul": [
+                  "**fromGuest**: Notes your guest has entered as part of the booking. These allow them to communicate anything to the hotel (e.g. that they're travelling for a special occassion or have a particular room assignment preference).",
+                  "**fromSeller**: Notes you as a seller want to communicated to the hotel. These might be around operational processes to watch out for. Impala communicates these as coming from you."
+                ]
+              }
+            ],
+            "**paymentBearerToken**: If status is PAYMENT_REQUIRED, then this should be used as the Authorisation header for the POST to the /payments endpoint.",
+            "**paymentClientSecret**: If status is PAYMENT_REQUIRED, then this should be used as the client secret when rendering Impala Payment Elements in the UI.",
+            "**start**: The arrival date of the booking.",
+            "**status**: Status of this booking within the Impala platform. When you make a booking, it'll first appear as `PENDING` until we receive the hotel's confirmation details. At this point your booking will move to `ACCEPTED`.",
+            "**updatedAt**: Date and time (in UTC and ISO 8601 format) when the booking was last updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**.",
+            "**validations**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code for you to use programatically, for error logging and debugging.",
+            "**message**: Error message intended to aid developers in debugging issues. We strongly advise against displaying this information publicly to your guests as it **might contain sensitive implementation details**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "name": "ComputeNode_Get",
+  "description": "Gets information about the specified compute node.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "poolId": {
+        "type": "string",
+        "description": "The id of the pool that contains the compute node."
+      },
+      "nodeId": {
+        "type": "string",
+        "description": "The id of the compute node that you want to get information about."
+      },
+      "$select": {
+        "type": "string",
+        "description": "An OData $select clause."
+      },
+      "timeout": {
+        "default": 30,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum time that the server can spend processing the request, in seconds. The default is 30 seconds."
+      },
+      "client-request-id": {
+        "type": "string",
+        "description": "The caller-generated request identity, in the form of a GUID with no decoration such as curly braces, e.g. 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0."
+      },
+      "return-client-request-id": {
+        "type": "boolean",
+        "description": "Whether the server should return the client-request-id identifier in the response."
+      },
+      "ocp-date": {
+        "format": "date-time-rfc1123",
+        "type": "string",
+        "description": "The time the request was issued. If not specified, this header will be automatically populated with the current system clock time."
+      },
+      "api-version": {
+        "type": "string",
+        "description": "Client API Version."
+      }
+    },
+    "required": [
+      "poolId",
+      "nodeId",
+      "api-version"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://batch.core.windows.net/pools/{poolId}/nodes/{nodeId}{?$select,timeout,api-version}"
+    },
+    "headers": {
+      "client-request-id": {
+        "$": "client-request-id"
+      },
+      "return-client-request-id": {
+        "$": "return-client-request-id"
+      },
+      "ocp-date": {
+        "$": "ocp-date"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A compute node in the Batch service.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**affinityId**: An identifier which can be passed in the Add Task API to request that the task be scheduled close to this compute node.",
+            "**allocationTime**: The time at which this compute node was allocated to the pool.",
+            "**certificateReferences**: The list of certificates installed on the compute node.",
+            "**errors**: The list of errors that are currently being encountered by the compute node.",
+            "**id**: The id of the compute node.",
+            "**ipAddress**: The IP address that other compute nodes can use to communicate with this compute node.",
+            "**lastBootTime**: The time at which the compute node was started.",
+            "**recentTasks**: The list of tasks that are currently running on the compute node.",
+            "**runningTasksCount**: The total number of currently running job tasks on the compute node. This includes Job Preparation, Job Release, and Job Manager tasks, but not the pool start task.",
+            "**schedulingState**: Whether the compute node should be available for task scheduling.",
+            [
+              "**startTask**: A task which is run when a compute node joins a pool in the Azure Batch service, or when the compute node is rebooted or reimaged.",
+              {
+                "$ul": [
+                  "**commandLine**: The command line of the start task.",
+                  "**environmentSettings**: A list of environment variable settings for the start task.",
+                  "**maxTaskRetryCount**: The maximum number of times the task may be retried.",
+                  "**resourceFiles**: A list of files that the Batch service will download to the compute node before running the command line.",
+                  "**runElevated**: Whether to run the start task in elevated mode. The default value is false.",
+                  "**waitForSuccess**: Whether the Batch service should wait for the start task to complete successfully (that is, to exit with exit code 0) before scheduling any tasks on the compute node."
+                ]
+              }
+            ],
+            [
+              "**startTaskInfo**: Information about a start task running on a compute node.",
+              {
+                "$ul": [
+                  "**endTime**: The time at which the start task stopped running.",
+                  "**exitCode**: The exit code of the start task.",
+                  "**lastRetryTime**: The most recent time at which a retry of the task started running.",
+                  "**retryCount**: The number of times the task has been retried by the Batch service.",
+                  [
+                    "**schedulingError**: Information about an error when scheduling a task.",
+                    {
+                      "$ul": [
+                        "**category**: The category of the task scheduling error.",
+                        "**code**: An identifier for the task scheduling error. Codes are invariant and are intended to be consumed programmatically.",
+                        "**details**: The list of additional error details related to the scheduling error.",
+                        "**message**: A message describing the task scheduling error, intended to be suitable for display in a user interface."
+                      ]
+                    }
+                  ],
+                  "**startTime**: The time at which the start task started running.",
+                  "**state**: The state of the start task on the compute node."
+                ]
+              }
+            ],
+            "**state**: The current state of the compute node.",
+            "**stateTransitionTime**: The time at which the compute node entered its current state.",
+            "**totalTasksRun**: The total number of job tasks completed on the compute node. This includes Job Preparation, Job Release and Job Manager tasks, but not the pool start task.",
+            "**totalTasksSucceeded**: The total number of job tasks which completed successfully (with exitCode 0) on the compute node. This includes Job Preparation, Job Release, and Job Manager tasks, but not the pool start task.",
+            "**url**: The URL of the compute node.",
+            "**vmSize**: The size of the virtual machine hosting the compute node."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An error response received from the Azure Batch service.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An identifier for the error. Codes are invariant and are intended to be consumed programmatically.",
+            [
+              "**message**: An error message received in an Azure Batch error response.",
+              {
+                "$ul": [
+                  "**lang**: The language code of the error message",
+                  "**value**: The text of the message."
+                ]
+              }
+            ],
+            "**values**: A collection of key-value pairs containing additional details about the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

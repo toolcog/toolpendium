@@ -1,0 +1,174 @@
+{
+  "name": "requestAccessToken",
+  "description": "This is the means by which clients obtain access tokens to use the service. You can see how to construct an Ably TokenRequest in the [Ably TokenRequest spec](https://www.ably.io/documentation/rest-api/token-request-spec) documentation, although we recommend you use an Ably SDK rather to create a TokenRequest, as the construction of a TokenRequest is complex. The resulting token response object contains the token properties as defined in Ably TokenRequest spec. Authentication is not required if using a Signed TokenRequest.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "keyName": {
+        "type": "string",
+        "description": "The [key name](https://www.ably.io/documentation/rest-api/token-request-spec#api-key-format) comprises of the app ID and key ID of an API key."
+      },
+      "X-Ably-Version": {
+        "type": "string",
+        "description": "The version of the API you wish to use."
+      },
+      "format": {
+        "enum": [
+          "json",
+          "jsonp",
+          "msgpack",
+          "html"
+        ],
+        "type": "string",
+        "description": "The response format you would like"
+      },
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/TokenRequest"
+          },
+          {
+            "$ref": "#/$defs/SignedTokenRequest"
+          }
+        ]
+      }
+    },
+    "required": [
+      "keyName"
+    ],
+    "$defs": {
+      "TokenRequest": {
+        "properties": {
+          "capability": {
+            "description": "The [capabilities](https://www.ably.io/documentation/core-features/authentication#capabilities-explained) (i.e. a set of channel names/namespaces and, for each, a set of operations) which should be a subset of the set of capabilities associated with the key specified in keyName.",
+            "example": {
+              "channel1": [
+                "publish",
+                "subscribe"
+              ]
+            },
+            "type": "object"
+          },
+          "clientId": {
+            "description": "The [client ID](https://www.ably.io/documentation/core-features/authentication#identified-clients) to be assosciated with the token. Can be set to * to allow for any client ID to be used.",
+            "type": "string"
+          },
+          "keyName": {
+            "description": "Name of the key used for the TokenRequest. The keyName comprises of the app ID and key ID on an API Key.",
+            "example": "xVLyHw.LMJZxw",
+            "type": "string"
+          },
+          "nonce": {
+            "description": "An unquoted, un-escaped random string of at least 16 characters. Used to ensure the Ably TokenRequest cannot be reused.",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Time of creation of the Ably TokenRequest.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "keyName",
+          "capability",
+          "timestamp",
+          "nonce"
+        ],
+        "type": "object"
+      },
+      "SignedTokenRequest": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/TokenRequest"
+          },
+          {
+            "properties": {
+              "mac": {
+                "description": "A signature, generated as an HMAC of each of the above components, using the key secret value.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "mac"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rest.ably.io/keys/{keyName}/requestToken{?format}"
+    },
+    "headers": {
+      "X-Ably-Version": {
+        "$": "X-Ably-Version"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "2XX": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**capability**: Regular expression representation of the capabilities of the token.",
+            "**expires**: Timestamp of token expiration.",
+            "**issued**: Timestamp of token creation.",
+            "**keyName**: Name of the key used to create the token",
+            "**token**: The Ably Token."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Returned error from failed REST.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code.",
+            "**href**: Link to help with error.",
+            "**message**: Message explaining the error's cause.",
+            "**serverId**: Server ID with which error was encountered.",
+            "**statusCode**: Status error code."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

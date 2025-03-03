@@ -1,0 +1,310 @@
+{
+  "name": "BatchCreateTableRows",
+  "description": "<p> The BatchCreateTableRows API allows you to create one or more rows at the end of a table in a workbook. The API allows you to specify the values to set in some or all of the columns in the new rows. </p> <p> If a column is not explicitly set in a specific row, then the column level formula specified in the table will be applied to the new row. If there is no column level formula but the last row of the table has a formula, then that formula will be copied down to the new row. If there is no column level formula and no formula in the last row of the table, then that column will be left blank for the new rows. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workbookId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the workbook where the new rows are being added.</p> <p> If a workbook with the specified ID could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "tableId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the table where the new rows are being added.</p> <p> If a table with the specified ID could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "rowsToCreate"
+        ],
+        "properties": {
+          "rowsToCreate": {
+            "description": "<p> The list of rows to create at the end of the table. Each item in this list needs to have a batch item id to uniquely identify the element in the request and the cells to create for that row. You need to specify at least one item in this list. </p> <p> Note that if one of the column ids in any of the rows in the request does not exist in the table, then the request fails and no updates are made to the table. </p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CreateRowData"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "clientRequestToken": {
+            "description": "<p> The request token for performing the batch create operation. Request tokens help to identify duplicate requests. If a call times out or fails due to a transient error like a failed network connection, you can retry the call with the same request token. The service ensures that if the first call using that request token is successfully performed, the second call will not perform the operation again. </p> <p> Note that request tokens are valid only for a few minutes. You cannot use request tokens to dedupe requests spanning hours or days. </p>",
+            "type": "string",
+            "pattern": "^(?!\\s*$).+",
+            "minLength": 32,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "workbookId",
+      "tableId",
+      "body"
+    ],
+    "$defs": {
+      "CreateRowData": {
+        "type": "object",
+        "required": [
+          "batchItemId",
+          "cellsToCreate"
+        ],
+        "properties": {
+          "batchItemId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BatchItemId"
+              },
+              {
+                "description": " An external identifier that represents the single row that is being created as part of the BatchCreateTableRows request. This can be any string that you can use to identify the row in the request. The BatchCreateTableRows API puts the batch item id in the results to allow you to link data in the request to data in the results. "
+              }
+            ]
+          },
+          "cellsToCreate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RowDataInput"
+              },
+              {
+                "description": " A map representing the cells to create in the new row. The key is the column id of the cell and the value is the CellInput object that represents the data to set in that cell. "
+              }
+            ]
+          }
+        },
+        "description": " Data needed to create a single row in a table as part of the BatchCreateTableRows request. "
+      },
+      "BatchItemId": {
+        "type": "string",
+        "pattern": "^(?!\\s*$).+",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "RowDataInput": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 100,
+        "additionalProperties": {
+          "$ref": "#/$defs/CellInput"
+        }
+      },
+      "CellInput": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Fact"
+              },
+              {
+                "description": " Fact represents the data that is entered into a cell. This data can be free text or a formula. Formulas need to start with the equals (=) sign. "
+              }
+            ]
+          },
+          "facts": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FactList"
+              },
+              {
+                "description": " A list representing the values that are entered into a ROWSET cell. Facts list can have either only values or rowIDs, and rowIDs should from the same table. "
+              }
+            ]
+          }
+        },
+        "description": "<p> CellInput object contains the data needed to create or update cells in a table. </p> <note> <p> CellInput object has only a facts field or a fact field, but not both. A 400 bad request will be thrown if both fact and facts field are present. </p> </note>"
+      },
+      "Fact": {
+        "type": "string",
+        "pattern": "[\\s\\S]*",
+        "minLength": 0,
+        "maxLength": 8192,
+        "format": "password"
+      },
+      "FactList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Fact"
+        },
+        "minItems": 0,
+        "maxItems": 220
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://honeycode.us-east-1.amazonaws.com/workbooks/{workbookId}/tables/{tableId}/rows/batchcreate"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**workbookCursor**",
+            "**createdRows**",
+            "**failedBatchItems**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

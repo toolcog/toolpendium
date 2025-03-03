@@ -1,0 +1,161 @@
+{
+  "name": "PostInitiatePayrollRunByPayrollAdministrationId",
+  "description": "__Activity name :__ PostInitiatePayrollRunByPayrollAdministrationId This is a controller endpoint to perform an action.\n\nIn the older Loket GUI this specific action is referred to as respectively 'Verlonen' / 'Verlonen periode zonder personeel' / 'Verlonen voorgaande jaren' . If this action is performed succesfully then the payroll run will be created with status 0 and will be cued for further processing. The further processing depends on the input parameters and the payroll configuration in the given situation. After the initiated run has been picked up and processed by the background process, then the status of the run will be changed accordingly.\n\nThis action may be performed for all payroll periods that are *available for the payroll administration* AND that meet one of the following requirements;\n\nIf typeOfInitiation = 'regular' (Verlonen);\n* The very last payroll period for which an approved payroll run (status = 9) is available. Within the active year of payrolling. (This would functionally be a so-called 'correction' run)\n* The very first payroll period in time that does not yet have an approved payroll run (i.e. last payroll period with approved run + 1). Within the active year of payrolling, if available\n* The provided year may be a maximum of 7 years in the past (based on current datetime)\n\nIf typeOfInitiation = 'withoutEmploymentData' (Verlonen zonder personeel);\n* The very first payroll period in time that does not yet have an approved payroll run (i.e. last payroll period with approved run + 1). Within the active year of payrolling\n* Please note that if this type is selected then the following fields must ALL be set to null; sendEmailToEmployee, textPaySlip, textTariffPaySlip, textPayment, emailAdressPayrollRunStarted, emailFinishedPayrollRun\n\nIf typeOfInitiation = 'previousYear' (Verlonen voorgaande jaren);\n* The very last payroll period for which an approved payroll run (status = 9) is available. Within the given year of payrolling. (This would functionally be a so-called 'correction' run)\n* The very first payroll period in time that does not yet have an approved payroll run (i.e. last payroll period with approved run + 1). Within the given year of payrolling, if available\n* The provided year may be a maximum of 7 years in the past (based on current datetime)\n\n\nIn general;\n* It is not possible to initiate a new payroll run if there is currently a payroll run with status 0  (to be processed) or 1 (awaiting approval) within the payroll administation.\n\n\n__Metadata :__  No metadata endpoint available for this controller endpoint.\n\n__Defaults :__ Defaults endpoint is available for this controller endpoint by adding /defaults. Also, an endpoint is available to retrieve initiation values for a specific period.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "payrollAdministrationId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The unique identifier of an administration"
+      },
+      "Authorization": {
+        "example": "Bearer <TOKEN>",
+        "pattern": "^Bearer\\s[\\w-]+$",
+        "type": "string",
+        "description": "A valid Bearer token for authorizing the request."
+      },
+      "Accept": {
+        "example": "application/json;version=2018-01-01",
+        "type": "string",
+        "description": "The accept header is used to influence what type of output is returned and in most cases the version of the output"
+      }
+    },
+    "required": [
+      "payrollAdministrationId",
+      "Authorization",
+      "Accept"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.loket.nl/v2/providers/employers/payrolladministrations/{payrollAdministrationId}/payrollruns/initiate"
+    },
+    "headers": {
+      "Authorization": {
+        "$": "Authorization"
+      },
+      "Accept": {
+        "$": "Accept"
+      }
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**content**",
+              {
+                "$ul": [
+                  "**id**: The unique identifier (GUID/UUID) of the payroll run."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The version of the resource",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**version**",
+              {
+                "$ul": [
+                  "**obsoleteDate**: The date (can be null) on which the `resourceVersion` is no longer supported/available",
+                  "**resourceVersion**: The resource version of the object in the response"
+                ]
+              }
+            ],
+            "**messages**",
+            "**content**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

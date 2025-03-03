@@ -1,0 +1,122 @@
+{
+  "name": "getAvailableNumbers",
+  "description": "Retrieve inbound numbers that are available for the specified country.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "country": {
+        "$ref": "#/components/schemas/country",
+        "description": "The two character country code to filter on (in ISO 3166-1 alpha-2 format)"
+      },
+      "type": {
+        "enum": [
+          "landline",
+          "mobile-lvn",
+          "landline-toll-free"
+        ],
+        "type": "string",
+        "description": "Set this parameter to filter the type of number, such as mobile or landline"
+      },
+      "pattern": {
+        "type": "string",
+        "description": "The number pattern you want to search for. Use in conjunction with `search_pattern`."
+      },
+      "search_pattern": {
+        "default": 0,
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "description": "The strategy you want to use for matching:\n\n\n* `0` - Search for numbers that start with `pattern` (Note: all numbers are in E.164 format, so the starting pattern includes the country code, such as 1 for USA)\n* `1` - Search for numbers that contain `pattern`\n* `2` - Search for numbers that end with `pattern`\n"
+      },
+      "features": {
+        "enum": [
+          "SMS",
+          "VOICE",
+          "SMS,VOICE",
+          "MMS",
+          "SMS,MMS",
+          "VOICE,MMS",
+          "SMS,MMS,VOICE"
+        ],
+        "type": "string",
+        "description": "Available features are `SMS`, `VOICE` and `MMS`. To look for numbers that support multiple features, use a comma-separated value: `SMS,MMS,VOICE`."
+      },
+      "size": {
+        "default": 10,
+        "maximum": 100,
+        "type": "integer",
+        "description": "Page size"
+      },
+      "index": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page index"
+      }
+    },
+    "required": [
+      "country"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://rest.nexmo.com/number/search{?country,type,pattern,search_pattern,features,size,index}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**count**: The total amount of numbers available in the pool.",
+            "**numbers**: A paginated array of available numbers and their details."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error-code**: The status code of the response. `200` indicates a successful request.",
+            "**error-code-label**: The status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

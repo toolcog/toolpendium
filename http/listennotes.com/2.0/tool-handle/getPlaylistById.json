@@ -1,0 +1,104 @@
+{
+  "name": "getPlaylistById",
+  "description": "A playlist can be an episode list (i.e., all items are episodes) or a podcast list (i.e., all items are podcasts),\nwhich is essentially the same as those created via listennotes.com/listen/.\nThis endpoint fetches a list of items (i.e., episodes or podcasts) in the playlist.\nYou can use the **last_pub_date_ms** parameter to do pagination and fetch more items.\nA playlist can be **public** (discoverable on ListenNotes.com),\n**unlisted** (accessible to anyone who knows the playlist id),\nor **private** (accessible to its owner).\nYou can fetch all playlists created by you, and **public** / **unlisted** playlists created by others.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-ListenAPI-Key": {
+        "type": "string",
+        "description": "Get API Key on listennotes.com/api"
+      },
+      "id": {
+        "type": "string",
+        "description": "Playlist id (always 11 characters, e.g., m1pe7z60bsw).\nYou can get the podcast id from the url of a playlist, e.g.,\nm1pe7z60bsw is the playlist id of listennotes.com/listen/podcasts-about-podcasting-m1pe7z60bsw\n"
+      },
+      "type": {
+        "default": "episode_list",
+        "enum": [
+          "episode_list",
+          "podcast_list"
+        ],
+        "examples": [
+          "episode_list"
+        ],
+        "type": "string",
+        "description": "The type of this playlist, which should be either **episode_list** or **podcast_list**.\n"
+      },
+      "last_timestamp_ms": {
+        "default": 0,
+        "examples": [
+          0
+        ],
+        "type": "integer",
+        "description": "For playlist items pagination.\nIt's the value of **last_timestamp_ms** from the response of last request.\nIf it's 0 or not specified, just return the latest or the oldest 20 items,\ndepending on the value of the **sort** parameter.\n"
+      },
+      "sort": {
+        "default": "recent_added_first",
+        "enum": [
+          "recent_added_first",
+          "oldest_added_first",
+          "recent_published_first",
+          "oldest_published_first"
+        ],
+        "examples": [
+          "recent_added_first"
+        ],
+        "type": "string",
+        "description": "How do you want to sort playlist items?\n"
+      }
+    },
+    "required": [
+      "X-ListenAPI-Key",
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://listen-api.listennotes.com/api/v2/playlists/{id}{?type,last_timestamp_ms,sort}"
+    },
+    "headers": {
+      "X-ListenAPI-Key": {
+        "$": "X-ListenAPI-Key"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**: Playlist description.",
+            "**id**: A 11-character playlist id, which can be used to further fetch detailed playlist metadata via `GET /playlists/{id}`.",
+            "**image**: High resolution image url of the playlist.",
+            "**items**: A list of playlist items.",
+            "**last_timestamp_ms**: Passed to the **last_timestamp_ms** parameter of `GET /playlists/{id}` to paginate through items of that playlist.",
+            "**listennotes_url**: The url of this playlist on ListenNotes.com.",
+            "**name**: Playlist name.",
+            "**thumbnail**: Low resolution image url of the playlist.",
+            "**total**: Total number of items in this playlist.",
+            "**total_audio_length_sec**: Total audio length of all episodes in this playlist, in seconds. It will have a valid value only when type is **episode_list**. In other words, it will be 0 if type is **podcast_list**.",
+            "**type**: The type of this playlist, which should be either **episode_list** or **podcast_list**.",
+            "**visibility**: Visibility of this playlist."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

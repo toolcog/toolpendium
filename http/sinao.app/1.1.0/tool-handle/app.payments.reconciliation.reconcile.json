@@ -1,0 +1,192 @@
+{
+  "name": "app_payments_reconciliation_reconcile",
+  "description": "Create a new payments and categorizations by one-to-many",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appId": {
+        "type": "integer",
+        "description": "The identifier of the Sinao application you are using. Each application corresponds to a company and an accounting. A user can have several Sinao applications. To retrieve the identifiers of its applications, you must call the endpoint `/apps`."
+      },
+      "replace_all": {
+        "default": false,
+        "type": "boolean",
+        "description": "Remove all previous reconciliations"
+      },
+      "type": {
+        "enum": [
+          "transaction",
+          "sales",
+          "purchase"
+        ],
+        "type": "string",
+        "description": "Object to pay with these payments and categorizations"
+      },
+      "id": {
+        "type": "integer",
+        "description": "Transaction, sales invoice or purchase invoice id to reconcile"
+      },
+      "movements": {
+        "description": "List of objects to reconcile with the parent object. The parent object and the children must be different, a transaction cannot be reconciled with another transaction. In this type of case, for example where a transaction was immediately refunded without going through an invoice, the transactions must be categorized in the same account",
+        "properties": {
+          "amount": {
+            "description": "Payment amount in cents",
+            "type": "integer"
+          },
+          "id": {
+            "description": "Object id -- create object when null (usefull for cashdesk or waiting entries)",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "account",
+              "purchase",
+              "sales",
+              "bank_entry",
+              "cashdesk_entry",
+              "waiting_entry"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "paid_at": {
+        "format": "date-time",
+        "type": "string",
+        "description": "Payment date for cashdesk or waiting entries"
+      },
+      "rule": {
+        "properties": {
+          "conditions": {
+            "description": "[ [property, comparator, value], ... ]",
+            "items": {
+              "description": "[property, comparator, value]",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "on_event": {
+            "description": "Event like model.event, event in [saved, created, updated, deleted]",
+            "example": "transaction.created",
+            "type": "string"
+          },
+          "parameter": {
+            "example": "account",
+            "type": "string"
+          },
+          "value": {
+            "example": "64",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Create an auto-reconciliation rule"
+      }
+    },
+    "required": [
+      "appId",
+      "type",
+      "id",
+      "movements"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.sinao.app/v1/apps/{appId}/reconcile{?replace_all,type,id,movements,paid_at,rule}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**amount**",
+            "**date**",
+            "**document**",
+            "**document_type**",
+            "**id**",
+            "**source**",
+            [
+              "**transaction**",
+              {
+                "$ul": [
+                  "**amount**",
+                  [
+                    "**author**",
+                    {
+                      "$ul": [
+                        "**civility**: Civility is the lastname prefix",
+                        "**establishments**",
+                        "**firstname**",
+                        "**id**",
+                        "**image**",
+                        "**lastname**",
+                        "**metadata**",
+                        "**created_at**",
+                        "**email**: Email used as login",
+                        "**last_access_at**",
+                        "**password**",
+                        "**password_is_undefined**",
+                        "**updated_at**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**cashflow_source**",
+                    {
+                      "$ul": [
+                        "**account_type**",
+                        "**balance_amount**",
+                        "**created_at**",
+                        "**disabled**",
+                        "**id**",
+                        "**identifiant**",
+                        "**name**",
+                        "**parent_cashflow_source**",
+                        "**status**",
+                        "**type**",
+                        "**updated_at**"
+                      ]
+                    }
+                  ],
+                  "**contact**",
+                  "**created_at**",
+                  "**deleted_at**",
+                  "**details**",
+                  "**id**",
+                  "**label**",
+                  "**lettered_at**",
+                  "**metadata**",
+                  "**method**",
+                  "**received_at**",
+                  "**updated_at**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

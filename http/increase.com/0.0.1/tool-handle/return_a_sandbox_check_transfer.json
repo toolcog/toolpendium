@@ -1,0 +1,185 @@
+{
+  "name": "return_a_sandbox_check_transfer",
+  "description": "Simulates a [Check Transfer](#check-transfers) being returned via USPS to Increase. This transfer must first have a `status` of `mailed`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "check_transfer_id": {
+        "description": "The identifier of the Check Transfer you wish to mark returned.",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/return_a_sandbox_check_transfer_parameters"
+      }
+    },
+    "required": [
+      "check_transfer_id",
+      "body"
+    ],
+    "$defs": {
+      "return_a_sandbox_check_transfer_parameters": {
+        "example": {
+          "reason": "mail_delivery_failure"
+        },
+        "properties": {
+          "reason": {
+            "description": "The reason why the Check Transfer was returned to Increase.",
+            "enum": [
+              "mail_delivery_failure",
+              "refused_by_recipient"
+            ],
+            "type": "string",
+            "x-enum-descriptions": [
+              "Mail delivery failed and the check was returned to sender.",
+              "The check arrived and the recipient refused to deposit it."
+            ]
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.increase.com/simulations/check_transfers/{check_transfer_id}/return"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Check Transfer"
+        },
+        "Check Transfers move funds from your Increase account by mailing a physical check.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_id**: The identifier of the Account from which funds will be transferred.",
+            "**address_city**: The city of the check's destination.",
+            "**address_line1**: The street address of the check's destination.",
+            "**address_line2**: The second line of the address of the check's destination.",
+            "**address_state**: The state of the check's destination.",
+            "**address_zip**: The postal code of the check's destination.",
+            "**amount**: The transfer amount in USD cents.",
+            [
+              "**approval**: If your account requires approvals for transfers and the transfer was approved, this will contain details of the approval.",
+              {
+                "$ul": [
+                  "**approved_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was approved.",
+                  "**approved_by**: If the Transfer was approved by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            [
+              "**cancellation**: If your account requires approvals for transfers and the transfer was not approved, this will contain details of the cancellation.",
+              {
+                "$ul": [
+                  "**canceled_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the Transfer was canceled.",
+                  "**canceled_by**: If the Transfer was canceled by a user in the dashboard, the email address of that user."
+                ]
+              }
+            ],
+            "**created_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the transfer was created.",
+            "**currency**: The [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) code for the check's currency.",
+            [
+              "**deposit**: After a check transfer is deposited, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**back_image_file_id**: The ID for the File containing the image of the rear of the check.",
+                  "**deposited_at**: When the check was deposited.",
+                  "**front_image_file_id**: The ID for the File containing the image of the front of the check.",
+                  "**type**: A constant representing the object's type. For this resource it will always be `check_transfer_deposit`."
+                ]
+              }
+            ],
+            "**id**: The Check transfer's identifier.",
+            "**mailed_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the check was mailed.",
+            "**message**: The descriptor that will be printed on the memo field on the check.",
+            "**note**: The descriptor that will be printed on the letter included with the check.",
+            "**recipient_name**: The name that will be printed on the check.",
+            [
+              "**return_address**: The return address to be printed on the check.",
+              {
+                "$ul": [
+                  "**city**: The city of the address.",
+                  "**line1**: The first line of the address.",
+                  "**line2**: The second line of the address.",
+                  "**name**: The name of the address.",
+                  "**state**: The US state of the address.",
+                  "**zip**: The postal code of the address."
+                ]
+              }
+            ],
+            [
+              "**return_details**: After a check transfer is returned, this will contain supplemental details. A check transfer is returned when the receiver mails a never deposited check back to the bank printed on the check.",
+              {
+                "$ul": [
+                  "**file_id**: If available, a document with additional information about the return.",
+                  "**reason**: The reason why the check was returned.",
+                  "**returned_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the check was returned.",
+                  "**transaction_id**: The identifier of the Transaction that was created to credit you for the returned check.",
+                  "**transfer_id**: The identifier of the returned Check Transfer."
+                ]
+              }
+            ],
+            "**status**: The lifecycle status of the transfer.",
+            [
+              "**stop_payment_request**: After a stop-payment is requested on the check, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**requested_at**: The time the stop-payment was requested.",
+                  "**transaction_id**: The transaction ID of the corresponding credit transaction.",
+                  "**transfer_id**: The ID of the check transfer that was stopped.",
+                  "**type**: A constant representing the object's type. For this resource it will always be `check_transfer_stop_payment_request`."
+                ]
+              }
+            ],
+            [
+              "**submission**: After the transfer is submitted, this will contain supplemental details.",
+              {
+                "$ul": [
+                  "**check_number**: The identitying number of the check.",
+                  "**submitted_at**: When this check transfer was submitted to our check printer."
+                ]
+              }
+            ],
+            "**submitted_at**: The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) date and time at which the check was submitted.",
+            "**transaction_id**: The ID for the transaction caused by the transfer.",
+            "**type**: A constant representing the object's type. For this resource it will always be `check_transfer`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "name": "enterprise-admin_list-pre-receive-hooks-for-repo",
+  "description": "List all pre-receive hooks that are enabled or testing for this repository as well as any disabled hooks that are allowed to be enabled at the repository level. Pre-receive hooks that are disabled at a higher level and are not configurable will not be listed.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string"
+      },
+      "repo": {
+        "type": "string"
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "Results per page (max 100)"
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      },
+      "direction": {
+        "default": "desc",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "One of `asc` (ascending) or `desc` (descending)."
+      },
+      "sort": {
+        "default": "created",
+        "enum": [
+          "created",
+          "updated",
+          "name"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://HOSTNAME/api/v3/repos/{owner}/{repo}/pre-receive-hooks{?per_page,page,direction,sort}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**configuration_url**",
+            "**enforcement**",
+            "**id**",
+            "**name**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

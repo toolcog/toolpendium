@@ -1,0 +1,217 @@
+{
+  "name": "addNotification",
+  "description": "Create a new notification for a [resource](#section/Identifying-Resources) in your account. Notifications can be sent via email or webhook;\n\n- To enable email, pass an array of email addresses to the `recipients` parameter of this call. \n- To enable webhooks, setup the webhook callback URL in your account settings via [PATCH /account](#operation/updateAccount). \n\n**Notes:**\n  - Authenticated user should have [notifications permission](/docs/account/04-users/00-introduction#managing-user-roles-and-permissions)\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "type": "string",
+        "description": "API Key required to make API call. "
+      },
+      "ev-access-token": {
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "body": {
+        "properties": {
+          "action": {
+            "description": "Type of action be notified about. Notifications will only be fired for the given type of action. Valid choices are **upload**, **download**, **delete** or **all** (upload/download/delete)",
+            "enum": [
+              "upload",
+              "download",
+              "delete",
+              "all"
+            ],
+            "example": "upload",
+            "type": "string"
+          },
+          "message": {
+            "description": "Custom message to include in notification emails.",
+            "type": "string"
+          },
+          "recipients": {
+            "description": "Email addresses to send notification emails to. If not specified, sends to the current user's email address.",
+            "example": [
+              "myemail@example.com"
+            ],
+            "items": {
+              "format": "email",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resource": {
+            "description": "Resources for this notification. See details on [how to specify resources](#section/Identifying-Resources) above.",
+            "type": "string"
+          },
+          "sendEmail": {
+            "description": "Set to true if the user should be notified by email when the notification is triggered.",
+            "example": true,
+            "type": "boolean"
+          },
+          "type": {
+            "description": "What kind of notification you're making. Valid choices are:\n\n- **file** to monitor activity for a file resource\n- **folder** to monitor activity for a folder resource",
+            "enum": [
+              "file",
+              "folder"
+            ],
+            "example": "file",
+            "type": "string"
+          },
+          "usernames": {
+            "description": "Determines which users' actions should trigger the notification. \n\nRather than listing  individual users, you can also use 3 special options:\n\n- **notice\\_user\\_all** for activity by any user or share recipient\n- **notice\\_user\\_all\\_users** for activity only by user accounts\n- **notice\\_user\\_all\\_recipient** for activity only by share recipients",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "resource",
+          "action",
+          "usernames",
+          "sendEmail"
+        ],
+        "title": "AddNotificationRequestBody",
+        "type": "object"
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/notifications"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "NotificationResponse"
+        },
+        "Response object for notifications.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: Object containing notification properties.",
+              {
+                "$ul": [
+                  [
+                    "**attributes**: Attributes for the notification including the path, recipients, and share data. ",
+                    {
+                      "$ul": [
+                        "**action**: Action that triggers notification.",
+                        "**created**: Timestamp of notifiction creation.",
+                        "**message**: Custom message that will be sent to the notification recipients.",
+                        "**modified**: Timestamp of notification modification.",
+                        "**name**: Name of the item that the notification is set on.",
+                        "**path**: Path to the item that the notification is set on.",
+                        "**readableDescription**: Human readable description of the notification.",
+                        "**readableDescriptionWithoutPath**: Human readable description of the notification without item path.",
+                        "**recipients**: Notification recipients.",
+                        "**sendEmail**: Whether or not an email will send when the notification is triggered.",
+                        "**shareId**: ID of the share that the notification belogns to.",
+                        "**type**: Type of the resource the notification is attached to. ",
+                        "**userId**: ID of the user that the notification belongs to.",
+                        "**usernames**: Detail on which users can trigger the notification."
+                      ]
+                    }
+                  ],
+                  "**id**",
+                  [
+                    "**relationships**",
+                    {
+                      "$ul": [
+                        [
+                          "**ownerUser**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**",
+                                    "**type**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**resource**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**",
+                                    "**type**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**share**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**",
+                                    "**type**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**type**"
+                ]
+              }
+            ],
+            "**included**",
+            "**responseStatus**: Http status code of the response."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

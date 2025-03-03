@@ -1,0 +1,482 @@
+{
+  "name": "UpdateVaultItem",
+  "description": "Update an Item",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "vaultUuid": {
+        "pattern": "^[\\da-z]{26}$",
+        "type": "string",
+        "description": "The UUID of the Item's Vault"
+      },
+      "itemUuid": {
+        "pattern": "^[\\da-z]{26}$",
+        "type": "string",
+        "description": "The UUID of the Item to update"
+      },
+      "body": {
+        "$ref": "#/$defs/FullItem"
+      }
+    },
+    "required": [
+      "vaultUuid",
+      "itemUuid"
+    ],
+    "$defs": {
+      "FullItem": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Item"
+          },
+          {
+            "properties": {
+              "fields": {
+                "items": {
+                  "$ref": "#/$defs/Field"
+                },
+                "type": "array"
+              },
+              "files": {
+                "items": {
+                  "$ref": "#/$defs/File"
+                },
+                "type": "array"
+              },
+              "sections": {
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "Item": {
+        "properties": {
+          "category": {
+            "enum": [
+              "LOGIN",
+              "PASSWORD",
+              "API_CREDENTIAL",
+              "SERVER",
+              "DATABASE",
+              "CREDIT_CARD",
+              "MEMBERSHIP",
+              "PASSPORT",
+              "SOFTWARE_LICENSE",
+              "OUTDOOR_LICENSE",
+              "SECURE_NOTE",
+              "WIRELESS_ROUTER",
+              "BANK_ACCOUNT",
+              "DRIVER_LICENSE",
+              "IDENTITY",
+              "REWARD_PROGRAM",
+              "DOCUMENT",
+              "EMAIL_ACCOUNT",
+              "SOCIAL_SECURITY_NUMBER",
+              "MEDICAL_RECORD",
+              "SSH_KEY",
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "favorite": {
+            "default": false,
+            "type": "boolean"
+          },
+          "id": {
+            "pattern": "^[\\da-z]{26}$",
+            "type": "string"
+          },
+          "lastEditedBy": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "ARCHIVED",
+              "DELETED"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "urls": {
+            "example": [
+              {
+                "href": "https://example.com",
+                "primary": true
+              },
+              {
+                "href": "https://example.org"
+              }
+            ],
+            "items": {
+              "properties": {
+                "href": {
+                  "format": "url",
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "href"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "vault": {
+            "properties": {
+              "id": {
+                "pattern": "^[\\da-z]{26}$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "type": "object"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "vault",
+          "category"
+        ],
+        "type": "object"
+      },
+      "Field": {
+        "properties": {
+          "entropy": {
+            "description": "For fields with a purpose of `PASSWORD` this is the entropy of the value",
+            "readOnly": true,
+            "type": "number"
+          },
+          "generate": {
+            "default": false,
+            "description": "If value is not present then a new value should be generated for this field",
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "purpose": {
+            "description": "Some item types, Login and Password, have fields used for autofill. This property indicates that purpose and is required for some item types.",
+            "enum": [
+              "",
+              "USERNAME",
+              "PASSWORD",
+              "NOTES"
+            ],
+            "type": "string"
+          },
+          "recipe": {
+            "$ref": "#/$defs/GeneratorRecipe"
+          },
+          "section": {
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "default": "STRING",
+            "enum": [
+              "STRING",
+              "EMAIL",
+              "CONCEALED",
+              "URL",
+              "TOTP",
+              "DATE",
+              "MONTH_YEAR",
+              "MENU"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeneratorRecipe": {
+        "description": "The recipe is used in conjunction with the \"generate\" property to set the character set used to generate a new secure value",
+        "properties": {
+          "characterSets": {
+            "items": {
+              "enum": [
+                "LETTERS",
+                "DIGITS",
+                "SYMBOLS"
+              ],
+              "type": "string"
+            },
+            "maximum": 3,
+            "minimum": 0,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "excludeCharacters": {
+            "description": "List of all characters that should be excluded from generated passwords.",
+            "example": "abc1",
+            "type": "string"
+          },
+          "length": {
+            "default": 32,
+            "description": "Length of the generated value",
+            "maximum": 64,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "File": {
+        "example": {
+          "content": "VGhlIGZ1dHVyZSBiZWxvbmdzIHRvIHRoZSBjdXJpb3VzLgo=",
+          "content_path": "v1/vaults/ionaiwtdvgclrixbt6ztpqcxnq/items/p7eflcy7f5mk7vg6zrzf5rjjyu/files/6r65pjq33banznomn7q22sj44e/content",
+          "id": "6r65pjq33banznomn7q22sj44e",
+          "name": "foo.txt",
+          "size": 35
+        },
+        "properties": {
+          "content": {
+            "description": "Base64-encoded contents of the file. Only set if size <= OP_MAX_INLINE_FILE_SIZE_KB kb and `inline_files` is set to `true`.",
+            "format": "byte",
+            "type": "string"
+          },
+          "content_path": {
+            "description": "Path of the Connect API that can be used to download the contents of this file.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "ID of the file",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the file",
+            "type": "string"
+          },
+          "section": {
+            "description": "For files that are in a section, this field describes the section.",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "size": {
+            "description": "Size in bytes of the file",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://1password.local/vaults/{vaultUuid}/items/{itemUuid}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**category**",
+            "**createdAt**",
+            "**favorite** (default: false)",
+            "**id**",
+            "**lastEditedBy**",
+            "**state**",
+            "**tags**",
+            "**title**",
+            "**updatedAt**",
+            "**urls**",
+            [
+              "**vault**",
+              {
+                "$ul": [
+                  "**id**"
+                ]
+              }
+            ],
+            "**version**",
+            "**fields**",
+            "**files**",
+            "**sections**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

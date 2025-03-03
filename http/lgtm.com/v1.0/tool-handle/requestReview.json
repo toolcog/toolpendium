@@ -1,0 +1,78 @@
+{
+  "name": "requestReview",
+  "description": "Trigger the code review of a patch. This is available for projects with Git repositories.\n\nYour request must include:\n\n  * Identifier for the base commit\n  * Patch generated using `git diff --binary` (see [git diff](https://git-scm.com/docs/git-diff))\n  * Header `Content-Type: application/octet-stream`\n  * For both LGTM.com and LGTM Enterprise, an access token with the `codereviews:write` scope\n\nNote that if you make a request using Curl, you'll also need to add `--data-binary` to the request to ensure that the patch you supply in the body is sent with newlines unchanged.\nYou can track the progress of the review using the task result URL returned on creation of the task, or by calling the `/operations` endpoint with the operations identifier returned by the request. For more information, see [Get operation status](https://lgtm.com/help/lgtm/api/api-v1#opIdgetOperation). Alternatively, if you supply a callback URL you'll get a post-back automatically on completion of the review.\n\nWhen the review is complete, you can access the results using the task result URL.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project-id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The numeric project identifier."
+      },
+      "base": {
+        "type": "string",
+        "description": "The identifier for the base commit."
+      },
+      "external-id": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Your reference number for the code review."
+      },
+      "review-url": {
+        "type": "string",
+        "description": "An informative back-link to an external system."
+      },
+      "callback-url": {
+        "type": "string",
+        "description": "The callback URL for LGTM to post to on completion of the review.\nWhen the code review is complete, the API sends an HTTP POST request to the callback URL with the result of the code review in the request body. The code review results in the request body are identical to the results accessed through the [`/codereviews/{review-id}`](https://lgtm.com/help/lgtm/api/api-v1#opIdgetCodeReview) end-point.\nIf you specify a `callback-secret`, the request also includes an `x-lgtm-signature` header with a digital signature of the request's contents.\n"
+      },
+      "callback-secret": {
+        "type": "string",
+        "description": "The `callback-secret` is used to compute a signature which is included in the `x-lgtm-signature` header of the callback response.\nThe receiver of the callback can check the validity of the response by computing the signature using HMAC-SHA1 and verifying that it matches the `x-lgtm-signature` header value.\nThe HMAC algorithm requires byte sequences as inputs for both the secret and the message. The callback secret string must be converted to bytes using UTF-8 encoding. The response body should ideally be read as a plain byte sequence. Conversion to, for example a JSON object, and back to a byte sequence might change the formatting, and would invalidate the signature.\n"
+      }
+    },
+    "required": [
+      "project-id",
+      "base",
+      "external-id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://lgtm.com/api/v1.0/codereviews/{project-id}{?base,external-id,review-url,callback-url,callback-secret}"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The identifier for the operation.",
+            "**status**: Status of the operation.",
+            "**task-result**",
+            "**task-result-url**: The URL for the result of the task. For some operations, included only on completion.",
+            "**task-type**",
+            "**uploads**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

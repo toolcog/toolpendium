@@ -1,0 +1,147 @@
+{
+  "name": "ContainerList",
+  "description": "Returns a list of containers. For details on the format, see [the inspect endpoint](#operation/ContainerInspect).\n\nNote that it uses a different, smaller representation of a container than inspecting a single container. For example,\nthe list of linked containers is not propagated .\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "all": {
+        "default": false,
+        "type": "boolean",
+        "description": "Return all containers. By default, only running containers are shown"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Return this number of most recently created containers, including non-running ones."
+      },
+      "size": {
+        "default": false,
+        "type": "boolean",
+        "description": "Return the size of container as fields `SizeRw` and `SizeRootFs`."
+      },
+      "filters": {
+        "type": "string",
+        "description": "Filters to process on the container list, encoded as JSON (a `map[string][]string`). For example, `{\"status\": [\"paused\"]}` will only return paused containers. Available filters:\n\n- `ancestor`=(`<image-name>[:<tag>]`, `<image id>`, or `<image@digest>`)\n- `before`=(`<container id>` or `<container name>`)\n- `expose`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`)\n- `exited=<int>` containers with exit code of `<int>`\n- `health`=(`starting`|`healthy`|`unhealthy`|`none`)\n- `id=<ID>` a container's ID\n- `isolation=`(`default`|`process`|`hyperv`) (Windows daemon only)\n- `is-task=`(`true`|`false`)\n- `label=key` or `label=\"key=value\"` of a container label\n- `name=<name>` a container's name\n- `network`=(`<network id>` or `<network name>`)\n- `publish`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`)\n- `since`=(`<container id>` or `<container name>`)\n- `status=`(`created`|`restarting`|`running`|`removing`|`paused`|`exited`|`dead`)\n- `volume`=(`<volume name>` or `<mount point destination>`)\n"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/v1.33/containers/json{?all,limit,size,filters}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Command**: Command to run when starting the container",
+            "**Created**: When the container was created",
+            [
+              "**HostConfig**",
+              {
+                "$ul": [
+                  "**NetworkMode**"
+                ]
+              }
+            ],
+            "**Id**: The ID of this container",
+            "**Image**: The name of the image used when creating this container",
+            "**ImageID**: The ID of the image that this container was created from",
+            "**Labels**: User-defined key/value metadata.",
+            "**Mounts**",
+            "**Names**: The names that this container has been given",
+            [
+              "**NetworkSettings**: A summary of the container's network settings",
+              {
+                "$ul": [
+                  "**Networks**"
+                ]
+              }
+            ],
+            "**Ports**: The ports exposed by this container",
+            "**SizeRootFs**: The total size of all the files in this container",
+            "**SizeRw**: The size of files that have been created or changed by this container",
+            "**State**: The state of this container (e.g. `Exited`)",
+            "**Status**: Additional human-readable status of this container (e.g. `Exit 0`)"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents an error.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: The error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents an error.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: The error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

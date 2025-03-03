@@ -1,0 +1,220 @@
+{
+  "name": "publishMessagesToChannel",
+  "description": "Publish a message to the specified channel",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "channel_id": {
+        "type": "string",
+        "description": "The [Channel's ID](https://www.ably.io/documentation/rest/channels)."
+      },
+      "X-Ably-Version": {
+        "type": "string",
+        "description": "The version of the API you wish to use."
+      },
+      "format": {
+        "enum": [
+          "json",
+          "jsonp",
+          "msgpack",
+          "html"
+        ],
+        "type": "string",
+        "description": "The response format you would like"
+      },
+      "body": {
+        "$ref": "#/$defs/Message"
+      }
+    },
+    "required": [
+      "channel_id"
+    ],
+    "$defs": {
+      "Message": {
+        "description": "Message object.",
+        "properties": {
+          "clientId": {
+            "description": "The [client ID](https://www.ably.io/documentation/core-features/authentication#identified-clients) of the publisher of this message.",
+            "type": "string"
+          },
+          "connectionId": {
+            "description": "The connection ID of the publisher of this message.",
+            "type": "string"
+          },
+          "data": {
+            "description": "The string encoded payload, with the encoding specified below.",
+            "type": "string"
+          },
+          "encoding": {
+            "description": "This will typically be empty as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute will contain the remaining transformations not applied to the data payload.",
+            "type": "string"
+          },
+          "extras": {
+            "$ref": "#/$defs/Extras"
+          },
+          "id": {
+            "description": "A Unique ID that can be specified by the publisher for [idempotent publishing](https://www.ably.io/documentation/rest/messages#idempotent).",
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The event name, if provided.",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Timestamp when the message was received by the Ably, as milliseconds since the epoch.",
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Extras": {
+        "description": "Extras object. Currently only allows for [push](https://www.ably.io/documentation/general/push/publish#channel-broadcast-example) extra.",
+        "properties": {
+          "push": {
+            "$ref": "#/$defs/Push"
+          }
+        },
+        "type": "object"
+      },
+      "Push": {
+        "properties": {
+          "apns": {
+            "description": "Extends and overrides generic values when delivering via APNs. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+            "properties": {
+              "notification": {
+                "$ref": "#/$defs/Notification"
+              }
+            },
+            "type": "object"
+          },
+          "data": {
+            "description": "Arbitrary [key-value string-to-string payload](https://www.ably.io/documentation/general/push/publish#channel-broadcast-example).",
+            "type": "string"
+          },
+          "fcm": {
+            "description": "Extends and overrides generic values when delivering via GCM/FCM. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+            "properties": {
+              "notification": {
+                "$ref": "#/$defs/Notification"
+              }
+            },
+            "type": "object"
+          },
+          "notification": {
+            "$ref": "#/$defs/Notification"
+          },
+          "web": {
+            "description": "Extends and overrides generic values when delivering via web. [See examples](https://www.ably.io/documentation/general/push/publish#payload-structure)",
+            "properties": {
+              "notification": {
+                "$ref": "#/$defs/Notification"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "Notification": {
+        "properties": {
+          "body": {
+            "description": "Text below title on the expanded notification.",
+            "type": "string"
+          },
+          "collapseKey": {
+            "description": "Platform-specific, used to group notifications together.",
+            "type": "string"
+          },
+          "icon": {
+            "description": "Platform-specific icon for the notification.",
+            "type": "string"
+          },
+          "sound": {
+            "description": "Platform-specific sound for the notification.",
+            "type": "string"
+          },
+          "title": {
+            "description": "Title to display at the notification.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rest.ably.io/channels/{channel_id}/messages{?format}"
+    },
+    "headers": {
+      "X-Ably-Version": {
+        "$": "X-Ably-Version"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "2XX": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**channel**",
+            "**messageId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Returned error from failed REST.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code.",
+            "**href**: Link to help with error.",
+            "**message**: Message explaining the error's cause.",
+            "**serverId**: Server ID with which error was encountered.",
+            "**statusCode**: Status error code."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

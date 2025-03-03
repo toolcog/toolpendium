@@ -1,0 +1,250 @@
+{
+  "name": "CreatePrefetchSchedule",
+  "description": "Creates a prefetch schedule for a playback configuration. A prefetch schedule allows you to tell MediaTailor to fetch and prepare certain ads before an ad break happens. For more information about ad prefetching, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/prefetching-ads.html\">Using ad prefetching</a> in the <i>MediaTailor User Guide</i>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Name": {
+        "type": "string",
+        "description": "The name to assign to the schedule request."
+      },
+      "PlaybackConfigurationName": {
+        "type": "string",
+        "description": "The name to assign to the playback configuration."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Consumption",
+          "Retrieval"
+        ],
+        "properties": {
+          "Consumption": {
+            "description": "A complex type that contains settings that determine how and when that MediaTailor places prefetched ads into upcoming ad breaks.",
+            "type": "object",
+            "properties": {
+              "AvailMatchingCriteria": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__listOfAvailMatchingCriteria"
+                  },
+                  {
+                    "description": "If you only want MediaTailor to insert prefetched ads into avails (ad breaks) that match specific dynamic variables, such as <code>scte.event_id</code>, set the avail matching criteria."
+                  }
+                ]
+              },
+              "EndTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__timestampUnix"
+                  },
+                  {
+                    "description": "The time when MediaTailor no longer considers the prefetched ads for use in an ad break. MediaTailor automatically deletes prefetch schedules no less than seven days after the end time. If you'd like to manually delete the prefetch schedule, you can call <code>DeletePrefetchSchedule</code>."
+                  }
+                ]
+              },
+              "StartTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__timestampUnix"
+                  },
+                  {
+                    "description": "The time when prefetched ads are considered for use in an ad break. If you don't specify <code>StartTime</code>, the prefetched ads are available after MediaTailor retrives them from the ad decision server."
+                  }
+                ]
+              }
+            }
+          },
+          "Retrieval": {
+            "description": "A complex type that contains settings governing when MediaTailor prefetches ads, and which dynamic variables that MediaTailor includes in the request to the ad decision server.",
+            "type": "object",
+            "properties": {
+              "DynamicVariables": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__mapOf__string"
+                  },
+                  {
+                    "description": "<p>The dynamic variables to use for substitution during prefetch requests to the ad decision server (ADS).</p> <p>You initially configure <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/variables.html\">dynamic variables</a> for the ADS URL when you set up your playback configuration. When you specify <code>DynamicVariables</code> for prefetch retrieval, MediaTailor includes the dynamic variables in the request to the ADS.</p>"
+                  }
+                ]
+              },
+              "EndTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__timestampUnix"
+                  },
+                  {
+                    "description": "The time when prefetch retrieval ends for the ad break. Prefetching will be attempted for manifest requests that occur at or before this time."
+                  }
+                ]
+              },
+              "StartTime": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__timestampUnix"
+                  },
+                  {
+                    "description": "The time when prefetch retrievals can start for this break. Ad prefetching will be attempted for manifest requests that occur at or after this time. Defaults to the current time. If not specified, the prefetch retrieval starts as soon as possible."
+                  }
+                ]
+              }
+            }
+          },
+          "StreamId": {
+            "description": "An optional stream identifier that MediaTailor uses to prefetch ads for multiple streams that use the same playback configuration. If <code>StreamId</code> is specified, MediaTailor returns all of the prefetch schedules with an exact match on <code>StreamId</code>. If not specified, MediaTailor returns all of the prefetch schedules for the playback configuration, regardless of <code>StreamId</code>.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required": [
+      "Name",
+      "PlaybackConfigurationName",
+      "body"
+    ],
+    "$defs": {
+      "__listOfAvailMatchingCriteria": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AvailMatchingCriteria"
+        }
+      },
+      "AvailMatchingCriteria": {
+        "type": "object",
+        "required": [
+          "DynamicVariable",
+          "Operator"
+        ],
+        "properties": {
+          "DynamicVariable": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/__string"
+              },
+              {
+                "description": "<p>The dynamic variable(s) that MediaTailor should use as avail matching criteria. MediaTailor only places the prefetched ads into the avail if the avail matches the criteria defined by the dynamic variable. For information about dynamic variables, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/variables.html\">Using dynamic ad variables</a> in the <i>MediaTailor User Guide</i>.</p> <p>You can include up to 100 dynamic variables.</p>"
+              }
+            ]
+          },
+          "Operator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Operator"
+              },
+              {
+                "description": "For the <code>DynamicVariable</code> specified in <code>AvailMatchingCriteria</code>, the Operator that is used for the comparison."
+              }
+            ]
+          }
+        },
+        "description": "<p>MediaTailor only places (consumes) prefetched ads if the ad break meets the criteria defined by the dynamic variables. This gives you granular control over which ad break to place the prefetched ads into.</p> <p>As an example, let's say that you set <code>DynamicVariable</code> to <code>scte.event_id</code> and <code>Operator</code> to <code>EQUALS</code>, and your playback configuration has an ADS URL of <code>https://my.ads.server.com/path?&amp;podId=[scte.avail_num]&amp;event=[scte.event_id]&amp;duration=[session.avail_duration_secs]</code>. And the prefetch request to the ADS contains these values <code>https://my.ads.server.com/path?&amp;podId=3&amp;event=my-awesome-event&amp;duration=30</code>. MediaTailor will only insert the prefetched ads into the ad break if has a SCTE marker with an event id of <code>my-awesome-event</code>, since it must match the event id that MediaTailor uses to query the ADS.</p> <p>You can specify up to five <code>AvailMatchingCriteria</code>. If you specify multiple <code>AvailMatchingCriteria</code>, MediaTailor combines them to match using a logical <code>AND</code>. You can model logical <code>OR</code> combinations by creating multiple prefetch schedules.</p>"
+      },
+      "__string": {
+        "type": "string"
+      },
+      "Operator": {
+        "type": "string",
+        "enum": [
+          "EQUALS"
+        ]
+      },
+      "__timestampUnix": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "__mapOf__string": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/__string"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://api.mediatailor.us-east-1.amazonaws.com/prefetchSchedule/{PlaybackConfigurationName}/{Name}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Arn**",
+            "**Consumption**",
+            "**Name**",
+            "**PlaybackConfigurationName**",
+            "**Retrieval**",
+            "**StreamId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

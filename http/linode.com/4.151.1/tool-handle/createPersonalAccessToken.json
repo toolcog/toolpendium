@@ -1,0 +1,110 @@
+{
+  "name": "createPersonalAccessToken",
+  "description": "Creates a Personal Access Token for your User. The raw token will be returned in the response, but will never be returned again afterward so be sure to take note of it. You may create a token with _at most_ the scopes of your current token. The created token will be able to access your Account until the given expiry, or until it is revoked.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "expiry": {
+            "description": "When this token should be valid until.  If omitted, the new token will be valid until it is manually revoked.\n",
+            "example": null,
+            "format": "date-time",
+            "type": "string"
+          },
+          "label": {
+            "$ref": "#/$defs/label"
+          },
+          "scopes": {
+            "description": "The access [scopes](/docs/api#oauth-reference) to grant to the created token. These cannot be changed after creation, and may not exceed the scopes of the acting token.\n\nIf omitted or entered with a wildcard character (`*`), the new token will have the same scopes as the acting token.\n\nMultiple scopes are separated by a space character (` `).\n\nFor example, `linodes:read_write account:read_only`.\n",
+            "example": "*",
+            "format": "oauth-scope",
+            "type": "string"
+          }
+        },
+        "description": "Information about the requested token."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "label": {
+        "description": "This token's label.  This is for display purposes only, but can be used to more easily track what you're using each token for.\n",
+        "example": "linode-cli",
+        "maxLength": 100,
+        "minLength": 1,
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/profile/tokens"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A Personal Access Token is a token generated manually to access the API without going through an OAuth login.  Personal Access Tokens can have scopes just like OAuth tokens do, and are commonly used to give access to command-line tools like the Linode CLI, or when writing your own integrations.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: The date and time this token was created.",
+            "**expiry**: When this token will expire.  Personal Access Tokens cannot be renewed, so after this time the token will be completely unusable and a new token will need to be generated.  Tokens may be created with \"null\" as their expiry and will never expire unless revoked.",
+            "**id**: This token's unique ID, which can be used to revoke it.",
+            "**label**: This token's label.  This is for display purposes only, but can be used to more easily track what you're using each token for.",
+            "**scopes**: The scopes this token was created with. These define what parts of the Account the token can be used to access. Many command-line tools, such as the <a target=\"_top\" href=\"https://github.com/linode/linode-cli\">Linode CLI</a>, require tokens with access to `*`. Tokens with more restrictive scopes are generally more secure.",
+            "**token**: The token used to access the API.  When the token is created, the full token is returned here.  Otherwise, only the first 16 characters are returned."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

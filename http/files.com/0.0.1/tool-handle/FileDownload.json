@@ -1,0 +1,94 @@
+{
+  "name": "FileDownload",
+  "description": "Download file",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Path to operate on."
+      },
+      "action": {
+        "type": "string",
+        "description": "Can be blank, `redirect` or `stat`.  If set to `stat`, we will return file information but without a download URL, and without logging a download.  If set to `redirect` we will serve a 302 redirect directly to the file.  This is used for integrations with Zapier, and is not recommended for most integrations."
+      },
+      "preview_size": {
+        "type": "string",
+        "description": "Request a preview size.  Can be `small` (default), `large`, `xlarge`, or `pdf`."
+      },
+      "with_previews": {
+        "type": "boolean",
+        "description": "Include file preview information?"
+      },
+      "with_priority_color": {
+        "type": "boolean",
+        "description": "Include file priority color information?"
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/files/{path}{?action,preview_size,with_previews,with_priority_color}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "List Folders by path",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**crc32**: File CRC32 checksum. This is sometimes delayed, so if you get a blank response, wait and try again.",
+            "**created_at**: File created date/time",
+            "**display_name**: File/Folder display name",
+            "**download_uri**: Link to download file. Provided only in response to a download request.",
+            "**is_locked**: Is this folder locked and unable to be modified?",
+            "**md5**: File MD5 checksum. This is sometimes delayed, so if you get a blank response, wait and try again.",
+            "**mime_type**: MIME Type.  This is determined by the filename extension and is not stored separately internally.",
+            "**mtime**: File last modified date/time, according to the server.  This is the timestamp of the last Files.com operation of the file, regardless of what modified timestamp was sent.",
+            "**path**: File/Folder path",
+            "**permissions**: A short string representing the current user's permissions.  Can be `r`,`w`,`d`, `l` or any combination",
+            [
+              "**preview**",
+              {
+                "$ul": [
+                  "**download_uri**: Link to download preview",
+                  "**id**: Preview ID",
+                  "**size**: Preview size",
+                  "**status**: Preview status.  Can be invalid, not_generated, generating, complete, or file_too_large",
+                  "**type**: Preview type. Can be image, pdf, pdf_native, video, or audio"
+                ]
+              }
+            ],
+            "**preview_id**: File preview ID",
+            "**priority_color**: Bookmark/priority color of file/folder",
+            "**provided_mtime**: File last modified date/time, according to the client who set it.  Files.com allows desktop, FTP, SFTP, and WebDAV clients to set modified at times.  This allows Desktop<->Cloud syncing to preserve modified at times.",
+            "**region**: Region location",
+            "**size**: File/Folder size",
+            "**subfolders_locked?**: Are subfolders locked and unable to be modified?",
+            "**type**: Type: `directory` or `file`."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

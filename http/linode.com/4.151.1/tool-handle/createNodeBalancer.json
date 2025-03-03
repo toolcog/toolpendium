@@ -1,0 +1,413 @@
+{
+  "name": "createNodeBalancer",
+  "description": "Creates a NodeBalancer in the requested Region.\n\nNodeBalancers require a port Config with at least one backend Node to start serving requests.\n\nWhen using the Linode CLI to create a NodeBalancer, first create a NodeBalancer without any Configs. Then, create Configs and Nodes for that NodeBalancer with the respective [Config Create](/docs/api/nodebalancers/#config-create) and [Node Create](/docs/api/nodebalancers/#node-create) commands.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "client_conn_throttle": {
+            "$ref": "#/$defs/client_conn_throttle"
+          },
+          "configs": {
+            "description": "The port Config(s) to create for this NodeBalancer.\n\nEach Config must have a unique port and at least one Node.\n",
+            "items": {
+              "description": "A request object representing a NodeBalancer Config, including Nodes.",
+              "properties": {
+                "algorithm": {
+                  "$ref": "#/$defs/algorithm"
+                },
+                "check": {
+                  "$ref": "#/$defs/check"
+                },
+                "check_attempts": {
+                  "$ref": "#/$defs/check_attempts"
+                },
+                "check_body": {
+                  "$ref": "#/$defs/check_body"
+                },
+                "check_interval": {
+                  "$ref": "#/$defs/check_interval"
+                },
+                "check_passive": {
+                  "$ref": "#/$defs/check_passive"
+                },
+                "check_path": {
+                  "$ref": "#/$defs/check_path"
+                },
+                "check_timeout": {
+                  "$ref": "#/$defs/check_timeout"
+                },
+                "cipher_suite": {
+                  "$ref": "#/$defs/cipher_suite"
+                },
+                "nodes": {
+                  "description": "The NodeBalancer Node(s) that serve this Config.\n",
+                  "items": {
+                    "$ref": "#/$defs/NodeBalancerNode"
+                  },
+                  "type": "array"
+                },
+                "port": {
+                  "$ref": "#/$defs/port"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/protocol"
+                },
+                "proxy_protocol": {
+                  "$ref": "#/$defs/proxy_protocol"
+                },
+                "ssl_cert": {
+                  "$ref": "#/$defs/ssl_cert"
+                },
+                "ssl_key": {
+                  "$ref": "#/$defs/ssl_key"
+                },
+                "stickiness": {
+                  "$ref": "#/$defs/stickiness"
+                }
+              },
+              "type": "object"
+            },
+            "required": [
+              "nodes"
+            ],
+            "type": "array"
+          },
+          "label": {
+            "$ref": "#/$defs/label"
+          },
+          "region": {
+            "description": "The ID of the Region to create this NodeBalancer in.\n",
+            "example": "us-east",
+            "type": "string"
+          }
+        },
+        "required": [
+          "region"
+        ],
+        "description": "Information about the NodeBalancer to create."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "client_conn_throttle": {
+        "description": "Throttle connections per second.  Set to 0 (zero) to disable throttling.\n",
+        "example": 0,
+        "maximum": 20,
+        "minimum": 0,
+        "type": "integer",
+        "x-linode-cli-display": 6
+      },
+      "algorithm": {
+        "default": "roundrobin",
+        "description": "What algorithm this NodeBalancer should use for routing traffic to backends.\n",
+        "enum": [
+          "roundrobin",
+          "leastconn",
+          "source"
+        ],
+        "example": "roundrobin",
+        "type": "string",
+        "x-linode-cli-display": 4
+      },
+      "check": {
+        "default": "none",
+        "description": "The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down.\n* If `none` no check is performed.\n* `connection` requires only a connection to the backend to succeed.\n* `http` and `http_body` rely on the backend serving HTTP, and that\n  the response returned matches what is expected.\n",
+        "enum": [
+          "none",
+          "connection",
+          "http",
+          "http_body"
+        ],
+        "example": "http_body",
+        "type": "string"
+      },
+      "check_attempts": {
+        "default": 3,
+        "description": "How many times to attempt a check before considering a backend to be down.\n",
+        "example": 3,
+        "maximum": 30,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "check_body": {
+        "description": "This value must be present in the response body of the check in order for it to pass. If this value is not present in the response body of a check request, the backend is considered to be down.\n",
+        "example": "it works",
+        "type": "string"
+      },
+      "check_interval": {
+        "default": 31,
+        "description": "How often, in seconds, to check that backends are up and serving requests.\n\nMust be greater than `check_timeout`.\n",
+        "example": 90,
+        "type": "integer"
+      },
+      "check_passive": {
+        "default": true,
+        "description": "If true, any response from this backend with a `5xx` status code will be enough for it to be considered unhealthy and taken out of rotation.\n",
+        "example": true,
+        "type": "boolean",
+        "x-linode-cli-display": 6
+      },
+      "check_path": {
+        "description": "The URL path to check on each backend. If the backend does not respond to this request it is considered to be down.\n",
+        "example": "/test",
+        "pattern": "^[a-zA-Z0-9\\/\\-%?&=.]*$",
+        "type": "string"
+      },
+      "check_timeout": {
+        "default": 30,
+        "description": "How long, in seconds, to wait for a check attempt before considering it failed.\n\nMust be less than `check_interval`.\n",
+        "example": 10,
+        "maximum": 30,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "cipher_suite": {
+        "default": "recommended",
+        "description": "What ciphers to use for SSL connections served by this NodeBalancer.\n\n* `legacy` is considered insecure and should only be used if necessary.\n",
+        "enum": [
+          "recommended",
+          "legacy"
+        ],
+        "example": "recommended",
+        "type": "string",
+        "x-linode-cli-color": {
+          "default_": "white",
+          "legacy": "red"
+        },
+        "x-linode-cli-display": 7
+      },
+      "NodeBalancerNode": {
+        "description": "A NodeBalancerNode represents a single backend serving requests for a single port of a NodeBalancer.  Nodes are specific to NodeBalancer Configs, and serve traffic over their private IP.  If the same Linode is serving traffic for more than one port on the same NodeBalancer, one NodeBalancer Node is required for each config (port) it should serve requests on.  For example, if you have four backends, and each should response to both HTTP and HTTPS requests, you will need two NodeBalancerConfigs (port 80 and port 443) and four backends each - one for each of the Linodes serving requests for that port.\n",
+        "properties": {
+          "address": {
+            "description": "The private IP Address where this backend can be reached. This _must_ be a private IP address.\n",
+            "example": "192.168.210.120:80",
+            "format": "ip",
+            "type": "string",
+            "x-linode-cli-display": 3
+          },
+          "config_id": {
+            "description": "The NodeBalancer Config ID that this Node belongs to.\n",
+            "example": 4567,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "id": {
+            "description": "This node's unique ID.",
+            "example": 54321,
+            "readOnly": true,
+            "type": "integer",
+            "x-linode-cli-display": 1
+          },
+          "label": {
+            "description": "The label for this node.  This is for display purposes only.\n",
+            "example": "node54321",
+            "maxLength": 32,
+            "minLength": 3,
+            "pattern": "[a-zA-Z0-9-_.]{3,32}",
+            "type": "string",
+            "x-linode-cli-display": 2
+          },
+          "mode": {
+            "description": "The mode this NodeBalancer should use when sending traffic to this backend.\n* If set to `accept` this backend is accepting traffic.\n* If set to `reject` this backend will not receive traffic.\n* If set to `drain` this backend will not receive _new_ traffic, but connections already\n  pinned to it will continue to be routed to it.\n\n* If set to `backup`, this backend will only receive traffic if all `accept` nodes\n  are down.\n",
+            "enum": [
+              "accept",
+              "reject",
+              "drain",
+              "backup"
+            ],
+            "example": "accept",
+            "type": "string",
+            "x-linode-cli-display": 6
+          },
+          "nodebalancer_id": {
+            "description": "The NodeBalancer ID that this Node belongs to.\n",
+            "example": 12345,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "status": {
+            "description": "The current status of this node, based on the configured checks of its NodeBalancer Config.\n",
+            "enum": [
+              "unknown",
+              "UP",
+              "DOWN"
+            ],
+            "example": "UP",
+            "readOnly": true,
+            "type": "string",
+            "x-linode-cli-color": {
+              "DOWN": "red",
+              "UP": "green",
+              "default_": "white",
+              "unknown": "yellow"
+            },
+            "x-linode-cli-display": 4
+          },
+          "weight": {
+            "description": "Used when picking a backend to serve a request and is not pinned to a single backend yet.  Nodes with a higher weight will receive more traffic.\n",
+            "example": 50,
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "x-linode-cli-display": 5
+          }
+        },
+        "type": "object"
+      },
+      "port": {
+        "default": 80,
+        "description": "The port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example).  While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.\n",
+        "example": 80,
+        "maximum": 65535,
+        "minimum": 1,
+        "type": "integer",
+        "x-linode-cli-display": 2
+      },
+      "protocol": {
+        "default": "http",
+        "description": "The protocol this port is configured to serve.\n\n* The `http` and `tcp` protocols do not support `ssl_cert` and `ssl_key`.\n\n* The `https` protocol is mutually required with `ssl_cert` and `ssl_key`.\n\nReview our guide on [Available Protocols](/docs/products/networking/nodebalancers/guides/protocols/) for information on protocol features.\n",
+        "enum": [
+          "http",
+          "https",
+          "tcp"
+        ],
+        "example": "http",
+        "type": "string",
+        "x-linode-cli-display": 3
+      },
+      "proxy_protocol": {
+        "default": "none",
+        "description": "ProxyProtocol is a TCP extension that sends initial TCP connection information such as source/destination IPs and ports to backend devices. This information would be lost otherwise. Backend devices must be configured to work with ProxyProtocol if enabled.\n\n* If ommited, or set to `none`, the NodeBalancer doesn't send any auxilary data over TCP connections. This is the default.\n* If set to `v1`, the human-readable header format (Version 1) is used. Requires `tcp` protocol.\n* If set to `v2`, the binary header format (Version 2) is used. Requires `tcp` protocol.\n",
+        "enum": [
+          "none",
+          "v1",
+          "v2"
+        ],
+        "example": "none",
+        "type": "string"
+      },
+      "ssl_cert": {
+        "description": "The PEM-formatted public SSL certificate (or the combined PEM-formatted SSL\ncertificate and Certificate Authority chain) that should be served on this\nNodeBalancerConfig's port.\n\nLine breaks must be represented as \"\\n\" in the string for requests (but not when using the Linode CLI).\n\n[Diffie-Hellman Parameters](/docs/products/networking/nodebalancers/guides/ssl-termination/#diffie-hellman-parameters) can be included in this value to enable forward secrecy.\n\nThe contents of this field will not be shown in any responses that display\nthe NodeBalancerConfig. Instead, `<REDACTED>` will be printed where the field\nappears.\n\nThe read-only `ssl_commonname` and `ssl_fingerprint` fields in a NodeBalancerConfig\nresponse are automatically derived from your certificate. Please refer to these fields to\nverify that the appropriate certificate was assigned to your NodeBalancerConfig.\n",
+        "example": "<REDACTED>",
+        "format": "ssl-cert",
+        "nullable": true,
+        "type": "string"
+      },
+      "ssl_key": {
+        "description": "The PEM-formatted private key for the SSL certificate set in the `ssl_cert` field.\n\nLine breaks must be represented as \"\\n\" in the string for requests (but not when using the Linode CLI).\n\nThe contents of this field will not be shown in any responses that display\nthe NodeBalancerConfig. Instead, `<REDACTED>` will be printed where the field\nappears.\n\nThe read-only `ssl_commonname` and `ssl_fingerprint` fields in a NodeBalancerConfig\nresponse are automatically derived from your certificate. Please refer to these fields to\nverify that the appropriate certificate was assigned to your NodeBalancerConfig.\n",
+        "example": "<REDACTED>",
+        "format": "ssl-key",
+        "nullable": true,
+        "type": "string"
+      },
+      "stickiness": {
+        "default": "none",
+        "description": "Controls how session stickiness is handled on this port.\n* If set to `none` connections will always be assigned a backend based on the algorithm configured.\n* If set to `table` sessions from the same remote address will be routed to the same\n  backend.\n\n* For HTTP or HTTPS clients, `http_cookie` allows sessions to be\n  routed to the same backend based on a cookie set by the NodeBalancer.\n",
+        "enum": [
+          "none",
+          "table",
+          "http_cookie"
+        ],
+        "example": "http_cookie",
+        "type": "string",
+        "x-linode-cli-display": 5
+      },
+      "label": {
+        "description": "This NodeBalancer's label. These must be unique on your Account.\n",
+        "example": "balancer12345",
+        "maxLength": 32,
+        "minLength": 3,
+        "pattern": "[a-zA-Z0-9-_]{3,32}",
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/nodebalancers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Linode's load balancing solution.  Can handle multiple ports, SSL termination, and any number of backends.  NodeBalancer ports are configured with NodeBalancer Configs, and each config is given one or more NodeBalancer Node that accepts traffic.  The traffic should be routed to the  NodeBalancer's ip address, the NodeBalancer will handle routing individual requests to backends.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**client_conn_throttle**: Throttle connections per second.  Set to 0 (zero) to disable throttling.",
+            "**created**: When this NodeBalancer was created.",
+            "**hostname**: This NodeBalancer's hostname, beginning with its IP address and ending with _.ip.linodeusercontent.com_.",
+            "**id**: This NodeBalancer's unique ID.",
+            "**ipv4**: This NodeBalancer's public IPv4 address.",
+            "**ipv6**: This NodeBalancer's public IPv6 address.",
+            "**label**: This NodeBalancer's label. These must be unique on your Account.",
+            "**region**: The Region where this NodeBalancer is located. NodeBalancers only support backends in the same Region.",
+            "**tags**: An array of Tags applied to this object.  Tags are for organizational purposes only.",
+            [
+              "**transfer**: Information about the amount of transfer this NodeBalancer has had so far this month.",
+              {
+                "$ul": [
+                  "**in**: The total outbound transfer, in MB, used for this NodeBalancer this month.",
+                  "**out**: The total inbound transfer, in MB, used for this NodeBalancer this month.",
+                  "**total**: The total transfer, in MB, used by this NodeBalancer this month."
+                ]
+              }
+            ],
+            "**updated**: When this NodeBalancer was last updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

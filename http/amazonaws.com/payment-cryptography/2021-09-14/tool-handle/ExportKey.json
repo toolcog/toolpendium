@@ -1,0 +1,351 @@
+{
+  "name": "ExportKey",
+  "description": "<p>Exports a key from Amazon Web Services Payment Cryptography using either ANSI X9 TR-34 or TR-31 key export standard.</p> <p>Amazon Web Services Payment Cryptography simplifies main or root key exchange process by eliminating the need of a paper-based key exchange process. It takes a modern and secure approach based of the ANSI X9 TR-34 key exchange standard.</p> <p>You can use <code>ExportKey</code> to export main or root keys such as KEK (Key Encryption Key), using asymmetric key exchange technique following ANSI X9 TR-34 standard. The ANSI X9 TR-34 standard uses asymmetric keys to establishes bi-directional trust between the two parties exchanging keys. After which you can export working keys using the ANSI X9 TR-31 symmetric key exchange standard as mandated by PCI PIN. Using this operation, you can share your Amazon Web Services Payment Cryptography generated keys with other service partners to perform cryptographic operations outside of Amazon Web Services Payment Cryptography </p> <p> <b>TR-34 key export</b> </p> <p>Amazon Web Services Payment Cryptography uses TR-34 asymmetric key exchange standard to export main keys such as KEK. In TR-34 terminology, the sending party of the key is called Key Distribution Host (KDH) and the receiving party of the key is called Key Receiving Host (KRH). In key export process, KDH is Amazon Web Services Payment Cryptography which initiates key export. KRH is the user receiving the key. Before you initiate TR-34 key export, you must obtain an export token by calling <a>GetParametersForExport</a>. This operation also returns the signing key certificate that KDH uses to sign the wrapped key to generate a TR-34 wrapped key block. The export token expires after 7 days.</p> <p>Set the following parameters:</p> <dl> <dt>CertificateAuthorityPublicKeyIdentifier</dt> <dd> <p>The <code>KeyARN</code> of the certificate chain that will sign the wrapping key certificate. This must exist within Amazon Web Services Payment Cryptography before you initiate TR-34 key export. If it does not exist, you can import it by calling <a>ImportKey</a> for <code>RootCertificatePublicKey</code>.</p> </dd> <dt>ExportToken</dt> <dd> <p>Obtained from KDH by calling <a>GetParametersForExport</a>.</p> </dd> <dt>WrappingKeyCertificate</dt> <dd> <p>Amazon Web Services Payment Cryptography uses this to wrap the key under export.</p> </dd> </dl> <p>When this operation is successful, Amazon Web Services Payment Cryptography returns the TR-34 wrapped key block. </p> <p> <b>TR-31 key export</b> </p> <p>Amazon Web Services Payment Cryptography uses TR-31 symmetric key exchange standard to export working keys. In TR-31, you must use a main key such as KEK to encrypt or wrap the key under export. To establish a KEK, you can use <a>CreateKey</a> or <a>ImportKey</a>. When this operation is successful, Amazon Web Services Payment Cryptography returns a TR-31 wrapped key block. </p> <p> <b>Cross-account use:</b> This operation can't be used across different Amazon Web Services accounts.</p> <p> <b>Related operations:</b> </p> <ul> <li> <p> <a>GetParametersForExport</a> </p> </li> <li> <p> <a>ImportKey</a> </p> </li> </ul>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "PaymentCryptographyControlPlane.ExportKey"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/ExportKeyInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "ExportKeyInput": {
+        "type": "object",
+        "required": [
+          "ExportKeyIdentifier",
+          "KeyMaterial"
+        ],
+        "title": "ExportKeyInput",
+        "properties": {
+          "ExportKeyIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KeyArnOrKeyAliasType"
+              },
+              {
+                "description": "The <code>KeyARN</code> of the key under export from Amazon Web Services Payment Cryptography."
+              }
+            ]
+          },
+          "KeyMaterial": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExportKeyMaterial"
+              },
+              {
+                "description": "The key block format type, for example, TR-34 or TR-31, to use during key material export."
+              }
+            ]
+          }
+        }
+      },
+      "KeyArnOrKeyAliasType": {
+        "type": "string",
+        "pattern": "^arn:aws:payment-cryptography:[a-z]{2}-[a-z]{1,16}-[0-9]+:[0-9]{12}:(key/[0-9a-zA-Z]{16,64}|alias/[a-zA-Z0-9/_-]+)$|^alias/[a-zA-Z0-9/_-]+$",
+        "minLength": 7,
+        "maxLength": 322
+      },
+      "ExportKeyMaterial": {
+        "type": "object",
+        "properties": {
+          "Tr31KeyBlock": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExportTr31KeyBlock"
+              },
+              {
+                "description": "Parameter information for key material export using TR-31 standard."
+              }
+            ]
+          },
+          "Tr34KeyBlock": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExportTr34KeyBlock"
+              },
+              {
+                "description": "Parameter information for key material export using TR-34 standard."
+              }
+            ]
+          }
+        },
+        "description": "Parameter information for key material export from Amazon Web Services Payment Cryptography."
+      },
+      "ExportTr31KeyBlock": {
+        "type": "object",
+        "required": [
+          "WrappingKeyIdentifier"
+        ],
+        "properties": {
+          "WrappingKeyIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KeyArnOrKeyAliasType"
+              },
+              {
+                "description": "The <code>KeyARN</code> of the the wrapping key. This key encrypts or wraps the key under export for TR-31 key block generation."
+              }
+            ]
+          }
+        },
+        "description": "Parameter information for key material export using TR-31 standard."
+      },
+      "ExportTr34KeyBlock": {
+        "type": "object",
+        "required": [
+          "CertificateAuthorityPublicKeyIdentifier",
+          "ExportToken",
+          "KeyBlockFormat",
+          "WrappingKeyCertificate"
+        ],
+        "properties": {
+          "CertificateAuthorityPublicKeyIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KeyArnOrKeyAliasType"
+              },
+              {
+                "description": "The <code>KeyARN</code> of the certificate chain that signs the wrapping key certificate during TR-34 key export."
+              }
+            ]
+          },
+          "ExportToken": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExportTokenId"
+              },
+              {
+                "description": "The export token to initiate key export from Amazon Web Services Payment Cryptography. It also contains the signing key certificate that will sign the wrapped key during TR-34 key block generation. Call <a>GetParametersForExport</a> to receive an export token. It expires after 7 days. You can use the same export token to export multiple keys from the same service account."
+              }
+            ]
+          },
+          "KeyBlockFormat": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Tr34KeyBlockFormat"
+              },
+              {
+                "description": "The format of key block that Amazon Web Services Payment Cryptography will use during key export."
+              }
+            ]
+          },
+          "RandomNonce": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLength16"
+              },
+              {
+                "description": "A random number value that is unique to the TR-34 key block generated using 2 pass. The operation will fail, if a random nonce value is not provided for a TR-34 key block generated using 2 pass."
+              }
+            ]
+          },
+          "WrappingKeyCertificate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CertificateType"
+              },
+              {
+                "description": "The <code>KeyARN</code> of the wrapping key certificate. Amazon Web Services Payment Cryptography uses this certificate to wrap the key under export."
+              }
+            ]
+          }
+        },
+        "description": "Parameter information for key material export using TR-34 standard."
+      },
+      "ExportTokenId": {
+        "type": "string",
+        "pattern": "^export-token-[0-9a-zA-Z]{16,64}$"
+      },
+      "Tr34KeyBlockFormat": {
+        "type": "string",
+        "enum": [
+          "X9_TR34_2012"
+        ]
+      },
+      "HexLength16": {
+        "type": "string",
+        "pattern": "^[0-9A-F]+$",
+        "minLength": 16,
+        "maxLength": 16
+      },
+      "CertificateType": {
+        "type": "string",
+        "pattern": "^[^\\[;\\]<>]+$",
+        "minLength": 1,
+        "maxLength": 32768,
+        "format": "password"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://controlplane.payment-cryptography.us-east-1.amazonaws.com/#X-Amz-Target=PaymentCryptographyControlPlane.ExportKey"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**WrappedKey**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

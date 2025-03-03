@@ -1,0 +1,84 @@
+{
+  "name": "GetGroups",
+  "description": "List Groups",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination."
+      },
+      "per_page": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended)."
+      },
+      "sort_by": {
+        "type": "object",
+        "description": "If set, sort records by the specified field in either `asc` or `desc` direction (e.g. `sort_by[name]=desc`). Valid fields are `name`."
+      },
+      "filter": {
+        "type": "object",
+        "description": "If set, return records where the specified field is equal to the supplied value. Valid fields are `name`."
+      },
+      "filter_prefix": {
+        "type": "object",
+        "description": "If set, return records where the specified field is prefixed by the supplied value. Valid fields are `name`."
+      },
+      "ids": {
+        "type": "string",
+        "description": "Comma-separated list of group ids to include in results."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/groups{?cursor,per_page,sort_by,filter,filter_prefix,ids}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List Groups",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**admin_ids**: Comma-delimited list of user IDs who are group administrators (separated by commas)",
+            "**id**: Group ID",
+            "**name**: Group name",
+            "**notes**: Notes about this group",
+            "**user_ids**: Comma-delimited list of user IDs who belong to this group (separated by commas)",
+            "**usernames**: Comma-delimited list of usernames who belong to this group (separated by commas)"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,462 @@
+{
+  "name": "updateMessageById",
+  "description": "Need to update a message that's scheduled for sending? You can change any of the below parameters, as long as the message hasn't been sent yet. This request body will override the original POST/ messages call.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Telstra-api-version": {
+        "example": "3.1.0",
+        "type": "string"
+      },
+      "Content-Language": {
+        "example": "en-au",
+        "type": "string"
+      },
+      "Authorization": {
+        "example": "Bearer <access_token>",
+        "type": "string"
+      },
+      "Accept": {
+        "example": "application/json",
+        "type": "string"
+      },
+      "Accept-Charset": {
+        "example": "utf-8",
+        "type": "string"
+      },
+      "Content-Type": {
+        "example": "application/json",
+        "type": "string"
+      },
+      "messageId": {
+        "format": "uuid",
+        "maxLength": 36,
+        "minLength": 36,
+        "type": "string",
+        "description": "When you sent the original message, this is the UUID that was returned in the call response. Use this ID to fetch, update or delete a message with the appropriate endpoints.\n"
+      },
+      "body": {
+        "properties": {
+          "deliveryNotification": {
+            "default": false,
+            "description": "To receive a notification when your SMS has been delivered, set this parameter to **true** and make sure you provide a **statusCallbackUrl** (paid feature).\n",
+            "type": "boolean"
+          },
+          "from": {
+            "description": "When the recipient receives your message, you can choose whether they'll see a privateNumber, virtualNumber or senderName (paid plans only) in the **from** field.\n\n* privateNumber: Use this string to have the message appear on the recipient's device as from \"anonymous\", \"private\" or similar.\n* 04xxxxxxxx: Use one of the Virtual Numbers associated with your account. You'll also be able to receive SMS replies to this number.\n* senderName: Choose a unique alphanumeric string of up to 11 characters (paid feature).\n",
+            "maxLength": 13,
+            "minLength": 1,
+            "type": "string"
+          },
+          "messageContent": {
+            "description": "Use this field to send an SMS. Your text message goes here. \n\nNote: either messageContent or multimedia are required, or you can use both field if you want to send multimedia with text.\n",
+            "maxLength": 1600,
+            "minLength": 1,
+            "type": "string"
+          },
+          "multimedia": {
+            "description": "Use this field to send an MMS. Add your image, video or audio content here. \n\nNote: either messageContent or multimedia are required, or you can use both fields if you want to send multimedia with text. \n\nInclude a JSON payload with:\n\ntype: the type of multimedia content file you're sending (image, audio or video) followed by the file type. Use the format 'multimedia type/file type', e.g. \"image/PNG\" or \"audio/MP3\". Supported file types: JPEG, BMP, GIF87a, GIF89a, PNG, MP3, WAV, MPEG, MPG, MP4, 3GP and US-ASCII.\n\nfileName: the name of your multimedia file. \n\npayload: the base64 encoded content. You can use [this online tool](https://elmah.io/tools/base64-image-encoder/) to encode an image, or [Base64 Guru](https://base64.guru/) to encode a video or audio file.\n",
+            "items": {
+              "$ref": "#/$defs/Multimedia"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          },
+          "retryTimeout": {
+            "default": 10,
+            "description": "If the message is queued or unable to reach the recipient's device, tell us how many minutes the network should keep trying. Use an integer between 1 and 1440. If you don't set a value, we'll try for 10 minutes.\n",
+            "format": "int32",
+            "maximum": 1440,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "scheduleSend": {
+            "description": "Don't want to send the message right away? Tell us what time you want to add it to the queue for sending instead.\n\nSet the time in London Greenwich Mean Time (adjusting for any time difference) and use ISO format, e.g. \"2019-08-24T15:39:00Z\".\n\nYou can schedule a message up to 10 days into the future. If you specify a timestamp outside of this limit, the API will return a FIELD_INVALID error.\n",
+            "format": "date-time",
+            "maxLength": 24,
+            "minLength": 10,
+            "type": "string"
+          },
+          "statusCallbackUrl": {
+            "description": "Tell us the URL you want the API to call when the status of your SMS updates. \n\nTo receive a status update, this field must be provided and deliveryNotification must be set to **true**. \n\nThe status will be either:  \n* **queued** – the message is in the queue for sending (default).\n* **sent** – your message has been sent from the server.\n* **expired** – we weren't able to send the message within the **retryTimeout** timeframe.\n* **delivered** – the message has successfully reached the recipient's device. Note that we will only be able to return this status if you set **deliveryNotification** to **true** (paid feature).\n* **undeliverable** – the delivery of your message failed (paid feature).\n\nSample callback response:\n\n<pre><code class=\"language-sh\">{\n  \"to\":\"0476543210\", \n  \"from\":\"0401234567\", \n  \"timestamp\":\"2022-11-10T05:06:42.823Z\", \n  \"messageId\":\"1520b774-46b0-4415-a05f-7bcb1c032c59\", \n  \"status\":\"delivered\" \n}</code></pre>\n",
+            "example": "http://www.example.com",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Create your own tags and use them to fetch and sort your messages through our other endpoints. You can assign up to 10 tags per message.\n",
+            "items": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "type": "array"
+          },
+          "to": {
+            "description": "This is the mobile number you want to send your message to. Write Australian numbers in national format (e.g. 0412345678) and international numbers (paid plans only) in E.164 format (e.g. +441234567890).\n\nUse a string for a single recipient, and an array of strings for multiple recipients, e.g. \"to\": [\"0412345678\", \"+441234567890\"]. If you're using the Free Trial, you can include up to 5 recipient numbers in the array. If you're using a paid plan, you can bulk send up to 500 messages at once.\n",
+            "maxLength": 16,
+            "minLength": 5,
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "from"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "Content-Language",
+      "Authorization",
+      "Accept",
+      "Accept-Charset",
+      "Content-Type",
+      "messageId",
+      "body"
+    ],
+    "$defs": {
+      "Multimedia": {
+        "properties": {
+          "fileName": {
+            "description": "The name of the multimedia file.",
+            "example": "image/jpeg",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "payload": {
+            "description": "The base64 encoded content. You can use [this online tool](https://elmah.io/tools/base64-image-encoder/) to encode an image, or [Base64 Guru](https://base64.guru/) to encode a video or audio file.\n",
+            "example": "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+            "maxLength": 999999,
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "description": "the type of multimedia content file you're sending (image, audio or video) followed by the file type. Use the format \"multimedia type/file type\", e.g. \"image/PNG\" or \"audio/MP3\". Supported file types:JPEG, BMP, GIF87a, GIF89a, PNG, MP3, WAV, MPEG, MPG, MP4, 3GP and US-ASCII.",
+            "example": "image/jpeg",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "fileName",
+          "payload"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://products.api.telstra.com/messaging/v3/messages/{messageId}"
+    },
+    "headers": {
+      "Telstra-api-version": {
+        "$": "Telstra-api-version"
+      },
+      "Content-Language": {
+        "$": "Content-Language"
+      },
+      "Authorization": {
+        "$": "Authorization"
+      },
+      "Accept": {
+        "$": "Accept"
+      },
+      "Accept-Charset": {
+        "$": "Accept-Charset"
+      },
+      "Content-Type": {
+        "$": "Content-Type"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**deliveryNotification**: If set to **true**, you will receive a notification to the statusCallbackUrl when your message is delivered (paid feature). (default: false)",
+            "**from**: This will be either \"privateNumber\", one of your Virtual Numbers or your senderName.",
+            "**messageContent**: The content of the message.",
+            "**messageId**: Use this UUID with our other endpoints to fetch, update or delete the message.",
+            "**multimedia**: The multimedia content of the message (MMS only). It will include:",
+            "**queuePriority**: The priority assigned to the message. (default: 2)",
+            "**retryTimeout**: How many minutes you asked the server to keep trying to send the message.",
+            "**scheduleSend**: The time the message is scheduled to send.",
+            "**status**: The status will be either queued, sent, delivered, expired or undeliverable.",
+            "**statusCallbackUrl**: The URL the API will call when the status of the message changes.",
+            "**tags**: Any customisable tags assigned to the message.",
+            "**to**: The recipient's mobile number."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "405": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "413": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,342 @@
+{
+  "name": "createLinodeInstance",
+  "description": "Creates a Linode Instance on your Account. In order for this\nrequest to complete successfully, your User must have the `add_linodes` grant. Creating a\nnew Linode will incur a charge on your Account.\n\nLinodes can be created using one of the available Types. See\nTypes List ([GET /linode/types](/docs/api/linode-types/#types-list)) to get more\ninformation about each Type's specs and cost.\n\nLinodes can be created in any one of our available Regions, which are accessible from the\nRegions List ([GET /regions](/docs/api/regions/#regions-list)) endpoint.\n\nIn an effort to fight spam, Linode restricts outbound connections on ports 25, 465, and 587\non all Linodes for new accounts created after November 5th, 2019. For more information,\nsee [Sending Email on Linode](/docs/guides/running-a-mail-server/#sending-email-on-linode).\n\nLinodes can be created in a number of ways:\n\n* Using a Linode Public Image distribution or a Private Image you created based on another Linode.\n  * Access the Images List ([GET /images](/docs/api/images/#images-list)) endpoint with authentication to view\n    all available Images.\n  * The Linode will be `running` after it completes `provisioning`.\n  * A default config with two Disks, one being a 512 swap disk, is created.\n    * `swap_size` can be used to customize the swap disk size.\n  * Requires a `root_pass` be supplied to use for the root User's Account.\n  * It is recommended to supply SSH keys for the root User using the `authorized_keys` field.\n  * You may also supply a list of usernames via the `authorized_users` field.\n    * These users must have an SSH Key associated with your Profile first. See SSH Key Add ([POST /profile/sshkeys](/docs/api/profile/#ssh-key-add)) for more information.\n\n* Using a StackScript.\n  * See StackScripts List ([GET /linode/stackscripts](/docs/api/stackscripts/#stackscripts-list)) for\n    a list of available StackScripts.\n  * The Linode will be `running` after it completes `provisioning`.\n  * Requires a compatible Image to be supplied.\n    * See StackScript View ([GET /linode/stackscript/{stackscriptId}](/docs/api/stackscripts/#stackscript-view)) for compatible Images.\n  * Requires a `root_pass` be supplied to use for the root User's Account.\n  * It is recommended to supply SSH keys for the root User using the `authorized_keys` field.\n  * You may also supply a list of usernames via the `authorized_users` field.\n    * These users must have an SSH Key associated with your Profile first. See SSH Key Add ([POST /profile/sshkeys](/docs/api/profile/#ssh-key-add)) for more information.\n\n* Using one of your other Linode's backups.\n  * You must create a Linode large enough to accommodate the Backup's size.\n  * The Disks and Config will match that of the Linode that was backed up.\n  * The `root_pass` will match that of the Linode that was backed up.\n\n* Attached to a private VLAN.\n  * Review the `interfaces` property of the [Request Body Schema](/docs/api/linode-instances/#linode-create__request-body-schema) for details.\n  * For more information, see our guide on [Getting Started with VLANs](/docs/products/networking/vlans/get-started/).\n\n* Create an empty Linode.\n  * The Linode will remain `offline` and must be manually started.\n    * See Linode Boot ([POST /linode/instances/{linodeId}/boot](/docs/api/linode-instances/#linode-boot)).\n  * Disks and Configs must be created manually.\n  * This is only recommended for advanced use cases.\n\n**Important**: You must be an unrestricted User in order to add or modify\ntags on Linodes.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/LinodeRequest"
+          },
+          {
+            "properties": {
+              "backup_id": {
+                "description": "A Backup ID from another Linode's available backups. Your User must have\n`read_write` access to that Linode, the Backup must have a `status` of\n`successful`, and the Linode must be deployed to the same `region` as the Backup.\nSee [GET /linode/instances/{linodeId}/backups](/docs/api/linode-instances/#backups-list)\nfor a Linode's available backups.\n\nThis field and the `image` field are mutually exclusive.\n",
+                "example": 1234,
+                "type": "integer"
+              },
+              "backups_enabled": {
+                "description": "If this field is set to `true`, the created Linode will automatically be\nenrolled in the Linode Backup service. This will incur an additional charge.\nThe cost for the Backup service is dependent on the Type of Linode deployed.\n\nThis option is always treated as `true` if the account-wide `backups_enabled`\nsetting is `true`.  See [account settings](/docs/api/account/#account-settings-view)\nfor more information.\n\nBackup pricing is included in the response from [/linodes/types](/docs/api/linode-types/#types-list)\n",
+                "type": "boolean"
+              },
+              "group": {
+                "$ref": "#/$defs/group"
+              },
+              "interfaces": {
+                "$ref": "#/$defs/LinodeConfigInterfaces"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              },
+              "private_ip": {
+                "description": "If true, the created Linode will have private networking enabled and assigned a private IPv4 address.\n",
+                "example": true,
+                "type": "boolean"
+              },
+              "region": {
+                "description": "The [Region](/docs/api/regions/#regions-list) where the Linode will be located.\n",
+                "example": "us-east",
+                "type": "string"
+              },
+              "swap_size": {
+                "default": 512,
+                "description": "When deploying from an Image, this field is optional, otherwise it is ignored. This is used to set the swap disk size for the newly-created Linode.\n",
+                "example": 512,
+                "type": "integer"
+              },
+              "tags": {
+                "$ref": "#/$defs/tags"
+              },
+              "type": {
+                "description": "The [Linode Type](/docs/api/linode-types/#types-list) of the Linode you are creating.\n",
+                "example": "g6-standard-2",
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "required": [
+          "type",
+          "region"
+        ],
+        "type": "object",
+        "description": "The requested initial state of a new Linode."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "LinodeRequest": {
+        "description": "Common properties for creating and rebuilding Linodes.",
+        "properties": {
+          "authorized_keys": {
+            "$ref": "#/$defs/authorized_keys"
+          },
+          "authorized_users": {
+            "$ref": "#/$defs/authorized_users"
+          },
+          "booted": {
+            "default": true,
+            "description": "This field defaults to `true` if the Linode is created with an Image or from a Backup.\nIf it is deployed from an Image or a Backup and you wish it to remain `offline` after deployment, set this to `false`.\n",
+            "type": "boolean",
+            "writeOnly": true
+          },
+          "image": {
+            "$ref": "#/$defs/image"
+          },
+          "root_pass": {
+            "$ref": "#/$defs/root_pass"
+          },
+          "stackscript_data": {
+            "$ref": "#/$defs/stackscript_data"
+          },
+          "stackscript_id": {
+            "$ref": "#/$defs/stackscript_id"
+          }
+        },
+        "type": "object"
+      },
+      "authorized_keys": {
+        "description": "A list of public SSH keys that will be automatically appended\nto the root user's `~/.ssh/authorized_keys` file when deploying from an Image.\n",
+        "example": [
+          "ssh-rsa AAAA_valid_public_ssh_key_123456785== user@their-computer"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "writeOnly": true
+      },
+      "authorized_users": {
+        "description": "A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users `~/.ssh/authorized_keys` file automatically when deploying from an Image.\n",
+        "example": [
+          "myUser",
+          "secondaryUser"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "writeOnly": true
+      },
+      "image": {
+        "description": "An Image ID to deploy the Linode Disk from.\n\nAccess the Images List ([GET /images](/docs/api/images/#images-list)) endpoint with authentication to view\nall available Images. Official Linode Images start with `linode/`, while your Account's Images start with `private/`. Creating\na disk from a Private Image requires `read_only` or `read_write` permissions for that Image. Access the User's\nGrant Update ([PUT /account/users/{username}/grants](/docs/api/account/#users-grants-update)) endpoint to\nadjust permissions for an Account Image.\n",
+        "example": "linode/debian9",
+        "type": "string"
+      },
+      "root_pass": {
+        "description": "This sets the root user's password on a newly-created Linode Disk when deploying from an Image.\n\n* **Required** when creating a Linode Disk from an Image, including when using a StackScript.\n\n* Must meet a password strength score requirement that is calculated internally by the API.\nIf the strength requirement is not met, you will receive a `Password does not meet strength requirement` error.\n",
+        "example": "aComplexP@ssword",
+        "format": "password",
+        "maxLength": 128,
+        "minLength": 7,
+        "type": "string",
+        "writeOnly": true
+      },
+      "stackscript_data": {
+        "description": "This field is required only if the StackScript being deployed requires input data from the User for successful completion. See [User Defined Fields (UDFs)](/docs/guides/writing-scripts-for-use-with-linode-stackscripts-a-tutorial/#user-defined-fields-udfs) for more details.\n\nThis field is required to be valid JSON.\n\nTotal length cannot exceed 65,535 characters.\n",
+        "example": {
+          "gh_username": "linode"
+        },
+        "maxLength": 65535,
+        "type": "object"
+      },
+      "stackscript_id": {
+        "description": "A StackScript ID that will cause the referenced StackScript to be run during\ndeployment of this Linode. A compatible `image` is required to use a\nStackScript. To get a list of available StackScript and their permitted Images\nsee [/stackscripts](/docs/api/stackscripts/#stackscripts-list).\nThis field cannot be used when deploying from a Backup or a Private Image.\n",
+        "example": 10079,
+        "type": "integer"
+      },
+      "group": {
+        "deprecated": true,
+        "description": "A deprecated property denoting a group label for this Linode.\n",
+        "example": "Linode-Group",
+        "type": "string",
+        "x-linode-filterable": true
+      },
+      "LinodeConfigInterfaces": {
+        "description": "An array of Network Interfaces to add to this Linode's Configuration Profile.\n\nUp to three interface objects can be entered in this array. The position in the array determines the interface to which the settings apply:\n\n- First/0:  eth0\n- Second/1: eth1\n- Third/2:  eth2\n\nWhen updating a Linode's interfaces, *each interface must be redefined*. An empty interfaces array results in a default public interface configuration only.\n\nIf no public interface is configured, public IP addresses are still assigned to the Linode but will not be usable without manual configuration.\n\n**Note:** Changes to Linode interface configurations can be enabled by rebooting the Linode.\n\n**Note:** Only Next Generation Network (NGN) data centers support VLANs. Use the Regions ([/regions](/docs/api/regions/)) endpoint to view the capabilities of data center regions.\nIf a VLAN is attached to your Linode and you attempt to migrate or clone it to a non-NGN data center,\nthe migration or cloning will not initiate. If a Linode cannot be migrated because of an incompatibility,\nyou will be prompted to select a different data center or contact support.\n\n**Note:** See the [VLANs Overview](/docs/products/networking/vlans/#technical-specifications) guide to view additional specifications and limitations.\n",
+        "items": {
+          "$ref": "#/$defs/LinodeConfigInterface"
+        },
+        "required": [
+          "purpose"
+        ],
+        "type": "array"
+      },
+      "LinodeConfigInterface": {
+        "description": "The Network Interface to apply to this Linode's configuration profile.\n",
+        "properties": {
+          "ipam_address": {
+            "description": "This Network Interface's private IP address in Classless Inter-Domain Routing (CIDR) notation.\n\nOnly used for `vlan` purpose interfaces. Must be an empty string or `null` for `public` purpose interfaces.\n\nThe Linode is configured to use this address for the associated interface upon reboot if Network Helper is enabled. If Network Helper is disabled, the address can be enabled with [manual static IP configuration](/docs/guides/manual-network-configuration/).\n\nMust be unique among the Linode's interfaces.\n",
+            "example": "10.0.0.1/24",
+            "format": "ip/netmask",
+            "nullable": true,
+            "type": "string"
+          },
+          "label": {
+            "description": "The name of this interface.\n\nRequired for `vlan` purpose interfaces. Must be an empty string or `null` for `public` purpose interfaces.\n\nIf the VLAN label is new, a VLAN is created. Up to 10 VLANs can be created in each data center region. To view your active VLANs, use the [VLANs List](/docs/api/networking/#vlans-list) endpoint.\n\nMay only consist of ASCII letters, numbers, and dashes (`-`).\n\nMust be unique among the Linode's interfaces.\n",
+            "example": "example-interface",
+            "maxLength": 64,
+            "minLength": 1,
+            "nullable": true,
+            "pattern": "/[a-z0-9-]+/",
+            "type": "string",
+            "x-linode-filterable": true
+          },
+          "purpose": {
+            "description": "The type of interface.\n\n* `public`\n  * Only one `public` interface per Linode can be defined.\n  * The Linode's default public IPv4 address is assigned to the `public` interface.\n  * A Linode must have a public interface in the first/eth0 position to be reachable via the public internet upon boot without additional system configuration. If no `public` interface is configured, the Linode is not directly reachable via the public internet. In this case, access can only be established via LISH or other Linodes connected to the same VLAN.\n\n* `vlan`\n  * Configuring a `vlan` purpose interface attaches this Linode to the VLAN with the specified `label`.\n  * The Linode is configured to use the specified `ipam_address`, if any.\n",
+            "enum": [
+              "public",
+              "vlan"
+            ],
+            "example": "vlan",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "label": {
+        "description": "The Linode's label is for display purposes only. If no label is provided for a Linode,\na default will be assigned.\n\nLinode labels have the following constraints:\n\n  * Must begin and end with an alphanumeric character.\n  * May only consist of alphanumeric characters, dashes (`-`), underscores (`_`) or periods (`.`).\n  * Cannot have two dashes (`--`), underscores (`__`) or periods (`..`) in a row.\n",
+        "example": "linode123",
+        "maxLength": 64,
+        "minLength": 3,
+        "pattern": "^[a-zA-Z]((?!--|__|..)[a-zA-Z0-9-_.])+$",
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      },
+      "tags": {
+        "description": "An array of tags applied to this object.  Tags are for organizational purposes only.\n",
+        "example": [
+          "example tag",
+          "another example"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/linode/instances"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**alerts**",
+              {
+                "$ul": [
+                  "**cpu**: The percentage of CPU usage required to trigger an alert.",
+                  "**io**: The amount of disk IO operation per second required to trigger an alert. If the average disk IO over two hours exceeds this value, we'll send you an alert. If set to `0` (zero), this alert is disabled.",
+                  "**network_in**: The amount of incoming traffic, in Mbit/s, required to trigger an alert. If the average incoming traffic over two hours exceeds this value, we'll send you an alert. If this is set to `0` (zero), the alert is disabled.",
+                  "**network_out**: The amount of outbound traffic, in Mbit/s, required to trigger an alert. If the average outbound traffic over two hours exceeds this value, we'll send you an alert. If this is set to `0` (zero), the alert is disabled.",
+                  "**transfer_quota**: The percentage of network transfer that may be used before an alert is triggered. When this value is exceeded, we'll alert you. If this is set to `0` (zero), the alert is disabled."
+                ]
+              }
+            ],
+            [
+              "**backups**: Information about this Linode's backups status. For information about available backups, see [/linode/instances/{linodeId}/backups](/docs/api/linode-instances/#backups-list).",
+              {
+                "$ul": [
+                  "**available**: Whether Backups for this Linode are available for restoration.",
+                  "**enabled**: If this Linode has the Backup service enabled. To enable backups, see [POST /linode/instances/{linodeId}/backups/enable](/docs/api/linode-instances/#backups-enable).",
+                  "**last_successful**: The last successful backup date. 'null' if there was no previous backup.",
+                  [
+                    "**schedule**",
+                    {
+                      "$ul": [
+                        "**day**: The day of the week that your Linode's weekly Backup is taken.",
+                        "**window**: The window in which your backups will be taken, in UTC. A"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**created**: When this Linode was created.",
+            "**group**: A deprecated property denoting a group label for this Linode.",
+            "**host_uuid**: The Linode's host machine, as a UUID.",
+            "**hypervisor**: The virtualization software powering this Linode.",
+            "**id**: This Linode's ID which must be provided for all operations impacting this Linode.",
+            "**image**",
+            "**ipv4**: This Linode's IPv4 Addresses. Each Linode is assigned a single public IPv4 address",
+            "**ipv6**: This Linode's IPv6 SLAAC address. This address is specific to a Linode, and may not be shared. If the Linode has not been assigned an IPv6 address, the return value will be `null`.",
+            "**label**: The Linode's label is for display purposes only. If no label is provided for a Linode,",
+            "**region**: This is the [Region](/docs/api/regions/#regions-list) where the Linode was deployed. A Linode's region can only be changed by initiating a [cross data center migration](/docs/api/linode-instances/#dc-migrationpending-host-migration-initiate).",
+            [
+              "**specs**: Information about the resources available to this Linode.",
+              {
+                "$ul": [
+                  "**disk**: The amount of storage space, in MB, this Linode has access to. A typical Linode will divide this space between a primary disk with an `image` deployed to it, and a swap disk, usually 512 MB. This is the default configuration created when deploying a Linode with an `image` through [POST /linode/instances](/docs/api/linode-instances/#linode-create). While this configuration is suitable for 99% of use cases, if you need finer control over your Linode's disks, see the [/linode/instances/{linodeId}/disks](/docs/api/linode-instances/#disks-list) endpoints.",
+                  "**gpus**: The number of gpus this Linode has access to.",
+                  "**memory**: The amount of RAM, in MB, this Linode has access to.",
+                  "**transfer**: The amount of network transfer this Linode is allotted each month.",
+                  "**vcpus**: The number of vcpus this Linode has access to."
+                ]
+              }
+            ],
+            "**status**: A brief description of this Linode's current state. This field may change without direct action from you. For example, when a Linode goes into maintenance mode its status will display \"stopped\".",
+            "**tags**: An array of tags applied to this object.  Tags are for organizational purposes only.",
+            "**type**: This is the [Linode Type](/docs/api/linode-types/#types-list) that this Linode was deployed with.",
+            "**updated**: When this Linode was last updated.",
+            "**watchdog_enabled**: The watchdog, named Lassie, is a Shutdown Watchdog that monitors your Linode and will reboot it if it powers off unexpectedly. It works by issuing a boot job when your Linode powers off without a shutdown job being responsible."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

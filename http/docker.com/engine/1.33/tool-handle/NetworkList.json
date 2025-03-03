@@ -1,0 +1,101 @@
+{
+  "name": "NetworkList",
+  "description": "Returns a list of networks. For details on the format, see [the network inspect endpoint](#operation/NetworkInspect).\n\nNote that it uses a different, smaller representation of a network than inspecting a single network. For example,\nthe list of containers attached to the network is not propagated in API versions 1.28 and up.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "filters": {
+        "type": "string",
+        "description": "JSON encoded value of the filters (a `map[string][]string`) to process on the networks list. Available filters:\n\n- `driver=<driver-name>` Matches a network's driver.\n- `id=<network-id>` Matches all or part of a network ID.\n- `label=<key>` or `label=<key>=<value>` of a network label.\n- `name=<network-name>` Matches all or part of a network name.\n- `scope=[\"swarm\"|\"global\"|\"local\"]` Filters networks by scope (`swarm`, `global`, or `local`).\n- `type=[\"custom\"|\"builtin\"]` Filters networks by type. The `custom` keyword returns all user-defined networks.\n"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/v1.33/networks{?filters}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Attachable**",
+            "**Containers**",
+            "**Created**",
+            "**Driver**",
+            "**EnableIPv6**",
+            [
+              "**IPAM**",
+              {
+                "$ul": [
+                  "**Config**: List of IPAM configuration options, specified as a map: `{\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>}`",
+                  "**Driver**: Name of the IPAM driver to use. (default: default)",
+                  "**Options**: Driver-specific options, specified as a map."
+                ]
+              }
+            ],
+            "**Id**",
+            "**Ingress**",
+            "**Internal**",
+            "**Labels**",
+            "**Name**",
+            "**Options**",
+            "**Scope**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents an error.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: The error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

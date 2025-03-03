@@ -1,0 +1,210 @@
+{
+  "name": "PUT_mc-contacts-imports",
+  "description": "**This endpoint allows a CSV upload containing up to one million contacts or 5GB of data, whichever is smaller.**\n\nImports take place asynchronously: the endpoint returns a URL (`upload_uri`) and HTTP headers (`upload_headers`) which can subsequently be used to `PUT` a file of contacts to be  imported into our system.\n\nUploaded CSV files may also be [gzip-compressed](https://en.wikipedia.org/wiki/Gzip).\n\nIn either case, you must include the field `file_type` with the value `csv` in your request body.\n\nThe `field_mappings` paramter is a respective list of field definition IDs to map the uploaded CSV columns to. It allows you to use CSVs where one or more columns are skipped (`null`) or remapped to the contact field. \n\nFor example, if `field_mappings` is set to `[null, \"w1\", \"_rf1\"]`, this means skip column 0, map column 1 to the custom field with the ID `w1`, and map column 2 to the reserved field with the ID `_rf1`. See the \"Get All Field Definitions\" endpoint to fetch your custom and reserved field IDs to use with `field_mappings`.\n\nOnce you recieve the response body you can then initiate a **second** API call where you use the supplied URL and HTTP header to upload your file. For example:\n\n`curl --upload-file \"file/path.csv\" \"URL_GIVEN\" -H 'HEADER_GIVEN'`\n\nIf you'd like to monitor the status of your import job, use the `job_id` and the \"Import Contacts Status\" endpoint.\nTwilio SendGrid recommends exporting your contacts regularly as a backup to avoid issues or lost data.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "field_mappings": {
+            "description": "Import file header to reserved/custom field mapping.",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "nullable": true
+                }
+              ]
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": false
+          },
+          "file_type": {
+            "description": "Upload file type.",
+            "enum": [
+              "csv"
+            ],
+            "type": "string"
+          },
+          "list_ids": {
+            "description": "All contacts will be added to each of the specified lists.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "file_type",
+          "field_mappings"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/contacts/imports"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**job_id**: The ID of the import job.",
+            "**upload_headers**: A list of headers that must be included in PUT request.",
+            "**upload_uri**: The URI to PUT the upload file to."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "If any of the specified lists do not exist.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

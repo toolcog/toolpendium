@@ -1,0 +1,260 @@
+{
+  "name": "post_metadata_queries_execute_read",
+  "description": "Create a search using SQL-like syntax to return items that match specific\nmetadata.\n\nBy default, this endpoint returns only the most basic info about the items for\nwhich the query matches. To get additional fields for each item, including any\nof the metadata, use the `fields` attribute in the query.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/MetadataQuery"
+      }
+    },
+    "$defs": {
+      "MetadataQuery": {
+        "description": "Create a search using SQL-like syntax to return items that match specific\nmetadata.",
+        "properties": {
+          "ancestor_folder_id": {
+            "description": "The ID of the folder that you are restricting the query to. A\nvalue of zero will return results from all folders you have access\nto. A non-zero value will only return results found in the folder\ncorresponding to the ID or in any of its subfolders.",
+            "example": "0",
+            "type": "string"
+          },
+          "fields": {
+            "description": "By default, this endpoint returns only the most basic info about the items for\nwhich the query matches. This attribute can be used to specify a list of\nadditional attributes to return for any item, including its metadata.\n\nThis attribute takes a list of item fields, metadata template identifiers,\nor metadata template field identifiers.\n\nFor example:\n\n* `created_by` will add the details of the user who created the item to\nthe response.\n* `metadata.<scope>.<templateKey>` will return the mini-representation\nof the metadata instance identified by the `scope` and `templateKey`.\n* `metadata.<scope>.<templateKey>.<field>` will return all the mini-representation\nof the metadata instance identified by the `scope` and `templateKey` plus\nthe field specified by the `field` name. Multiple fields for the same\n`scope` and `templateKey` can be defined.",
+            "example": [
+              "extension",
+              "created_at",
+              "item_status",
+              "metadata.enterprise_1234.contracts",
+              "metadata.enterprise_1234.regions.location"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "from": {
+            "description": "Specifies the template used in the query. Must be in the form\n`scope.templateKey`. Not all templates can be used in this field,\nmost notably the built-in, Box-provided classification templates\ncan not be used in a query.",
+            "example": "enterprise_123456.someTemplate",
+            "type": "string"
+          },
+          "limit": {
+            "default": 100,
+            "description": "A value between 0 and 100 that indicates the maximum number of results\nto return for a single request. This only specifies a maximum\nboundary and will not guarantee the minimum number of results\nreturned.",
+            "example": 50,
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "marker": {
+            "description": "Marker to use for requesting the next page.",
+            "example": "AAAAAmVYB1FWec8GH6yWu2nwmanfMh07IyYInaa7DZDYjgO1H4KoLW29vPlLY173OKsci6h6xGh61gG73gnaxoS+o0BbI1/h6le6cikjlupVhASwJ2Cj0tOD9wlnrUMHHw3/ISf+uuACzrOMhN6d5fYrbidPzS6MdhJOejuYlvsg4tcBYzjauP3+VU51p77HFAIuObnJT0ff",
+            "type": "string"
+          },
+          "order_by": {
+            "description": "A list of template fields and directions to sort the metadata query\nresults by.\n\nThe ordering `direction` must be the same for each item in the array.",
+            "items": {
+              "description": "An object representing one of the metadata template fields to sort the\nmetadata query results by.",
+              "properties": {
+                "direction": {
+                  "description": "The direction to order by, either ascending or descending.\n\nThe `ordering` direction must be the same for each item in the\narray.",
+                  "enum": [
+                    "ASC",
+                    "DESC",
+                    "asc",
+                    "desc"
+                  ],
+                  "example": "asc",
+                  "type": "string"
+                },
+                "field_key": {
+                  "description": "The metadata template field to order by.\n\nThe `field_key` represents the `key` value of a field from the\nmetadata template being searched for.",
+                  "example": "amount",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "query": {
+            "description": "The query to perform. A query is a logical expression that is very similar\nto a SQL `SELECT` statement. Values in the search query can be turned into\nparameters specified in the `query_param` arguments list to prevent having\nto manually insert search values into the query string.\n\nFor example, a value of `:amount` would represent the `amount` value in\n`query_params` object.",
+            "example": "value >= :amount",
+            "type": "string"
+          },
+          "query_params": {
+            "additionalProperties": {
+              "description": "The value for the argument being used in the metadata search.\n\nThe type of this parameter must match the type of the corresponding\nmetadata template field.",
+              "example": "100",
+              "type": "string",
+              "x-box-example-key": "amount"
+            },
+            "description": "Set of arguments corresponding to the parameters specified in the\n`query`. The type of each parameter used in the `query_params` must match\nthe type of the corresponding metadata template field.",
+            "example": {
+              "amount": "100"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "from",
+          "ancestor_folder_id"
+        ],
+        "title": "Metadata query search request",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.box.com/2.0/metadata_queries/execute_read"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Metadata query search results"
+        },
+        "A page of files and folders that matched the metadata query.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**entries**: The mini representation of the files and folders that match the search",
+            "**limit**: The limit that was used for this search. This will be the same as the (default: 100)",
+            "**next_marker**: The marker for the start of the next page of results."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Client error"
+        },
+        "A generic error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A Box-specific error code",
+            [
+              "**context_info**: A free-form object that contains additional context",
+              {
+                "$ul": [
+                  "**message**: More details on the error."
+                ]
+              }
+            ],
+            "**help_url**: A URL that links to more information about why this error occurred.",
+            "**message**: A short message describing the error.",
+            "**request_id**: A unique identifier for this response, which can be used",
+            "**status**: The HTTP status of the response.",
+            "**type**: `error`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

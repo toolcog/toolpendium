@@ -1,0 +1,380 @@
+{
+  "name": "CreateAnnotationStore",
+  "description": "Creates an annotation store.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "storeFormat"
+        ],
+        "properties": {
+          "reference": {
+            "description": "A genome reference.",
+            "type": "object",
+            "properties": {
+              "referenceArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ReferenceArn"
+                  },
+                  {
+                    "description": "The reference's ARN."
+                  }
+                ]
+              }
+            }
+          },
+          "name": {
+            "description": "A name for the store.",
+            "type": "string",
+            "pattern": "([a-z]){1}([a-z0-9_]){2,254}"
+          },
+          "description": {
+            "description": "A description for the store.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 500
+          },
+          "tags": {
+            "description": "Tags for the store.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "sseConfig": {
+            "description": "Server-side encryption (SSE) settings for a store.",
+            "type": "object",
+            "properties": {
+              "type": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EncryptionType"
+                  },
+                  {
+                    "description": "The encryption type."
+                  }
+                ]
+              },
+              "keyArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SseConfigKeyArnString"
+                  },
+                  {
+                    "description": "An encryption key ARN."
+                  }
+                ]
+              }
+            }
+          },
+          "storeFormat": {
+            "description": "The annotation file format of the store.",
+            "type": "string",
+            "enum": [
+              "GFF",
+              "TSV",
+              "VCF"
+            ]
+          },
+          "storeOptions": {
+            "description": "Settings for a store.",
+            "type": "object",
+            "properties": {
+              "tsvStoreOptions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TsvStoreOptions"
+                  },
+                  {
+                    "description": "File settings for a TSV store."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ReferenceArn": {
+        "type": "string",
+        "pattern": "arn:.+",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "EncryptionType": {
+        "type": "string",
+        "enum": [
+          "KMS"
+        ]
+      },
+      "SseConfigKeyArnString": {
+        "type": "string",
+        "pattern": ".*arn:([^: ]*):([^: ]*):([^: ]*):([0-9]{12}):([^: ]*).*",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "TsvStoreOptions": {
+        "type": "object",
+        "properties": {
+          "annotationType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AnnotationType"
+              },
+              {
+                "description": "The store's annotation type."
+              }
+            ]
+          },
+          "formatToHeader": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FormatToHeader"
+              },
+              {
+                "description": "The store's header key to column name mapping."
+              }
+            ]
+          },
+          "schema": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TsvStoreOptionsSchemaList"
+              },
+              {
+                "description": "The store's schema."
+              }
+            ]
+          }
+        },
+        "description": "File settings for a TSV store."
+      },
+      "AnnotationType": {
+        "type": "string",
+        "enum": [
+          "GENERIC",
+          "CHR_POS",
+          "CHR_POS_REF_ALT",
+          "CHR_START_END_ONE_BASE",
+          "CHR_START_END_REF_ALT_ONE_BASE",
+          "CHR_START_END_ZERO_BASE",
+          "CHR_START_END_REF_ALT_ZERO_BASE"
+        ]
+      },
+      "FormatToHeader": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/FormatToHeaderValueString"
+        }
+      },
+      "FormatToHeaderValueString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1000
+      },
+      "TsvStoreOptionsSchemaList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SchemaItem"
+        },
+        "minItems": 1,
+        "maxItems": 5000
+      },
+      "SchemaItem": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 1,
+        "additionalProperties": {
+          "$ref": "#/$defs/SchemaValueType"
+        }
+      },
+      "SchemaValueType": {
+        "type": "string",
+        "enum": [
+          "LONG",
+          "INT",
+          "STRING",
+          "FLOAT",
+          "DOUBLE",
+          "BOOLEAN"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://omics.us-east-1.amazonaws.com/annotationStore"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**reference**",
+            "**storeFormat**",
+            "**storeOptions**",
+            "**status**",
+            "**name**",
+            "**creationTime**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

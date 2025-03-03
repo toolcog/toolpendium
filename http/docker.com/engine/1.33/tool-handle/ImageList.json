@@ -1,0 +1,99 @@
+{
+  "name": "ImageList",
+  "description": "Returns a list of images on the server. Note that it uses a different, smaller representation of an image than inspecting a single image.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "all": {
+        "default": false,
+        "type": "boolean",
+        "description": "Show all images. Only images from a final layer (no children) are shown by default."
+      },
+      "filters": {
+        "type": "string",
+        "description": "A JSON encoded value of the filters (a `map[string][]string`) to process on the images list. Available filters:\n\n- `before`=(`<image-name>[:<tag>]`,  `<image id>` or `<image@digest>`)\n- `dangling=true`\n- `label=key` or `label=\"key=value\"` of an image label\n- `reference`=(`<image-name>[:<tag>]`)\n- `since`=(`<image-name>[:<tag>]`,  `<image id>` or `<image@digest>`)\n"
+      },
+      "digests": {
+        "default": false,
+        "type": "boolean",
+        "description": "Show digest information as a `RepoDigests` field on each image."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/v1.33/images/json{?all,filters,digests}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Containers**",
+            "**Created**",
+            "**Id**",
+            "**Labels**",
+            "**ParentId**",
+            "**RepoDigests**",
+            "**RepoTags**",
+            "**SharedSize**",
+            "**Size**",
+            "**VirtualSize**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Represents an error.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: The error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

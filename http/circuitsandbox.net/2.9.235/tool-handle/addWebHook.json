@@ -1,0 +1,87 @@
+{
+  "name": "addWebHook",
+  "description": "Registers the webHook with the given filter and callback URL.\nOauthScopes: READ_CONVERSATIONS, READ_USER",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "filter": {
+            "description": "A filter for WebHooks that checks for a list of configured events. This filter will use a regular expression to determine if it is interested in the events or not. The event itself is converted into a string of format AREA.EVENT. Examples: CONVERSATION.CREATE / USER.UPDATE",
+            "items": {
+              "enum": [
+                "CONVERSATION.CREATE",
+                "CONVERSATION.UPDATE",
+                "CONVERSATION.ADD_ITEM",
+                "CONVERSATION.UPDATE_ITEM",
+                "USER.INCOMING_CALL",
+                "USER.USER_UPDATED",
+                "USER.USER_SETTING_UPDATED",
+                "USER.SUBMIT_FORM_DATA"
+              ],
+              "maxLength": 2048,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "url": {
+            "description": "WebHook callback URL",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "filter"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://circuitsandbox.net/rest/v2/webhooks"
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**creationTime**: The time when this WebHook was created. This does not necessary mean the time when an manifest file was created.",
+            "**filter**: An optional list of filter parameters for this webhook.",
+            "**id**: The unique identifier for this webhook. Can be used later to unregister the webhook.",
+            "**subscriptionIds**: The optional list of userids for which this webhook is subscribed, i.e. presence events for the user are forwarded to the WebHook callback URL.",
+            "**type**: The type of a WebHook. This can either be MANUAL or EXTENSION. While manual WebHooks are only temporary and for development only use, permanent ones (EXTENSION) will bemanaged by the system.",
+            "**url**: The callback URL of this webhook.",
+            "**userId**: The user ID for which this webhook is subscribed, i.e. events for this user are forwarded to the WebHook callback URL."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

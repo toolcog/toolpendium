@@ -1,0 +1,91 @@
+{
+  "name": "Line_RouteByMode",
+  "description": "Gets all lines and their valid routes for given modes, including the name and id of the originating and terminating stops for each route",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "modes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma-separated list of modes e.g. tube,dlr"
+      },
+      "serviceTypes": {
+        "items": {
+          "enum": [
+            "Regular",
+            "Night"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A comma seperated list of service types to filter on. Supported values: Regular, Night. Defaulted to 'Regular' if not specified"
+      }
+    },
+    "required": [
+      "modes"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/Line/Mode/{modes}/Route{?serviceTypes}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**",
+            [
+              "**crowding**",
+              {
+                "$ul": [
+                  "**passengerFlows**: Busiest times at a station (static information)",
+                  "**trainLoadings**: Train Loading on a scale 1-6, 1 being \"Very quiet\" and 6 being \"Exceptionally busy\" (static information)"
+                ]
+              }
+            ],
+            "**disruptions**",
+            "**id**",
+            "**lineStatuses**",
+            "**modeName**",
+            "**modified**",
+            "**name**",
+            "**routeSections**",
+            "**serviceTypes**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

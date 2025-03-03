@@ -1,0 +1,304 @@
+{
+  "name": "UpdateAgentStatus",
+  "description": "<note> <p> For use by AWS Ground Station Agent and shouldn't be called directly.</p> </note> <p>Update the status of the agent.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "agentId": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "UUID of agent to update."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "aggregateStatus",
+          "componentStatuses",
+          "taskId"
+        ],
+        "properties": {
+          "aggregateStatus": {
+            "description": "Aggregate status of Agent components.",
+            "type": "object",
+            "properties": {
+              "signatureMap": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SignatureMap"
+                  },
+                  {
+                    "description": "Sparse map of failure signatures."
+                  }
+                ]
+              },
+              "status": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AgentStatus"
+                  },
+                  {
+                    "description": "Aggregate status."
+                  }
+                ]
+              }
+            }
+          },
+          "componentStatuses": {
+            "description": "List of component statuses for agent.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ComponentStatusData"
+            },
+            "minItems": 0,
+            "maxItems": 20
+          },
+          "taskId": {
+            "description": "GUID of agent task.",
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      }
+    },
+    "required": [
+      "agentId",
+      "body"
+    ],
+    "$defs": {
+      "SignatureMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Boolean"
+        }
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "AgentStatus": {
+        "type": "string",
+        "enum": [
+          "SUCCESS",
+          "FAILED",
+          "ACTIVE",
+          "INACTIVE"
+        ]
+      },
+      "ComponentStatusData": {
+        "type": "object",
+        "required": [
+          "capabilityArn",
+          "componentType",
+          "dataflowId",
+          "status"
+        ],
+        "properties": {
+          "bytesReceived": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Bytes received by the component."
+              }
+            ]
+          },
+          "bytesSent": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Bytes sent by the component."
+              }
+            ]
+          },
+          "capabilityArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CapabilityArn"
+              },
+              {
+                "description": "Capability ARN of the component."
+              }
+            ]
+          },
+          "componentType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentTypeString"
+              },
+              {
+                "description": "The Component type."
+              }
+            ]
+          },
+          "dataflowId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Uuid"
+              },
+              {
+                "description": "Dataflow UUID associated with the component."
+              }
+            ]
+          },
+          "packetsDropped": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Packets dropped by component."
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AgentStatus"
+              },
+              {
+                "description": "Component status."
+              }
+            ]
+          }
+        },
+        "description": "Data on the status of agent components."
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "CapabilityArn": {
+        "type": "string"
+      },
+      "ComponentTypeString": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_]{1,64}$"
+      },
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://groundstation.us-east-1.amazonaws.com/agent/{agentId}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**agentId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

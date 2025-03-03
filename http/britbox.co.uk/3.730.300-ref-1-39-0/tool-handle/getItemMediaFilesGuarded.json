@@ -1,0 +1,319 @@
+{
+  "name": "getItemMediaFilesGuarded",
+  "description": "Get the video files associated with an item given maximum resolution, device type\nand one or more delivery types.\n\nThis endpoint is identical to the `/account/items/{id}/videos` however it expects\nan Account Playback token. This token, and in association this endpoint, is specifically\nfor use when playback files are classification restricted and require an account\nlevel pin to access them.\n\nReturns an array of video file objects which each include a url to a video.\n\nThe first entry in the array contains what is predicted to be the best match.\nThe remainder of the entries, if any, may contain resolutions below what was\nrequests. For example if you request HD-720 the response may also contain\nSD entries.\n\nIf you specify multiple delivery types, then the response array will insert\ntypes in the order you specify them in the query. For example `stream,progressive`\nwould return an array with 0 or more stream files followed by 0 or more progressive files.\n\nIf no files are found a 404 is returned.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The identifier of the item whose video files to load."
+      },
+      "delivery": {
+        "items": {
+          "enum": [
+            "stream",
+            "progressive",
+            "download"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The video delivery type you require."
+      },
+      "resolution": {
+        "enum": [
+          "HD-4K",
+          "HD-1080",
+          "HD-720",
+          "SD",
+          "External"
+        ],
+        "type": "string",
+        "description": "The maximum resolution the device to playback the media can present."
+      },
+      "formats": {
+        "items": {
+          "enum": [
+            "mp4",
+            "mpd",
+            "hls",
+            "external"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of media file formats that the device supports, in the order of preference.\n\nWhen provided, Rocket API returns only media files in formats specified in this parameter. For each resolution, only the first media file of matching supported format is returned. Files of different resolutions may be of different supported media file formats.\n\n`external` value is reserved for project customizations where the real MIME type of the file on the specified URL is unknown at the time of ingestion.\n\nWhen not provided, Rocket API uses the legacy `User-Agent` header-based logic to find matching media files.\n"
+      },
+      "device": {
+        "default": "web_browser",
+        "type": "string",
+        "description": "The type of device the content is targeting."
+      },
+      "sub": {
+        "type": "string",
+        "description": "The active subscription code."
+      },
+      "segments": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of segments to filter the response by."
+      },
+      "ff": {
+        "items": {
+          "enum": [
+            "all",
+            "idp",
+            "ldp",
+            "hb",
+            "rpt",
+            "cas",
+            "lrl",
+            "cd"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of opt in feature flags which cause breaking changes to responses.\n\nWhile Rocket APIs look to avoid breaking changes under the active major version, the formats of responses\nmay need to evolve over this time.\n\nThese feature flags allow clients to select which response formats they expect and avoid breaking\nclients as these formats evolve under the current major version.\n\n### Flags\n\n- `all` - Enable all flags. Useful for testing. _Don't use in production_.\n- `idp` - Dynamic item detail pages with schedulable rows.\n- `ldp` - Dynamic list detail pages with schedulable rows.\n- `hb` - Hubble formatted image urls.\n- `rpt` - Updated resume point threshold logic.\n- `cas` - \"Custom Asset Search\", inlcude `customAssets` in search results.\n- `lrl` - Do not pre-populate related list if more than `max_list_prefetch` down the page.\n- `cd` - Custom Destination support.\n\nSee the `feature-flags.md` for available flag details.\n"
+      },
+      "lang": {
+        "type": "string",
+        "description": "Language code for the preferred language to be returned in the response.\n\nParameter value is case-insensitive and should be\n  - a valid 2 letter language code without region such as en, de\n  - or with region such as en_us, en_au\n\nIf undefined then defaults to 'en', unless the server has been configured\nwith a custom default.\n\nSee https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+      }
+    },
+    "required": [
+      "id",
+      "delivery",
+      "resolution"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/account/items/{id}/videos-guarded{?delivery,resolution,formats,device,sub,segments,ff,lang}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**channels**: The number of audio channels.",
+            "**deliveryType**: The way in which the media file is delivered.",
+            "**drm**: The type of drm used to encrypt the media. 'None' if unencrypted.",
+            "**format**: The format the media was encoded in.",
+            "**height**: The height of the video media.",
+            "**language**: The language code for the media, e.g. 'en'.",
+            "**name**: The name of the media file.",
+            "**resolution**: The resolution of the video media.",
+            "**url**: The url to access the media file.",
+            "**width**: The width of the video media."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "name": "createSiteDeviceHaCluster",
+  "description": "Create HA Cluster\nBoth nodes has to be in the same site. We expect the user to configure ha_sync / ha_data port in port_configs already\n\n### SRX cabling\n\nsee [Chassis Cluster User Guide for SRX Series Devices](https://www.juniper.net/documentation/us/en/software/junos/chassis-cluster-security-devices/topics/concept/chassis-cluster-srx-series-node-interface-understanding.html) Here’s the recommended cabling.\n\n#### SRX300\n\nFrom ZTP / default state, ge-0/0/0 and ge-0/0/7 (SFP) are default WAN ports and will get DHCP IP. However, ge-0/0/0 becomes OOB/fxp0 after cluster is enabled (i.e. using it for reach Mist is not recommended)\n\n1.  form cluster in UI\n2.  configure ge-0/0/7,ge-1/0/7 for WAN (reth0)\n3.  configure ge-0/0/2,ge-1/0/2 for ha_data\n4.  configure ge-0/0/3- for LAN or additional WAN e.g.\n    \n\n``` json\n{\n    \"port_config\": {\n        \"ge-0/0/2,ge-1/0/2\": {\n            \"usage\": \"ha_data\"\n        },\n        \"ge-0/0/7,ge-1/0/7\": {\n            \"usage\": \"wan\",\n            \"redundant\": true,\n            \"reth_idx\": 0,\n            \"ip_config\": {\"type\": \"dhcp\"}\n        },\n    }\n}\n\n```\n\n1.  connect ge-0/0/1 back to back for ha_control\n2.  connect ge-0/0/2 back to back for ha_data\n3.  connect both ge-0/0/7 to uplink switch to WAN and to reach Mist\n4.  power up both devices\n5.  it takes about 30 minutes for the cluster to form\n    \n\n#### SRX320\n\nFrom ZTP / default state, ge-0/0/0, ge-0/0/7 (SFP) and cl-1/0/0 (LTE) are default WAN ports and will get DHCP IP. However, ge-0/0/0 becomes OOB/fxp0 after cluster is enabled (i.e. using it for reach Mist is not recommended)\n\n##### ZTP via ge-0/0/7\n\nSimilar to SRX300\n\n##### ZTP via cl-1/0/0 (LTE)\n\n1.  form cluster in UI\n2.  configure cl-1/0/0, cl-3/0/0 as WAN (reth0)\n3.  configure ge-0/0/2,ge-3/0/2 for ha_data\n4.  same as above\n    \n\n#### SRX340 / SRX345 / SRX380\n\nSRX340/SRX345 has dedicated OOB/fxp0 ports\n\n1.  form cluster in UI\n2.  configure ge-0/0/0,ge-5/0/0 for WAN (reth0)\n3.  configure ge-0/0/2,ge-5/0/2 for ha_data\n4.  configure ge-0/0/3- for LAN or additional WAN\n5.  connect ge-0/0/0 to uplink switch to WAN and to reach Mist\n6.  connect ge-0/0/1 back-to-back for ha_control\n7.  connect ge-0/0/2 back-to-back for ha_data (fabric); or for SRX380, xe-0/0/16 if 10G SFP+ is used\n8.  connect ge-0/0/3- to LAN or additional WANs\n    \n\n#### SRX550\n\nge-0/0/0 becomes OOB/fxp0 after cluster is enabled, make suenable oob_ip_config as dhcp to maintain cloud connectivity\n\n1.  connect ge-0/0/0 to reach Mist (after cluster is fully up, this port becomes OOB/fxp0)\n2.  connect ge-0/0/1 back-to-back for ha_control\n3.  connect ge-0/0/2 back-to-back for ha_data (fabric)\n4.  connect ge-0/0/3 to WAN (after cluster is up, intended to be used for reth0)\n5.  connect ge-0/0/4- to LAN or additional WANs\n    \n\n#### SRX1500\n\nSRX1500 has, additionally, dedicated HA Control port\n\n1.  form cluster in UI\n2.  configure ge-0/0/0,ge-5/0/0 for WAN (reth0)\n3.  configure ge-0/0/1,ge-5/0/1 for ha_data\n4.  configure ge-0/0/2- for LAN or additional WAN\n5.  connect dedicated ha_control back-to-back\n6.  connect ge-0/0/0 to uplink switch to WAN and to reach Mist\n7.  connect ge-0/0/1 back-to-back for ha_data\n8.  connect ge-0/0/2- to LAN or additional WANs\n    \n\n#### SRX4100\n\nSRX4100 has dedicated ha_control and ha_data (fabric) ports\n\n1.  connect dedicated ha_control back-to-back\n2.  connect dedicated ha_data back-to-back\n3.  connect xe-0/0/0 to WAN to reach Mist\n4.  connect xe-0/0/1- to LAN or additional WANs\n    \n\n#### VSRX\n\nWhen standalone, VSRX has fxp0 as first Network Adapter, then ge-0/0/0-N When clustered, VSRX has fxp0, em0, then ge-0/0/0-N\n\n1.  connect net0 (fxp0) to WAN to reach Mist\n2.  connect net1 back-to-back for ha_control\n3.  connect net2 (ge-0/0/0) back-to-back for ha_data (fab0/fab1)\n4.  connect net3 (ge-0/0/1) to WAN, intended to be used for reth0\n5.  connect net4 (ge-0/0/2) to LAN\n    \n\nSRX340/SRX345 has dedicated OOB/fxp0 ports VSRX has fxp0 as first Network Adapter, then ge-0/0/0-N\n\n1.  connect ge-0/0/0 to WAN to reach Mist\n2.  connect ge-0/0/1 back-to-back for ha_control\n3.  connect ge-0/0/2 back-to-back for ha_data (fabric); or for SRX380, xe-0/0/16 if 10G SFP+ is used\n4.  connect ge-0/0/3- to LAN or additional WANs\n    \n\n#### SRX550\n\nge-0/0/0 becomes OOB/fxp0 after cluster is enabled, make suenable oob_ip_config as dhcp to maintain cloud connectivity\n\n1.  connect ge-0/0/0 to reach Mist (after cluster is fully up, this port becomes OOB/fxp0)\n2.  connect ge-0/0/1 back-to-back for ha_control\n3.  connect ge-0/0/2 back-to-back for ha_data (fabric)\n4.  connect ge-0/0/3 to WAN (after cluster is up, intended to be used for reth0)\n5.  connect ge-0/0/4- to LAN or additional WANs\n    \n\n#### SRX1500\n\nSRX1500 has, additionally, dedicated HA Control port\n\n1.  connect dedicated ha_control back-to-back\n2.  connect ge-0/0/0 to WAN to reach mist\n3.  connect ge-0/0/1 back-to-back for ha_data\n4.  connect ge-0/0/2- to LAN or additional WANs\n    \n\n#### SRX4100\n\nSRX4100 has dedicated ha_control and ha_data (fabric) ports\n\n1.  connect dedicated ha_control back-to-back\n2.  connect dedicated ha_data back-to-back\n3.  connect xe-0/0/0 to WAN to reach Mist\n4.  connect xe-0/0/1- to LAN or additional WANs",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "site_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "device_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      },
+      "body": {
+        "description": "",
+        "properties": {
+          "nodes": {
+            "items": {
+              "properties": {
+                "mac": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mac"
+              ]
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "nodes"
+        ],
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "nodes": [
+              {
+                "mac": "aff827549235"
+              },
+              {
+                "mac": "8396cd006c8c"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "required": [
+      "site_id",
+      "device_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.mist.com/api/v1/sites/{site_id}/devices/{device_id}/ha"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,456 @@
+{
+  "name": "StartEdgeConfigurationUpdate",
+  "description": "<p>An asynchronous API that updates a stream’s existing edge configuration. The Kinesis Video Stream will sync the stream’s edge configuration with the Edge Agent IoT Greengrass component that runs on an IoT Hub Device, setup at your premise. The time to sync can vary and depends on the connectivity of the Hub Device. The <code>SyncStatus</code> will be updated as the edge configuration is acknowledged, and synced with the Edge Agent. </p> <p>If this API is invoked for the first time, a new edge configuration will be created for the stream, and the sync status will be set to <code>SYNCING</code>. You will have to wait for the sync status to reach a terminal state such as: <code>IN_SYNC</code>, or <code>SYNC_FAILED</code>, before using this API again. If you invoke this API during the syncing process, a <code>ResourceInUseException</code> will be thrown. The connectivity of the stream’s edge configuration and the Edge Agent will be retried for 15 minutes. After 15 minutes, the status will transition into the <code>SYNC_FAILED</code> state.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "EdgeConfig"
+        ],
+        "properties": {
+          "StreamName": {
+            "description": "The name of the stream whose edge configuration you want to update. Specify either the <code>StreamName</code> or the <code>StreamARN</code>.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9_.-]+",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "StreamARN": {
+            "description": " The Amazon Resource Name (ARN) of the stream. Specify either the <code>StreamName</code> or the <code>StreamARN</code>.",
+            "type": "string",
+            "pattern": "arn:[a-z\\d-]+:kinesisvideo:[a-z0-9-]+:[0-9]+:[a-z]+/[a-zA-Z0-9_.-]+/[0-9]+",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "EdgeConfig": {
+            "description": "A description of the stream's edge configuration that will be used to sync with the Edge Agent IoT Greengrass component. The Edge Agent component will run on an IoT Hub Device setup at your premise.",
+            "type": "object",
+            "properties": {
+              "HubDeviceArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HubDeviceArn"
+                  },
+                  {
+                    "description": "The \"<b>Internet of Things (IoT) Thing</b>\" Arn of the stream."
+                  }
+                ]
+              },
+              "RecorderConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RecorderConfig"
+                  },
+                  {
+                    "description": "The recorder configuration consists of the local <code>MediaSourceConfig</code> details, that are used as credentials to access the local media files streamed on the camera. "
+                  }
+                ]
+              },
+              "UploaderConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/UploaderConfig"
+                  },
+                  {
+                    "description": "The uploader configuration contains the <code>ScheduleExpression</code> details that are used to schedule upload jobs for the recorded media files from the Edge Agent to a Kinesis Video Stream."
+                  }
+                ]
+              },
+              "DeletionConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeletionConfig"
+                  },
+                  {
+                    "description": "The deletion configuration is made up of the retention time (<code>EdgeRetentionInHours</code>) and local size configuration (<code>LocalSizeConfig</code>) details that are used to make the deletion."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "HubDeviceArn": {
+        "type": "string",
+        "pattern": "arn:[a-z\\d-]+:iot:[a-z0-9-]+:[0-9]+:thing/[a-zA-Z0-9_.-]+",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "RecorderConfig": {
+        "type": "object",
+        "required": [
+          "MediaSourceConfig"
+        ],
+        "properties": {
+          "MediaSourceConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaSourceConfig"
+              },
+              {
+                "description": "The configuration details that consist of the credentials required (<code>MediaUriSecretArn</code> and <code>MediaUriType</code>) to access the media files streamed to the camera. "
+              }
+            ]
+          },
+          "ScheduleConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScheduleConfig"
+              },
+              {
+                "description": "The configuration that consists of the <code>ScheduleExpression</code> and the <code>DurationInMinutes</code> details that specify the scheduling to record from a camera, or local media file, onto the Edge Agent. If the <code>ScheduleExpression</code> attribute is not provided, then the Edge Agent will always be set to recording mode."
+              }
+            ]
+          }
+        },
+        "description": "The recorder configuration consists of the local <code>MediaSourceConfig</code> details that are used as credentials to accesss the local media files streamed on the camera. "
+      },
+      "MediaSourceConfig": {
+        "type": "object",
+        "required": [
+          "MediaUriSecretArn",
+          "MediaUriType"
+        ],
+        "properties": {
+          "MediaUriSecretArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaUriSecretArn"
+              },
+              {
+                "description": "The Amazon Web Services Secrets Manager ARN for the username and password of the camera, or a local media file location."
+              }
+            ]
+          },
+          "MediaUriType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaUriType"
+              },
+              {
+                "description": "<p>The Uniform Resource Identifier (URI) type. The <code>FILE_URI</code> value can be used to stream local media files.</p> <note> <p>Preview only supports the <code>RTSP_URI</code> media source URI format .</p> </note>"
+              }
+            ]
+          }
+        },
+        "description": "The configuration details that consist of the credentials required (<code>MediaUriSecretArn</code> and <code>MediaUriType</code>) to access the media files that are streamed to the camera."
+      },
+      "MediaUriSecretArn": {
+        "type": "string",
+        "pattern": "arn:[a-z\\d-]+:secretsmanager:[a-z0-9-]+:[0-9]+:secret:[a-zA-Z0-9_.-]+",
+        "minLength": 20,
+        "maxLength": 2048,
+        "format": "password"
+      },
+      "MediaUriType": {
+        "type": "string",
+        "enum": [
+          "RTSP_URI",
+          "FILE_URI"
+        ]
+      },
+      "ScheduleConfig": {
+        "type": "object",
+        "required": [
+          "ScheduleExpression",
+          "DurationInSeconds"
+        ],
+        "properties": {
+          "ScheduleExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScheduleExpression"
+              },
+              {
+                "description": "<p>The Quartz cron expression that takes care of scheduling jobs to record from the camera, or local media file, onto the Edge Agent. If the <code>ScheduleExpression</code> is not provided for the <code>RecorderConfig</code>, then the Edge Agent will always be set to recording mode.</p> <p>For more information about Quartz, refer to the <a href=\"http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html\"> <i>Cron Trigger Tutorial</i> </a> page to understand the valid expressions and its use.</p>"
+              }
+            ]
+          },
+          "DurationInSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DurationInSeconds"
+              },
+              {
+                "description": "The total duration to record the media. If the <code>ScheduleExpression</code> attribute is provided, then the <code>DurationInSeconds</code> attribute should also be specified."
+              }
+            ]
+          }
+        },
+        "description": "<p>This API enables you to specify the duration that the camera, or local media file, should record onto the Edge Agent. The <code>ScheduleConfig</code> consists of the <code>ScheduleExpression</code> and the <code>DurationInMinutes</code> attributes. </p> <p>If the <code>ScheduleConfig</code> is not provided in the <code>RecorderConfig</code>, then the Edge Agent will always be set to recording mode.</p> <p>If the <code>ScheduleConfig</code> is not provided in the <code>UploaderConfig</code>, then the Edge Agent will upload at regular intervals (every 1 hour).</p>"
+      },
+      "ScheduleExpression": {
+        "type": "string",
+        "pattern": "[^\\n]{11,100}",
+        "minLength": 11,
+        "maxLength": 100
+      },
+      "DurationInSeconds": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 3600
+      },
+      "UploaderConfig": {
+        "type": "object",
+        "required": [
+          "ScheduleConfig"
+        ],
+        "properties": {
+          "ScheduleConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScheduleConfig"
+              },
+              {
+                "description": "The configuration that consists of the <code>ScheduleExpression</code> and the <code>DurationInMinutes</code> details that specify the scheduling to record from a camera, or local media file, onto the Edge Agent. If the <code>ScheduleConfig</code> is not provided in this <code>UploaderConfig</code>, then the Edge Agent will upload at regular intervals (every 1 hour)."
+              }
+            ]
+          }
+        },
+        "description": "The configuration that consists of the <code>ScheduleExpression</code> and the <code>DurationInMinutes</code> details that specify the scheduling to record from a camera, or local media file, onto the Edge Agent. If the <code>ScheduleConfig</code> is not provided in the <code>UploaderConfig</code>, then the Edge Agent will upload at regular intervals (every 1 hour). "
+      },
+      "DeletionConfig": {
+        "type": "object",
+        "properties": {
+          "EdgeRetentionInHours": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EdgeRetentionInHours"
+              },
+              {
+                "description": "The number of hours that you want to retain the data in the stream on the Edge Agent. The default value of the retention time is 720 hours, which translates to 30 days."
+              }
+            ]
+          },
+          "LocalSizeConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LocalSizeConfig"
+              },
+              {
+                "description": "The value of the local size required in order to delete the edge configuration."
+              }
+            ]
+          },
+          "DeleteAfterUpload": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeleteAfterUpload"
+              },
+              {
+                "description": "<p>The <code>boolean</code> value used to indicate whether or not you want to mark the media for deletion, once it has been uploaded to the Kinesis Video Stream cloud. The media files can be deleted if any of the deletion configuration values are set to <code>true</code>, such as when the limit for the <code>EdgeRetentionInHours</code>, or the <code>MaxLocalMediaSizeInMB</code>, has been reached. </p> <p>Since the default value is set to <code>true</code>, configure the uploader schedule such that the media files are not being deleted before they are initially uploaded to the Amazon Web Services cloud.</p>"
+              }
+            ]
+          }
+        },
+        "description": "The configuration details required to delete the connection of the stream from the Edge Agent."
+      },
+      "EdgeRetentionInHours": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 720
+      },
+      "LocalSizeConfig": {
+        "type": "object",
+        "properties": {
+          "MaxLocalMediaSizeInMB": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxLocalMediaSizeInMB"
+              },
+              {
+                "description": "The overall maximum size of the media that you want to store for a stream on the Edge Agent. "
+              }
+            ]
+          },
+          "StrategyOnFullSize": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StrategyOnFullSize"
+              },
+              {
+                "description": "The strategy to perform when a stream’s <code>MaxLocalMediaSizeInMB</code> limit is reached."
+              }
+            ]
+          }
+        },
+        "description": "The configuration details that include the maximum size of the media (<code>MaxLocalMediaSizeInMB</code>) that you want to store for a stream on the Edge Agent, as well as the strategy that should be used (<code>StrategyOnFullSize</code>) when a stream's maximum size has been reached."
+      },
+      "MaxLocalMediaSizeInMB": {
+        "type": "integer",
+        "minimum": 64,
+        "maximum": 2000000
+      },
+      "StrategyOnFullSize": {
+        "type": "string",
+        "enum": [
+          "DELETE_OLDEST_MEDIA",
+          "DENY_NEW_MEDIA"
+        ]
+      },
+      "DeleteAfterUpload": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://kinesisvideo.us-east-1.amazonaws.com/startEdgeConfigurationUpdate"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**StreamName**",
+            "**StreamARN**",
+            "**CreationTime**",
+            "**LastUpdatedTime**",
+            "**SyncStatus**",
+            "**FailedStatusDetails**",
+            "**EdgeConfig**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

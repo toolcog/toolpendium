@@ -1,0 +1,828 @@
+{
+  "name": "UpdateDataset",
+  "description": "Modifies the definition of an existing DataBrew dataset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the dataset to be updated."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Input"
+        ],
+        "properties": {
+          "Format": {
+            "description": "The file format of a dataset that is created from an Amazon S3 file or folder.",
+            "type": "string",
+            "enum": [
+              "CSV",
+              "JSON",
+              "PARQUET",
+              "EXCEL",
+              "ORC"
+            ]
+          },
+          "FormatOptions": {
+            "description": "Represents a set of options that define the structure of either comma-separated value (CSV), Excel, or JSON input.",
+            "type": "object",
+            "properties": {
+              "Json": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/JsonOptions"
+                  },
+                  {
+                    "description": "Options that define how JSON input is to be interpreted by DataBrew."
+                  }
+                ]
+              },
+              "Excel": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ExcelOptions"
+                  },
+                  {
+                    "description": "Options that define how Excel input is to be interpreted by DataBrew."
+                  }
+                ]
+              },
+              "Csv": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CsvOptions"
+                  },
+                  {
+                    "description": "Options that define how CSV input is to be interpreted by DataBrew."
+                  }
+                ]
+              }
+            }
+          },
+          "Input": {
+            "description": "Represents information on how DataBrew can find data, in either the Glue Data Catalog or Amazon S3.",
+            "type": "object",
+            "properties": {
+              "S3InputDefinition": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Location"
+                  },
+                  {
+                    "description": "The Amazon S3 location where the data is stored."
+                  }
+                ]
+              },
+              "DataCatalogInputDefinition": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DataCatalogInputDefinition"
+                  },
+                  {
+                    "description": "The Glue Data Catalog parameters for the data."
+                  }
+                ]
+              },
+              "DatabaseInputDefinition": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DatabaseInputDefinition"
+                  },
+                  {
+                    "description": "Connection information for dataset input files stored in a database."
+                  }
+                ]
+              },
+              "Metadata": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Metadata"
+                  },
+                  {
+                    "description": "Contains additional resource information needed for specific datasets."
+                  }
+                ]
+              }
+            }
+          },
+          "PathOptions": {
+            "description": "Represents a set of options that define how DataBrew selects files for a given Amazon S3 path in a dataset.",
+            "type": "object",
+            "properties": {
+              "LastModifiedDateCondition": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FilterExpression"
+                  },
+                  {
+                    "description": "If provided, this structure defines a date range for matching Amazon S3 objects based on their LastModifiedDate attribute in Amazon S3."
+                  }
+                ]
+              },
+              "FilesLimit": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FilesLimit"
+                  },
+                  {
+                    "description": "If provided, this structure imposes a limit on a number of files that should be selected."
+                  }
+                ]
+              },
+              "Parameters": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/PathParametersMap"
+                  },
+                  {
+                    "description": "A structure that maps names of parameters used in the Amazon S3 path of a dataset to their definitions."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "name",
+      "body"
+    ],
+    "$defs": {
+      "JsonOptions": {
+        "type": "object",
+        "properties": {
+          "MultiLine": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MultiLine"
+              },
+              {
+                "description": "A value that specifies whether JSON input contains embedded new line characters."
+              }
+            ]
+          }
+        },
+        "description": "Represents the JSON-specific options that define how input is to be interpreted by Glue DataBrew."
+      },
+      "MultiLine": {
+        "type": "boolean"
+      },
+      "ExcelOptions": {
+        "type": "object",
+        "properties": {
+          "SheetNames": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SheetNameList"
+              },
+              {
+                "description": "One or more named sheets in the Excel file that will be included in the dataset."
+              }
+            ]
+          },
+          "SheetIndexes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SheetIndexList"
+              },
+              {
+                "description": "One or more sheet numbers in the Excel file that will be included in the dataset."
+              }
+            ]
+          },
+          "HeaderRow": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderRow"
+              },
+              {
+                "description": "A variable that specifies whether the first row in the file is parsed as the header. If this value is false, column names are auto-generated."
+              }
+            ]
+          }
+        },
+        "description": "Represents a set of options that define how DataBrew will interpret a Microsoft Excel file when creating a dataset from that file."
+      },
+      "SheetNameList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SheetName"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SheetName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 31
+      },
+      "SheetIndexList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SheetIndex"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "SheetIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 200
+      },
+      "HeaderRow": {
+        "type": "boolean"
+      },
+      "CsvOptions": {
+        "type": "object",
+        "properties": {
+          "Delimiter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Delimiter"
+              },
+              {
+                "description": "A single character that specifies the delimiter being used in the CSV file."
+              }
+            ]
+          },
+          "HeaderRow": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HeaderRow"
+              },
+              {
+                "description": "A variable that specifies whether the first row in the file is parsed as the header. If this value is false, column names are auto-generated."
+              }
+            ]
+          }
+        },
+        "description": "Represents a set of options that define how DataBrew will read a comma-separated value (CSV) file when creating a dataset from that file."
+      },
+      "Delimiter": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1
+      },
+      "S3Location": {
+        "type": "object",
+        "required": [
+          "Bucket"
+        ],
+        "properties": {
+          "Bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Bucket"
+              },
+              {
+                "description": "The Amazon S3 bucket name."
+              }
+            ]
+          },
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Key"
+              },
+              {
+                "description": "The unique name of the object in the bucket."
+              }
+            ]
+          },
+          "BucketOwner": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BucketOwner"
+              },
+              {
+                "description": "The Amazon Web Services account ID of the bucket owner."
+              }
+            ]
+          }
+        },
+        "description": "Represents an Amazon S3 location (bucket name, bucket owner, and object key) where DataBrew can read input data, or write output from a job."
+      },
+      "Bucket": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "Key": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1280
+      },
+      "BucketOwner": {
+        "type": "string",
+        "pattern": "^[0-9]{12}$",
+        "minLength": 12,
+        "maxLength": 12
+      },
+      "DataCatalogInputDefinition": {
+        "type": "object",
+        "required": [
+          "DatabaseName",
+          "TableName"
+        ],
+        "properties": {
+          "CatalogId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CatalogId"
+              },
+              {
+                "description": "The unique identifier of the Amazon Web Services account that holds the Data Catalog that stores the data."
+              }
+            ]
+          },
+          "DatabaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabaseName"
+              },
+              {
+                "description": "The name of a database in the Data Catalog."
+              }
+            ]
+          },
+          "TableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TableName"
+              },
+              {
+                "description": "The name of a database table in the Data Catalog. This table corresponds to a DataBrew dataset."
+              }
+            ]
+          },
+          "TempDirectory": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Location"
+              },
+              {
+                "description": "Represents an Amazon location where DataBrew can store intermediate results."
+              }
+            ]
+          }
+        },
+        "description": "Represents how metadata stored in the Glue Data Catalog is defined in a DataBrew dataset. "
+      },
+      "CatalogId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DatabaseName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "TableName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DatabaseInputDefinition": {
+        "type": "object",
+        "required": [
+          "GlueConnectionName"
+        ],
+        "properties": {
+          "GlueConnectionName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GlueConnectionName"
+              },
+              {
+                "description": "The Glue Connection that stores the connection information for the target database."
+              }
+            ]
+          },
+          "DatabaseTableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatabaseTableName"
+              },
+              {
+                "description": "The table within the target database."
+              }
+            ]
+          },
+          "TempDirectory": {
+            "$ref": "#/$defs/S3Location"
+          },
+          "QueryString": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueryString"
+              },
+              {
+                "description": "Custom SQL to run against the provided Glue connection. This SQL will be used as the input for DataBrew projects and jobs."
+              }
+            ]
+          }
+        },
+        "description": "Connection information for dataset input files stored in a database."
+      },
+      "GlueConnectionName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "DatabaseTableName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "QueryString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10000
+      },
+      "Metadata": {
+        "type": "object",
+        "properties": {
+          "SourceArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) associated with the dataset. Currently, DataBrew only supports ARNs from Amazon AppFlow."
+              }
+            ]
+          }
+        },
+        "description": "Contains additional resource information needed for specific datasets."
+      },
+      "Arn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "FilterExpression": {
+        "type": "object",
+        "required": [
+          "Expression",
+          "ValuesMap"
+        ],
+        "properties": {
+          "Expression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Expression"
+              },
+              {
+                "description": "The expression which includes condition names followed by substitution variables, possibly grouped and combined with other conditions. For example, \"(starts_with :prefix1 or starts_with :prefix2) and (ends_with :suffix1 or ends_with :suffix2)\". Substitution variables should start with ':' symbol."
+              }
+            ]
+          },
+          "ValuesMap": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ValuesMap"
+              },
+              {
+                "description": "The map of substitution variable names to their values used in this filter expression."
+              }
+            ]
+          }
+        },
+        "description": "Represents a structure for defining parameter conditions. Supported conditions are described here: <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/datasets.multiple-files.html#conditions.for.dynamic.datasets\">Supported conditions for dynamic datasets</a> in the <i>Glue DataBrew Developer Guide</i>."
+      },
+      "Expression": {
+        "type": "string",
+        "pattern": "^[<>0-9A-Za-z_.,:)(!= ]+$",
+        "minLength": 4,
+        "maxLength": 1024
+      },
+      "ValuesMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/ConditionValue"
+        }
+      },
+      "ConditionValue": {
+        "type": "string",
+        "maxLength": 1024
+      },
+      "FilesLimit": {
+        "type": "object",
+        "required": [
+          "MaxFiles"
+        ],
+        "properties": {
+          "MaxFiles": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxFiles"
+              },
+              {
+                "description": "The number of Amazon S3 files to select."
+              }
+            ]
+          },
+          "OrderedBy": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OrderedBy"
+              },
+              {
+                "description": "A criteria to use for Amazon S3 files sorting before their selection. By default uses LAST_MODIFIED_DATE as a sorting criteria. Currently it's the only allowed value."
+              }
+            ]
+          },
+          "Order": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Order"
+              },
+              {
+                "description": "A criteria to use for Amazon S3 files sorting before their selection. By default uses DESCENDING order, i.e. most recent files are selected first. Another possible value is ASCENDING."
+              }
+            ]
+          }
+        },
+        "description": "Represents a limit imposed on number of Amazon S3 files that should be selected for a dataset from a connected Amazon S3 path."
+      },
+      "MaxFiles": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "OrderedBy": {
+        "type": "string",
+        "enum": [
+          "LAST_MODIFIED_DATE"
+        ]
+      },
+      "Order": {
+        "type": "string",
+        "enum": [
+          "DESCENDING",
+          "ASCENDING"
+        ]
+      },
+      "PathParametersMap": {
+        "type": "object",
+        "description": "A structure that map names of parameters used in the Amazon S3 path of a dataset to their definitions. A definition includes parameter type and conditions.",
+        "minProperties": 1,
+        "maxProperties": 10,
+        "additionalProperties": {
+          "$ref": "#/$defs/DatasetParameter"
+        }
+      },
+      "DatasetParameter": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Type"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PathParameterName"
+              },
+              {
+                "description": "The name of the parameter that is used in the dataset's Amazon S3 path."
+              }
+            ]
+          },
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterType"
+              },
+              {
+                "description": "The type of the dataset parameter, can be one of a 'String', 'Number' or 'Datetime'."
+              }
+            ]
+          },
+          "DatetimeOptions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatetimeOptions"
+              },
+              {
+                "description": "Additional parameter options such as a format and a timezone. Required for datetime parameters."
+              }
+            ]
+          },
+          "CreateColumn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CreateColumn"
+              },
+              {
+                "description": "Optional boolean value that defines whether the captured value of this parameter should be used to create a new column in a dataset."
+              }
+            ]
+          },
+          "Filter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterExpression"
+              },
+              {
+                "description": "The optional filter expression structure to apply additional matching criteria to the parameter."
+              }
+            ]
+          }
+        },
+        "description": "Represents a dataset parameter that defines type and conditions for a parameter in the Amazon S3 path of the dataset."
+      },
+      "PathParameterName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "ParameterType": {
+        "type": "string",
+        "enum": [
+          "Datetime",
+          "Number",
+          "String"
+        ]
+      },
+      "DatetimeOptions": {
+        "type": "object",
+        "required": [
+          "Format"
+        ],
+        "properties": {
+          "Format": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatetimeFormat"
+              },
+              {
+                "description": "Required option, that defines the datetime format used for a date parameter in the Amazon S3 path. Should use only supported datetime specifiers and separation characters, all literal a-z or A-Z characters should be escaped with single quotes. E.g. \"MM.dd.yyyy-'at'-HH:mm\"."
+              }
+            ]
+          },
+          "TimezoneOffset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimezoneOffset"
+              },
+              {
+                "description": "Optional value for a timezone offset of the datetime parameter value in the Amazon S3 path. Shouldn't be used if Format for this parameter includes timezone fields. If no offset specified, UTC is assumed."
+              }
+            ]
+          },
+          "LocaleCode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LocaleCode"
+              },
+              {
+                "description": "Optional value for a non-US locale code, needed for correct interpretation of some date formats."
+              }
+            ]
+          }
+        },
+        "description": "Represents additional options for correct interpretation of datetime parameters used in the Amazon S3 path of a dataset."
+      },
+      "DatetimeFormat": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "TimezoneOffset": {
+        "type": "string",
+        "pattern": "^(Z|[-+](\\d|\\d{2}|\\d{2}:?\\d{2}))$",
+        "minLength": 1,
+        "maxLength": 6
+      },
+      "LocaleCode": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_\\.#@\\-]+$",
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "CreateColumn": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://databrew.us-east-1.amazonaws.com/datasets/{name}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Name**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

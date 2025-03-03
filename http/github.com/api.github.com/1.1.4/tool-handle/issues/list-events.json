@@ -1,0 +1,94 @@
+{
+  "name": "issues_list-events",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "issue_number": {
+        "type": "integer",
+        "description": "The number that identifies the issue."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "issue_number"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/events{?per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Issue Event for Issue list"
+        },
+        "Issue Event for Issue",
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.item"
+            }
+          }
+        }
+      ]
+    },
+    "410": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

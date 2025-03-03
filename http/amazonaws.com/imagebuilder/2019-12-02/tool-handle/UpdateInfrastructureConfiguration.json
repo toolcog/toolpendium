@@ -1,0 +1,352 @@
+{
+  "name": "UpdateInfrastructureConfiguration",
+  "description": "Updates a new infrastructure configuration. An infrastructure configuration defines the environment in which your image will be built and tested.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "infrastructureConfigurationArn",
+          "instanceProfileName",
+          "clientToken"
+        ],
+        "properties": {
+          "infrastructureConfigurationArn": {
+            "description": "The Amazon Resource Name (ARN) of the infrastructure configuration that you want to update.",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):infrastructure-configuration/[a-z0-9-_]+$"
+          },
+          "description": {
+            "description": "The description of the infrastructure configuration.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "instanceTypes": {
+            "description": "The instance types of the infrastructure configuration. You can specify one or more instance types to use for this build. The service will pick one of these instance types based on availability.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/InstanceType"
+            }
+          },
+          "instanceProfileName": {
+            "description": "The instance profile to associate with the instance used to customize your Amazon EC2 AMI.",
+            "type": "string",
+            "pattern": "^[\\w+=,.@-]+$",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "securityGroupIds": {
+            "description": "The security group IDs to associate with the instance used to customize your Amazon EC2 AMI.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/NonEmptyString"
+            }
+          },
+          "subnetId": {
+            "description": "The subnet ID to place the instance used to customize your Amazon EC2 AMI in.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "logging": {
+            "description": "Logging configuration defines where Image Builder uploads your logs.",
+            "type": "object",
+            "properties": {
+              "s3Logs": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Logs"
+                  },
+                  {
+                    "description": "The Amazon S3 logging configuration."
+                  }
+                ]
+              }
+            }
+          },
+          "keyPair": {
+            "description": "The key pair of the infrastructure configuration. You can use this to log on to and debug the instance used to create your image.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "terminateInstanceOnFailure": {
+            "description": "The terminate instance on failure setting of the infrastructure configuration. Set to false if you want Image Builder to retain the instance used to configure your AMI if the build or test phase of your workflow fails.",
+            "type": "boolean"
+          },
+          "snsTopicArn": {
+            "description": "<p>The Amazon Resource Name (ARN) for the SNS topic to which we send image build event notifications.</p> <note> <p>EC2 Image Builder is unable to send notifications to SNS topics that are encrypted using keys from other accounts. The key that is used to encrypt the SNS topic must reside in the account that the Image Builder service runs under.</p> </note>",
+            "type": "string",
+            "pattern": "^arn:aws[^:]*:sns:[^:]+:[0-9]{12}:[a-zA-Z0-9-_]{1,256}$"
+          },
+          "clientToken": {
+            "description": "The idempotency token used to make this request idempotent.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          },
+          "resourceTags": {
+            "description": "The tags attached to the resource created by Image Builder.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 30,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "instanceMetadataOptions": {
+            "description": "The instance metadata options that apply to the HTTP requests that pipeline builds use to launch EC2 build and test instances. For more information about instance metadata options, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-options.html\">Configure the instance metadata options</a> in the <i> <i>Amazon EC2 User Guide</i> </i> for Linux instances, or <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/configuring-instance-metadata-options.html\">Configure the instance metadata options</a> in the <i> <i>Amazon EC2 Windows Guide</i> </i> for Windows instances.",
+            "type": "object",
+            "properties": {
+              "httpTokens": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HttpTokens"
+                  },
+                  {
+                    "description": "<p>Indicates whether a signed token header is required for instance metadata retrieval requests. The values affect the response as follows:</p> <ul> <li> <p> <b>required</b> – When you retrieve the IAM role credentials, version 2.0 credentials are returned in all cases.</p> </li> <li> <p> <b>optional</b> – You can include a signed token header in your request to retrieve instance metadata, or you can leave it out. If you include it, version 2.0 credentials are returned for the IAM role. Otherwise, version 1.0 credentials are returned.</p> </li> </ul> <p>The default setting is <b>optional</b>.</p>"
+                  }
+                ]
+              },
+              "httpPutResponseHopLimit": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HttpPutResponseHopLimit"
+                  },
+                  {
+                    "description": "Limit the number of hops that an instance metadata request can traverse to reach its destination. The default is one hop. However, if HTTP tokens are required, container image builds need a minimum of two hops."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "InstanceType": {
+        "type": "string"
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "S3Logs": {
+        "type": "object",
+        "properties": {
+          "s3BucketName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The S3 bucket in which to store the logs."
+              }
+            ]
+          },
+          "s3KeyPrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The Amazon S3 path to the bucket where the logs are stored."
+              }
+            ]
+          }
+        },
+        "description": "Amazon S3 logging configuration."
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "HttpTokens": {
+        "type": "string",
+        "pattern": "optional|required"
+      },
+      "HttpPutResponseHopLimit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 64
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://imagebuilder.us-east-1.amazonaws.com/UpdateInfrastructureConfiguration"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**requestId**",
+            "**clientToken**",
+            "**infrastructureConfigurationArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

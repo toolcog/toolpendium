@@ -1,0 +1,347 @@
+{
+  "name": "post-terminals-scheduleActions",
+  "description": "Schedules a [terminal action](https://docs.adyen.com/point-of-sale/automating-terminal-management/terminal-actions-api) by specifying the action and the terminals that the action must be applied to. \n\nThe following restrictions apply:\n* You can schedule only one action at a time. For example, to install a new app version and remove an old app version, you have to make two API requests. \n* The maximum number of terminals in a request is **100**. For example, to apply an action to 250 terminals, you have to divide the terminals over three API requests. \n* If there is an error with one or more terminal IDs in the request, the action is scheduled for none of the terminals. You need to fix the error and try again. \n\nTo make this request, your API credential must have the following [role](https://docs.adyen.com/development-resources/api-credentials#api-permissions):\n* Management API—Terminal actions read and write",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/ScheduleTerminalActionsRequest"
+      }
+    },
+    "$defs": {
+      "ScheduleTerminalActionsRequest": {
+        "properties": {
+          "actionDetails": {
+            "description": "Information about the action to take.",
+            "oneOf": [
+              {
+                "$ref": "#/$defs/InstallAndroidAppDetails"
+              },
+              {
+                "$ref": "#/$defs/InstallAndroidCertificateDetails"
+              },
+              {
+                "$ref": "#/$defs/ReleaseUpdateDetails"
+              },
+              {
+                "$ref": "#/$defs/UninstallAndroidAppDetails"
+              },
+              {
+                "$ref": "#/$defs/UninstallAndroidCertificateDetails"
+              }
+            ]
+          },
+          "scheduledAt": {
+            "description": "The date and time when the action should happen. \nFormat: [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339), but without the **Z** before the time offset. For example, **2021-11-15T12:16:21+01:00** \nThe action is sent with the first [maintenance call](https://docs.adyen.com/point-of-sale/automating-terminal-management/terminal-actions-api#when-actions-take-effect) after the specified date and time in the time zone of the terminal. \nAn empty value causes the action to be sent as soon as possible: at the next maintenance call.",
+            "type": "string"
+          },
+          "storeId": {
+            "description": "The unique ID of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/get/stores). If present, all terminals in the `terminalIds` list must be assigned to this store.",
+            "type": "string"
+          },
+          "terminalIds": {
+            "description": "A list of unique IDs of the terminals to apply the action to. You can extract the IDs from the [GET `/terminals`](https://docs.adyen.com/api-explorer/#/ManagementService/latest/get/terminals) response. Maximum length: 100 IDs.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "InstallAndroidAppDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "appId": {
+            "description": "The unique identifier of the app to be installed.",
+            "type": "string"
+          },
+          "type": {
+            "default": "InstallAndroidApp",
+            "description": "Type of terminal action: Install an Android app.",
+            "enum": [
+              "InstallAndroidApp"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InstallAndroidCertificateDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "certificateId": {
+            "description": "The unique identifier of the certificate to be installed.",
+            "type": "string"
+          },
+          "type": {
+            "default": "InstallAndroidCertificate",
+            "description": "Type of terminal action: Install an Android certificate.",
+            "enum": [
+              "InstallAndroidCertificate"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReleaseUpdateDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "default": "ReleaseUpdate",
+            "description": "Type of terminal action: Update Release.",
+            "enum": [
+              "ReleaseUpdate"
+            ],
+            "type": "string"
+          },
+          "updateAtFirstMaintenanceCall": {
+            "description": "Boolean flag that tells if the terminal should update at the first next maintenance call. If false, terminal will update on its configured reboot time.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "UninstallAndroidAppDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "appId": {
+            "description": "The unique identifier of the app to be uninstalled.",
+            "type": "string"
+          },
+          "type": {
+            "default": "UninstallAndroidApp",
+            "description": "Type of terminal action: Uninstall an Android app.",
+            "enum": [
+              "UninstallAndroidApp"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UninstallAndroidCertificateDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "certificateId": {
+            "description": "The unique identifier of the certificate to be uninstalled.",
+            "type": "string"
+          },
+          "type": {
+            "default": "UninstallAndroidCertificate",
+            "description": "Type of terminal action: Uninstall an Android certificate.",
+            "enum": [
+              "UninstallAndroidCertificate"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://management-test.adyen.com/v3/terminals/scheduleActions"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**actionDetails**: Information about the action to take.",
+            "**items**: A list containing a terminal ID and an action ID for each terminal that the action was scheduled for.",
+            "**scheduledAt**: The date and time when the action should happen. ",
+            "**storeId**: The unique ID of the [store](https://docs.adyen.com/api-explorer/#/ManagementService/latest/get/stores). If present, all terminals in the `terminalIds` list must be assigned to this store.",
+            "**terminalsWithErrors**: The validation errors that occurred in the list of terminals, and for each error the IDs of the terminals that the error applies to.",
+            "**totalErrors**: The number of terminals for which scheduling the action failed.",
+            "**totalScheduled**: The number of terminals for which the action was successfully scheduled. This doesn't mean the action has happened yet."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

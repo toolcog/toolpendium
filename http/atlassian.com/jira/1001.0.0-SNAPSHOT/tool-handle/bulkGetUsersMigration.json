@@ -1,0 +1,79 @@
+{
+  "name": "bulkGetUsersMigration",
+  "description": "Returns the account IDs for the users specified in the `key` or `username` parameters. Note that multiple `key` or `username` parameters can be specified.\n\n**[Permissions](#permissions) required:** Permission to access Jira.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "startAt": {
+        "default": 0,
+        "format": "int64",
+        "type": "integer",
+        "description": "The index of the first item to return in a page of results (page offset)."
+      },
+      "maxResults": {
+        "default": 10,
+        "format": "int32",
+        "type": "integer",
+        "description": "The maximum number of items to return per page."
+      },
+      "username": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Username of a user. To specify multiple users, pass multiple copies of this parameter. For example, `username=fred&username=barney`. Required if `key` isn't provided. Cannot be provided if `key` is present."
+      },
+      "key": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Key of a user. To specify multiple users, pass multiple copies of this parameter. For example, `key=fred&key=barney`. Required if `username` isn't provided. Cannot be provided if `username` is present."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/user/bulk/migration{?startAt,maxResults,username,key}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountId**",
+            "**key**",
+            "**username**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,678 @@
+{
+  "name": "CreateSecurityProfile",
+  "description": "<p>Creates a Device Defender security profile.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiot.html#awsiot-actions-as-permissions\">CreateSecurityProfile</a> action.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "securityProfileName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9:_-]+",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "The name you are giving to the security profile."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "securityProfileDescription": {
+            "description": "A description of the security profile.",
+            "type": "string",
+            "pattern": "[\\p{Graph}\\x20]*",
+            "maxLength": 1000
+          },
+          "behaviors": {
+            "description": "Specifies the behaviors that, when violated by a device (thing), cause an alert.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Behavior"
+            },
+            "maxItems": 100
+          },
+          "alertTargets": {
+            "description": "Specifies the destinations to which alerts are sent. (Alerts are always sent to the console.) Alerts are generated when a device (thing) violates a behavior.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/AlertTarget"
+            }
+          },
+          "additionalMetricsToRetain": {
+            "description": "<p> <i>Please use <a>CreateSecurityProfileRequest$additionalMetricsToRetainV2</a> instead.</i> </p> <p>A list of metrics whose data is retained (stored). By default, data is retained for any metric used in the profile's <code>behaviors</code>, but it is also retained for any metric specified here. Can be used with custom metrics; cannot be used with dimensions.</p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/BehaviorMetric"
+            }
+          },
+          "additionalMetricsToRetainV2": {
+            "description": "A list of metrics whose data is retained (stored). By default, data is retained for any metric used in the profile's <code>behaviors</code>, but it is also retained for any metric specified here. Can be used with custom metrics; cannot be used with dimensions.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MetricToRetain"
+            }
+          },
+          "tags": {
+            "description": "Metadata that can be used to manage the security profile.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "securityProfileName",
+      "body"
+    ],
+    "$defs": {
+      "Behavior": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BehaviorName"
+              },
+              {
+                "description": "The name you've given to the behavior."
+              }
+            ]
+          },
+          "metric": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BehaviorMetric"
+              },
+              {
+                "description": "What is measured by the behavior."
+              }
+            ]
+          },
+          "metricDimension": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDimension"
+              },
+              {
+                "description": "The dimension for a metric in your behavior. For example, using a <code>TOPIC_FILTER</code> dimension, you can narrow down the scope of the metric to only MQTT topics where the name matches the pattern specified in the dimension. This can't be used with custom metrics."
+              }
+            ]
+          },
+          "criteria": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BehaviorCriteria"
+              },
+              {
+                "description": "The criteria that determine if a device is behaving normally in regard to the <code>metric</code>."
+              }
+            ]
+          },
+          "suppressAlerts": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SuppressAlerts"
+              },
+              {
+                "description": " Suppresses alerts. "
+              }
+            ]
+          }
+        },
+        "description": "A Device Defender security profile behavior."
+      },
+      "BehaviorName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9:_-]+",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "BehaviorMetric": {
+        "type": "string"
+      },
+      "MetricDimension": {
+        "type": "object",
+        "required": [
+          "dimensionName"
+        ],
+        "properties": {
+          "dimensionName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DimensionName"
+              },
+              {
+                "description": "A unique identifier for the dimension."
+              }
+            ]
+          },
+          "operator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DimensionValueOperator"
+              },
+              {
+                "description": "Defines how the <code>dimensionValues</code> of a dimension are interpreted. For example, for dimension type TOPIC_FILTER, the <code>IN</code> operator, a message will be counted only if its topic matches one of the topic filters. With <code>NOT_IN</code> operator, a message will be counted only if it doesn't match any of the topic filters. The operator is optional: if it's not provided (is <code>null</code>), it will be interpreted as <code>IN</code>."
+              }
+            ]
+          }
+        },
+        "description": "The dimension of a metric."
+      },
+      "DimensionName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9:_-]+",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "DimensionValueOperator": {
+        "type": "string",
+        "enum": [
+          "IN",
+          "NOT_IN"
+        ]
+      },
+      "BehaviorCriteria": {
+        "type": "object",
+        "properties": {
+          "comparisonOperator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComparisonOperator"
+              },
+              {
+                "description": "<p>The operator that relates the thing measured (<code>metric</code>) to the criteria (containing a <code>value</code> or <code>statisticalThreshold</code>). Valid operators include:</p> <ul> <li> <p> <code>string-list</code>: <code>in-set</code> and <code>not-in-set</code> </p> </li> <li> <p> <code>number-list</code>: <code>in-set</code> and <code>not-in-set</code> </p> </li> <li> <p> <code>ip-address-list</code>: <code>in-cidr-set</code> and <code>not-in-cidr-set</code> </p> </li> <li> <p> <code>number</code>: <code>less-than</code>, <code>less-than-equals</code>, <code>greater-than</code>, and <code>greater-than-equals</code> </p> </li> </ul>"
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricValue"
+              },
+              {
+                "description": "The value to be compared with the <code>metric</code>."
+              }
+            ]
+          },
+          "durationSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DurationSeconds"
+              },
+              {
+                "description": "Use this to specify the time duration over which the behavior is evaluated, for those criteria that have a time dimension (for example, <code>NUM_MESSAGES_SENT</code>). For a <code>statisticalThreshhold</code> metric comparison, measurements from all devices are accumulated over this time duration before being used to calculate percentiles, and later, measurements from an individual device are also accumulated over this time duration before being given a percentile rank. Cannot be used with list-based metric datatypes."
+              }
+            ]
+          },
+          "consecutiveDatapointsToAlarm": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConsecutiveDatapointsToAlarm"
+              },
+              {
+                "description": "If a device is in violation of the behavior for the specified number of consecutive datapoints, an alarm occurs. If not specified, the default is 1."
+              }
+            ]
+          },
+          "consecutiveDatapointsToClear": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConsecutiveDatapointsToClear"
+              },
+              {
+                "description": "If an alarm has occurred and the offending device is no longer in violation of the behavior for the specified number of consecutive datapoints, the alarm is cleared. If not specified, the default is 1."
+              }
+            ]
+          },
+          "statisticalThreshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StatisticalThreshold"
+              },
+              {
+                "description": "A statistical ranking (percentile)that indicates a threshold value by which a behavior is determined to be in compliance or in violation of the behavior."
+              }
+            ]
+          },
+          "mlDetectionConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MachineLearningDetectionConfig"
+              },
+              {
+                "description": " The configuration of an ML Detect "
+              }
+            ]
+          }
+        },
+        "description": "The criteria by which the behavior is determined to be normal."
+      },
+      "ComparisonOperator": {
+        "type": "string",
+        "enum": [
+          "less-than",
+          "less-than-equals",
+          "greater-than",
+          "greater-than-equals",
+          "in-cidr-set",
+          "not-in-cidr-set",
+          "in-port-set",
+          "not-in-port-set",
+          "in-set",
+          "not-in-set"
+        ]
+      },
+      "MetricValue": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UnsignedLong"
+              },
+              {
+                "description": "If the <code>comparisonOperator</code> calls for a numeric value, use this to specify that numeric value to be compared with the <code>metric</code>."
+              }
+            ]
+          },
+          "cidrs": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Cidrs"
+              },
+              {
+                "description": "If the <code>comparisonOperator</code> calls for a set of CIDRs, use this to specify that set to be compared with the <code>metric</code>."
+              }
+            ]
+          },
+          "ports": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Ports"
+              },
+              {
+                "description": "If the <code>comparisonOperator</code> calls for a set of ports, use this to specify that set to be compared with the <code>metric</code>."
+              }
+            ]
+          },
+          "number": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Number"
+              },
+              {
+                "description": " The numeral value of a metric. "
+              }
+            ]
+          },
+          "numbers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberList"
+              },
+              {
+                "description": " The numeral values of a metric. "
+              }
+            ]
+          },
+          "strings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": " The string values of a metric. "
+              }
+            ]
+          }
+        },
+        "description": "The value to be compared with the <code>metric</code>."
+      },
+      "UnsignedLong": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "Cidrs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Cidr"
+        }
+      },
+      "Cidr": {
+        "type": "string",
+        "pattern": "[a-fA-F0-9:\\.\\/]+",
+        "minLength": 2,
+        "maxLength": 43
+      },
+      "Ports": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Port"
+        }
+      },
+      "Port": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "Number": {
+        "type": "number",
+        "format": "double"
+      },
+      "NumberList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Number"
+        }
+      },
+      "StringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/stringValue"
+        }
+      },
+      "stringValue": {
+        "type": "string"
+      },
+      "DurationSeconds": {
+        "type": "integer"
+      },
+      "ConsecutiveDatapointsToAlarm": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "ConsecutiveDatapointsToClear": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "StatisticalThreshold": {
+        "type": "object",
+        "properties": {
+          "statistic": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EvaluationStatistic"
+              },
+              {
+                "description": "The percentile that resolves to a threshold value by which compliance with a behavior is determined. Metrics are collected over the specified period (<code>durationSeconds</code>) from all reporting devices in your account and statistical ranks are calculated. Then, the measurements from a device are collected over the same period. If the accumulated measurements from the device fall above or below (<code>comparisonOperator</code>) the value associated with the percentile specified, then the device is considered to be in compliance with the behavior, otherwise a violation occurs."
+              }
+            ]
+          }
+        },
+        "description": "A statistical ranking (percentile) that indicates a threshold value by which a behavior is determined to be in compliance or in violation of the behavior."
+      },
+      "EvaluationStatistic": {
+        "type": "string",
+        "pattern": "(p0|p0\\.1|p0\\.01|p1|p10|p50|p90|p99|p99\\.9|p99\\.99|p100)"
+      },
+      "MachineLearningDetectionConfig": {
+        "type": "object",
+        "required": [
+          "confidenceLevel"
+        ],
+        "properties": {
+          "confidenceLevel": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConfidenceLevel"
+              },
+              {
+                "description": " The sensitivity of anomalous behavior evaluation. Can be <code>Low</code>, <code>Medium</code>, or <code>High</code>. "
+              }
+            ]
+          }
+        },
+        "description": " The configuration of an ML Detect Security Profile. "
+      },
+      "ConfidenceLevel": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ]
+      },
+      "SuppressAlerts": {
+        "type": "boolean"
+      },
+      "AlertTarget": {
+        "type": "object",
+        "required": [
+          "alertTargetArn",
+          "roleArn"
+        ],
+        "properties": {
+          "alertTargetArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AlertTargetArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the notification target to which alerts are sent."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that grants permission to send alerts to the notification target."
+              }
+            ]
+          }
+        },
+        "description": "A structure containing the alert target ARN and the role ARN."
+      },
+      "AlertTargetArn": {
+        "type": "string"
+      },
+      "RoleArn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "MetricToRetain": {
+        "type": "object",
+        "required": [
+          "metric"
+        ],
+        "properties": {
+          "metric": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BehaviorMetric"
+              },
+              {
+                "description": "What is measured by the behavior."
+              }
+            ]
+          },
+          "metricDimension": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDimension"
+              },
+              {
+                "description": "The dimension of a metric. This can't be used with custom metrics."
+              }
+            ]
+          }
+        },
+        "description": "The metric you want to retain. Dimensions are optional."
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The tag's key."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The tag's value."
+              }
+            ]
+          }
+        },
+        "description": "A set of key/value pairs that are used to manage the resource."
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://iot.us-east-1.amazonaws.com/security-profiles/{securityProfileName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**securityProfileName**",
+            "**securityProfileArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

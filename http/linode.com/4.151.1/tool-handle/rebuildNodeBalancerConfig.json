@@ -1,0 +1,382 @@
+{
+  "name": "rebuildNodeBalancerConfig",
+  "description": "Rebuilds a NodeBalancer Config and its Nodes that you have permission to modify.\n\nUse this command to update a NodeBalancer's Config and Nodes with a single request.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "nodeBalancerId": {
+        "type": "integer",
+        "description": "The ID of the NodeBalancer to access."
+      },
+      "configId": {
+        "type": "integer",
+        "description": "The ID of the Config to access."
+      },
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/NodeBalancerConfig"
+          },
+          {
+            "properties": {
+              "nodes": {
+                "description": "The NodeBalancer Node(s) that serve this Config.\n\nSome considerations for Nodes when rebuilding a config:\n  * Current Nodes excluded from the request body will be deleted from the Config.\n  * Current Nodes (identified by their Node ID) will be updated.\n  * New Nodes (included without a Node ID) will be created.\n",
+                "items": {
+                  "description": "NodeBalancer Node request object including ID.",
+                  "properties": {
+                    "address": {
+                      "$ref": "#/$defs/address"
+                    },
+                    "id": {
+                      "description": "The unique ID of the Node to update.",
+                      "example": 54321,
+                      "type": "integer"
+                    },
+                    "label": {
+                      "$ref": "#/$defs/label"
+                    },
+                    "mode": {
+                      "$ref": "#/$defs/mode"
+                    },
+                    "weight": {
+                      "$ref": "#/$defs/weight"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "nodes"
+            ],
+            "type": "object"
+          }
+        ],
+        "description": "Information about the NodeBalancer Config to rebuild.\n"
+      }
+    },
+    "required": [
+      "nodeBalancerId",
+      "configId",
+      "body"
+    ],
+    "$defs": {
+      "NodeBalancerConfig": {
+        "description": "A NodeBalancer config represents the configuration of this NodeBalancer on a single port.  For example, a NodeBalancer Config on port 80 would typically represent how this NodeBalancer response to HTTP requests.\n\nNodeBalancer configs have a list of backends, called \"nodes,\" that they forward requests between based on their configuration.\n",
+        "properties": {
+          "algorithm": {
+            "default": "roundrobin",
+            "description": "What algorithm this NodeBalancer should use for routing traffic to backends.\n",
+            "enum": [
+              "roundrobin",
+              "leastconn",
+              "source"
+            ],
+            "example": "roundrobin",
+            "type": "string",
+            "x-linode-cli-display": 4
+          },
+          "check": {
+            "default": "none",
+            "description": "The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down.\n* If `none` no check is performed.\n* `connection` requires only a connection to the backend to succeed.\n* `http` and `http_body` rely on the backend serving HTTP, and that\n  the response returned matches what is expected.\n",
+            "enum": [
+              "none",
+              "connection",
+              "http",
+              "http_body"
+            ],
+            "example": "http_body",
+            "type": "string"
+          },
+          "check_attempts": {
+            "default": 3,
+            "description": "How many times to attempt a check before considering a backend to be down.\n",
+            "example": 3,
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "check_body": {
+            "description": "This value must be present in the response body of the check in order for it to pass. If this value is not present in the response body of a check request, the backend is considered to be down.\n",
+            "example": "it works",
+            "type": "string"
+          },
+          "check_interval": {
+            "default": 31,
+            "description": "How often, in seconds, to check that backends are up and serving requests.\n\nMust be greater than `check_timeout`.\n",
+            "example": 90,
+            "type": "integer"
+          },
+          "check_passive": {
+            "default": true,
+            "description": "If true, any response from this backend with a `5xx` status code will be enough for it to be considered unhealthy and taken out of rotation.\n",
+            "example": true,
+            "type": "boolean",
+            "x-linode-cli-display": 6
+          },
+          "check_path": {
+            "description": "The URL path to check on each backend. If the backend does not respond to this request it is considered to be down.\n",
+            "example": "/test",
+            "pattern": "^[a-zA-Z0-9\\/\\-%?&=.]*$",
+            "type": "string"
+          },
+          "check_timeout": {
+            "default": 30,
+            "description": "How long, in seconds, to wait for a check attempt before considering it failed.\n\nMust be less than `check_interval`.\n",
+            "example": 10,
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "cipher_suite": {
+            "default": "recommended",
+            "description": "What ciphers to use for SSL connections served by this NodeBalancer.\n\n* `legacy` is considered insecure and should only be used if necessary.\n",
+            "enum": [
+              "recommended",
+              "legacy"
+            ],
+            "example": "recommended",
+            "type": "string",
+            "x-linode-cli-color": {
+              "default_": "white",
+              "legacy": "red"
+            },
+            "x-linode-cli-display": 7
+          },
+          "id": {
+            "description": "This config's unique ID",
+            "example": 4567,
+            "readOnly": true,
+            "type": "integer",
+            "x-linode-cli-display": 1
+          },
+          "nodebalancer_id": {
+            "description": "The ID for the NodeBalancer this config belongs to.\n",
+            "example": 12345,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "nodes_status": {
+            "description": "A structure containing information about the health of the backends for this port.  This information is updated periodically as checks are performed against backends.\n",
+            "properties": {
+              "down": {
+                "description": "The number of backends considered to be \"DOWN\" and unhealthy.  These are not in rotation, and not serving requests.\n",
+                "example": 0,
+                "readOnly": true,
+                "type": "integer"
+              },
+              "up": {
+                "description": "The number of backends considered to be \"UP\" and healthy, and that are serving requests.\n",
+                "example": 4,
+                "readOnly": true,
+                "type": "integer"
+              }
+            },
+            "readOnly": true,
+            "type": "object",
+            "x-linode-cli-display": 10
+          },
+          "port": {
+            "default": 80,
+            "description": "The port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example).  While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443.\n",
+            "example": 80,
+            "maximum": 65535,
+            "minimum": 1,
+            "type": "integer",
+            "x-linode-cli-display": 2
+          },
+          "protocol": {
+            "default": "http",
+            "description": "The protocol this port is configured to serve.\n\n* The `http` and `tcp` protocols do not support `ssl_cert` and `ssl_key`.\n\n* The `https` protocol is mutually required with `ssl_cert` and `ssl_key`.\n\nReview our guide on [Available Protocols](/docs/products/networking/nodebalancers/guides/protocols/) for information on protocol features.\n",
+            "enum": [
+              "http",
+              "https",
+              "tcp"
+            ],
+            "example": "http",
+            "type": "string",
+            "x-linode-cli-display": 3
+          },
+          "proxy_protocol": {
+            "default": "none",
+            "description": "ProxyProtocol is a TCP extension that sends initial TCP connection information such as source/destination IPs and ports to backend devices. This information would be lost otherwise. Backend devices must be configured to work with ProxyProtocol if enabled.\n\n* If ommited, or set to `none`, the NodeBalancer doesn't send any auxilary data over TCP connections. This is the default.\n* If set to `v1`, the human-readable header format (Version 1) is used. Requires `tcp` protocol.\n* If set to `v2`, the binary header format (Version 2) is used. Requires `tcp` protocol.\n",
+            "enum": [
+              "none",
+              "v1",
+              "v2"
+            ],
+            "example": "none",
+            "type": "string"
+          },
+          "ssl_cert": {
+            "description": "The PEM-formatted public SSL certificate (or the combined PEM-formatted SSL\ncertificate and Certificate Authority chain) that should be served on this\nNodeBalancerConfig's port.\n\nLine breaks must be represented as \"\\n\" in the string for requests (but not when using the Linode CLI).\n\n[Diffie-Hellman Parameters](/docs/products/networking/nodebalancers/guides/ssl-termination/#diffie-hellman-parameters) can be included in this value to enable forward secrecy.\n\nThe contents of this field will not be shown in any responses that display\nthe NodeBalancerConfig. Instead, `<REDACTED>` will be printed where the field\nappears.\n\nThe read-only `ssl_commonname` and `ssl_fingerprint` fields in a NodeBalancerConfig\nresponse are automatically derived from your certificate. Please refer to these fields to\nverify that the appropriate certificate was assigned to your NodeBalancerConfig.\n",
+            "example": "<REDACTED>",
+            "format": "ssl-cert",
+            "nullable": true,
+            "type": "string"
+          },
+          "ssl_commonname": {
+            "description": "The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.\n",
+            "example": "www.example.com",
+            "readOnly": true,
+            "type": "string",
+            "x-linode-cli-display": 8
+          },
+          "ssl_fingerprint": {
+            "description": "The read-only SHA1-encoded fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.\n",
+            "example": "00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F:10:11:12:13",
+            "readOnly": true,
+            "type": "string",
+            "x-linode-cli-display": 9
+          },
+          "ssl_key": {
+            "description": "The PEM-formatted private key for the SSL certificate set in the `ssl_cert` field.\n\nLine breaks must be represented as \"\\n\" in the string for requests (but not when using the Linode CLI).\n\nThe contents of this field will not be shown in any responses that display\nthe NodeBalancerConfig. Instead, `<REDACTED>` will be printed where the field\nappears.\n\nThe read-only `ssl_commonname` and `ssl_fingerprint` fields in a NodeBalancerConfig\nresponse are automatically derived from your certificate. Please refer to these fields to\nverify that the appropriate certificate was assigned to your NodeBalancerConfig.\n",
+            "example": "<REDACTED>",
+            "format": "ssl-key",
+            "nullable": true,
+            "type": "string"
+          },
+          "stickiness": {
+            "default": "none",
+            "description": "Controls how session stickiness is handled on this port.\n* If set to `none` connections will always be assigned a backend based on the algorithm configured.\n* If set to `table` sessions from the same remote address will be routed to the same\n  backend.\n\n* For HTTP or HTTPS clients, `http_cookie` allows sessions to be\n  routed to the same backend based on a cookie set by the NodeBalancer.\n",
+            "enum": [
+              "none",
+              "table",
+              "http_cookie"
+            ],
+            "example": "http_cookie",
+            "type": "string",
+            "x-linode-cli-display": 5
+          }
+        },
+        "type": "object"
+      },
+      "address": {
+        "description": "The private IP Address where this backend can be reached. This _must_ be a private IP address.\n",
+        "example": "192.168.210.120:80",
+        "format": "ip",
+        "type": "string",
+        "x-linode-cli-display": 3
+      },
+      "label": {
+        "description": "The label for this node.  This is for display purposes only.\n",
+        "example": "node54321",
+        "maxLength": 32,
+        "minLength": 3,
+        "pattern": "[a-zA-Z0-9-_.]{3,32}",
+        "type": "string",
+        "x-linode-cli-display": 2
+      },
+      "mode": {
+        "description": "The mode this NodeBalancer should use when sending traffic to this backend.\n* If set to `accept` this backend is accepting traffic.\n* If set to `reject` this backend will not receive traffic.\n* If set to `drain` this backend will not receive _new_ traffic, but connections already\n  pinned to it will continue to be routed to it.\n\n* If set to `backup`, this backend will only receive traffic if all `accept` nodes\n  are down.\n",
+        "enum": [
+          "accept",
+          "reject",
+          "drain",
+          "backup"
+        ],
+        "example": "accept",
+        "type": "string",
+        "x-linode-cli-display": 6
+      },
+      "weight": {
+        "description": "Used when picking a backend to serve a request and is not pinned to a single backend yet.  Nodes with a higher weight will receive more traffic.\n",
+        "example": 50,
+        "maximum": 255,
+        "minimum": 1,
+        "type": "integer",
+        "x-linode-cli-display": 5
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/nodebalancers/{nodeBalancerId}/configs/{configId}/rebuild"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A NodeBalancer config represents the configuration of this NodeBalancer on a single port.  For example, a NodeBalancer Config on port 80 would typically represent how this NodeBalancer response to HTTP requests.\n\nNodeBalancer configs have a list of backends, called \"nodes,\" that they forward requests between based on their configuration.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**algorithm**: What algorithm this NodeBalancer should use for routing traffic to backends. (default: roundrobin)",
+            "**check**: The type of check to perform against backends to ensure they are serving requests. This is used to determine if backends are up or down. (default: none)",
+            "**check_attempts**: How many times to attempt a check before considering a backend to be down. (default: 3)",
+            "**check_body**: This value must be present in the response body of the check in order for it to pass. If this value is not present in the response body of a check request, the backend is considered to be down.",
+            "**check_interval**: How often, in seconds, to check that backends are up and serving requests. (default: 31)",
+            "**check_passive**: If true, any response from this backend with a `5xx` status code will be enough for it to be considered unhealthy and taken out of rotation. (default: true)",
+            "**check_path**: The URL path to check on each backend. If the backend does not respond to this request it is considered to be down.",
+            "**check_timeout**: How long, in seconds, to wait for a check attempt before considering it failed. (default: 30)",
+            "**cipher_suite**: What ciphers to use for SSL connections served by this NodeBalancer. (default: recommended)",
+            "**id**: This config's unique ID",
+            "**nodebalancer_id**: The ID for the NodeBalancer this config belongs to.",
+            [
+              "**nodes_status**: A structure containing information about the health of the backends for this port.  This information is updated periodically as checks are performed against backends.",
+              {
+                "$ul": [
+                  "**down**: The number of backends considered to be \"DOWN\" and unhealthy.  These are not in rotation, and not serving requests.",
+                  "**up**: The number of backends considered to be \"UP\" and healthy, and that are serving requests."
+                ]
+              }
+            ],
+            "**port**: The port this Config is for. These values must be unique across configs on a single NodeBalancer (you can't have two configs for port 80, for example).  While some ports imply some protocols, no enforcement is done and you may configure your NodeBalancer however is useful to you. For example, while port 443 is generally used for HTTPS, you do not need SSL configured to have a NodeBalancer listening on port 443. (default: 80)",
+            "**protocol**: The protocol this port is configured to serve. (default: http)",
+            "**proxy_protocol**: ProxyProtocol is a TCP extension that sends initial TCP connection information such as source/destination IPs and ports to backend devices. This information would be lost otherwise. Backend devices must be configured to work with ProxyProtocol if enabled. (default: none)",
+            "**ssl_cert**: The PEM-formatted public SSL certificate (or the combined PEM-formatted SSL",
+            "**ssl_commonname**: The read-only common name automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.",
+            "**ssl_fingerprint**: The read-only SHA1-encoded fingerprint automatically derived from the SSL certificate assigned to this NodeBalancerConfig. Please refer to this field to verify that the appropriate certificate is assigned to your NodeBalancerConfig.",
+            "**ssl_key**: The PEM-formatted private key for the SSL certificate set in the `ssl_cert` field.",
+            "**stickiness**: Controls how session stickiness is handled on this port. (default: none)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

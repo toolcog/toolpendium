@@ -1,0 +1,146 @@
+{
+  "name": "accountsBalanceGet",
+  "description": "The `/accounts/balance/get` endpoint returns the real-time balance for each of an Item's accounts. While other endpoints may return a balance object, only `/accounts/balance/get` forces the available and current balance fields to be refreshed rather than cached. This endpoint can be used for existing Items that were added via any of Plaid’s other products. This endpoint can be used as long as Link has been initialized with any other product, `balance` itself is not a product that can be used to initialize Link. As this endpoint triggers a synchronous request for fresh data, latency may be higher than for other Plaid endpoints; if you encounter errors, you may find it necessary to adjust your timeout period when making requests.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/AccountsBalanceGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AccountsBalanceGetRequest": {
+        "description": "AccountsBalanceGetRequest defines the request schema for `/accounts/balance/get`",
+        "properties": {
+          "access_token": {
+            "$ref": "#/$defs/AccessToken"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "options": {
+            "$ref": "#/$defs/AccountsBalanceGetRequestOptions"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "access_token"
+        ],
+        "type": "object"
+      },
+      "AccessToken": {
+        "description": "The access token associated with the Item data is being requested for.",
+        "title": "AccessToken",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "AccountsBalanceGetRequestOptions": {
+        "description": "An optional object to filter `/accounts/balance/get` results.",
+        "properties": {
+          "account_ids": {
+            "description": "A list of `account_ids` to retrieve for the Item. The default value is `null`.\n\nNote: An error will be returned if a provided `account_id` is not associated with the Item.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "min_last_updated_datetime": {
+            "$ref": "#/$defs/MinLastUpdatedDatetime"
+          }
+        },
+        "type": "object"
+      },
+      "MinLastUpdatedDatetime": {
+        "description": "Timestamp in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DDTHH:mm:ssZ`) indicating the oldest acceptable balance when making a request to `/accounts/balance/get`.\n\nIf the balance that is pulled for `ins_128026` (Capital One) is older than the given timestamp, an `INVALID_REQUEST` error with the code of `LAST_UPDATED_DATETIME_OUT_OF_RANGE` will be returned with the most recent timestamp for the requested account contained in the response.\n\nThis field is only used when the institution is `ins_128026` (Capital One), in which case a value must be provided or an `INVALID_REQUEST` error with the code of `INVALID_FIELD` will be returned. For all other institutions, this field is ignored.",
+        "format": "date-time",
+        "title": "MinLastUpdatedDatetime",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/accounts/balance/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "AccountsGetResponse defines the response schema for `/accounts/get` and `/accounts/balance/get`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accounts**: An array of financial institution accounts associated with the Item.",
+            [
+              "**item**: Metadata about the Item.",
+              {
+                "$ul": [
+                  "**available_products**: A list of products available for the Item that have not yet been accessed. The contents of this array will be mutually exclusive with `billed_products`.",
+                  "**billed_products**: A list of products that have been billed for the Item. The contents of this array will be mutually exclusive with `available_products`. Note - `billed_products` is populated in all environments but only requests in Production are billed. Also note that products that are billed on a pay-per-call basis rather than a pay-per-Item basis, such as `balance`, will not appear here.",
+                  "**consent_expiration_time**: The RFC 3339 timestamp after which the consent provided by the end user will expire. Upon consent expiration, the item will enter the `ITEM_LOGIN_REQUIRED` error state. To circumvent the `ITEM_LOGIN_REQUIRED` error and maintain continuous consent, the end user can reauthenticate via Link’s update mode in advance of the consent expiration time.",
+                  "**consented_products**: Beta: A list of products that have gone through consent collection for the Item. Only present for those enabled in the beta.",
+                  [
+                    "**error**: We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+                    {
+                      "$ul": [
+                        "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+                        "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+                        "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+                        "**error_code**: The particular error code. Safe for programmatic use.",
+                        "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+                        "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+                        "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+                        "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+                        "**suggested_action**: Suggested steps for resolving the error"
+                      ]
+                    }
+                  ],
+                  "**institution_id**: The Plaid Institution ID associated with the Item. Field is `null` for Items created via Same Day Micro-deposits.",
+                  "**item_id**: The Plaid Item ID. The `item_id` is always unique; linking the same account at the same institution twice will result in two Items with different `item_id` values. Like all Plaid identifiers, the `item_id` is case-sensitive.",
+                  "**products**: A list of authorized products for the Item.",
+                  "**update_type**: Indicates whether an Item requires user interaction to be updated, which can be the case for Items with some forms of two-factor authentication.",
+                  "**webhook**: The URL registered to receive webhooks for the Item."
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

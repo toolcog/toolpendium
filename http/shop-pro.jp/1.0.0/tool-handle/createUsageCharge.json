@@ -1,0 +1,100 @@
+{
+  "name": "createUsageCharge",
+  "description": "アプリ内で基本機能が利用された頻度に伴って毎月の請求が変動するようなアプリの場合は「従量課金」を使って利用者に変動分の請求を行うことができます。\n※無料お試し期間中のショップに対しては従量課金データを作成できません。\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "recurringApplicationChargeId": {
+        "type": "string",
+        "description": "課金契約ID"
+      },
+      "X-Appstore-Usage-Charge-Token": {
+        "type": "string",
+        "description": "アンインストール後の従量課金の精算をする際に、 `Authorization` ヘッダへアクセストークンを指定する代わりにこのヘッダを指定することで、このAPIを実行することができます。\nインストール中は指定不要で、アンインストール後のみ必須となります。\nアンインストールフックで通知される `usage_charge.api_token` の値を指定してください。\nこのヘッダは、アンインストールフックで通知される `usage_charge.closing_on` まで有効です。この期間を過ぎると従量課金を精算できなくなりますのでご注意ください。詳しくは [アプリのアンインストール](#section/API/アプリのアンインストール) をご確認ください。"
+      },
+      "body": {
+        "properties": {
+          "usage_charge": {
+            "properties": {
+              "description": {
+                "description": "従量課金の発生理由。使用可能文字は ASCII, JIS X 0208, JIS X 0201, JIS X 0212に限ります。（[デベロッパー](https://developer.shop-pro.jp) ページに掲載される各アプリの「従量課金」一覧で登録内容を確認できます。カラーミーショップ側がこのパラメータを参照して課金の内容を確認することがあります。）",
+                "example": "2019/4 メール送信分",
+                "maxLength": 50,
+                "type": "string"
+              },
+              "point": {
+                "description": "ポイント数（税抜）。100 円以上 100 万円以下が指定可能。このポイントに消費税を加算してショップオーナーに請求します。",
+                "example": 100,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "point",
+              "description"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "object",
+        "description": "従量課金データ"
+      }
+    },
+    "required": [
+      "recurringApplicationChargeId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.shop-pro.jp/appstore/v1/recurring_application_charges/{recurringApplicationChargeId}/usage_charges.json"
+    },
+    "headers": {
+      "X-Appstore-Usage-Charge-Token": {
+        "$": "X-Appstore-Usage-Charge-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**usage_charge**",
+              {
+                "$ul": [
+                  "**description**: 従量課金発生理由",
+                  "**id**: 従量課金ID",
+                  "**make_date**: 作成日時",
+                  "**point**: ポイント請求額(税抜)",
+                  "**update_date**: 更新日時"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

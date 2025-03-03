@@ -1,0 +1,105 @@
+{
+  "name": "replaceIssueFieldOption",
+  "description": "Deselects an issue-field select-list option from all issues where it is selected. A different option can be selected to replace the deselected option. The update can also be limited to a smaller set of issues by using a JQL query.\n\nConnect and Forge app users with *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg) can override the screen security configuration using `overrideScreenSecurity` and `overrideEditableFlag`.\n\nThis is an [asynchronous operation](#async). The response object contains a link to the long-running task.\n\nNote that this operation **only works for issue field select list options added by Connect apps**, it cannot be used with issue field select list options created in Jira or using operations from the [Issue custom field options](#api-group-Issue-custom-field-options) resource.\n\n**[Permissions](#permissions) required:** *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg). Jira permissions are not required for the app providing the field.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "replaceWith": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The ID of the option that will replace the currently selected option."
+      },
+      "jql": {
+        "type": "string",
+        "description": "A JQL query that specifies the issues to be updated. For example, *project=10000*."
+      },
+      "overrideScreenSecurity": {
+        "default": false,
+        "type": "boolean",
+        "description": "Whether screen security is overridden to enable hidden fields to be edited. Available to Connect and Forge app users with admin permission."
+      },
+      "overrideEditableFlag": {
+        "default": false,
+        "type": "boolean",
+        "description": "Whether screen security is overridden to enable uneditable fields to be edited. Available to Connect and Forge app users with *Administer Jira* [global permission](https://confluence.atlassian.com/x/x4dKLg)."
+      },
+      "fieldKey": {
+        "type": "string",
+        "description": "The field key is specified in the following format: **$(app-key)\\_\\_$(field-key)**. For example, *example-add-on\\_\\_example-issue-field*. To determine the `fieldKey` value, do one of the following:\n\n *  open the app's plugin descriptor, then **app-key** is the key at the top and **field-key** is the key in the `jiraIssueFields` module. **app-key** can also be found in the app listing in the Atlassian Universal Plugin Manager.\n *  run [Get fields](#api-rest-api-3-field-get) and in the field details the value is returned in `key`. For example, `\"key\": \"teams-add-on__team-issue-field\"`"
+      },
+      "optionId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The ID of the option to be deselected."
+      }
+    },
+    "required": [
+      "fieldKey",
+      "optionId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/field/{fieldKey}/option/{optionId}/issue{?replaceWith,jql,overrideScreenSecurity,overrideEditableFlag}"
+    }
+  },
+  "responses": {
+    "303": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Details about a task.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**description**: The description of the task.",
+            "**elapsedRuntime**: The execution time of the task, in milliseconds.",
+            "**finished**: A timestamp recording when the task was finished.",
+            "**id**: The ID of the task.",
+            "**lastUpdate**: A timestamp recording when the task progress was last updated.",
+            "**message**: Information about the progress of the task.",
+            "**progress**: The progress of the task, as a percentage complete.",
+            [
+              "**result**",
+              {
+                "$ul": [
+                  [
+                    "**errors**",
+                    {
+                      "$ul": [
+                        "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+                        "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+                        "**httpStatusCode**"
+                      ]
+                    }
+                  ],
+                  "**modifiedIssues**: The IDs of the modified issues.",
+                  "**unmodifiedIssues**: The IDs of the unchanged issues, those issues where errors prevent modification."
+                ]
+              }
+            ],
+            "**self**: The URL of the task.",
+            "**started**: A timestamp recording when the task was started.",
+            "**status**: The status of the task.",
+            "**submitted**: A timestamp recording when the task was submitted.",
+            "**submittedBy**: The ID of the user who submitted the task."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

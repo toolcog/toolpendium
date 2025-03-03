@@ -1,0 +1,236 @@
+{
+  "name": "PutRecord",
+  "description": "<p>The <code>PutRecord</code> API is used to ingest a list of <code>Records</code> into your feature group. </p> <p>If a new record’s <code>EventTime</code> is greater, the new record is written to both the <code>OnlineStore</code> and <code>OfflineStore</code>. Otherwise, the record is a historic record and it is written only to the <code>OfflineStore</code>. </p> <p>You can specify the ingestion to be applied to the <code>OnlineStore</code>, <code>OfflineStore</code>, or both by using the <code>TargetStores</code> request parameter. </p> <p>You can set the ingested record to expire at a given time to live (TTL) duration after the record’s event time, <code>ExpiresAt</code> = <code>EventTime</code> + <code>TtlDuration</code>, by specifying the <code>TtlDuration</code> parameter. A record level <code>TtlDuration</code> is set when specifying the <code>TtlDuration</code> parameter using the <code>PutRecord</code> API call. If the input <code>TtlDuration</code> is <code>null</code> or unspecified, <code>TtlDuration</code> is set to the default feature group level <code>TtlDuration</code>. A record level <code>TtlDuration</code> supersedes the group level <code>TtlDuration</code>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "FeatureGroupName": {
+        "type": "string",
+        "pattern": "(arn:aws[a-z\\-]*:sagemaker:[a-z0-9\\-]*:[0-9]{12}:feature-group/)?([a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63})",
+        "minLength": 1,
+        "maxLength": 150,
+        "description": "The name or Amazon Resource Name (ARN) of the feature group that you want to insert the record into."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Record"
+        ],
+        "properties": {
+          "Record": {
+            "description": "<p>List of FeatureValues to be inserted. This will be a full over-write. If you only want to update few of the feature values, do the following:</p> <ul> <li> <p>Use <code>GetRecord</code> to retrieve the latest record.</p> </li> <li> <p>Update the record returned from <code>GetRecord</code>. </p> </li> <li> <p>Use <code>PutRecord</code> to update feature values.</p> </li> </ul>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FeatureValue"
+            },
+            "minItems": 1
+          },
+          "TargetStores": {
+            "description": "A list of stores to which you're adding the record. By default, Feature Store adds the record to all of the stores that you're using for the <code>FeatureGroup</code>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TargetStore"
+            },
+            "minItems": 1,
+            "maxItems": 2
+          },
+          "TtlDuration": {
+            "description": "Time to live duration, where the record is hard deleted after the expiration time is reached; <code>ExpiresAt</code> = <code>EventTime</code> + <code>TtlDuration</code>. For information on HardDelete, see the <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_feature_store_DeleteRecord.html\">DeleteRecord</a> API in the Amazon SageMaker API Reference guide.",
+            "type": "object",
+            "properties": {
+              "Unit": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TtlDurationUnit"
+                  },
+                  {
+                    "description": " <code>TtlDuration</code> time unit."
+                  }
+                ]
+              },
+              "Value": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TtlDurationValue"
+                  },
+                  {
+                    "description": " <code>TtlDuration</code> time value."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "FeatureGroupName",
+      "body"
+    ],
+    "$defs": {
+      "FeatureValue": {
+        "type": "object",
+        "required": [
+          "FeatureName",
+          "ValueAsString"
+        ],
+        "properties": {
+          "FeatureName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeatureName"
+              },
+              {
+                "description": "The name of a feature that a feature value corresponds to."
+              }
+            ]
+          },
+          "ValueAsString": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ValueAsString"
+              },
+              {
+                "description": "The value associated with a feature, in string format. Note that features types can be String, Integral, or Fractional. This value represents all three types as a string."
+              }
+            ]
+          }
+        },
+        "description": "The value associated with a feature."
+      },
+      "FeatureName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9]([-_]*[a-zA-Z0-9]){0,63}",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "ValueAsString": {
+        "type": "string",
+        "pattern": ".*",
+        "maxLength": 358400
+      },
+      "TargetStore": {
+        "type": "string",
+        "enum": [
+          "OnlineStore",
+          "OfflineStore"
+        ]
+      },
+      "TtlDurationUnit": {
+        "type": "string",
+        "enum": [
+          "Seconds",
+          "Minutes",
+          "Hours",
+          "Days",
+          "Weeks"
+        ]
+      },
+      "TtlDurationValue": {
+        "type": "integer",
+        "minimum": 1
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://featurestore-runtime.sagemaker.us-east-1.amazonaws.com/FeatureGroup/{FeatureGroupName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

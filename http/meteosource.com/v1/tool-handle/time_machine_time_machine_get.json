@@ -1,0 +1,264 @@
+{
+  "name": "time_machine_time_machine_get",
+  "description": "## Actual weather data for a single location and day in the past\n\nThe output contains actual weather data for each day up to 20 years in the past, and long-term statistics of selected weather variables aggregated over 40 years.\n\n### Location specification\nThe location of the weather data must be specified. There are two ways to do this:\n1. Specify the GPS coordinates of the location using the parameters `lat` and `lon`.\n2. **OR** specify the name of the place using the parameter `place_id`. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).\n\n*Note: For mountains, it is usually better to specify the `place_id` rather than the `lat` and `lon`. When you use `place_id`, you are guaranteed to receive data for the precise elevation of the peak. When you specify the coordinates, the elevation can be less precise.*",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "place_id": {
+        "description": "Identifier of a place. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).",
+        "title": "Place Id",
+        "type": "string"
+      },
+      "lat": {
+        "description": "Latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.4",
+        "title": "Lat",
+        "type": "string"
+      },
+      "lon": {
+        "description": "Longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.4",
+        "title": "Lon",
+        "type": "string"
+      },
+      "date": {
+        "description": "The day of the data in the past. Specify in `YYYY-MM-DD` format, e.g. `2021-08-24`.\n",
+        "format": "date",
+        "title": "Date",
+        "type": "string"
+      },
+      "timezone": {
+        "description": "Timezone to be used for the date fields. If not specified, local timezone of the location will be used.\nThe format is according to the tzinfo database, so values like `Europe/Prague` or `UTC` can be used.\nAlternatively you may use the value ``auto`` in which case the local timezone of the location is used.\nThe full list of valid timezone strings can be found [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).\n",
+        "title": "Timezone",
+        "type": "string"
+      },
+      "units": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Units"
+          }
+        ],
+        "default": "auto",
+        "description": "Unit system to be used. The available values are:\n\n* `auto`: Select the system automatically, based on the forecast location.\n* `metric`: Metric (SI) units (`°C`, `mm/h`, `m/s`, `cm`, `km`, `hPa`).\n* `us`: Imperial units (`°F`, `in/h`, `mph`, `in`, `mi`, `Hg`).\n* `uk`: Same as ``metric``, except that visibility is in `miles` and wind speeds are in `mph`.\n* `ca`: Same as ``metric``, except that wind speeds are in `km/h` and pressure is in `kPa`.\n"
+      },
+      "key": {
+        "description": "Your unique API key. You can either specify it in this parameter, or set it in `X-API-Key` header.",
+        "title": "Key",
+        "type": "string"
+      }
+    },
+    "required": [
+      "date"
+    ],
+    "$defs": {
+      "Units": {
+        "description": "An enumeration.",
+        "enum": [
+          "auto",
+          "metric",
+          "us",
+          "uk",
+          "ca"
+        ],
+        "title": "Units",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/premium/time_machine{?place_id,lat,lon,date,timezone,units,key}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TimeMachine_TimeMachine"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**elevation**: Elevation above sea level in metres (for units 'metric', 'uk', 'ca') or feet (for units 'us')",
+            "**lat**: Latitude of the point, always in the format <float><N/S>, for example ``23.5S``",
+            "**lon**: Longitude of the point, always in the format <float><E/W>, for example ``23.5W``",
+            [
+              "**statistics**",
+              {
+                "$ul": [
+                  [
+                    "**precipitation**",
+                    {
+                      "$ul": [
+                        "**avg**: Long-term average daily precipitation amount.",
+                        "**probability**: Long-term average precipitation probability."
+                      ]
+                    }
+                  ],
+                  [
+                    "**temperature**",
+                    {
+                      "$ul": [
+                        "**avg**: Long-term temperature average.",
+                        "**avg_max**: Long-term daily maximum temperature average.",
+                        "**avg_min**: Long-term daily minimum temperature average.",
+                        "**record_max**: Historical daily maximum.",
+                        "**record_min**: Historical daily minimum temperature."
+                      ]
+                    }
+                  ],
+                  [
+                    "**wind**",
+                    {
+                      "$ul": [
+                        "**avg_angle**: Long-term average wind angle.",
+                        "**avg_dir**: Long-term average wind direction in 'N', 'NNE', 'NE', ... 'NNW' format.",
+                        "**avg_speed**: Long-term average wind speed.",
+                        "**max_gust**: Historical daily maximum wind gust speed.",
+                        "**max_speed**: Historical daily maximum wind speed."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**timezone**: Name of the timezone in format like 'Europe/London'. Available only when the place is specified through place ID.",
+            "**units**: Unit system (metric, uk, ca or us)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "HTTPValidationError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

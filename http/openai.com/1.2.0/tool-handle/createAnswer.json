@@ -1,0 +1,218 @@
+{
+  "name": "createAnswer",
+  "description": "Answers the specified question using the provided documents and examples.\n\nThe endpoint first [searches](/docs/api-reference/searches) over provided documents or files to find relevant context. The relevant context is combined with the provided examples and question to create the prompt for [completion](/docs/api-reference/completions).\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/CreateAnswerRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CreateAnswerRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "documents": {
+            "description": "List of documents from which the answer for the input `question` should be derived. If this is an empty list, the question will be answered based on the question-answer examples.\n\nYou should specify either `documents` or a `file`, but not both.\n",
+            "example": "['Japan is an island country in East Asia, located in the northwest Pacific Ocean.', 'Tokyo is the capital and most populous prefecture of Japan.']",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "nullable": true,
+            "type": "array"
+          },
+          "examples": {
+            "description": "List of (question, answer) pairs that will help steer the model towards the tone and answer format you'd like. We recommend adding 2 to 3 examples.",
+            "example": "[['What is the capital of Canada?', 'Ottawa'], ['Which province is Ottawa in?', 'Ontario']]",
+            "items": {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "type": "array"
+          },
+          "examples_context": {
+            "description": "A text snippet containing the contextual information used to generate the answers for the `examples` you provide.",
+            "example": "Ottawa, Canada's capital, is located in the east of southern Ontario, near the city of Montréal and the U.S. border.",
+            "type": "string"
+          },
+          "expand": {
+            "default": [],
+            "description": "If an object name is in the list, we provide the full information of the object; otherwise, we only provide the object ID. Currently we support `completion` and `file` objects for expansion.",
+            "items": {},
+            "nullable": true,
+            "type": "array"
+          },
+          "file": {
+            "description": "The ID of an uploaded file that contains documents to search over. See [upload file](/docs/api-reference/files/upload) for how to upload a file of the desired format and purpose.\n\nYou should specify either `documents` or a `file`, but not both.\n",
+            "nullable": true,
+            "type": "string"
+          },
+          "logit_bias": {
+            "$ref": "#/$defs/logit_bias"
+          },
+          "logprobs": {
+            "default": null,
+            "description": "Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response.\n\nThe maximum value for `logprobs` is 5. If you need more than this, please contact us through our [Help center](https://help.openai.com) and describe your use case.\n\nWhen `logprobs` is set, `completion` will be automatically added into `expand` to get the logprobs.\n",
+            "maximum": 5,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "max_rerank": {
+            "default": 200,
+            "description": "The maximum number of documents to be ranked by [Search](/docs/api-reference/searches/create) when using `file`. Setting it to a higher value leads to improved accuracy but with increased latency and cost.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "max_tokens": {
+            "default": 16,
+            "description": "The maximum number of tokens allowed for the generated answer",
+            "nullable": true,
+            "type": "integer"
+          },
+          "model": {
+            "description": "ID of the model to use for completion. You can select one of `ada`, `babbage`, `curie`, or `davinci`.",
+            "type": "string"
+          },
+          "n": {
+            "default": 1,
+            "description": "How many answers to generate for each question.",
+            "maximum": 10,
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "question": {
+            "description": "Question to get answered.",
+            "example": "What is the capital of Japan?",
+            "minLength": 1,
+            "type": "string"
+          },
+          "return_metadata": {
+            "$ref": "#/$defs/return_metadata"
+          },
+          "return_prompt": {
+            "default": false,
+            "description": "If set to `true`, the returned JSON will include a \"prompt\" field containing the final prompt that was used to request a completion. This is mainly useful for debugging purposes.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "search_model": {
+            "default": "ada",
+            "description": "ID of the model to use for [Search](/docs/api-reference/searches/create). You can select one of `ada`, `babbage`, `curie`, or `davinci`.",
+            "nullable": true,
+            "type": "string"
+          },
+          "stop": {
+            "default": null,
+            "description": "Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.\n",
+            "nullable": true,
+            "oneOf": [
+              {
+                "default": "<|endoftext|>",
+                "example": "\n",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "example": "[\"\\n\"]",
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "minItems": 1,
+                "type": "array"
+              }
+            ]
+          },
+          "temperature": {
+            "default": 0,
+            "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
+            "nullable": true,
+            "type": "number"
+          },
+          "user": {
+            "$ref": "#/$defs/user"
+          }
+        },
+        "required": [
+          "model",
+          "question",
+          "examples",
+          "examples_context"
+        ],
+        "type": "object"
+      },
+      "logit_bias": {
+        "default": null,
+        "description": "Modify the likelihood of specified tokens appearing in the completion.\n\nAccepts a json object that maps tokens (specified by their token ID in the GPT tokenizer) to an associated bias value from -100 to 100. You can use this [tokenizer tool](/tokenizer?view=bpe) (which works for both GPT-2 and GPT-3) to convert text to token IDs. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.\n\nAs an example, you can pass `{\"50256\": -100}` to prevent the <|endoftext|> token from being generated.\n",
+        "nullable": true,
+        "type": "object",
+        "x-oaiTypeLabel": "map"
+      },
+      "return_metadata": {
+        "default": false,
+        "description": "A special boolean flag for showing metadata. If set to `true`, each document entry in the returned JSON will contain a \"metadata\" field.\n\nThis flag only takes effect when `file` is set.\n",
+        "nullable": true,
+        "type": "boolean"
+      },
+      "user": {
+        "description": "A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse. [Learn more](/docs/guides/safety-best-practices/end-user-ids).\n",
+        "example": "user-1234",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.openai.com/v1/answers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**answers**",
+            "**completion**",
+            "**model**",
+            "**object**",
+            "**search_model**",
+            "**selected_documents**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

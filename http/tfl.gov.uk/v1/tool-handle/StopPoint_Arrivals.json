@@ -1,0 +1,92 @@
+{
+  "name": "StopPoint_Arrivals",
+  "description": "Gets the list of arrival predictions for the given stop point id",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A StopPoint id (station naptan code e.g. 940GZZLUASL, you can use /StopPoint/Search/{query} endpoint to find a stop point id from a station name)"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/StopPoint/{id}/Arrivals"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "DTO to capture the prediction details",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**bearing**: Bearing (between 0 to 359)",
+            "**currentLocation**: The current location of the vehicle.",
+            "**destinationName**: Name of the destination",
+            "**destinationNaptanId**: Naptan Identifier for the prediction's destination",
+            "**direction**: Direction (unified to inbound/outbound)",
+            "**expectedArrival**: The expected arrival time of the vehicle at the stop/station",
+            "**id**: The identitier for the prediction",
+            "**lineId**: Unique identifier for the Line",
+            "**lineName**: Line Name",
+            "**modeName**: The mode name of the station/line the prediction relates to",
+            "**naptanId**: Identifier for the prediction",
+            "**operationType**: The type of the operation (1: is new or has been updated, 2: should be deleted from any client cache)",
+            "**platformName**: Platform name (for bus, this is the stop letter)",
+            "**stationName**: Station name",
+            "**timeToLive**: The expiry time for the prediction",
+            "**timeToStation**: Prediction of the Time to station in seconds",
+            "**timestamp**: Timestamp for when the prediction was inserted/modified (source column drives what objects are broadcast on each iteration)",
+            [
+              "**timing**",
+              {
+                "$ul": [
+                  "**countdownServerAdjustment**",
+                  "**insert**",
+                  "**read**",
+                  "**received**",
+                  "**sent**",
+                  "**source**"
+                ]
+              }
+            ],
+            "**towards**: Routing information or other descriptive text about the path of the vehicle towards the destination",
+            "**vehicleId**: The actual vehicle in transit (for train modes, the leading car of the rolling set)"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

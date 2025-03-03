@@ -1,0 +1,107 @@
+{
+  "name": "priceBulkUploads",
+  "description": "Updates prices in bulk.\n\nIn one Feed you can update up to 10,000 items in bulk. To ensure optimal Feed processing time, we recommend sending no more than 1000 items in one Feed and keeping the Feed sizes below 10 MB.\n\nThe price sequence guarantee is observed by the bulk price update functionality, subject to the following rules:\n\nThe timestamp used to determine precedence is passed in the request headers. All price updates in the feed are considered to have the same timestamp. The timestamp in the XML file is used only for auditing.\nYou can send a single SKU multiple times in one Feed. If a SKU is repeated in a Feed, the price will be set for that SKU on Walmart.com, but there is no guarantee as to which SKU's price within that feed will be used.\nThis API should be used in preference to the update a price. It should be called no sooner than 24 hours after a new item is set up and a wpid (Walmart Part ID) is available. Thereafter, the bulk price update has an service level agreement (SLA) of 15 minutes.\n\nAfter the update is submitted, wait for at least five minutes before verifying whether the bulk price update was successful. Individual SKU price update success or failure is only available after the entire feed is processed.\n\nIf a SKU's price update fails (for example, multiple price updates were sent for the same SKU in a single feed), an error will be returned.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "feedType": {
+        "enum": [
+          "price",
+          "CPT_SELLER_ELIGIBILITY"
+        ],
+        "type": "string",
+        "description": "The feed Type"
+      },
+      "WM_SEC.ACCESS_TOKEN": {
+        "type": "string",
+        "description": "The access token retrieved in the Token API call"
+      },
+      "WM_CONSUMER.CHANNEL.TYPE": {
+        "type": "string",
+        "description": "A unique ID to track the consumer request by channel. Use the Consumer Channel Type received during onboarding"
+      },
+      "WM_QOS.CORRELATION_ID": {
+        "type": "string",
+        "description": "A unique ID which identifies each API call and used to track and debug issues; use a random generated GUID for this ID"
+      },
+      "WM_SVC.NAME": {
+        "type": "string",
+        "description": "Walmart Service Name"
+      },
+      "body": {
+        "properties": {
+          "file": {
+            "description": "Feed file to upload",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object",
+        "description": "The request body consists of a Feed file attached to the request based on the feedType selected "
+      }
+    },
+    "required": [
+      "feedType",
+      "WM_SEC.ACCESS_TOKEN",
+      "WM_QOS.CORRELATION_ID",
+      "WM_SVC.NAME",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://marketplace.walmartapis.com/v3/feeds{?feedType}"
+    },
+    "headers": {
+      "WM_SEC.ACCESS_TOKEN": {
+        "$": "WM_SEC.ACCESS_TOKEN"
+      },
+      "WM_CONSUMER.CHANNEL.TYPE": {
+        "$": "WM_CONSUMER.CHANNEL.TYPE"
+      },
+      "WM_QOS.CORRELATION_ID": {
+        "$": "WM_QOS.CORRELATION_ID"
+      },
+      "WM_SVC.NAME": {
+        "$": "WM_SVC.NAME"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalAttributes**",
+            "**errors**",
+            "**feedId**: A unique ID, returned from the Bulk Upload API, used for tracking the feed file"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

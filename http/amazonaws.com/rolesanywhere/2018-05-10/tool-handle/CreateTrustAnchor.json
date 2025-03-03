@@ -1,0 +1,338 @@
+{
+  "name": "CreateTrustAnchor",
+  "description": "<p>Creates a trust anchor to establish trust between IAM Roles Anywhere and your certificate authority (CA). You can define a trust anchor as a reference to an Private Certificate Authority (Private CA) or by uploading a CA certificate. Your Amazon Web Services workloads can authenticate with the trust anchor using certificates issued by the CA in exchange for temporary Amazon Web Services credentials.</p> <p> <b>Required permissions: </b> <code>rolesanywhere:CreateTrustAnchor</code>. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "source"
+        ],
+        "properties": {
+          "enabled": {
+            "description": "Specifies whether the trust anchor is enabled.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The name of the trust anchor.",
+            "type": "string",
+            "pattern": "^[ a-zA-Z0-9-_]*$",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "notificationSettings": {
+            "description": "A list of notification settings to be associated to the trust anchor.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/NotificationSetting"
+            },
+            "minItems": 0,
+            "maxItems": 50
+          },
+          "source": {
+            "description": "The trust anchor type and its related certificate data.",
+            "type": "object",
+            "properties": {
+              "sourceData": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SourceData"
+                  },
+                  {
+                    "description": "The data field of the trust anchor depending on its type. "
+                  }
+                ]
+              },
+              "sourceType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TrustAnchorType"
+                  },
+                  {
+                    "description": "The type of the trust anchor. "
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "The tags to attach to the trust anchor.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "NotificationSetting": {
+        "type": "object",
+        "required": [
+          "enabled",
+          "event"
+        ],
+        "properties": {
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationChannel"
+              },
+              {
+                "description": "<p>The specified channel of notification. IAM Roles Anywhere uses CloudWatch metrics, EventBridge, and Health Dashboard to notify for an event.</p> <note> <p>In the absence of a specific channel, IAM Roles Anywhere applies this setting to 'ALL' channels.</p> </note>"
+              }
+            ]
+          },
+          "enabled": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether the notification setting is enabled."
+              }
+            ]
+          },
+          "event": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationEvent"
+              },
+              {
+                "description": "The event to which this notification setting is applied."
+              }
+            ]
+          },
+          "threshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationSettingThresholdInteger"
+              },
+              {
+                "description": "The number of days before a notification event. This value is required for a notification setting that is enabled."
+              }
+            ]
+          }
+        },
+        "description": " Customizable notification settings that will be applied to notification events. IAM Roles Anywhere consumes these settings while notifying across multiple channels - CloudWatch metrics, EventBridge, and Health Dashboard. "
+      },
+      "NotificationChannel": {
+        "type": "string",
+        "enum": [
+          "ALL"
+        ]
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "NotificationEvent": {
+        "type": "string",
+        "enum": [
+          "CA_CERTIFICATE_EXPIRY",
+          "END_ENTITY_CERTIFICATE_EXPIRY"
+        ]
+      },
+      "NotificationSettingThresholdInteger": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 360
+      },
+      "SourceData": {
+        "type": "object",
+        "properties": {
+          "acmPcaArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": " The root certificate of the Private Certificate Authority specified by this ARN is used in trust validation for temporary credential requests. Included for trust anchors of type <code>AWS_ACM_PCA</code>. "
+              }
+            ]
+          },
+          "x509CertificateData": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SourceDataX509CertificateDataString"
+              },
+              {
+                "description": "The PEM-encoded data for the certificate anchor. Included for trust anchors of type <code>CERTIFICATE_BUNDLE</code>. "
+              }
+            ]
+          }
+        },
+        "description": "The data field of the trust anchor depending on its type. "
+      },
+      "String": {
+        "type": "string"
+      },
+      "SourceDataX509CertificateDataString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8000
+      },
+      "TrustAnchorType": {
+        "type": "string",
+        "enum": [
+          "AWS_ACM_PCA",
+          "CERTIFICATE_BUNDLE",
+          "SELF_SIGNED_REPOSITORY"
+        ]
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The tag key."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The tag value."
+              }
+            ]
+          }
+        },
+        "description": "A label that consists of a key and value you define. "
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": "^[ a-zA-Z0-9_.:/=+@-]*$",
+        "minLength": 1,
+        "maxLength": 128,
+        "format": "password"
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^[ a-zA-Z0-9_.:/=+@-]*$",
+        "minLength": 0,
+        "maxLength": 256,
+        "format": "password"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://rolesanywhere.us-east-1.amazonaws.com/trustanchors"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**trustAnchor**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "name": "query_vulnerabilities",
+  "description": "List (w/filters) vulnerability records known by the system, with affected packages information if present",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The ID of the vulnerability (e.g. CVE-1999-0001)"
+      },
+      "affected_package": {
+        "type": "string",
+        "description": "Filter results by specified package name (e.g. sed)"
+      },
+      "affected_package_version": {
+        "type": "string",
+        "description": "Filter results by specified package version (e.g. 4.4-1)"
+      },
+      "page": {
+        "default": "1",
+        "type": "string",
+        "description": "The page of results to fetch. Pages start at 1"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Limit the number of records for the requested page. If omitted or set to 0, return all results in a single page"
+      },
+      "namespace": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Namespace(s) to filter vulnerability records by"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//query/vulnerabilities{?id,affected_package,affected_package_version,page,limit,namespace}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Properties for common pagination handling to be included in any wrapping object that needs pagination elements",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**next_page**: True if additional pages exist (page + 1) or False if this is the last page",
+            "**page**: The page number returned (should match the requested page query string param)",
+            "**returned_count**: The number of items sent in this response",
+            "**vulnerabilities**: The listing of matching vulnerabilities for the query subject to pagination"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

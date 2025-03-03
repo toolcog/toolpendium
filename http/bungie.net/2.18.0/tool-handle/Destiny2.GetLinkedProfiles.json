@@ -1,0 +1,91 @@
+{
+  "name": "Destiny2_GetLinkedProfiles",
+  "description": "Returns a summary information about all profiles linked to the requesting membership type/membership ID that have valid Destiny information. The passed-in Membership Type/Membership ID may be a Bungie.Net membership or a Destiny membership. It only returns the minimal amount of data to begin making more substantive requests, but will hopefully serve as a useful alternative to UserServices for people who just care about Destiny data. Note that it will only return linked accounts whose linkages you are allowed to view.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "getAllMemberships": {
+        "type": "boolean",
+        "description": "(optional) if set to 'true', all memberships regardless of whether they're obscured by overrides will be returned. Normal privacy restrictions on account linking will still apply no matter what."
+      },
+      "membershipId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The ID of the membership whose linked Destiny accounts you want returned. Make sure your membership ID matches its Membership Type: don't pass us a PSN membership ID and the XBox membership type, it's not going to work!"
+      },
+      "membershipType": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The type for the membership whose linked Destiny accounts you want returned."
+      }
+    },
+    "required": [
+      "membershipId",
+      "membershipType"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.bungie.net/Platform/Destiny2/{membershipType}/Profile/{membershipId}/LinkedProfiles/{?getAllMemberships}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**DetailedErrorTrace**",
+            "**ErrorCode**",
+            "**ErrorStatus**",
+            "**Message**",
+            "**MessageData**",
+            [
+              "**Response**: I know what you seek. You seek linked accounts. Found them, you have.\r",
+              {
+                "$ul": [
+                  [
+                    "**bnetMembership**: This contract supplies basic information commonly used to display a minimal amount of information about a user. Take care to not add more properties here unless the property applies in all (or at least the majority) of the situations where UserInfoCard is used. Avoid adding game specific or platform specific details here. In cases where UserInfoCard is a subset of the data needed in a contract, use UserInfoCard as a property of other contracts.",
+                    {
+                      "$ul": [
+                        "**applicableMembershipTypes**: The list of Membership Types indicating the platforms on which this Membership can be used.\r",
+                        "**bungieGlobalDisplayName**: The bungie global display name, if set.",
+                        "**bungieGlobalDisplayNameCode**: The bungie global display name code, if set.",
+                        "**crossSaveOverride**: If there is a cross save override in effect, this value will tell you the type that is overridding this one.",
+                        "**displayName**: Display Name the player has chosen for themselves. The display name is optional when the data type is used as input to a platform API.",
+                        "**iconPath**: URL the Icon if available.",
+                        "**isPublic**: If True, this is a public user membership.",
+                        "**membershipId**: Membership ID as they user is known in the Accounts service",
+                        "**membershipType**: Type of the membership. Not necessarily the native type.",
+                        "**supplementalDisplayName**: A platform specific additional display name - ex: psn Real Name, bnet Unique Name, etc."
+                      ]
+                    }
+                  ],
+                  "**profiles**: Any Destiny account for whom we could successfully pull characters will be returned here, as the Platform-level summary of user data. (no character data, no Destiny account data other than the Membership ID and Type so you can make further queries)",
+                  "**profilesWithErrors**: This is brief summary info for profiles that we believe have valid Destiny info, but who failed to return data for some other reason and thus we know that subsequent calls for their info will also fail."
+                ]
+              }
+            ],
+            "**ThrottleSeconds**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

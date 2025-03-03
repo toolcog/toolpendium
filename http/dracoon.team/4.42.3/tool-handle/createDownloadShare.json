@@ -1,0 +1,539 @@
+{
+  "name": "createDownloadShare",
+  "description": "### Description:\nCreate a new Download Share.\n\n### Precondition:\nUser with <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128275; manage download share</span> permissions on target node.\n\n### Postcondition:\nDownload Share is created.\n\n### Further Information:\n\nIf the target node is a room: subordinary rooms are excluded from a Download Share.\n\n* `name` is limited to **150** characters.\n* `notes` are limited to **255** characters.\n* `password` is limited to **1024** characters.\n\nUse `POST /shares/downloads/{share_id}/email` API for sending emails.  \n\nForbidden characters in passwords: [`&`, `'`, `<`, `>`]\n\nPlease keep in mind that due to various restrictions of different telecommunication providers, non-ASCII characters\nmay not be displayed correctly in short messages (SMS).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateDownloadShareRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CreateDownloadShareRequest": {
+        "description": "Request model for creating a Download Share",
+        "properties": {
+          "creatorLanguage": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.20.0\n\nLanguage tag for messages to creator",
+            "type": "string"
+          },
+          "expiration": {
+            "$ref": "#/$defs/ObjectExpiration"
+          },
+          "fileKey": {
+            "$ref": "#/$defs/FileKey"
+          },
+          "internalNotes": {
+            "description": "&#128640; Since v4.11.0\n\nInternal notes",
+            "maximum": 255,
+            "type": "string"
+          },
+          "keyPair": {
+            "$ref": "#/$defs/UserKeyPairContainer"
+          },
+          "mailBody": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nNotification email content",
+            "type": "string"
+          },
+          "mailRecipients": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nCSV string of recipient email addresses",
+            "type": "string"
+          },
+          "mailSubject": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nNotification email subject",
+            "type": "string"
+          },
+          "maxDownloads": {
+            "description": "Max allowed downloads",
+            "format": "int32",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Alias name\n\n(default: name of the shared node)",
+            "type": "string"
+          },
+          "nodeId": {
+            "description": "Source node ID",
+            "format": "int64",
+            "type": "integer"
+          },
+          "notes": {
+            "description": "User notes",
+            "maximum": 255,
+            "type": "string"
+          },
+          "notifyCreator": {
+            "default": false,
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.20.0\n\nNotify creator on every download.",
+            "type": "boolean"
+          },
+          "password": {
+            "description": "Access password, not allowed for encrypted shares",
+            "type": "string"
+          },
+          "receiverLanguage": {
+            "description": "Language tag for messages to receiver",
+            "type": "string"
+          },
+          "sendMail": {
+            "default": false,
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nNotify recipients via email\n\nPlease use `POST /shares/downloads/{share_id}/email` API instead.",
+            "type": "boolean"
+          },
+          "sendSms": {
+            "default": false,
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nSend share password via SMS\n\nPlease use `textMessageRecipients` attribute instead.",
+            "type": "boolean"
+          },
+          "showCreatorName": {
+            "default": false,
+            "description": "Show creator first and last name.",
+            "type": "boolean"
+          },
+          "showCreatorUsername": {
+            "default": false,
+            "description": "Show creator email address.",
+            "type": "boolean"
+          },
+          "smsRecipients": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.11.0\n\nCSV string of recipient MSISDNs",
+            "type": "string"
+          },
+          "textMessageRecipients": {
+            "description": "&#128640; Since v4.11.0\n\nList of recipient FQTNs\n\nE.123 / E.164 Format",
+            "items": {
+              "description": "List of recipient FQTNs\n\nE.123 / E.164 Format",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "nodeId"
+        ],
+        "type": "object"
+      },
+      "ObjectExpiration": {
+        "description": "Expiration information",
+        "properties": {
+          "enableExpiration": {
+            "description": "enabled / disabled",
+            "type": "boolean"
+          },
+          "expireAt": {
+            "description": "Expiration date",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enableExpiration"
+        ],
+        "type": "object"
+      },
+      "FileKey": {
+        "description": "File key information",
+        "properties": {
+          "iv": {
+            "description": "Initial vector",
+            "type": "string"
+          },
+          "key": {
+            "description": "Encryption key",
+            "type": "string"
+          },
+          "tag": {
+            "description": "Authentication tag\n\n(needed with authenticated encryption)",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "iv",
+          "key",
+          "tag",
+          "version"
+        ],
+        "type": "object"
+      },
+      "UserKeyPairContainer": {
+        "description": "Key pair container",
+        "properties": {
+          "privateKeyContainer": {
+            "$ref": "#/$defs/PrivateKeyContainer"
+          },
+          "publicKeyContainer": {
+            "$ref": "#/$defs/PublicKeyContainer"
+          }
+        },
+        "required": [
+          "privateKeyContainer",
+          "publicKeyContainer"
+        ],
+        "type": "object"
+      },
+      "PrivateKeyContainer": {
+        "description": "Private key container",
+        "properties": {
+          "createdAt": {
+            "description": "&#128640; Since v4.24.0\n\nCreation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "description": "&#128640; Since v4.24.0\n\nCreated by user",
+            "format": "int64",
+            "type": "integer"
+          },
+          "privateKey": {
+            "description": "Private key",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "privateKey",
+          "version"
+        ],
+        "type": "object"
+      },
+      "PublicKeyContainer": {
+        "description": "Public key container",
+        "properties": {
+          "createdAt": {
+            "description": "&#128640; Since v4.24.0\n\nCreation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "description": "&#128640; Since v4.24.0\n\nCreated by user",
+            "format": "int64",
+            "type": "integer"
+          },
+          "publicKey": {
+            "description": "Public key",
+            "type": "string"
+          },
+          "version": {
+            "description": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "publicKey",
+          "version"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v4/shares/downloads"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Download Share information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accessKey**: Share access key to generate secure link",
+            "**classification**: &#128679; Deprecated since v4.11.0",
+            "**cntDownloads**: Downloads counter (incremented on each download)",
+            "**createdAt**: Creation date",
+            [
+              "**createdBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ],
+            "**dataUrl**: Path to shared download node",
+            "**expireAt**: Expiration date",
+            "**id**: Share ID",
+            "**internalNotes**: &#128640; Since v4.11.0",
+            "**isEncrypted**: Encrypted share",
+            "**isProtected**: Is share protected by password",
+            "**maxDownloads**: Max allowed downloads",
+            "**name**: Alias name",
+            "**nodeId**: Source node ID",
+            "**nodePath**: Path to shared download node",
+            "**nodeType**: Node type",
+            "**notes**: User notes",
+            "**notifyCreator**: &#128679; Deprecated since v4.20.0",
+            "**recipients**: &#128679; Deprecated since v4.11.0",
+            "**showCreatorName**: Show creator first and last name.",
+            "**showCreatorUsername**: Show creator email address.",
+            "**smsRecipients**: &#128679; Deprecated since v4.11.0",
+            "**updatedAt**: Modification date",
+            [
+              "**updatedBy**: User information",
+              {
+                "$ul": [
+                  "**avatarUuid**: &#128640; Since v4.11.0",
+                  "**displayName**: &#128679; Deprecated since v4.11.0",
+                  "**email**: &#128640; Since v4.11.0",
+                  "**firstName**: &#128640; Since v4.11.0",
+                  "**id**: Unique identifier for the user",
+                  "**lastName**: &#128640; Since v4.11.0",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0",
+                  "**userType**: &#128640; Since v4.11.0"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "502": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

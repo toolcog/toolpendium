@@ -1,0 +1,106 @@
+{
+  "name": "query_images_by_package",
+  "description": "Filterable query interface to search for images containing specified package",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Name of package to search for (e.g. sed)"
+      },
+      "package_type": {
+        "type": "string",
+        "description": "Type of package to filter on (e.g. dpkg)"
+      },
+      "version": {
+        "type": "string",
+        "description": "Version of named package to filter on (e.g. 4.4-1)"
+      },
+      "page": {
+        "type": "string",
+        "description": "The page of results to fetch. Pages start at 1"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Limit the number of records for the requested page. If omitted or set to 0, return all results in a single page"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//query/images/by_package{?name,package_type,version,page,limit}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Properties for common pagination handling to be included in any wrapping object that needs pagination elements",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**next_page**: True if additional pages exist (page + 1) or False if this is the last page",
+            "**page**: The page number returned (should match the requested page query string param)",
+            "**returned_count**: The number of items sent in this response",
+            "**images**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

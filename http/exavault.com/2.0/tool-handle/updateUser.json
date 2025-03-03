@@ -1,0 +1,287 @@
+{
+  "name": "updateUser",
+  "description": "Updates the settings for the user. Note that the unique key for this API call is our internal ID, and _not_ the username, as the username can be changed.\n\nIn the request body, you should only send the parameters for values that you wish to change for the user.\n\n**Notes:**\n\n- You must have [admin or master](/docs/account/04-users/00-introduction#managing-user-roles-and-permissions) access to edit other users. If you have user-level access, you can only update your own user settings.\n- You cannot edit a master user with this method.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "example": "exampleaccount-zwSuWUZ8S38h33qPS8v0s",
+        "type": "string",
+        "description": "API key required to make the API call."
+      },
+      "ev-access-token": {
+        "example": "19853ef63a0bc348024a9e4cfd4a92520d2dfd04e88d8679fb1ed6bc551593d1",
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "id": {
+        "example": 2224,
+        "format": "int32",
+        "type": "integer",
+        "description": "The user's ID. Note that this is our internal ID, and _not the username_. You can obtain it by calling the [GET /users](#operation/listUsers) method."
+      },
+      "body": {
+        "properties": {
+          "email": {
+            "description": "Email address for the user",
+            "example": "testuser@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "expiration": {
+            "description": "Optional timestamp when the user should expire.",
+            "example": "2011-03-21 00:18:56",
+            "type": "string"
+          },
+          "homeResource": {
+            "description": "Resource identifier for the user's home folder. See details on [how to specify resources](#section/Identifying-Resources) above.\n\nThe user will be locked to this directory and unable to move 'up' in the account. If the folder does not exist in the account, it will be created when the user logs in.\n\nThis setting is ignored for users with the `role` **admin**.",
+            "example": "/",
+            "type": "string"
+          },
+          "locked": {
+            "description": "If true, the user will be prevented from logging in",
+            "example": true,
+            "type": "boolean"
+          },
+          "nickname": {
+            "description": "An optional nickname (e.g. 'David from Sales').",
+            "example": "testnickname",
+            "type": "string"
+          },
+          "onboarding": {
+            "description": "Set this to **true** to enable extra help popups in the web file manager for this user.",
+            "example": true,
+            "type": "boolean"
+          },
+          "password": {
+            "description": "New password for the user",
+            "type": "string"
+          },
+          "permissions": {
+            "$ref": "#/$defs/UserPermissions"
+          },
+          "role": {
+            "description": "The type of user (**admin** or **user**). Note that admin users cannot have a `homeResource` other than '/', and will have full permissions, but you must provide at least \"download,upload,list,delete\" in the `permissions` parameter.",
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "example": "user",
+            "type": "string"
+          },
+          "timeZone": {
+            "description": "Time zone, used for accurate time display within the application. See <a href='https://php.net/manual/en/timezones.php' target='blank'>this page</a> for allowed values.\n",
+            "example": "America/Los_Angeles",
+            "type": "string"
+          },
+          "username": {
+            "description": "New username for the user. This should follow standard username conventions - spaces are not allowed, etc. We do allow email addresses as usernames.\n\n**Note** Usernames must be unique across all ExaVault accounts.",
+            "example": "testuser",
+            "type": "string"
+          }
+        },
+        "title": "UpdateUserRequestBody",
+        "type": "object"
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token",
+      "id"
+    ],
+    "$defs": {
+      "UserPermissions": {
+        "properties": {
+          "changePassword": {
+            "description": "Change (own) password permission flag",
+            "type": "boolean"
+          },
+          "delete": {
+            "description": "Delete permission flag",
+            "type": "boolean"
+          },
+          "deleteFormData": {
+            "description": "Delete form data permission flag. If true, user can remove data that was submitted for a receive folder. This applies only to data submitted in the receive folder form, not the actual files uploaded.",
+            "type": "boolean"
+          },
+          "download": {
+            "description": "Download permission flag",
+            "type": "boolean"
+          },
+          "list": {
+            "description": "View folder contents permission flag",
+            "type": "boolean"
+          },
+          "modify": {
+            "description": "Modify permission flag",
+            "type": "boolean"
+          },
+          "notification": {
+            "description": "Notifications permission flag",
+            "type": "boolean"
+          },
+          "share": {
+            "description": "Sharing permission flag",
+            "type": "boolean"
+          },
+          "upload": {
+            "description": "Upload permission flag",
+            "type": "boolean"
+          },
+          "viewFormData": {
+            "description": "Access Form Data permission flag. If true, user can view submissions that have been stored for a receive folder. This includes any data submitted in the receive folder form.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "download",
+          "upload",
+          "modify",
+          "delete",
+          "list",
+          "changePassword",
+          "share",
+          "notification",
+          "viewFormData",
+          "deleteFormData"
+        ],
+        "title": "UserPermissions",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/users/{id}"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "UserResponse"
+        },
+        "Response object for users.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: Object contains user properties.",
+              {
+                "$ul": [
+                  [
+                    "**attributes**: Attributes of the user including expiration, home directory, and permissions. ",
+                    {
+                      "$ul": [
+                        "**accessTimestamp**: Timestamp of most recent successful user login.",
+                        "**accountName**: Name of the account this user belongs to.",
+                        "**created**: Timestamp of user creation.",
+                        "**email**: Email address of the user.",
+                        "**expiration**: Timestamp of user expiration.",
+                        "**firstLogin**: `true` if the user has logged into the system.",
+                        "**homePath**: Path to the user's home folder.",
+                        "**locked**: `true` if the user is locked and cannot log in.",
+                        "**modified**: Timestamp of user modification.",
+                        "**nickname**: Nickname of the user.",
+                        "**onboarding**: Whether the onboarding help system is enabled for this user. `true` means that additional help popups are displayed in the web application for this user.",
+                        [
+                          "**permissions**",
+                          {
+                            "$ul": [
+                              "**changePassword**: Change (own) password permission flag",
+                              "**delete**: Delete permission flag",
+                              "**deleteFormData**: Delete form data permission flag. If true, user can remove data that was submitted for a receive folder. This applies only to data submitted in the receive folder form, not the actual files uploaded.",
+                              "**download**: Download permission flag",
+                              "**list**: View folder contents permission flag",
+                              "**modify**: Modify permission flag",
+                              "**notification**: Notifications permission flag",
+                              "**share**: Sharing permission flag",
+                              "**upload**: Upload permission flag",
+                              "**viewFormData**: Access Form Data permission flag. If true, user can view submissions that have been stored for a receive folder. This includes any data submitted in the receive folder form."
+                            ]
+                          }
+                        ],
+                        "**role**: User's access level",
+                        "**status**: Indicates user activity status. `0` means the user is locked and cannot log in. `1` means the user is active and can log in.",
+                        "**timeZone**: User's timezone. See <a href='https://php.net/manual/en/timezones.php' target='blank'>this page</a> for allowed values.",
+                        "**username**: Username of the user."
+                      ]
+                    }
+                  ],
+                  "**id**: ID of the user.",
+                  [
+                    "**relationships**: Home resource and owner account relationship data for the user. ",
+                    {
+                      "$ul": [
+                        [
+                          "**homeResource**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**: ID of home directory resource.",
+                                    "**type**: Type is resource."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**ownerAccount**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**: ID of the account.",
+                                    "**type**: Type is account."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**type**: Type of object being returned. Always \"user\""
+                ]
+              }
+            ],
+            "**included**",
+            "**responseStatus**: Http code for the response."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

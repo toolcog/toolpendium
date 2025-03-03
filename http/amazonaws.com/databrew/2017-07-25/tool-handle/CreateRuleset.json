@@ -1,0 +1,368 @@
+{
+  "name": "CreateRuleset",
+  "description": "Creates a new ruleset that can be used in a profile job to validate the data quality of a dataset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name",
+          "TargetArn",
+          "Rules"
+        ],
+        "properties": {
+          "Name": {
+            "description": "The name of the ruleset to be created. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "Description": {
+            "description": "The description of the ruleset.",
+            "type": "string",
+            "maxLength": 1024
+          },
+          "TargetArn": {
+            "description": "The Amazon Resource Name (ARN) of a resource (dataset) that the ruleset is associated with.",
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 2048
+          },
+          "Rules": {
+            "description": "A list of rules that are defined with the ruleset. A rule includes one or more checks to be validated on a DataBrew dataset.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Rule"
+            },
+            "minItems": 1
+          },
+          "Tags": {
+            "description": "Metadata tags to apply to the ruleset.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 200,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Rule": {
+        "type": "object",
+        "required": [
+          "Name",
+          "CheckExpression"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuleName"
+              },
+              {
+                "description": "The name of the rule."
+              }
+            ]
+          },
+          "Disabled": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Disabled"
+              },
+              {
+                "description": "A value that specifies whether the rule is disabled. Once a rule is disabled, a profile job will not validate it during a job run. Default value is false."
+              }
+            ]
+          },
+          "CheckExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Expression"
+              },
+              {
+                "description": "<p>The expression which includes column references, condition names followed by variable references, possibly grouped and combined with other conditions. For example, <code>(:col1 starts_with :prefix1 or :col1 starts_with :prefix2) and (:col1 ends_with :suffix1 or :col1 ends_with :suffix2)</code>. Column and value references are substitution variables that should start with the ':' symbol. Depending on the context, substitution variables' values can be either an actual value or a column name. These values are defined in the SubstitutionMap. If a CheckExpression starts with a column reference, then ColumnSelectors in the rule should be null. If ColumnSelectors has been defined, then there should be no column reference in the left side of a condition, for example, <code>is_between :val1 and :val2</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/profile.data-quality-available-checks.html\">Available checks</a> </p>"
+              }
+            ]
+          },
+          "SubstitutionMap": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ValuesMap"
+              },
+              {
+                "description": "The map of substitution variable names to their values used in a check expression. Variable names should start with a ':' (colon). Variable values can either be actual values or column names. To differentiate between the two, column names should be enclosed in backticks, for example, <code>\":col1\": \"`Column A`\".</code> "
+              }
+            ]
+          },
+          "Threshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Threshold"
+              },
+              {
+                "description": "The threshold used with a non-aggregate check expression. Non-aggregate check expressions will be applied to each row in a specific column, and the threshold will be used to determine whether the validation succeeds."
+              }
+            ]
+          },
+          "ColumnSelectors": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnSelectorList"
+              },
+              {
+                "description": "List of column selectors. Selectors can be used to select columns using a name or regular expression from the dataset. Rule will be applied to selected columns."
+              }
+            ]
+          }
+        },
+        "description": "Represents a single data quality requirement that should be validated in the scope of this dataset."
+      },
+      "RuleName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "Disabled": {
+        "type": "boolean"
+      },
+      "Expression": {
+        "type": "string",
+        "pattern": "^[<>0-9A-Za-z_.,:)(!= ]+$",
+        "minLength": 4,
+        "maxLength": 1024
+      },
+      "ValuesMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/ConditionValue"
+        }
+      },
+      "ConditionValue": {
+        "type": "string",
+        "maxLength": 1024
+      },
+      "Threshold": {
+        "type": "object",
+        "required": [
+          "Value"
+        ],
+        "properties": {
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ThresholdValue"
+              },
+              {
+                "description": "The value of a threshold."
+              }
+            ]
+          },
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ThresholdType"
+              },
+              {
+                "description": "The type of a threshold. Used for comparison of an actual count of rows that satisfy the rule to the threshold value."
+              }
+            ]
+          },
+          "Unit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ThresholdUnit"
+              },
+              {
+                "description": "Unit of threshold value. Can be either a COUNT or PERCENTAGE of the full sample size used for validation."
+              }
+            ]
+          }
+        },
+        "description": "The threshold used with a non-aggregate check expression. The non-aggregate check expression will be applied to each row in a specific column. Then the threshold will be used to determine whether the validation succeeds."
+      },
+      "ThresholdValue": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0
+      },
+      "ThresholdType": {
+        "type": "string",
+        "enum": [
+          "GREATER_THAN_OR_EQUAL",
+          "LESS_THAN_OR_EQUAL",
+          "GREATER_THAN",
+          "LESS_THAN"
+        ]
+      },
+      "ThresholdUnit": {
+        "type": "string",
+        "enum": [
+          "COUNT",
+          "PERCENTAGE"
+        ]
+      },
+      "ColumnSelectorList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ColumnSelector"
+        },
+        "minItems": 1
+      },
+      "ColumnSelector": {
+        "type": "object",
+        "properties": {
+          "Regex": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnName"
+              },
+              {
+                "description": "A regular expression for selecting a column from a dataset."
+              }
+            ]
+          },
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ColumnName"
+              },
+              {
+                "description": "The name of a column from a dataset."
+              }
+            ]
+          }
+        },
+        "description": "Selector of a column from a dataset for profile job configuration. One selector includes either a column name or a regular expression."
+      },
+      "ColumnName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://databrew.us-east-1.amazonaws.com/rulesets"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Name**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

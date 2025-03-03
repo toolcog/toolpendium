@@ -1,0 +1,171 @@
+{
+  "name": "listCollections",
+  "description": "Use this method to list the user's collections contained in `parent` (by default in the `root` collection).\nIf no sort option is provided, the collections are sorted by `creationDate` `desc`.\n\nNote that this method will not include the `parent` collection in the listing.\nFor example, if you need the details of the `root` collection, you can use `GET /v2/collections/root`.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "parent": {
+        "default": "root",
+        "type": "string",
+        "description": "List the collection contained in this `parent` collection.\n\nThis option doesn't provide a complete multi-level collection support.\nWhen sharing a collection with someone, this one will have as `parent` `sharedWithMe`.\n"
+      },
+      "sort": {
+        "enum": [
+          "creationDate",
+          "title"
+        ],
+        "type": "string",
+        "description": "Sort"
+      },
+      "direction": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "Sort direction"
+      },
+      "limit": {
+        "default": 25,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "This is the maximum number of objects that may be returned"
+      },
+      "next": {
+        "type": "string",
+        "description": "An opaque string cursor to fetch the next page of data.\nThe paginated API URLs are returned in the `Link` header when requesting the API. These URLs will contain a `next` and `previous` cursor based on the available data.\n"
+      },
+      "previous": {
+        "type": "string",
+        "description": "An opaque string cursor to fetch the previous page of data.\nThe paginated API URLs are returned in the `Link` header when requesting the API. These URLs will contain a `next` and `previous` cursor based on the available data.\n"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.flat.io/v2/collections{?parent,sort,direction,limit,next,previous}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Collection of scores",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**app**: If this directory is dedicated to an app, the unique idenfier of this app",
+            [
+              "**capabilities**: Capabilities the current user has on this collection. Each capability corresponds to a fine-grained action that a user may take.",
+              {
+                "$ul": [
+                  "**canAddScores**: Whether the current user can add scores to the collection",
+                  "**canDelete**: Whether the current user can delete the collection",
+                  "**canDeleteScores**: Whether the current user can delete scores from the collection",
+                  "**canEdit**: Whether the current user can modify the metadata for the collection",
+                  "**canShare**: Whether the current user can modify the sharing settings for the collection"
+                ]
+              }
+            ],
+            "**collaborators**: The list of the collaborators of the collection",
+            "**collections**: The List of parent collections, which includes all the collections this score is included. Please note that you might not have access to all of them.",
+            "**creationDate**: The date when the collection was created",
+            "**htmlUrl**: The url where the collection can be viewed in a web browser",
+            "**id**: Unique identifier of the collection",
+            "**privacy**: The collection main privacy mode.",
+            [
+              "**rights**: The rights of the current user on a score or collection",
+              {
+                "$ul": [
+                  "**aclAdmin**: `True` if the current user can manage the current document (i.e. share, delete) (default: false)",
+                  "**aclRead**: `True` if the current user can read the current document (default: false)",
+                  "**aclWrite**: `True` if the current user can modify the current document. (default: false)",
+                  "**isCollaborator**: `True` if the current user is a collaborator of the current document (direct or via group). (default: false)"
+                ]
+              }
+            ],
+            "**sharingKey**: The private sharing key of the collection (available when the `privacy` mode is set to `privateLink`)",
+            "**title**: The title of the collection",
+            "**type**: Type of the collection.",
+            [
+              "**user**",
+              {
+                "$ul": [
+                  "**firstname**: Firstname of the user (for education users)",
+                  "**id**: The user unique identifier",
+                  "**isFlatTeam**: Will be 'true' if user is part of the Flat Team",
+                  "**isPowerUser**: User license status. 'true' if user is an individual Power user",
+                  "**lastname**: Lastname of the user (for education users)",
+                  "**name**: A displayable name for the user (for consumer users)",
+                  "**picture**: The URL of the picture to display",
+                  "**printableName**: The name that can be directly printed (name, firstname & lastname, or username)",
+                  "**type**: The type of user account",
+                  "**username**: The user name (unique for the organization)",
+                  "**classRole**: User's Class Role (for Edu users only)",
+                  "**htmlUrl**: Link to user profile (for Indiv. users only)",
+                  "**organization**: Organization ID (for Edu users only)",
+                  "**organizationRole**: User's Organization Role (for Edu users only)"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "name": "getCrawlStatisticsUrls",
+  "description": "Return a list of 1000 latest URLs crawled (all crawled URLs or only URLS with HTTP errors)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "User's identifier"
+      },
+      "project_slug": {
+        "type": "string",
+        "description": "Project's identifier"
+      },
+      "analysis_slug": {
+        "type": "string",
+        "description": "Analysis' identifier"
+      },
+      "list_type": {
+        "enum": [
+          "crawled",
+          "errors"
+        ],
+        "type": "string",
+        "description": "URLs list type (crawled URLs or error URLs)"
+      }
+    },
+    "required": [
+      "username",
+      "project_slug",
+      "analysis_slug",
+      "list_type"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.botify.com/v1/analyses/{username}/{project_slug}/{analysis_slug}/crawl_statistics/urls/{list_type}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Successful operation",
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.item"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "default payload for object for all HTTP codes that are not covered individually",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**error_code**: Error Code",
+                  "**error_detail**: If available, detailed error",
+                  "**message**: Error Message"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

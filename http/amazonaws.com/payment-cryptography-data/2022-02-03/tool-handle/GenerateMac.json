@@ -1,0 +1,445 @@
+{
+  "name": "GenerateMac",
+  "description": "<p>Generates a Message Authentication Code (MAC) cryptogram within Amazon Web Services Payment Cryptography. </p> <p>You can use this operation when keys won't be shared but mutual data is present on both ends for validation. In this case, known data values are used to generate a MAC on both ends for comparision without sending or receiving data in ciphertext or plaintext. You can use this operation to generate a DUPKT, HMAC or EMV MAC by setting generation attributes and algorithm to the associated values. The MAC generation encryption key must have valid values for <code>KeyUsage</code> such as <code>TR31_M7_HMAC_KEY</code> for HMAC generation, and they key must have <code>KeyModesOfUse</code> set to <code>Generate</code> and <code>Verify</code>.</p> <p>For information about valid keys for this operation, see <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/keys-validattributes.html\">Understanding key attributes</a> and <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/crypto-ops-validkeys-ops.html\">Key types for specific data operations</a> in the <i>Amazon Web Services Payment Cryptography User Guide</i>. </p> <p> <b>Cross-account use</b>: This operation can't be used across different Amazon Web Services accounts.</p> <p> <b>Related operations:</b> </p> <ul> <li> <p> <a>VerifyMac</a> </p> </li> </ul>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "GenerationAttributes",
+          "KeyIdentifier",
+          "MessageData"
+        ],
+        "properties": {
+          "GenerationAttributes": {
+            "description": "Parameters that are required for DUKPT, HMAC, or EMV MAC generation or verification.",
+            "type": "object",
+            "properties": {
+              "Algorithm": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MacAlgorithm"
+                  },
+                  {
+                    "description": "The encryption algorithm for MAC generation or verification."
+                  }
+                ]
+              },
+              "DukptCmac": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MacAlgorithmDukpt"
+                  },
+                  {
+                    "description": "Parameters that are required for MAC generation or verification using DUKPT CMAC algorithm."
+                  }
+                ]
+              },
+              "DukptIso9797Algorithm1": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MacAlgorithmDukpt"
+                  },
+                  {
+                    "description": "Parameters that are required for MAC generation or verification using DUKPT ISO 9797 algorithm1."
+                  }
+                ]
+              },
+              "DukptIso9797Algorithm3": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MacAlgorithmDukpt"
+                  },
+                  {
+                    "description": "Parameters that are required for MAC generation or verification using DUKPT ISO 9797 algorithm2."
+                  }
+                ]
+              },
+              "EmvMac": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MacAlgorithmEmv"
+                  },
+                  {
+                    "description": "Parameters that are required for MAC generation or verification using EMV MAC algorithm."
+                  }
+                ]
+              }
+            }
+          },
+          "KeyIdentifier": {
+            "description": "The <code>keyARN</code> of the MAC generation encryption key.",
+            "type": "string",
+            "pattern": "^arn:aws:payment-cryptography:[a-z]{2}-[a-z]{1,16}-[0-9]+:[0-9]{12}:(key/[0-9a-zA-Z]{16,64}|alias/[a-zA-Z0-9/_-]+)$|^alias/[a-zA-Z0-9/_-]+$",
+            "minLength": 7,
+            "maxLength": 322
+          },
+          "MacLength": {
+            "description": "The length of a MAC under generation.",
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 16
+          },
+          "MessageData": {
+            "description": "The data for which a MAC is under generation.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]+$",
+            "minLength": 2,
+            "maxLength": 4096
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "MacAlgorithm": {
+        "type": "string",
+        "enum": [
+          "ISO9797_ALGORITHM1",
+          "ISO9797_ALGORITHM3",
+          "CMAC",
+          "HMAC_SHA224",
+          "HMAC_SHA256",
+          "HMAC_SHA384",
+          "HMAC_SHA512"
+        ]
+      },
+      "MacAlgorithmDukpt": {
+        "type": "object",
+        "required": [
+          "DukptKeyVariant",
+          "KeySerialNumber"
+        ],
+        "properties": {
+          "DukptDerivationType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DukptDerivationType"
+              },
+              {
+                "description": "The key type derived using DUKPT from a Base Derivation Key (BDK) and Key Serial Number (KSN). This must be less than or equal to the strength of the BDK. For example, you can't use <code>AES_128</code> as a derivation type for a BDK of <code>AES_128</code> or <code>TDES_2KEY</code>."
+              }
+            ]
+          },
+          "DukptKeyVariant": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DukptKeyVariant"
+              },
+              {
+                "description": "The type of use of DUKPT, which can be MAC generation, MAC verification, or both."
+              }
+            ]
+          },
+          "KeySerialNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween10And24"
+              },
+              {
+                "description": "The unique identifier known as Key Serial Number (KSN) that comes from an encrypting device using DUKPT encryption method. The KSN is derived from the encrypting device unique identifier and an internal transaction counter."
+              }
+            ]
+          }
+        },
+        "description": "Parameters required for DUKPT MAC generation and verification."
+      },
+      "DukptDerivationType": {
+        "type": "string",
+        "enum": [
+          "TDES_2KEY",
+          "TDES_3KEY",
+          "AES_128",
+          "AES_192",
+          "AES_256"
+        ]
+      },
+      "DukptKeyVariant": {
+        "type": "string",
+        "enum": [
+          "BIDIRECTIONAL",
+          "REQUEST",
+          "RESPONSE"
+        ]
+      },
+      "HexLengthBetween10And24": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 10,
+        "maxLength": 24
+      },
+      "MacAlgorithmEmv": {
+        "type": "object",
+        "required": [
+          "MajorKeyDerivationMode",
+          "PanSequenceNumber",
+          "PrimaryAccountNumber",
+          "SessionKeyDerivationMode",
+          "SessionKeyDerivationValue"
+        ],
+        "properties": {
+          "MajorKeyDerivationMode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MajorKeyDerivationMode"
+              },
+              {
+                "description": "The method to use when deriving the master key for EMV MAC generation or verification."
+              }
+            ]
+          },
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN), a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          },
+          "SessionKeyDerivationMode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionKeyDerivationMode"
+              },
+              {
+                "description": "The method of deriving a session key for EMV MAC generation or verification."
+              }
+            ]
+          },
+          "SessionKeyDerivationValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionKeyDerivationValue"
+              },
+              {
+                "description": "Parameters that are required to generate session key for EMV generation and verification."
+              }
+            ]
+          }
+        },
+        "description": "Parameters that are required for EMV MAC generation and verification."
+      },
+      "MajorKeyDerivationMode": {
+        "type": "string",
+        "enum": [
+          "EMV_OPTION_A",
+          "EMV_OPTION_B"
+        ]
+      },
+      "HexLengthEquals2": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 2,
+        "maxLength": 2
+      },
+      "NumberLengthBetween12And19": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "minLength": 12,
+        "maxLength": 19,
+        "format": "password"
+      },
+      "SessionKeyDerivationMode": {
+        "type": "string",
+        "enum": [
+          "EMV_COMMON_SESSION_KEY",
+          "EMV2000",
+          "AMEX",
+          "MASTERCARD_SESSION_KEY",
+          "VISA"
+        ]
+      },
+      "SessionKeyDerivationValue": {
+        "type": "object",
+        "properties": {
+          "ApplicationCryptogram": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals16"
+              },
+              {
+                "description": "The cryptogram provided by the terminal during transaction processing."
+              }
+            ]
+          },
+          "ApplicationTransactionCounter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween2And4"
+              },
+              {
+                "description": "The transaction counter that is provided by the terminal during transaction processing."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key value using a MAC EMV algorithm."
+      },
+      "HexLengthEquals16": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 16,
+        "maxLength": 16
+      },
+      "HexLengthBetween2And4": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 2,
+        "maxLength": 4
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://dataplane.payment-cryptography.us-east-1.amazonaws.com/mac/generate"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**KeyArn**",
+            "**KeyCheckValue**",
+            "**Mac**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "name": "getOrgInventory",
+  "description": "Get Org Inventory\n\n### VC (Virtual-Chassis) Management\nIdeally VC should be managed as a single device - where - one managed entity where config / monitoring is anchored against (with a stable identify MAC) - all members appears in the inventory\n\nIn our implementation, we strive to achieve that without manual user configurations by \n1. during claim or adoption a VC, we require FPC0 to exist and will use its MAC as identify for the entire chassis\n2. other VC members will be automatically populated when they’re all present\n\nThe perceivable result is \n1. from `/sites/:site_id/stats/devices/:fpc0_mac` API, you’d see the VC where module_stat contains the VC members \n2. from `/orgs/:org_id/inventory?vc=true` API, you’d see all VC members with vc_mac pointing to the FPC0",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "serial": {
+        "type": "string",
+        "description": "device serial"
+      },
+      "model": {
+        "type": "string",
+        "description": "device model"
+      },
+      "type": {
+        "enum": [
+          "ap",
+          "switch",
+          "gateway"
+        ],
+        "type": "string"
+      },
+      "mac": {
+        "type": "string",
+        "description": "MAC address"
+      },
+      "site_id": {
+        "type": "string",
+        "description": "site id if assigned, null if not assigned"
+      },
+      "vc_mac": {
+        "type": "string"
+      },
+      "vc": {
+        "type": "string"
+      },
+      "unassigned": {
+        "type": "boolean"
+      },
+      "limit": {
+        "default": 100,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "page": {
+        "default": 1,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "org_id": {
+        "example": "000000ab-00ab-00ab-00ab-0000000000ab",
+        "format": "uuid",
+        "type": "string"
+      }
+    },
+    "required": [
+      "org_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.mist.com/api/v1/orgs/{org_id}/inventory{?serial,model,type,mac,site_id,vc_mac,vc,unassigned,limit,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**adopted**: only if `type`==`switch` or `type`==`gateway`",
+            "**connected**: whether the device is connected",
+            "**created_time**: inventory created time, in epoch",
+            "**deviceprofile_id**: deviceprofile id if assigned, null if not assigned",
+            "**hostname**: hostname reported by the device",
+            "**hw_rev**: device hardware revision number",
+            "**id**: device id",
+            "**jsi**",
+            "**mac**: device MAC address",
+            "**magic**: device claim code",
+            "**model**: device model",
+            "**modified_time**: inventory last modified time, in epoch",
+            "**name**: device name if configured",
+            "**org_id**: org id",
+            "**serial**: device serial",
+            "**site_id**: site id if assigned, null if not assigned",
+            "**sku**: device stock keeping unit",
+            "**type**: device type"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

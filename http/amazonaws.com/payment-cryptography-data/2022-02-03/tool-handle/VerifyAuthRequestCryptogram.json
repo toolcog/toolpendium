@@ -1,0 +1,571 @@
+{
+  "name": "VerifyAuthRequestCryptogram",
+  "description": "<p>Verifies Authorization Request Cryptogram (ARQC) for a EMV chip payment card authorization. For more information, see <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/data-operations.verifyauthrequestcryptogram.html\">Verify auth request cryptogram</a> in the <i>Amazon Web Services Payment Cryptography User Guide</i>.</p> <p>ARQC generation is done outside of Amazon Web Services Payment Cryptography and is typically generated on a point of sale terminal for an EMV chip card to obtain payment authorization during transaction time. For ARQC verification, you must first import the ARQC generated outside of Amazon Web Services Payment Cryptography by calling <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/APIReference/API_ImportKey.html\">ImportKey</a>. This operation uses the imported ARQC and an major encryption key (DUKPT) created by calling <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/APIReference/API_CreateKey.html\">CreateKey</a> to either provide a boolean ARQC verification result or provide an APRC (Authorization Response Cryptogram) response using Method 1 or Method 2. The <code>ARPC_METHOD_1</code> uses <code>AuthResponseCode</code> to generate ARPC and <code>ARPC_METHOD_2</code> uses <code>CardStatusUpdate</code> to generate ARPC. </p> <p>For information about valid keys for this operation, see <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/keys-validattributes.html\">Understanding key attributes</a> and <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/crypto-ops-validkeys-ops.html\">Key types for specific data operations</a> in the <i>Amazon Web Services Payment Cryptography User Guide</i>.</p> <p> <b>Cross-account use</b>: This operation can't be used across different Amazon Web Services accounts.</p> <p> <b>Related operations:</b> </p> <ul> <li> <p> <a>VerifyCardValidationData</a> </p> </li> <li> <p> <a>VerifyPinData</a> </p> </li> </ul>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "AuthRequestCryptogram",
+          "KeyIdentifier",
+          "MajorKeyDerivationMode",
+          "SessionKeyDerivationAttributes",
+          "TransactionData"
+        ],
+        "properties": {
+          "AuthRequestCryptogram": {
+            "description": "The auth request cryptogram imported into Amazon Web Services Payment Cryptography for ARQC verification using a major encryption key and transaction data.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]+$",
+            "minLength": 16,
+            "maxLength": 16
+          },
+          "AuthResponseAttributes": {
+            "description": "Parameters that are required for Authorization Response Cryptogram (ARPC) generation after Authorization Request Cryptogram (ARQC) verification is successful.",
+            "type": "object",
+            "properties": {
+              "ArpcMethod1": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CryptogramVerificationArpcMethod1"
+                  },
+                  {
+                    "description": "Parameters that are required for ARPC response generation using method1 after ARQC verification is successful."
+                  }
+                ]
+              },
+              "ArpcMethod2": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CryptogramVerificationArpcMethod2"
+                  },
+                  {
+                    "description": "Parameters that are required for ARPC response generation using method2 after ARQC verification is successful."
+                  }
+                ]
+              }
+            }
+          },
+          "KeyIdentifier": {
+            "description": "The <code>keyARN</code> of the major encryption key that Amazon Web Services Payment Cryptography uses for ARQC verification.",
+            "type": "string",
+            "pattern": "^arn:aws:payment-cryptography:[a-z]{2}-[a-z]{1,16}-[0-9]+:[0-9]{12}:(key/[0-9a-zA-Z]{16,64}|alias/[a-zA-Z0-9/_-]+)$|^alias/[a-zA-Z0-9/_-]+$",
+            "minLength": 7,
+            "maxLength": 322
+          },
+          "MajorKeyDerivationMode": {
+            "description": "The method to use when deriving the major encryption key for ARQC verification within Amazon Web Services Payment Cryptography. The same key derivation mode was used for ARQC generation outside of Amazon Web Services Payment Cryptography.",
+            "type": "string",
+            "enum": [
+              "EMV_OPTION_A",
+              "EMV_OPTION_B"
+            ]
+          },
+          "SessionKeyDerivationAttributes": {
+            "description": "Parameters to derive a session key for Authorization Response Cryptogram (ARQC) verification.",
+            "type": "object",
+            "properties": {
+              "Amex": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SessionKeyAmex"
+                  },
+                  {
+                    "description": "Parameters to derive session key for an Amex payment card for ARQC verification."
+                  }
+                ]
+              },
+              "Emv2000": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SessionKeyEmv2000"
+                  },
+                  {
+                    "description": "Parameters to derive session key for an Emv2000 payment card for ARQC verification."
+                  }
+                ]
+              },
+              "EmvCommon": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SessionKeyEmvCommon"
+                  },
+                  {
+                    "description": "Parameters to derive session key for an Emv common payment card for ARQC verification."
+                  }
+                ]
+              },
+              "Mastercard": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SessionKeyMastercard"
+                  },
+                  {
+                    "description": "Parameters to derive session key for a Mastercard payment card for ARQC verification."
+                  }
+                ]
+              },
+              "Visa": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SessionKeyVisa"
+                  },
+                  {
+                    "description": "Parameters to derive session key for a Visa payment cardfor ARQC verification."
+                  }
+                ]
+              }
+            }
+          },
+          "TransactionData": {
+            "description": "The transaction data that Amazon Web Services Payment Cryptography uses for ARQC verification. The same transaction is used for ARQC generation outside of Amazon Web Services Payment Cryptography.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]+$",
+            "minLength": 2,
+            "maxLength": 1024
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CryptogramVerificationArpcMethod1": {
+        "type": "object",
+        "required": [
+          "AuthResponseCode"
+        ],
+        "properties": {
+          "AuthResponseCode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals4"
+              },
+              {
+                "description": "The auth code used to calculate APRC after ARQC verification is successful. This is the same auth code used for ARQC generation outside of Amazon Web Services Payment Cryptography."
+              }
+            ]
+          }
+        },
+        "description": "Parameters that are required for ARPC response generation using method1 after ARQC verification is successful."
+      },
+      "HexLengthEquals4": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 4,
+        "maxLength": 4
+      },
+      "CryptogramVerificationArpcMethod2": {
+        "type": "object",
+        "required": [
+          "CardStatusUpdate"
+        ],
+        "properties": {
+          "CardStatusUpdate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals8"
+              },
+              {
+                "description": "The data indicating whether the issuer approves or declines an online transaction using an EMV chip card."
+              }
+            ]
+          },
+          "ProprietaryAuthenticationData": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween1And16"
+              },
+              {
+                "description": "The proprietary authentication data used by issuer for communication during online transaction using an EMV chip card."
+              }
+            ]
+          }
+        },
+        "description": "Parameters that are required for ARPC response generation using method2 after ARQC verification is successful."
+      },
+      "HexLengthEquals8": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 8,
+        "maxLength": 8
+      },
+      "HexLengthBetween1And16": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 1,
+        "maxLength": 16
+      },
+      "SessionKeyAmex": {
+        "type": "object",
+        "required": [
+          "PanSequenceNumber",
+          "PrimaryAccountNumber"
+        ],
+        "properties": {
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key for an Amex payment card."
+      },
+      "HexLengthEquals2": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 2,
+        "maxLength": 2
+      },
+      "NumberLengthBetween12And19": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "minLength": 12,
+        "maxLength": 19,
+        "format": "password"
+      },
+      "SessionKeyEmv2000": {
+        "type": "object",
+        "required": [
+          "ApplicationTransactionCounter",
+          "PanSequenceNumber",
+          "PrimaryAccountNumber"
+        ],
+        "properties": {
+          "ApplicationTransactionCounter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween2And4"
+              },
+              {
+                "description": "The transaction counter that is provided by the terminal during transaction processing."
+              }
+            ]
+          },
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key for an Emv2000 payment card for ARQC verification."
+      },
+      "HexLengthBetween2And4": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 2,
+        "maxLength": 4
+      },
+      "SessionKeyEmvCommon": {
+        "type": "object",
+        "required": [
+          "ApplicationTransactionCounter",
+          "PanSequenceNumber",
+          "PrimaryAccountNumber"
+        ],
+        "properties": {
+          "ApplicationTransactionCounter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween2And4"
+              },
+              {
+                "description": "The transaction counter that is provided by the terminal during transaction processing."
+              }
+            ]
+          },
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key for an Emv common payment card for ARQC verification."
+      },
+      "SessionKeyMastercard": {
+        "type": "object",
+        "required": [
+          "ApplicationTransactionCounter",
+          "PanSequenceNumber",
+          "PrimaryAccountNumber",
+          "UnpredictableNumber"
+        ],
+        "properties": {
+          "ApplicationTransactionCounter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween2And4"
+              },
+              {
+                "description": "The transaction counter that is provided by the terminal during transaction processing."
+              }
+            ]
+          },
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          },
+          "UnpredictableNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthBetween2And8"
+              },
+              {
+                "description": "A random number generated by the issuer."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key for Mastercard payment card for ARQC verification."
+      },
+      "HexLengthBetween2And8": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 2,
+        "maxLength": 8
+      },
+      "SessionKeyVisa": {
+        "type": "object",
+        "required": [
+          "PanSequenceNumber",
+          "PrimaryAccountNumber"
+        ],
+        "properties": {
+          "PanSequenceNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HexLengthEquals2"
+              },
+              {
+                "description": "A number that identifies and differentiates payment cards with the same Primary Account Number (PAN)."
+              }
+            ]
+          },
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          }
+        },
+        "description": "Parameters to derive session key for Visa payment card for ARQC verification."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://dataplane.payment-cryptography.us-east-1.amazonaws.com/cryptogram/verify"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**AuthResponseValue**",
+            "**KeyArn**",
+            "**KeyCheckValue**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

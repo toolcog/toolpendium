@@ -1,0 +1,940 @@
+{
+  "name": "post-transferRoutes-calculate",
+  "description": "Returns available transfer routes based on a combination of transfer `country`, `currency`, `counterparty`, and `priorities`. Use this endpoint to find optimal transfer priorities and associated requirements before you [make a transfer](https://docs.adyen.com/api-explorer/transfers/latest/post/transfers).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferRouteRequest"
+      }
+    },
+    "$defs": {
+      "TransferRouteRequest": {
+        "properties": {
+          "balanceAccountId": {
+            "description": "The unique identifier of the source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).\nRequired if `counterparty` is **transferInstrumentId**.",
+            "type": "string"
+          },
+          "balancePlatform": {
+            "description": "The unique identifier assigned to the balance platform associated with the account holder.",
+            "type": "string"
+          },
+          "category": {
+            "description": " The type of transfer. Possible values:\n\n  - **bank**: Transfer to a [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id) or a bank account.\n",
+            "enum": [
+              "bank"
+            ],
+            "type": "string"
+          },
+          "counterparty": {
+            "$ref": "#/$defs/Counterparty"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code of the counterparty. For example, **US** or **NL**.\n > Either `counterparty` or `country` field must be provided in a transfer route request.",
+            "type": "string"
+          },
+          "currency": {
+            "description": "The three-character ISO currency code of transfer. For example, **USD** or **EUR**.",
+            "type": "string"
+          },
+          "priorities": {
+            "description": "The list of priorities for the bank transfer. Priorities set the speed at which the transfer is sent and the fees that you have to pay. Multiple values can be provided.\nPossible values:\n\n* **regular**: For normal, low-value transactions.\n\n* **fast**: Faster way to transfer funds but has higher fees. Recommended for high-priority, low-value transactions.\n\n* **wire**: Fastest way to transfer funds but has the highest fees. Recommended for high-priority, high-value transactions.\n\n* **instant**: Instant way to transfer funds in [SEPA countries](https://www.ecb.europa.eu/paym/integration/retail/sepa/html/index.en.html).\n\n* **crossBorder**: High-value transfer to a recipient in a different country.\n\n* **internal**: Transfer to an Adyen-issued business bank account (by bank account number/IBAN).",
+            "items": {
+              "enum": [
+                "crossBorder",
+                "fast",
+                "instant",
+                "internal",
+                "regular",
+                "wire"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "balancePlatform",
+          "currency",
+          "category"
+        ],
+        "type": "object"
+      },
+      "Counterparty": {
+        "properties": {
+          "bankAccount": {
+            "$ref": "#/$defs/BankAccount"
+          },
+          "transferInstrumentId": {
+            "description": "Unique identifier of the [transfer instrument](https://docs.adyen.com/api-explorer/#/legalentity/latest/post/transferInstruments__resParam_id).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BankAccount": {
+        "properties": {
+          "accountIdentification": {
+            "description": "Contains the bank account details. The fields required in this object depend on the country of the bank account and the currency of the transfer.",
+            "oneOf": [
+              {
+                "$ref": "#/$defs/AULocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/BRLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/CALocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/CZLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/DKLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/HKLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/HULocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/IbanAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/NOLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/NZLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/NumberAndBicAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/PLLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/SELocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/SGLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/UKLocalAccountIdentification"
+              },
+              {
+                "$ref": "#/$defs/USLocalAccountIdentification"
+              }
+            ]
+          }
+        },
+        "required": [
+          "accountIdentification"
+        ],
+        "type": "object"
+      },
+      "AULocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The bank account number, without separators or whitespace.",
+            "maxLength": 9,
+            "minLength": 5,
+            "type": "string"
+          },
+          "bsbCode": {
+            "description": "The 6-digit [Bank State Branch (BSB) code](https://en.wikipedia.org/wiki/Bank_state_branch), without separators or whitespace.",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "auLocal",
+            "description": "**auLocal**",
+            "enum": [
+              "auLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "bsbCode"
+        ],
+        "type": "object"
+      },
+      "BRLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The bank account number, without separators or whitespace.",
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string"
+          },
+          "bankCode": {
+            "description": "The 3-digit bank code, with leading zeros.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "branchNumber": {
+            "description": "The bank account branch number, without separators or whitespace.",
+            "maxLength": 4,
+            "minLength": 1,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "brLocal",
+            "description": "**brLocal**",
+            "enum": [
+              "brLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "branchNumber",
+          "accountNumber",
+          "bankCode"
+        ],
+        "type": "object"
+      },
+      "CALocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 5- to 12-digit bank account number, without separators or whitespace.",
+            "maxLength": 12,
+            "minLength": 5,
+            "type": "string"
+          },
+          "accountType": {
+            "default": "checking",
+            "description": "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**.",
+            "enum": [
+              "checking",
+              "savings"
+            ],
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "institutionNumber": {
+            "description": "The 3-digit institution number, without separators or whitespace.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "transitNumber": {
+            "description": "The 5-digit transit number, without separators or whitespace.",
+            "maxLength": 5,
+            "minLength": 5,
+            "type": "string"
+          },
+          "type": {
+            "default": "caLocal",
+            "description": "**caLocal**",
+            "enum": [
+              "caLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "institutionNumber",
+          "transitNumber"
+        ],
+        "type": "object"
+      },
+      "CZLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 2- to 16-digit bank account number (Číslo účtu) in the following format:\n\n- The optional prefix (předčíslí).\n\n- The required second part (základní část) which must be at least two non-zero digits.\n\nExamples:\n\n- **19-123457** (with prefix)\n\n- **123457** (without prefix)\n\n- **000019-0000123457** (with prefix, normalized)\n\n- **000000-0000123457** (without prefix, normalized)",
+            "maxLength": 17,
+            "minLength": 2,
+            "type": "string"
+          },
+          "bankCode": {
+            "description": "The 4-digit bank code (Kód banky), without separators or whitespace.",
+            "maxLength": 4,
+            "minLength": 4,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "czLocal",
+            "description": "**czLocal**",
+            "enum": [
+              "czLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "bankCode"
+        ],
+        "type": "object"
+      },
+      "DKLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 4-10 digits bank account number (Kontonummer) (without separators or whitespace).",
+            "maxLength": 10,
+            "minLength": 4,
+            "type": "string"
+          },
+          "bankCode": {
+            "description": "The 4-digit bank code (Registreringsnummer) (without separators or whitespace).",
+            "maxLength": 4,
+            "minLength": 4,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "dkLocal",
+            "description": "**dkLocal**",
+            "enum": [
+              "dkLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "bankCode"
+        ],
+        "type": "object"
+      },
+      "HKLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 9- to 15-character bank account number (alphanumeric), without separators or whitespace. Starts with the 3-digit branch code.",
+            "maxLength": 15,
+            "minLength": 9,
+            "type": "string"
+          },
+          "clearingCode": {
+            "description": "The 3-digit clearing code, without separators or whitespace.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "hkLocal",
+            "description": "**hkLocal**",
+            "enum": [
+              "hkLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "clearingCode"
+        ],
+        "type": "object"
+      },
+      "HULocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 24-digit bank account number, without separators or whitespace.",
+            "maxLength": 24,
+            "minLength": 24,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "huLocal",
+            "description": "**huLocal**",
+            "enum": [
+              "huLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber"
+        ],
+        "type": "object"
+      },
+      "IbanAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "iban": {
+            "description": "The international bank account number as defined in the [ISO-13616](https://www.iso.org/standard/81090.html) standard.",
+            "type": "string"
+          },
+          "type": {
+            "default": "iban",
+            "description": "**iban**",
+            "enum": [
+              "iban"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "iban"
+        ],
+        "type": "object"
+      },
+      "NOLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 11-digit bank account number, without separators or whitespace.",
+            "maxLength": 11,
+            "minLength": 11,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "noLocal",
+            "description": "**noLocal**",
+            "enum": [
+              "noLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber"
+        ],
+        "type": "object"
+      },
+      "NZLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 15-16 digit bank account number. The first 2 digits are the bank number, the next 4 digits are the branch number, the next 7 digits are the account number, and the final 2-3 digits are the suffix.",
+            "maxLength": 16,
+            "minLength": 15,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "nzLocal",
+            "description": "**nzLocal**",
+            "enum": [
+              "nzLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber"
+        ],
+        "type": "object"
+      },
+      "NumberAndBicAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The bank account number, without separators or whitespace. The length and format depends on the bank or country.",
+            "maxLength": 34,
+            "type": "string"
+          },
+          "additionalBankIdentification": {
+            "$ref": "#/$defs/AdditionalBankIdentification"
+          },
+          "bic": {
+            "description": "The bank's 8- or 11-character BIC or SWIFT code.",
+            "maxLength": 11,
+            "minLength": 8,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "numberAndBic",
+            "description": "**numberAndBic**",
+            "enum": [
+              "numberAndBic"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "bic"
+        ],
+        "type": "object"
+      },
+      "AdditionalBankIdentification": {
+        "properties": {
+          "code": {
+            "description": "The value of the additional bank identification.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of additional bank identification, depending on the country.\n\nPossible values:\n\n * **gbSortCode**: The 6-digit [UK sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or spaces\n * **usRoutingNumber**: The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or spaces.",
+            "enum": [
+              "gbSortCode",
+              "usRoutingNumber"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PLLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 26-digit bank account number ([Numer rachunku](https://pl.wikipedia.org/wiki/Numer_Rachunku_Bankowego)), without separators or whitespace.",
+            "maxLength": 26,
+            "minLength": 26,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "plLocal",
+            "description": "**plLocal**",
+            "enum": [
+              "plLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber"
+        ],
+        "type": "object"
+      },
+      "SELocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 7- to 10-digit bank account number ([Bankkontonummer](https://sv.wikipedia.org/wiki/Bankkonto)), without the clearing number, separators, or whitespace.",
+            "maxLength": 10,
+            "minLength": 7,
+            "type": "string"
+          },
+          "clearingNumber": {
+            "description": "The 4- to 5-digit clearing number ([Clearingnummer](https://sv.wikipedia.org/wiki/Clearingnummer)), without separators or whitespace.",
+            "maxLength": 5,
+            "minLength": 4,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "seLocal",
+            "description": "**seLocal**",
+            "enum": [
+              "seLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "clearingNumber"
+        ],
+        "type": "object"
+      },
+      "SGLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 4- to 19-digit bank account number, without separators or whitespace.",
+            "maxLength": 19,
+            "minLength": 4,
+            "type": "string"
+          },
+          "bic": {
+            "description": "The bank's 8- or 11-character BIC or SWIFT code.",
+            "maxLength": 11,
+            "minLength": 8,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "default": "sgLocal",
+            "description": "**sgLocal**",
+            "enum": [
+              "sgLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "accountNumber",
+          "bic"
+        ],
+        "type": "object"
+      },
+      "UKLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The 8-digit bank account number, without separators or whitespace.",
+            "maxLength": 8,
+            "minLength": 8,
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sortCode": {
+            "description": "The 6-digit [sort code](https://en.wikipedia.org/wiki/Sort_code), without separators or whitespace.",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          },
+          "type": {
+            "default": "ukLocal",
+            "description": "**ukLocal**",
+            "enum": [
+              "ukLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "sortCode"
+        ],
+        "type": "object"
+      },
+      "USLocalAccountIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "accountNumber": {
+            "description": "The bank account number, without separators or whitespace.",
+            "maxLength": 18,
+            "minLength": 2,
+            "type": "string"
+          },
+          "accountType": {
+            "default": "checking",
+            "description": "The bank account type.\n\nPossible values: **checking** or **savings**. Defaults to **checking**.",
+            "enum": [
+              "checking",
+              "savings"
+            ],
+            "type": "string"
+          },
+          "formFactor": {
+            "default": "physical",
+            "description": "The form factor of bank account.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "routingNumber": {
+            "description": "The 9-digit [routing number](https://en.wikipedia.org/wiki/ABA_routing_transit_number), without separators or whitespace.",
+            "maxLength": 9,
+            "minLength": 9,
+            "type": "string"
+          },
+          "type": {
+            "default": "usLocal",
+            "description": "**usLocal**",
+            "enum": [
+              "usLocal"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "accountNumber",
+          "routingNumber"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://balanceplatform-api-test.adyen.com/bcl/v2/transferRoutes/calculate"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**transferRoutes**: List of available priorities for a transfer, along with requirements. Use this information to initiate a transfer."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

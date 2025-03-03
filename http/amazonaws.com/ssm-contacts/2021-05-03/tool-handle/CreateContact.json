@@ -1,0 +1,506 @@
+{
+  "name": "CreateContact",
+  "description": "Contacts are either the contacts that Incident Manager engages during an incident or the escalation plans that Incident Manager uses to engage contacts in phases during an incident.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "SSMContacts.CreateContact"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateContactRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreateContactRequest": {
+        "type": "object",
+        "required": [
+          "Alias",
+          "Type",
+          "Plan"
+        ],
+        "title": "CreateContactRequest",
+        "properties": {
+          "Alias": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactAlias"
+              },
+              {
+                "description": "The short name to quickly identify a contact or escalation plan. The contact alias must be unique and identifiable."
+              }
+            ]
+          },
+          "DisplayName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactName"
+              },
+              {
+                "description": "The full name of the contact or escalation plan."
+              }
+            ]
+          },
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactType"
+              },
+              {
+                "description": "To create an escalation plan use <code>ESCALATION</code>. To create a contact use <code>PERSONAL</code>."
+              }
+            ]
+          },
+          "Plan": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Plan"
+              },
+              {
+                "description": "A list of stages. A contact has an engagement plan with stages that contact specified contact channels. An escalation plan uses stages that contact specified contacts."
+              }
+            ]
+          },
+          "Tags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagsList"
+              },
+              {
+                "description": "Adds a tag to the target. You can only tag resources created in the first Region of your replication set."
+              }
+            ]
+          },
+          "IdempotencyToken": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IdempotencyToken"
+              },
+              {
+                "description": "A token ensuring that the operation is called only once with the specified details."
+              }
+            ]
+          }
+        }
+      },
+      "ContactAlias": {
+        "type": "string",
+        "pattern": "^[a-z0-9_\\-]*$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "ContactName": {
+        "type": "string",
+        "pattern": "^[\\p{L}\\p{Z}\\p{N}_.\\-]*$",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "ContactType": {
+        "type": "string",
+        "enum": [
+          "PERSONAL",
+          "ESCALATION",
+          "ONCALL_SCHEDULE"
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "Stages": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StagesList"
+              },
+              {
+                "description": "A list of stages that the escalation plan or engagement plan uses to engage contacts and contact methods."
+              }
+            ]
+          },
+          "RotationIds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmContactsArnList"
+              },
+              {
+                "description": "The Amazon Resource Names (ARNs) of the on-call rotations associated with the plan. "
+              }
+            ]
+          }
+        },
+        "description": "Information about the stages and on-call rotation teams associated with an escalation plan or engagement plan. "
+      },
+      "StagesList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Stage"
+        }
+      },
+      "Stage": {
+        "type": "object",
+        "required": [
+          "DurationInMinutes",
+          "Targets"
+        ],
+        "properties": {
+          "DurationInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StageDurationInMins"
+              },
+              {
+                "description": "The time to wait until beginning the next stage. The duration can only be set to 0 if a target is specified."
+              }
+            ]
+          },
+          "Targets": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetsList"
+              },
+              {
+                "description": "The contacts or contact methods that the escalation plan or engagement plan is engaging."
+              }
+            ]
+          }
+        },
+        "description": "A set amount of time that an escalation plan or engagement plan engages the specified contacts or contact methods."
+      },
+      "StageDurationInMins": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 30
+      },
+      "TargetsList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Target"
+        }
+      },
+      "Target": {
+        "type": "object",
+        "properties": {
+          "ChannelTargetInfo": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChannelTargetInfo"
+              },
+              {
+                "description": "Information about the contact channel Incident Manager is engaging."
+              }
+            ]
+          },
+          "ContactTargetInfo": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactTargetInfo"
+              },
+              {
+                "description": "Information about the contact that Incident Manager is engaging."
+              }
+            ]
+          }
+        },
+        "description": "The contact or contact channel that's being engaged."
+      },
+      "ChannelTargetInfo": {
+        "type": "object",
+        "required": [
+          "ContactChannelId"
+        ],
+        "properties": {
+          "ContactChannelId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmContactsArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the contact channel."
+              }
+            ]
+          },
+          "RetryIntervalInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RetryIntervalInMinutes"
+              },
+              {
+                "description": "The number of minutes to wait to retry sending engagement in the case the engagement initially fails."
+              }
+            ]
+          }
+        },
+        "description": "Information about the contact channel that Incident Manager uses to engage the contact."
+      },
+      "SsmContactsArn": {
+        "type": "string",
+        "pattern": "arn:(aws|aws-cn|aws-us-gov):ssm-contacts:[-\\w+=\\/,.@]*:[0-9]+:([\\w+=\\/,.@:-]+)*",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "RetryIntervalInMinutes": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      },
+      "ContactTargetInfo": {
+        "type": "object",
+        "required": [
+          "IsEssential"
+        ],
+        "properties": {
+          "ContactId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmContactsArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the contact."
+              }
+            ]
+          },
+          "IsEssential": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IsEssential"
+              },
+              {
+                "description": "A Boolean value determining if the contact's acknowledgement stops the progress of stages in the plan."
+              }
+            ]
+          }
+        },
+        "description": "The contact that Incident Manager is engaging during an incident."
+      },
+      "IsEssential": {
+        "type": "boolean"
+      },
+      "SsmContactsArnList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SsmContactsArn"
+        },
+        "minItems": 0,
+        "maxItems": 25
+      },
+      "TagsList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Tag"
+        },
+        "minItems": 0,
+        "maxItems": 50
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "Name of the object key."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "Value of the tag."
+              }
+            ]
+          }
+        },
+        "description": "A container of a key-value name pair."
+      },
+      "TagKey": {
+        "type": "string",
+        "pattern": "^[\\\\\\/a-zA-Z0-9_+=\\-]*$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@]*$",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "IdempotencyToken": {
+        "type": "string",
+        "pattern": "^[\\\\\\/a-zA-Z0-9_+=\\-]*$",
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://ssm-contacts.us-east-1.amazonaws.com/#X-Amz-Target=SSMContacts.CreateContact"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ContactArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

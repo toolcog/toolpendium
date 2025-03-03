@@ -1,0 +1,475 @@
+{
+  "name": "getNextPlaybackItem",
+  "description": "Returns the next item to play given a source item id.\n\nFor an unwatched show it returns the first episode available to the account.\n\nFor a watched show it returns the last incompletely watched episode by the profile,\nor the episode that immediately follows the last completely watched episode \nor nothing.\n\nFor an episode it always returns the immediately following episode, if available to\nthe account, or nothing.\n\nIf the response does not contain a `next` property then no item was found.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "itemId": {
+        "type": "string",
+        "description": "The identifier of the source item to base the next to watch item off.\n"
+      },
+      "max_rating": {
+        "type": "string",
+        "description": "The maximum rating (inclusive) of an item returned, e.g. 'auoflc-pg'."
+      },
+      "expand": {
+        "enum": [
+          "parent",
+          "ancestors"
+        ],
+        "type": "string",
+        "description": "If no value is specified no dependencies are expanded.\n\nIf 'parent' is specified then only the direct parent will be expanded.\nFor example if an `Episode` then the `Season` would be included.\n\nIf 'ancestors' is specified then the full parent chain is expanded.\nFor example if an `Episode` then both the `Season` and `Show` would be included.\n"
+      },
+      "device": {
+        "default": "web_browser",
+        "type": "string",
+        "description": "The type of device the content is targeting."
+      },
+      "sub": {
+        "type": "string",
+        "description": "The active subscription code."
+      },
+      "segments": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of segments to filter the response by."
+      },
+      "ff": {
+        "items": {
+          "enum": [
+            "all",
+            "idp",
+            "ldp",
+            "hb",
+            "rpt",
+            "cas",
+            "lrl",
+            "cd"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of opt in feature flags which cause breaking changes to responses.\n\nWhile Rocket APIs look to avoid breaking changes under the active major version, the formats of responses\nmay need to evolve over this time.\n\nThese feature flags allow clients to select which response formats they expect and avoid breaking\nclients as these formats evolve under the current major version.\n\n### Flags\n\n- `all` - Enable all flags. Useful for testing. _Don't use in production_.\n- `idp` - Dynamic item detail pages with schedulable rows.\n- `ldp` - Dynamic list detail pages with schedulable rows.\n- `hb` - Hubble formatted image urls.\n- `rpt` - Updated resume point threshold logic.\n- `cas` - \"Custom Asset Search\", inlcude `customAssets` in search results.\n- `lrl` - Do not pre-populate related list if more than `max_list_prefetch` down the page.\n- `cd` - Custom Destination support.\n\nSee the `feature-flags.md` for available flag details.\n"
+      },
+      "lang": {
+        "type": "string",
+        "description": "Language code for the preferred language to be returned in the response.\n\nParameter value is case-insensitive and should be\n  - a valid 2 letter language code without region such as en, de\n  - or with region such as en_us, en_au\n\nIf undefined then defaults to 'en', unless the server has been configured\nwith a custom default.\n\nSee https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+      }
+    },
+    "required": [
+      "itemId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/account/profile/items/{itemId}/next{?max_rating,expand,device,sub,segments,ff,lang}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**firstWatchedDate**: Time when the item corresponding to the itemId passed in by the client was",
+            "**lastWatchedDate**: Time when the item corresponding to the itemId passed in by the client was",
+            [
+              "**next**",
+              {
+                "$ul": [
+                  "**advisoryText**: Advisory text about this item, related to the classification",
+                  "**availableEpisodeCount**: The number of available episodes in the season, if the item is a season.",
+                  "**availableSeasonCount**: The number of available seasons in the show, if the item is a show.",
+                  "**averageUserRating**: The average user rating.",
+                  "**badge**: The badge this item has.",
+                  "**channelShortCode**: The channel short code, if the item is a channel.",
+                  [
+                    "**classification**",
+                    {
+                      "$ul": [
+                        "**code**: The unique code for a classification.",
+                        "**name**: The name of the classification for display."
+                      ]
+                    }
+                  ],
+                  "**contextualTitle**: A contextually relative title to display after a parent title.",
+                  "**customFields**: A map of custom fields defined by a curator for an item.",
+                  "**customId**: A custom identifier for this item.",
+                  "**duration**: The duration of the media in seconds.",
+                  "**episodeCount**: The number of episodes in the season, if the item is a season.",
+                  "**episodeName**: The full name of an episode.",
+                  "**episodeNumber**: The number of an episode, if the item is an episode.",
+                  "**genres**: The array of genres this item belongs to.",
+                  "**hasClosedCaptions**: Whether closed captioning is available.",
+                  "**id**: Unique identifier for an Item",
+                  "**images**",
+                  "**offers**: The array of available offers for this item.",
+                  "**path**: The path to the detail page of this item. Can be used to load the item detail page via the /page endpoint.",
+                  "**releaseYear**: The year this item was released",
+                  "**scopes**: The scopes for this item",
+                  "**seasonId**: The identifier of the season this item belongs to, if the item is an episode.",
+                  "**seasonNumber**: The number of a season, if the item is a season.",
+                  "**shortDescription**: A truncated description of the item",
+                  "**showId**: The identifier of the show this item belongs to, if the item is a season or episode.",
+                  "**showTitle**",
+                  "**subtype**: Subtype of the item. Mainly used to identify different types when `type`",
+                  "**tagline**: The tagline of the item",
+                  "**themes**: Gets themes associated with the item",
+                  "**title**: The display title of the item.",
+                  "**type**: The type of item",
+                  "**watchPath**: The path to watch this item, if the item is a watchable type, e.g. a `movie`, `program` and `episode`.",
+                  "**copyright**: Copyright information about this item",
+                  "**credits**: A list of credits associated with this item.",
+                  "**customMetadata**: An ordered list of custom name-value-pair item metadata.",
+                  "**description**: The description of this item.",
+                  "**distributor**: The distributor of this item.",
+                  [
+                    "**episodes**: A pageable list of items.",
+                    {
+                      "$ul": [
+                        "**customFields**: A map of custom fields defined by a curator for a list.",
+                        "**description**: A full description of this list.",
+                        "**id**: The id of this list",
+                        "**images**",
+                        "**itemTypes**: The types of items in the list",
+                        "**items**: A list of items",
+                        [
+                          "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                          {
+                            "$ul": [
+                              [
+                                "**ContinueWatching**: List data for ContinueWatching List",
+                                {
+                                  "$ul": [
+                                    "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**paging**",
+                          {
+                            "$ul": [
+                              [
+                                "**authorization**",
+                                {
+                                  "$ul": [
+                                    "**scope**: The token scope required.",
+                                    "**type**: The token type required to load the list."
+                                  ]
+                                }
+                              ],
+                              "**next**: Path to load next page of data, or null if not available",
+                              [
+                                "**options**",
+                                {
+                                  "$ul": [
+                                    "**completed**: Items filtered by whether they've been fully watched or not.",
+                                    "**itemType**: Specific item type filter.",
+                                    "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                                    "**order**: The applied sort order if any.",
+                                    "**orderBy**: The applied sort ordering property if any.",
+                                    "**pageSize**: The number of items to return in a list page."
+                                  ]
+                                }
+                              ],
+                              "**page**: The current page number.",
+                              "**previous**: Path to load previous page of data, or null if not available.",
+                              "**size**: The current page size.",
+                              "**total**: The total number of pages available given the current page size."
+                            ]
+                          }
+                        ],
+                        "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                        "**path**: The path of this list",
+                        "**shortDescription**: A short description of this list.",
+                        "**size**: The total size of the list",
+                        "**tagline**: The tagline of the item.",
+                        "**themes**",
+                        "**title**: The title of this list"
+                      ]
+                    }
+                  ],
+                  "**eventDate**: The optional date of an event.",
+                  "**genrePaths**: An array of genre paths mapping to the values within the `genres` array from ItemSummary.",
+                  "**location**: The optional location (e.g. city) of an event.",
+                  "**season**",
+                  [
+                    "**seasons**: A pageable list of items.",
+                    {
+                      "$ul": [
+                        "**customFields**: A map of custom fields defined by a curator for a list.",
+                        "**description**: A full description of this list.",
+                        "**id**: The id of this list",
+                        "**images**",
+                        "**itemTypes**: The types of items in the list",
+                        "**items**: A list of items",
+                        [
+                          "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                          {
+                            "$ul": [
+                              [
+                                "**ContinueWatching**: List data for ContinueWatching List",
+                                {
+                                  "$ul": [
+                                    "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**paging**",
+                          {
+                            "$ul": [
+                              [
+                                "**authorization**",
+                                {
+                                  "$ul": [
+                                    "**scope**: The token scope required.",
+                                    "**type**: The token type required to load the list."
+                                  ]
+                                }
+                              ],
+                              "**next**: Path to load next page of data, or null if not available",
+                              [
+                                "**options**",
+                                {
+                                  "$ul": [
+                                    "**completed**: Items filtered by whether they've been fully watched or not.",
+                                    "**itemType**: Specific item type filter.",
+                                    "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                                    "**order**: The applied sort order if any.",
+                                    "**orderBy**: The applied sort ordering property if any.",
+                                    "**pageSize**: The number of items to return in a list page."
+                                  ]
+                                }
+                              ],
+                              "**page**: The current page number.",
+                              "**previous**: Path to load previous page of data, or null if not available.",
+                              "**size**: The current page size.",
+                              "**total**: The total number of pages available given the current page size."
+                            ]
+                          }
+                        ],
+                        "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                        "**path**: The path of this list",
+                        "**shortDescription**: A short description of this list.",
+                        "**size**: The total size of the list",
+                        "**tagline**: The tagline of the item.",
+                        "**themes**",
+                        "**title**: The title of this list"
+                      ]
+                    }
+                  ],
+                  "**show**",
+                  "**totalUserRatings**: The total number of users who have rated this item.",
+                  "**trailers**: A list of trailers associated with this item.",
+                  "**venue**: The optional venue of an event."
+                ]
+              }
+            ],
+            "**sourceItemId**: The id of the item used to determine the next item to play.",
+            "**suggestionType**: Field indicating the type or reason behind the suggestion."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

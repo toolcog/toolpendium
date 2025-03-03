@@ -1,0 +1,529 @@
+{
+  "name": "UpdateRule",
+  "description": "<p>Updates a rule for the specified Amazon Connect instance.</p> <p>Use the <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/connect-rules-language.html\">Rules Function language</a> to code conditions for the rule. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "RuleId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "description": "A unique identifier for the rule."
+      },
+      "InstanceId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "The identifier of the Amazon Connect instance. You can <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/find-instance-arn.html\">find the instance ID</a> in the Amazon Resource Name (ARN) of the instance."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Function",
+          "Actions",
+          "PublishStatus"
+        ],
+        "properties": {
+          "Name": {
+            "description": "The name of the rule. You can change the name only if <code>TriggerEventSource</code> is one of the following values: <code>OnZendeskTicketCreate</code> | <code>OnZendeskTicketStatusUpdate</code> | <code>OnSalesforceCaseCreate</code> ",
+            "type": "string",
+            "pattern": "^[0-9a-zA-Z._-]+",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "Function": {
+            "description": "The conditions of the rule.",
+            "type": "string"
+          },
+          "Actions": {
+            "description": "A list of actions to be run when the rule is triggered.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RuleAction"
+            }
+          },
+          "PublishStatus": {
+            "description": "The publish status of the rule.",
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISHED"
+            ]
+          }
+        }
+      }
+    },
+    "required": [
+      "RuleId",
+      "InstanceId",
+      "body"
+    ],
+    "$defs": {
+      "RuleAction": {
+        "type": "object",
+        "required": [
+          "ActionType"
+        ],
+        "properties": {
+          "ActionType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActionType"
+              },
+              {
+                "description": "The type of action that creates a rule."
+              }
+            ]
+          },
+          "TaskAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TaskActionDefinition"
+              },
+              {
+                "description": "Information about the task action. This field is required if <code>TriggerEventSource</code> is one of the following values: <code>OnZendeskTicketCreate</code> | <code>OnZendeskTicketStatusUpdate</code> | <code>OnSalesforceCaseCreate</code> "
+              }
+            ]
+          },
+          "EventBridgeAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EventBridgeActionDefinition"
+              },
+              {
+                "description": "Information about the EventBridge action."
+              }
+            ]
+          },
+          "AssignContactCategoryAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssignContactCategoryActionDefinition"
+              },
+              {
+                "description": "Information about the contact category action."
+              }
+            ]
+          },
+          "SendNotificationAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SendNotificationActionDefinition"
+              },
+              {
+                "description": "Information about the send notification action."
+              }
+            ]
+          }
+        },
+        "description": "Information about the action to be performed when a rule is triggered."
+      },
+      "ActionType": {
+        "type": "string",
+        "enum": [
+          "CREATE_TASK",
+          "ASSIGN_CONTACT_CATEGORY",
+          "GENERATE_EVENTBRIDGE_EVENT",
+          "SEND_NOTIFICATION"
+        ]
+      },
+      "TaskActionDefinition": {
+        "type": "object",
+        "required": [
+          "Name",
+          "ContactFlowId"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TaskNameExpression"
+              },
+              {
+                "description": "The name. Supports variable injection. For more information, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/contact-lens-variable-injection.html\">JSONPath reference</a> in the <i>Amazon Connect Administrators Guide</i>."
+              }
+            ]
+          },
+          "Description": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TaskDescriptionExpression"
+              },
+              {
+                "description": "The description. Supports variable injection. For more information, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/contact-lens-variable-injection.html\">JSONPath reference</a> in the <i>Amazon Connect Administrators Guide</i>."
+              }
+            ]
+          },
+          "ContactFlowId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactFlowId"
+              },
+              {
+                "description": "The identifier of the flow."
+              }
+            ]
+          },
+          "References": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContactReferences"
+              },
+              {
+                "description": "Information about the reference when the <code>referenceType</code> is <code>URL</code>. Otherwise, null. (Supports variable injection in the <code>Value</code> field.)"
+              }
+            ]
+          }
+        },
+        "description": "Information about the task action."
+      },
+      "TaskNameExpression": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "TaskDescriptionExpression": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 4096
+      },
+      "ContactFlowId": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "ContactReferences": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Reference"
+        }
+      },
+      "Reference": {
+        "type": "object",
+        "required": [
+          "Value",
+          "Type"
+        ],
+        "properties": {
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReferenceValue"
+              },
+              {
+                "description": "A valid value for the reference. For example, for a URL reference, a formatted URL that is displayed to an agent in the Contact Control Panel (CCP)."
+              }
+            ]
+          },
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReferenceType"
+              },
+              {
+                "description": "The type of the reference. <code>DATE</code> must be of type Epoch timestamp. "
+              }
+            ]
+          }
+        },
+        "description": "Well-formed data on a contact, used by agents to complete a contact request. You can have up to 4,096 UTF-8 bytes across all references for a contact."
+      },
+      "ReferenceValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 4096
+      },
+      "ReferenceType": {
+        "type": "string",
+        "enum": [
+          "URL",
+          "ATTACHMENT",
+          "NUMBER",
+          "STRING",
+          "DATE",
+          "EMAIL"
+        ]
+      },
+      "EventBridgeActionDefinition": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EventBridgeActionName"
+              },
+              {
+                "description": "The name."
+              }
+            ]
+          }
+        },
+        "description": "The EventBridge action definition."
+      },
+      "EventBridgeActionName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "AssignContactCategoryActionDefinition": {
+        "type": "object",
+        "properties": {},
+        "description": "<p>This action must be set if <code>TriggerEventSource</code> is one of the following values: <code>OnPostCallAnalysisAvailable</code> | <code>OnRealTimeCallAnalysisAvailable</code> | <code>OnPostChatAnalysisAvailable</code>. Contact is categorized using the rule name.</p> <p> <code>RuleName</code> is used as <code>ContactCategory</code>.</p>"
+      },
+      "SendNotificationActionDefinition": {
+        "type": "object",
+        "required": [
+          "DeliveryMethod",
+          "Content",
+          "ContentType",
+          "Recipient"
+        ],
+        "properties": {
+          "DeliveryMethod": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationDeliveryType"
+              },
+              {
+                "description": "Notification delivery method."
+              }
+            ]
+          },
+          "Subject": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Subject"
+              },
+              {
+                "description": "The subject of the email if the delivery method is <code>EMAIL</code>. Supports variable injection. For more information, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/contact-lens-variable-injection.html\">JSONPath reference</a> in the <i>Amazon Connect Administrators Guide</i>."
+              }
+            ]
+          },
+          "Content": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Content"
+              },
+              {
+                "description": "Notification content. Supports variable injection. For more information, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/contact-lens-variable-injection.html\">JSONPath reference</a> in the <i>Amazon Connect Administrators Guide</i>."
+              }
+            ]
+          },
+          "ContentType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationContentType"
+              },
+              {
+                "description": "Content type format."
+              }
+            ]
+          },
+          "Recipient": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NotificationRecipientType"
+              },
+              {
+                "description": "Notification recipient."
+              }
+            ]
+          }
+        },
+        "description": "Information about the send notification action."
+      },
+      "NotificationDeliveryType": {
+        "type": "string",
+        "enum": [
+          "EMAIL"
+        ]
+      },
+      "Subject": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "Content": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "NotificationContentType": {
+        "type": "string",
+        "enum": [
+          "PLAIN_TEXT"
+        ]
+      },
+      "NotificationRecipientType": {
+        "type": "object",
+        "properties": {
+          "UserTags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UserTagMap"
+              },
+              {
+                "description": "The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }. Amazon Connect users with the specified tags will be notified."
+              }
+            ]
+          },
+          "UserIds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UserIdList"
+              },
+              {
+                "description": "A list of user IDs."
+              }
+            ]
+          }
+        },
+        "description": "The type of notification recipient."
+      },
+      "UserTagMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/String"
+        }
+      },
+      "String": {
+        "type": "string"
+      },
+      "UserIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/UserId"
+        }
+      },
+      "UserId": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://connect.us-east-1.amazonaws.com/rules/{InstanceId}/{RuleId}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

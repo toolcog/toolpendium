@@ -1,0 +1,71 @@
+{
+  "name": "ipam_prefixes_available-ips_read",
+  "description": "A convenience method for returning available IP addresses within a prefix. By default, the number of IPs\nreturned will be equivalent to PAGINATE_COUNT. An arbitrary limit (up to MAX_PAGE_SIZE, if set) may be passed,\nhowever results will not be paginated.\n\nThe advisory lock decorator uses a PostgreSQL advisory lock to prevent this API from being\ninvoked in parallel, which results in a race condition where multiple insertions can occur.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "A unique integer value identifying this prefix."
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://netboxdemo.com/api/ipam/prefixes/{id}/available-ips/"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**address**",
+            "**family**",
+            [
+              "**vrf**",
+              {
+                "$ul": [
+                  "**id**",
+                  "**name**",
+                  "**prefix_count**",
+                  "**rd**: Unique route distinguisher (as defined in RFC 4364)",
+                  "**url**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

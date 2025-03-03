@@ -1,0 +1,278 @@
+{
+  "name": "SearchFolders",
+  "description": "Searches the subfolders in a folder.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "AwsAccountId": {
+        "type": "string",
+        "pattern": "^[0-9]{12}$",
+        "minLength": 12,
+        "maxLength": 12,
+        "description": "The ID for the Amazon Web Services account that contains the folder."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Filters"
+        ],
+        "properties": {
+          "Filters": {
+            "description": "The filters to apply to the search. Currently, you can search only by the parent folder ARN. For example, <code>\"Filters\": [ { \"Name\": \"PARENT_FOLDER_ARN\", \"Operator\": \"StringEquals\", \"Value\": \"arn:aws:quicksight:us-east-1:1:folder/folderId\" } ]</code>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FolderSearchFilter"
+            },
+            "maxItems": 100
+          },
+          "NextToken": {
+            "description": "The token for the next set of results, or null if there are no more results.",
+            "type": "string"
+          },
+          "MaxResults": {
+            "description": "The maximum number of results to be returned per request.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      }
+    },
+    "required": [
+      "AwsAccountId",
+      "body"
+    ],
+    "$defs": {
+      "FolderSearchFilter": {
+        "type": "object",
+        "properties": {
+          "Operator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterOperator"
+              },
+              {
+                "description": "<p>The comparison operator that you want to use as a filter, for example <code>\"Operator\": \"StringEquals\"</code>. Valid values are <code>\"StringEquals\"</code> and <code>\"StringLike\"</code>.</p> <p>If you set the operator value to <code>\"StringEquals\"</code>, you need to provide an ownership related filter in the <code>\"NAME\"</code> field and the arn of the user or group whose folders you want to search in the <code>\"Value\"</code> field. For example, <code>\"Name\":\"DIRECT_QUICKSIGHT_OWNER\", \"Operator\": \"StringEquals\", \"Value\": \"arn:aws:quicksight:us-east-1:1:user/default/UserName1\"</code>.</p> <p>If you set the value to <code>\"StringLike\"</code>, you need to provide the name of the folders you are searching for. For example, <code>\"Name\":\"FOLDER_NAME\", \"Operator\": \"StringLike\", \"Value\": \"Test\"</code>. The <code>\"StringLike\"</code> operator only supports the <code>NAME</code> value <code>FOLDER_NAME</code>.</p>"
+              }
+            ]
+          },
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FolderFilterAttribute"
+              },
+              {
+                "description": "<p>The name of a value that you want to use in the filter. For example, <code>\"Name\": \"QUICKSIGHT_OWNER\"</code>.</p> <p>Valid values are defined as follows:</p> <ul> <li> <p> <code>QUICKSIGHT_VIEWER_OR_OWNER</code>: Provide an ARN of a user or group, and any folders with that ARN listed as one of the folder's owners or viewers are returned. Implicit permissions from folders or groups are considered.</p> </li> <li> <p> <code>QUICKSIGHT_OWNER</code>: Provide an ARN of a user or group, and any folders with that ARN listed as one of the owners of the folders are returned. Implicit permissions from folders or groups are considered.</p> </li> <li> <p> <code>DIRECT_QUICKSIGHT_SOLE_OWNER</code>: Provide an ARN of a user or group, and any folders with that ARN listed as the only owner of the folder are returned. Implicit permissions from folders or groups are not considered.</p> </li> <li> <p> <code>DIRECT_QUICKSIGHT_OWNER</code>: Provide an ARN of a user or group, and any folders with that ARN listed as one of the owners of the folders are returned. Implicit permissions from folders or groups are not considered.</p> </li> <li> <p> <code>DIRECT_QUICKSIGHT_VIEWER_OR_OWNER</code>: Provide an ARN of a user or group, and any folders with that ARN listed as one of the owners or viewers of the folders are returned. Implicit permissions from folders or groups are not considered. </p> </li> <li> <p> <code>FOLDER_NAME</code>: Any folders whose names have a substring match to this value will be returned.</p> </li> <li> <p> <code>PARENT_FOLDER_ARN</code>: Provide an ARN of a folder, and any folders that are directly under that parent folder are returned. If you choose to use this option and leave the value blank, all root-level folders in the account are returned. </p> </li> </ul>"
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The value of the named item (in this example, <code>PARENT_FOLDER_ARN</code>), that you want to use as a filter. For example, <code>\"Value\": \"arn:aws:quicksight:us-east-1:1:folder/folderId\"</code>."
+              }
+            ]
+          }
+        },
+        "description": "A filter to use to search an Amazon QuickSight folder."
+      },
+      "FilterOperator": {
+        "type": "string",
+        "enum": [
+          "StringEquals",
+          "StringLike"
+        ]
+      },
+      "FolderFilterAttribute": {
+        "type": "string",
+        "enum": [
+          "PARENT_FOLDER_ARN",
+          "DIRECT_QUICKSIGHT_OWNER",
+          "DIRECT_QUICKSIGHT_SOLE_OWNER",
+          "DIRECT_QUICKSIGHT_VIEWER_OR_OWNER",
+          "QUICKSIGHT_OWNER",
+          "QUICKSIGHT_VIEWER_OR_OWNER",
+          "FOLDER_NAME"
+        ]
+      },
+      "String": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://quicksight.us-east-1.amazonaws.com/accounts/{AwsAccountId}/search/folders"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Status**",
+            "**FolderSummaryList**",
+            "**NextToken**",
+            "**RequestId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

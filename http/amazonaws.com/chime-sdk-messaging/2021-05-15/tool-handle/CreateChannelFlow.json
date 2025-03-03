@@ -1,0 +1,409 @@
+{
+  "name": "CreateChannelFlow",
+  "description": "<p>Creates a channel flow, a container for processors. Processors are AWS Lambda functions that perform actions on chat messages, such as stripping out profanity. You can associate channel flows with channels, and the processors in the channel flow then take action on all messages sent to that channel. This is a developer API.</p> <p>Channel flows process the following items:</p> <ol> <li> <p>New and updated messages</p> </li> <li> <p>Persistent and non-persistent messages</p> </li> <li> <p>The Standard message type</p> </li> </ol> <note> <p>Channel flows don't process Control or System messages. For more information about the message types provided by Chime SDK messaging, refer to <a href=\"https://docs.aws.amazon.com/chime/latest/dg/using-the-messaging-sdk.html#msg-types\">Message types</a> in the <i>Amazon Chime developer guide</i>.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "AppInstanceArn",
+          "Processors",
+          "Name",
+          "ClientRequestToken"
+        ],
+        "properties": {
+          "AppInstanceArn": {
+            "description": "The ARN of the channel flow request.",
+            "type": "string",
+            "pattern": "arn:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{0,63}:[a-z0-9-\\.]{0,63}:[a-z0-9-\\.]{0,63}:[^/].{0,1023}",
+            "minLength": 5,
+            "maxLength": 1600
+          },
+          "Processors": {
+            "description": "Information about the processor Lambda functions.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Processor"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "Name": {
+            "description": "The name of the channel flow.",
+            "type": "string",
+            "pattern": "[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u0085\\u00A0-\\uD7FF\\uE000-\\uFFFD\\u10000-\\u10FFFF]*",
+            "minLength": 1,
+            "maxLength": 256,
+            "format": "password"
+          },
+          "Tags": {
+            "description": "The tags for the creation request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Tag"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "ClientRequestToken": {
+            "description": "The client token for the request. An Idempotency token.",
+            "type": "string",
+            "pattern": "[-_a-zA-Z0-9]*",
+            "minLength": 2,
+            "maxLength": 64,
+            "format": "password"
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Processor": {
+        "type": "object",
+        "required": [
+          "Name",
+          "Configuration",
+          "ExecutionOrder",
+          "FallbackAction"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyResourceName"
+              },
+              {
+                "description": "The name of the channel flow."
+              }
+            ]
+          },
+          "Configuration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProcessorConfiguration"
+              },
+              {
+                "description": "The information about the type of processor and its identifier."
+              }
+            ]
+          },
+          "ExecutionOrder": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChannelFlowExecutionOrder"
+              },
+              {
+                "description": "The sequence in which processors run. If you have multiple processors in a channel flow, message processing goes through each processor in the sequence. The value determines the sequence. At this point, we support only 1 processor within a flow."
+              }
+            ]
+          },
+          "FallbackAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FallbackAction"
+              },
+              {
+                "description": "Determines whether to continue with message processing or stop it in cases where communication with a processor fails. If a processor has a fallback action of <code>ABORT</code> and communication with it fails, the processor sets the message status to <code>FAILED</code> and does not send the message to any recipients. Note that if the last processor in the channel flow sequence has a fallback action of <code>CONTINUE</code> and communication with the processor fails, then the message is considered processed and sent to recipients of the channel."
+              }
+            ]
+          }
+        },
+        "description": "The information about a processor in a channel flow."
+      },
+      "NonEmptyResourceName": {
+        "type": "string",
+        "pattern": "[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u0085\\u00A0-\\uD7FF\\uE000-\\uFFFD\\u10000-\\u10FFFF]*",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "ProcessorConfiguration": {
+        "type": "object",
+        "required": [
+          "Lambda"
+        ],
+        "properties": {
+          "Lambda": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LambdaConfiguration"
+              },
+              {
+                "description": "Indicates that the processor is of type Lambda."
+              }
+            ]
+          }
+        },
+        "description": "A processor's metadata."
+      },
+      "LambdaConfiguration": {
+        "type": "object",
+        "required": [
+          "ResourceArn",
+          "InvocationType"
+        ],
+        "properties": {
+          "ResourceArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LambdaFunctionArn"
+              },
+              {
+                "description": "The ARN of the Lambda message processing function."
+              }
+            ]
+          },
+          "InvocationType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/InvocationType"
+              },
+              {
+                "description": "Controls how the Lambda function is invoked."
+              }
+            ]
+          }
+        },
+        "description": "Stores metadata about a Lambda processor."
+      },
+      "LambdaFunctionArn": {
+        "type": "string",
+        "pattern": "arn:aws:lambda:[a-z]{2}-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9\\-_\\.]+(:(\\$LATEST|[a-zA-Z0-9\\-_]+))?",
+        "minLength": 15,
+        "maxLength": 2048
+      },
+      "InvocationType": {
+        "type": "string",
+        "enum": [
+          "ASYNC"
+        ]
+      },
+      "ChannelFlowExecutionOrder": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 3
+      },
+      "FallbackAction": {
+        "type": "string",
+        "enum": [
+          "CONTINUE",
+          "ABORT"
+        ]
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The key in a tag."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "The value in a tag."
+              }
+            ]
+          }
+        },
+        "description": "A tag object containing a key-value pair."
+      },
+      "TagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "format": "password"
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://messaging-chime.us-east-1.amazonaws.com/channel-flows"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ChannelFlowArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

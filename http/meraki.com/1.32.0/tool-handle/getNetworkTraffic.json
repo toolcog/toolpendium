@@ -1,0 +1,70 @@
+{
+  "name": "getNetworkTraffic",
+  "description": "Return the traffic analysis data for this network. Traffic analysis with hostname visibility must be enabled on the network.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data. The maximum lookback period is 30 days from today."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameter t0. The value must be in seconds and be less than or equal to 30 days."
+      },
+      "deviceType": {
+        "enum": [
+          "appliance",
+          "combined",
+          "switch",
+          "wireless"
+        ],
+        "type": "string",
+        "description": "Filter the data by device type: 'combined', 'wireless', 'switch' or 'appliance'. Defaults to 'combined'. When using 'combined', for each rule the data will come from the device type with the most usage."
+      }
+    },
+    "required": [
+      "networkId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/traffic{?t0,timespan,deviceType}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "name": "sandboxTransferSimulate",
+  "description": "Use the `/sandbox/transfer/simulate` endpoint to simulate a transfer event in the Sandbox environment.  Note that while an event will be simulated and will appear when using endpoints such as `/transfer/event/sync` or `/transfer/event/list`, no transactions will actually take place and funds will not move between accounts, even within the Sandbox.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/SandboxTransferSimulateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "SandboxTransferSimulateRequest": {
+        "description": "Defines the request schema for `/sandbox/transfer/simulate`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "event_type": {
+            "description": "The asynchronous event to be simulated. May be: `posted`, `settled`, `failed`, or `returned`.\n\nAn error will be returned if the event type is incompatible with the current transfer status. Compatible status --> event type transitions include:\n\n`pending` --> `failed`\n\n`pending` --> `posted`\n\n`posted` --> `returned`\n\n`posted` --> `settled`\n",
+            "type": "string"
+          },
+          "failure_reason": {
+            "$ref": "#/$defs/TransferFailure"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "transfer_id": {
+            "$ref": "#/$defs/TransferID"
+          }
+        },
+        "required": [
+          "transfer_id",
+          "event_type"
+        ],
+        "title": "SandboxTransferSimulateRequest",
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "TransferFailure": {
+        "additionalProperties": true,
+        "description": "The failure reason if the event type for a transfer is `\"failed\"` or `\"returned\"`. Null value otherwise.",
+        "nullable": true,
+        "properties": {
+          "ach_return_code": {
+            "description": "The ACH return code, e.g. `R01`.  A return code will be provided if and only if the transfer status is `returned`. For a full listing of ACH return codes, see [Transfer errors](https://plaid.com/docs/errors/transfer/#ach-return-codes).",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "A human-readable description of the reason for the failure or reversal.",
+            "type": "string"
+          }
+        },
+        "title": "TransferFailure",
+        "type": "object"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "TransferID": {
+        "description": "Plaid’s unique identifier for a transfer.",
+        "title": "TransferID",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/sandbox/transfer/simulate"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "SandboxTransferSimulateResponse"
+        },
+        "Defines the response schema for `/sandbox/transfer/simulate`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

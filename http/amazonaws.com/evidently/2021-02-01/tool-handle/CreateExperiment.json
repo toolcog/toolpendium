@@ -1,0 +1,464 @@
+{
+  "name": "CreateExperiment",
+  "description": "<p>Creates an Evidently <i>experiment</i>. Before you create an experiment, you must create the feature to use for the experiment.</p> <p>An experiment helps you make feature design decisions based on evidence and data. An experiment can test as many as five variations at once. Evidently collects experiment data and analyzes it by statistical methods, and provides clear recommendations about which variations perform better.</p> <p>You can optionally specify a <code>segment</code> to have the experiment consider only certain audience types in the experiment, such as using only user sessions from a certain location or who use a certain internet browser.</p> <p>Don't use this operation to update an existing experiment. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateExperiment.html\">UpdateExperiment</a>. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project": {
+        "type": "string",
+        "pattern": "(^[a-zA-Z0-9._-]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[a-zA-Z0-9._-]*)",
+        "minLength": 0,
+        "maxLength": 2048,
+        "description": "The name or ARN of the project that you want to create the new experiment in."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "metricGoals",
+          "name",
+          "treatments"
+        ],
+        "properties": {
+          "description": {
+            "description": "An optional description of the experiment.",
+            "type": "string",
+            "pattern": ".*",
+            "minLength": 0,
+            "maxLength": 160
+          },
+          "metricGoals": {
+            "description": "An array of structures that defines the metrics used for the experiment, and whether a higher or lower value for each metric is the goal.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MetricGoalConfig"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "name": {
+            "description": "A name for the new experiment.",
+            "type": "string",
+            "pattern": "^[-a-zA-Z0-9._]*$",
+            "minLength": 1,
+            "maxLength": 127
+          },
+          "onlineAbConfig": {
+            "description": "A structure that contains the configuration of which variation to use as the \"control\" version. The \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.",
+            "type": "object",
+            "properties": {
+              "controlTreatmentName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TreatmentName"
+                  },
+                  {
+                    "description": "The name of the variation that is to be the default variation that the other variations are compared to."
+                  }
+                ]
+              },
+              "treatmentWeights": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TreatmentToWeightMap"
+                  },
+                  {
+                    "description": "A set of key-value pairs. The keys are variation names, and the values are the portion of experiment traffic to be assigned to that variation. Specify the traffic portion in thousandths of a percent, so 20,000 for a variation would allocate 20% of the experiment traffic to that variation."
+                  }
+                ]
+              }
+            }
+          },
+          "randomizationSalt": {
+            "description": "When Evidently assigns a particular user session to an experiment, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the experiment name as the <code>randomizationSalt</code>.",
+            "type": "string",
+            "pattern": ".*",
+            "minLength": 0,
+            "maxLength": 127
+          },
+          "samplingRate": {
+            "description": "<p>The portion of the available audience that you want to allocate to this experiment, in thousandths of a percent. The available audience is the total audience minus the audience that you have allocated to overrides or current launches of this feature.</p> <p>This is represented in thousandths of a percent. For example, specify 10,000 to allocate 10% of the available audience.</p>",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "segment": {
+            "description": "Specifies an audience <i>segment</i> to use in the experiment. When a segment is used in an experiment, only user sessions that match the segment pattern are used in the experiment.",
+            "type": "string",
+            "pattern": "(^[-a-zA-Z0-9._]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:segment/[-a-zA-Z0-9._]*)",
+            "minLength": 0,
+            "maxLength": 2048
+          },
+          "tags": {
+            "description": "<p>Assigns one or more tags (key-value pairs) to the experiment.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with an experiment.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "treatments": {
+            "description": "An array of structures that describe the configuration of each feature variation used in the experiment.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TreatmentConfig"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          }
+        }
+      }
+    },
+    "required": [
+      "project",
+      "body"
+    ],
+    "$defs": {
+      "MetricGoalConfig": {
+        "type": "object",
+        "required": [
+          "metricDefinition"
+        ],
+        "properties": {
+          "desiredChange": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChangeDirectionEnum"
+              },
+              {
+                "description": "<p> <code>INCREASE</code> means that a variation with a higher number for this metric is performing better.</p> <p> <code>DECREASE</code> means that a variation with a lower number for this metric is performing better.</p>"
+              }
+            ]
+          },
+          "metricDefinition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDefinitionConfig"
+              },
+              {
+                "description": "A structure that contains details about the metric."
+              }
+            ]
+          }
+        },
+        "description": "Use this structure to tell Evidently whether higher or lower values are desired for a metric that is used in an experiment."
+      },
+      "ChangeDirectionEnum": {
+        "type": "string",
+        "enum": [
+          "INCREASE",
+          "DECREASE"
+        ]
+      },
+      "MetricDefinitionConfig": {
+        "type": "object",
+        "required": [
+          "entityIdKey",
+          "name",
+          "valueKey"
+        ],
+        "properties": {
+          "entityIdKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonPath"
+              },
+              {
+                "description": "The entity, such as a user or session, that does an action that causes a metric value to be recorded. An example is <code>userDetails.userID</code>."
+              }
+            ]
+          },
+          "eventPattern": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricDefinitionConfigEventPatternString"
+              },
+              {
+                "description": "<p>The EventBridge event pattern that defines how the metric is recorded.</p> <p>For more information about EventBridge event patterns, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html\">Amazon EventBridge event patterns</a>.</p>"
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CwDimensionSafeName"
+              },
+              {
+                "description": "A name for the metric."
+              }
+            ]
+          },
+          "unitLabel": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MetricUnitLabel"
+              },
+              {
+                "description": "A label for the units that the metric is measuring."
+              }
+            ]
+          },
+          "valueKey": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JsonPath"
+              },
+              {
+                "description": "The value that is tracked to produce the metric."
+              }
+            ]
+          }
+        },
+        "description": "This structure defines a metric that you want to use to evaluate the variations during a launch or experiment."
+      },
+      "JsonPath": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "MetricDefinitionConfigEventPatternString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024
+      },
+      "CwDimensionSafeName": {
+        "type": "string",
+        "pattern": "^[\\S]+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "MetricUnitLabel": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "TreatmentName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "TreatmentToWeightMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/SplitWeight"
+        }
+      },
+      "SplitWeight": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "TreatmentConfig": {
+        "type": "object",
+        "required": [
+          "feature",
+          "name",
+          "variation"
+        ],
+        "properties": {
+          "description": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Description"
+              },
+              {
+                "description": "A description for this treatment."
+              }
+            ]
+          },
+          "feature": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FeatureName"
+              },
+              {
+                "description": "The feature that this experiment is testing."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TreatmentName"
+              },
+              {
+                "description": "A name for this treatment."
+              }
+            ]
+          },
+          "variation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VariationName"
+              },
+              {
+                "description": "The name of the variation to use as this treatment in the experiment."
+              }
+            ]
+          }
+        },
+        "description": "A structure that defines one treatment in an experiment. A treatment is a variation of the feature that you are including in the experiment."
+      },
+      "Description": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 0,
+        "maxLength": 160
+      },
+      "FeatureName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      },
+      "VariationName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://evidently.us-east-1.amazonaws.com/projects/{project}/experiments"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**experiment**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "name": "GET_user-webhooks-parse-stats",
+  "description": "**This endpoint allows you to retrieve the statistics for your Parse Webhook useage.**\n\nSendGrid's Inbound Parse Webhook allows you to parse the contents and attachments of incomming emails. The Parse API can then POST the parsed emails to a URL that you specify. The Inbound Parse Webhook cannot parse messages greater than 30MB in size, including all attachments.\n\nThere are a number of pre-made integrations for the SendGrid Parse Webhook which make processing events easy. You can find these integrations in the [Library Index](https://sendgrid.com/docs/Integrate/libraries.html#-Webhook-Libraries).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "string",
+        "description": "The number of statistics to return on each page."
+      },
+      "offset": {
+        "type": "string",
+        "description": "The number of statistics to skip."
+      },
+      "aggregated_by": {
+        "enum": [
+          "day",
+          "week",
+          "month"
+        ],
+        "type": "string",
+        "description": "How you would like the statistics to by grouped. "
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The starting date of the statistics you want to retrieve. Must be in the format YYYY-MM-DD"
+      },
+      "end_date": {
+        "default": "The day the request is made.",
+        "type": "string",
+        "description": "The end date of the statistics you want to retrieve. Must be in the format YYYY-MM-DD"
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "start_date"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/user/webhooks/parse/stats{?limit,offset,aggregated_by,start_date,end_date}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**date**: The date that the stats were collected.",
+            "**stats**: The Parse Webhook usage statistics."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

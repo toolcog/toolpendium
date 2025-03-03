@@ -1,0 +1,2908 @@
+{
+  "name": "initiatePayment",
+  "description": "This method is used to initiate a payment at the ASPSP.\n\n## Variants of payment initiation requests\n\nThis method to initiate a payment initiation at the ASPSP can be sent with either a JSON body or an pain.001 body depending on the payment product in the path.\n\nThere are the following **payment products**:\n\n  - Payment products with payment information in *JSON* format:\n    - ***domestic-swiss-credit-transfers-isr***\n    - ***domestic-swiss-credit-transfers***\n    - ***domestic-swiss-credit-transfers-qr***\n    - ***domestic-swiss-foreign-credit-transfers***\n    - ***swiss-sepa-credit-transfers***\n    - ***swiss-cross-border-credit-transfers***\n  - Payment products with payment information in *SIX pain.001* XML format:\n    - ***pain.001-sepa-credit-transfers***\n    - ***pain.001-cross-border-credit-transfers***\n    - ***pain.001-swiss-six-credit-transfers***\n\nFurthermore the request body depends on the **payment-service**:\n  * ***payments***: A single payment initiation request.\n  * ***bulk-payments***: A collection of several payment initiation requests.\n  \n    In case of a *pain.001* message there are more than one payments contained in the *pain.001 message.\n\n    In case of a *JSON* there are several JSON payment blocks contained in a joining list.\n  * ***periodic-payments***:\n    Create a standing order initiation resource for recurrent i.e. periodic payments addressable under {paymentId}\n     with all data relevant for the corresponding payment product and the execution of the standing order contained in a JSON body.\n\nThis is the first step in the API to initiate the related recurring/periodic payment.\n\n## Single and mulitilevel SCA Processes\n\nThe payment initiation requests are independent from the need of one or multilevel \nSCA processing, i.e. independent from the number of authorisations needed for the execution of payments. \n\nBut the response messages are specific to either one SCA processing or multilevel SCA processing. \n\nFor payment initiation with multilevel SCA, this specification requires an explicit start of the authorisation, \ni.e. links directly associated with SCA processing like 'scaRedirect' or 'scaOAuth' cannot be contained in the \nresponse message of a Payment Initation Request for a payment, where multiple authorisations are needed. \nAlso if any data is needed for the next action, like selecting an SCA method is not supported in the response, \nsince all starts of the multiple authorisations are fully equal. \nIn these cases, first an authorisation sub-resource has to be generated following the 'startAuthorisation' link.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "payment-service": {
+        "enum": [
+          "payments",
+          "bulk-payments",
+          "periodic-payments"
+        ],
+        "type": "string",
+        "description": "Payment service:\n\nPossible values are:\n* payments\n* bulk-payments\n* periodic-payments\n"
+      },
+      "payment-product": {
+        "enum": [
+          "domestic-swiss-credit-transfers-isr",
+          "domestic-swiss-credit-transfers",
+          "domestic-swiss-credit-transfers-qr",
+          "domestic-swiss-foreign-credit-transfers",
+          "swiss-sepa-credit-transfers",
+          "swiss-cross-border-credit-transfers",
+          "pain.001-sepa-credit-transfers",
+          "pain.001-cross-border-credit-transfers",
+          "pain.001-swiss-six-credit-transfers"
+        ],
+        "type": "string",
+        "description": "The addressed payment product endpoint, e.g. for SEPA Credit Transfers (SCT).\nThe ASPSP will publish which of the payment products/endpoints will be supported.\n\nThe following payment products are supported:\n  - domestic-swiss-credit-transfers-isr\n  - domestic-swiss-credit-transfers\n  - domestic-swiss-credit-transfers-qr\n  - domestic-swiss-foreign-credit-transfers\n  - swiss-sepa-credit-transfers\n  - swiss-cross-border-credit-transfers\n  - pain.001-sepa-credit-transfers\n  - pain.001-cross-border-credit-transfers\n  - pain.001-swiss-six-credit-transfers\n\n**Remark:** For all SEPA Credit Transfer based endpoints which accept XML encoding,\nthe XML pain.001 schemes provided by EPC are supported by the ASPSP as a minimum for the body content.\nFurther XML schemes might be supported by some communities.\n\n**Remark:** For cross-border and TARGET-2 payments only community wide pain.001 schemes do exist.\nThere are plenty of country specificic scheme variants.\n"
+      },
+      "X-Request-ID": {
+        "type": "string",
+        "description": "ID of the request, unique to the call, as determined by the initiating party."
+      },
+      "Digest": {
+        "type": "string",
+        "description": "Is contained if and only if the \"Signature\" element is contained in the header of the request."
+      },
+      "Signature": {
+        "type": "string",
+        "description": "A signature of the request by the TPP on application level. This might be mandated by ASPSP.\n"
+      },
+      "TPP-Signature-Certificate": {
+        "format": "byte",
+        "type": "string",
+        "description": "The certificate used for signing the request, in base64 encoding.\nMust be contained if a signature is contained.\n"
+      },
+      "PSU-ID": {
+        "type": "string",
+        "description": "Client ID of the PSU in the ASPSP client interface.\n\nMight be mandated in the ASPSP's documentation.\n\nIt might be contained even if an OAuth2 based authentication was performed in a pre-step or an OAuth2 based SCA was performed in an preceding\nAIS service in the same session.\nIn this case the ASPSP might check whether PSU-ID and token match,\naccording to ASPSP documentation.\n"
+      },
+      "PSU-ID-Type": {
+        "type": "string",
+        "description": "Type of the PSU-ID, needed in scenarios where PSUs have several PSU-IDs as access possibility.\n\nIn this case, the mean and use are then defined in the ASPSP's documentation.\n"
+      },
+      "PSU-Corporate-ID": {
+        "type": "string",
+        "description": "Might be mandated in the ASPSP's documentation. Only used in a corporate context.\n"
+      },
+      "PSU-Corporate-ID-Type": {
+        "type": "string",
+        "description": "Might be mandated in the ASPSP's documentation. Only used in a corporate context.\n"
+      },
+      "Consent-ID": {
+        "$ref": "#/components/schemas/consentId",
+        "description": "This data element may be contained, if the payment initiation transaction is part of a session, i.e. combined AIS/PIS service.\nThis then contains the consentId of the related AIS consent, which was performed prior to this payment initiation.\n"
+      },
+      "PSU-IP-Address": {
+        "format": "ipv4",
+        "type": "string",
+        "description": "The forwarded IP Address header field consists of the corresponding http request IP Address field between PSU and TPP.\nIf not available, the TPP shall use the IP Address used by the TPP when submitting this request.\n"
+      },
+      "TPP-Redirect-Preferred": {
+        "type": "boolean",
+        "description": "If it equals \"true\", the TPP prefers a redirect over an embedded SCA approach.\nIf it equals \"false\", the TPP prefers not to be redirected for SCA. The ASPSP will then choose between the Embedded or the Decoupled\nSCA approach, depending on the choice of the SCA procedure by the TPP/PSU.\nIf the parameter is not used, the ASPSP will choose the SCA approach to be applied depending on the SCA method chosen by the\nTPP/PSU.\n"
+      },
+      "TPP-Redirect-URI": {
+        "format": "uri",
+        "type": "string",
+        "description": "URI of the TPP, where the transaction flow shall be redirected to after a Redirect.\n\nMandated for the Redirect SCA Approach, specifically\nwhen TPP-Redirect-Preferred equals \"true\".\nIt is recommended to always use this header field.\n\n**Remark for Future:**\nThis field might be changed to mandatory in the next version of the specification.\n"
+      },
+      "TPP-Nok-Redirect-URI": {
+        "format": "uri",
+        "type": "string",
+        "description": "If this URI is contained, the TPP is asking to redirect the transaction flow to this address instead of the TPP-Redirect-URI in case\nof a negative result of the redirect SCA method. This might be ignored by the ASPSP.\n"
+      },
+      "TPP-Explicit-Authorisation-Preferred": {
+        "type": "boolean",
+        "description": "If it equals \"true\", the TPP prefers to start the authorisation process separately,\ne.g. because of the usage of a signing basket.\nThis preference might be ignored by the ASPSP, if a signing basket is not supported as functionality.\n\nIf it equals \"false\" or if the parameter is not used, there is no preference of the TPP.\nThis especially indicates that the TPP assumes a direct authorisation of the transaction in the next step,\nwithout using a signing basket.\n"
+      },
+      "TPP-Rejection-NoFunds-Preferred": {
+        "type": "boolean",
+        "description": "If it equals \"true\" then the TPP prefers a rejection of the payment initiation in case the ASPSP is\nproviding an integrated confirmation of funds request an the result of this is that not sufficient\nfunds are available.\n\nIf it equals \"false\" then the TPP prefers that the ASPSP is dealing with the payment initiation like\nin the ASPSPs online channel, potentially waiting for a certain time period for funds to arrive to initiate the payment.\n\nThis parameter might be ignored by the ASPSP.\n"
+      },
+      "TPP-Brand-Logging-Information": {
+        "type": "string",
+        "description": "This header might be used by TPPs to inform the ASPSP about the brand used by the TPP towards the PSU. \nThis information is meant for logging entries to enhance communication between ASPSP and PSU or ASPSP and TPP. \nThis header might be ignored by the ASPSP.\n"
+      },
+      "TPP-Notification-URI": {
+        "type": "string",
+        "description": "URI for the Endpoint of the TPP-API to which the status of the payment initiation should be sent.\nThis header field may by ignored by the ASPSP.\n\nFor security reasons, it shall be ensured that the TPP-Notification-URI as introduced above is secured by the TPP eIDAS QWAC used for identification of the TPP. The following applies:\n\nURIs which are provided by TPPs in TPP-Notification-URI shall comply with the domain secured by the eIDAS QWAC certificate of the TPP in the field CN or SubjectAltName of the certificate. Please note that in case of example-TPP.com as certificate entry TPP- Notification-URI like www.example-TPP.com/xs2a-client/v1/ASPSPidentifcation/mytransaction- id/notifications or notifications.example-TPP.com/xs2a-client/v1/ASPSPidentifcation/mytransaction- id/notifications would be compliant.\n\nWildcard definitions shall be taken into account for compliance checks by the ASPSP.\n ASPSPs may respond with ASPSP-Notification-Support set to false, if the provided URIs do not comply.\n"
+      },
+      "TPP-Notification-Content-Preferred": {
+        "type": "string",
+        "description": "The string has the form\n\nstatus=X1, ..., Xn\n\nwhere Xi is one of the constants SCA, PROCESS, LAST and where constants are not\nrepeated.\nThe usage of the constants supports the of following semantics:\n\n  SCA: A notification on every change of the scaStatus attribute for all related authorisation processes is preferred by the TPP.\n\n  PROCESS: A notification on all changes of consentStatus or transactionStatus attributes is preferred by the TPP.\n  LAST: Only a notification on the last consentStatus or transactionStatus as available in the XS2A interface is preferred by the TPP.\n\nThis header field may be ignored, if the ASPSP does not support resource notification services for the related TPP.\n"
+      },
+      "PSU-IP-Port": {
+        "type": "string",
+        "description": "The forwarded IP Port header field consists of the corresponding HTTP request IP Port field between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Charset": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Encoding": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-Accept-Language": {
+        "type": "string",
+        "description": "The forwarded IP Accept header fields consist of the corresponding HTTP request Accept header fields between PSU and TPP, if available.\n"
+      },
+      "PSU-User-Agent": {
+        "type": "string",
+        "description": "The forwarded Agent header field of the HTTP request between PSU and TPP, if available.\n"
+      },
+      "PSU-Http-Method": {
+        "enum": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "type": "string",
+        "description": "HTTP method used at the PSU ? TPP interface, if available.\nValid values are:\n* GET\n* POST\n* PUT\n* PATCH\n* DELETE\n"
+      },
+      "PSU-Device-ID": {
+        "type": "string",
+        "description": "UUID (Universally Unique Identifier) for a device, which is used by the PSU, if available.\nUUID identifies either a device or a device dependant application installation.\nIn case of an installation identification this ID needs to be unaltered until removal from device.\n"
+      },
+      "PSU-Geo-Location": {
+        "pattern": "GEO:-?[0-9]{1,2}\\.[0-9]{6};-?[0-9]{1,3}\\.[0-9]{6}",
+        "type": "string",
+        "description": "The forwarded Geo Location of the corresponding http request between PSU and TPP if available.\n"
+      },
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/paymentInitiation_json"
+          },
+          {
+            "$ref": "#/$defs/periodicPaymentInitiation_json"
+          },
+          {
+            "$ref": "#/$defs/bulkPaymentInitiation_json"
+          }
+        ],
+        "description": "JSON request body for a payment inition request message.\n\nThere are the following payment-products supported:\n  * \"domestic-swiss-credit-transfers-isr\"\n  * \"domestic-swiss-credit-transfers\"\n  * \"domestic-swiss-credit-transfers-qr\"\n  * \"domestic-swiss-foreign-credit-transfers\"\n  * \"swiss-sepa-credit-transfers\" with JSON-Body\n  * \"swiss-cross-border-credit-transfers\" with JSON-Body\n  * \"pain.001-sepa-credit-transfers\" with XML pain.001.001.03 body for SCT scheme\n    Only country specific schemes are currently available\n  * \"pain.001-cross-border-credit-transfers\" with pain.001 body.\n    Only country specific schemes are currently available\n  * \"pain.001-swiss-six-credit-transfers\"\n\nThere are the following payment-services supported:\n  * \"payments\"\n  * \"periodic-payments\"\n  * \"bulk-paments\"\n\nAll optional, conditional and predefined but not yet used fields are defined.\n"
+      }
+    },
+    "required": [
+      "payment-service",
+      "payment-product",
+      "X-Request-ID",
+      "PSU-IP-Address",
+      "body"
+    ],
+    "$defs": {
+      "paymentInitiation_json": {
+        "description": "Generic Body for a payment initation via JSON.\n\nThis generic JSON body can be used to represent valid payment initiations for the following JSON based payment product,\nwhich where defined in the Implementation Guidelines:\n\n  * domestic-swiss-credit-transfers-isr\n  * domestic-swiss-credit-transfers\n  * domestic-swiss-credit-transfers-qr\n  * domestic-swiss-foreign-credit-transfers\n  * swiss-sepa-credit-transfers\n  * swiss-cross-border-credit-transfers\n\nFor the convenience of the implementer additional which are already predefinded in the Implementation Guidelines\nare included (but commented in source code), such that an ASPSP may add them easily.\n\nTake care: Since the format is intended to fit for all payment products\nthere are additional conditions which are NOT covered by this specification.\nPlease check the SIX Swiss Payment Standards implementation guidelines for details.\n\n\nThe following data element are depending on the actual payment product available (in source code):\n\n<table style=\"width:100%\">\n<tr><td></td><td>Payment Type 1: ISR</td><td>Payment Type 3: IBAN/postal account and IID/BIC</td><td>Payment Type 3: QR-bill</td><td>Payment Type 4: Foreign currency</td><td>Payment Type 5: Foreign SEPA</td><td>Payment Type 6: Foreign</td></tr>\n<tr><td>CH Domestic Data Element</td><td>domestic-swiss-credit-transfers-isr</td><td>domestic-swiss-credit-transfers</td><td>domestic-swiss-credit-transfers-qr</td><td>domestic-swiss-foreign-credit-transfers</td><td>swiss-sepa-credit-transfers</td><td>swiss-cross-border-credit-transfers</td></tr>\n<tr><td>endToEndIdentification</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>instructionIdentification</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>debtorAccount (incl. type)</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>debtorAgent</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>debtorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>debtorId</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td></tr>\n<tr><td>ultimateDebtor</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>instructedAmount (incl. currency)</td><td>mandatory</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>equivalentAmount</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>transactionCurrency</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>exchangeRateInformation</td><td>n.a.</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td></tr>\n<tr><td>creditorAccount</td><td>mandatory</td><td>mandatory</td><td>mandatory 8)</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorAgent</td><td>n.a.</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td></tr>\n<tr><td>creditorAgentName</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>dependent 5)</td><td>n.a.</td><td>dependent 5)</td></tr>\n<tr><td>creditorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorId</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorAddress</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorNameAndAddress</td><td>n.a.</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td></tr>\n<tr><td>ultimateCreditor</td><td>n.a.</td><td>optional</td><td>n.a. (for future use)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>chargeBearer</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>purposeCode</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>serviceLevel</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructured</td><td>n.a.</td><td>optional</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>remittanceInformationStructured</td><td>mandatory</td><td>optional</td><td>mandatory 6)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationStructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>requestedExecutionDate</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>requestedExecutionTime</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>intermediaryAgent</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>optional 2)</td><td>n.a.</td><td>optional 2)</td></tr>\n</table>\n\nFootnotes from the table:\n1) This element may only be used by agreement with the instructed financial institution.\n2) The element may only be used in consultation with the financial institution commissioned.\n3) The element is currently ignored by financial institutions.\n4) Dependence on creditorAccount, see SIX Swiss Payments Standards implementation guidelines.\n5) Type 4(V3), 6(V2, V3): Must be present. Type 4(V2): May be present. Other species: May not be present.\n6) QR-reference, creditor reference or IPI reference\n7) transactionCurrency is a subfield of equivalentAmount and may only be used if equivalentAmount is used instead of instructedAmount.\n8) QR-IBAN (CH/LI) must be present.\n\nIMPORTANT: In this API definition the following holds:\n  *  All data elements mentioned above are defined, but some of them are commented,\n    i.e. they are only visible in the source code and can be used by uncommenting them.\n  * Data elements which are mandatory in the table above for all payment products\n    are set to be mandatory in this specification.\n  * Data elements which are indicated in the table above as n.a. for all payment products are commented in the source code.\n  * Data elements which are indicated to be option, conditional or mandatory for at least one payment product\n    in the table above are set to be optional in the s specification except the case where all are definde to be mandatory.\n  * Data element which are inticated to be n.a. can be used by the ASPS if needed.\n    In this case uncomment tthe the relatetd lines in the source code.\n  * If one uses this data types for some payment products he has to ensure that the used data type is\n    valid according to the underlying payment product, e.g. by some appropriate validations.\n",
+        "properties": {
+          "chargeBearer": {
+            "$ref": "#/$defs/chargeBearer"
+          },
+          "creditorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "creditorAddress": {
+            "$ref": "#/$defs/address"
+          },
+          "creditorAgent": {
+            "$ref": "#/$defs/creditorAgent7-CH"
+          },
+          "creditorAgentName": {
+            "$ref": "#/$defs/creditorAgentName"
+          },
+          "creditorId": {
+            "$ref": "#/$defs/creditorId"
+          },
+          "creditorName": {
+            "$ref": "#/$defs/creditorName"
+          },
+          "creditorNameAndAddress": {
+            "$ref": "#/$defs/creditorNameAndAddress"
+          },
+          "debtorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "debtorAgent": {
+            "$ref": "#/$defs/debtorAgent7-CH"
+          },
+          "debtorId": {
+            "$ref": "#/$defs/debtorId"
+          },
+          "debtorName": {
+            "$ref": "#/$defs/debtorName"
+          },
+          "endToEndIdentification": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "equivalentAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "exchangeRateInformation": {
+            "$ref": "#/$defs/exchangeRateInformation1"
+          },
+          "instructedAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "intermediaryAgent": {
+            "$ref": "#/$defs/bicfi"
+          },
+          "purposeCode": {
+            "$ref": "#/$defs/purposeCode"
+          },
+          "remittanceInformationStructured": {
+            "$ref": "#/$defs/remittanceInformationStructured"
+          },
+          "remittanceInformationUnstructured": {
+            "$ref": "#/$defs/remittanceInformationUnstructured"
+          },
+          "requestedExecutionDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "serviceLevel": {
+            "$ref": "#/$defs/externalServiceLevel1Code"
+          },
+          "transactionCurrency": {
+            "$ref": "#/$defs/currencyCode"
+          },
+          "ultimateCreditor": {
+            "$ref": "#/$defs/ultimateCreditor"
+          },
+          "ultimateDebtor": {
+            "$ref": "#/$defs/ultimateDebtor"
+          }
+        },
+        "required": [
+          "endToEndIdentification",
+          "debtorAccount",
+          "debtorName",
+          "creditorAccount",
+          "creditorName",
+          "requestedExecutionDate"
+        ],
+        "type": "object"
+      },
+      "chargeBearer": {
+        "description": "Charge Bearer. ChargeBearerType1Code from ISO20022.",
+        "enum": [
+          "DEBT",
+          "CRED",
+          "SHAR",
+          "SLEV"
+        ],
+        "type": "string"
+      },
+      "accountReference16-CH": {
+        "description": "Reference to an account by either\n  * IBAN, of a payment accounts, or\n  * otherAccountIdentification, for payment accounts if there is no IBAN\nadapted from ISO pain.001.001.03.ch.02 CashAccount16-CH_IdTpCcy\n",
+        "properties": {
+          "cashAccountType": {
+            "$ref": "#/$defs/cashAccountType"
+          },
+          "currency": {
+            "$ref": "#/$defs/currencyCode"
+          },
+          "iban": {
+            "$ref": "#/$defs/iban"
+          },
+          "otherAccountIdentification": {
+            "$ref": "#/$defs/otherAccountIdentification1-CH"
+          }
+        },
+        "type": "object"
+      },
+      "cashAccountType": {
+        "description": "ExternalCashAccountType1Code from ISO 20022.\n",
+        "type": "string"
+      },
+      "currencyCode": {
+        "description": "ISO 4217 Alpha 3 currency code.\n",
+        "example": "EUR",
+        "pattern": "[A-Z]{3}",
+        "type": "string"
+      },
+      "iban": {
+        "description": "IBAN of an account.",
+        "example": "FR7612345987650123456789014",
+        "pattern": "[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}",
+        "type": "string"
+      },
+      "otherAccountIdentification1-CH": {
+        "description": "Other payment account Identifier.\nadapted from ISO pain.001.001.03.ch.02 GenericAccountIdentification1-CH\n",
+        "example": "90-100100-0",
+        "maxLength": 34,
+        "type": "string"
+      },
+      "address": {
+        "example": {
+          "buildingnNumber": "89",
+          "country": "FR",
+          "postCode": "75000",
+          "streetName": "rue blue",
+          "townName": "Paris"
+        },
+        "properties": {
+          "buildingNumber": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/$defs/countryCode"
+          },
+          "postCode": {
+            "type": "string"
+          },
+          "streetName": {
+            "maxLength": 70,
+            "type": "string"
+          },
+          "townName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "type": "object"
+      },
+      "countryCode": {
+        "description": "ISO 3166 ALPHA2 country code.",
+        "example": "SE",
+        "pattern": "[A-Z]{2}",
+        "type": "string"
+      },
+      "creditorAgent7-CH": {
+        "description": "Reference to an creditorAgent by either\n  * BIC, of the creditor bank, or\n  * IID, of the creditor bank, or\n  * IID and optional name and address of the creditor bank or\n  * Name and address of the creditor bank\nadapted from ISO pain.001.001.03.ch.02 FinancialInstitutionIdentification7-CH\n",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/postalAddress6-CH"
+          },
+          "bic": {
+            "$ref": "#/$defs/bicfi"
+          },
+          "iid": {
+            "$ref": "#/$defs/institutionalIdentification2"
+          },
+          "name": {
+            "maxLength": 35,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "postalAddress6-CH": {
+        "description": "as in ISO pain.001.001.03.ch.02 PostalAddress6\nIf possible structured. Simultaneous use of the structured elements <StrtNm>/ <BldgNb>/<PstCd>/<TwnNm> and the unstructured element <AdrLine> is not permitted.\nas in ISO pain.001.001.03.ch.02 PostalAddress6-CH\n",
+        "properties": {
+          "addressLine1": {
+            "maxLength": 70,
+            "type": "string"
+          },
+          "addressLine2": {
+            "maxLength": 70,
+            "type": "string"
+          },
+          "buildingNumber": {
+            "maxLength": 16,
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/$defs/countryCode"
+          },
+          "postCode": {
+            "maxLength": 16,
+            "type": "string"
+          },
+          "streetName": {
+            "maxLength": 70,
+            "type": "string"
+          },
+          "townName": {
+            "maxLength": 35,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "bicfi": {
+        "description": "BICFI\n",
+        "example": "AAAADEBBXXX",
+        "pattern": "[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}",
+        "type": "string"
+      },
+      "institutionalIdentification2": {
+        "description": "Institiutional identification of a bank (Clearing System Member ID)\nadapted from ISO pain.001.001.03.ch.02 ClearingSystemMemberIdentification2\n",
+        "properties": {
+          "clearingSystemIdCode": {
+            "maxLength": 5,
+            "minLength": 1,
+            "type": "string"
+          },
+          "clearingSystemMemberId": {
+            "maxLength": 35,
+            "type": "string"
+          }
+        },
+        "required": [
+          "clearingSystemIdCode",
+          "clearingSystemMemberId"
+        ],
+        "type": "object"
+      },
+      "creditorAgentName": {
+        "description": "Creditor agent name.",
+        "example": "Creditor Id 1234",
+        "maxLength": 35,
+        "type": "string"
+      },
+      "creditorId": {
+        "description": "Identification of Creditors, e.g. a SEPA Creditor ID.",
+        "example": "Creditor Id 5678",
+        "maxLength": 35,
+        "type": "string"
+      },
+      "creditorName": {
+        "description": "Creditor name.",
+        "example": "Creditor Name",
+        "maxLength": 70,
+        "type": "string"
+      },
+      "creditorNameAndAddress": {
+        "description": "Creditor Name and Address in a free text field.",
+        "example": "Max Masters, Main Street 1, 12345 City, Example Country",
+        "maxLength": 140,
+        "type": "string"
+      },
+      "debtorAgent7-CH": {
+        "description": "Reference to an debtorAgent by either\n  * BIC, of the debtor bank, or\n  * IID, of the debtor bank\nadapted from ISO pain.001.001.03.ch.02 FinancialInstitutionIdentification7-CH_BicOrClrId\n",
+        "properties": {
+          "bic": {
+            "$ref": "#/$defs/bicfi"
+          },
+          "iid": {
+            "$ref": "#/$defs/institutionalIdentification2"
+          }
+        },
+        "type": "object"
+      },
+      "debtorId": {
+        "description": "Debtor Id.",
+        "example": "Debtor Id 1234",
+        "maxLength": 35,
+        "type": "string"
+      },
+      "debtorName": {
+        "description": "Debtor name.",
+        "example": "Debtor Name",
+        "maxLength": 70,
+        "type": "string"
+      },
+      "amount": {
+        "example": {
+          "amount": "123",
+          "currency": "EUR"
+        },
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/amountValue"
+          },
+          "currency": {
+            "$ref": "#/$defs/currencyCode"
+          }
+        },
+        "required": [
+          "currency",
+          "amount"
+        ],
+        "type": "object"
+      },
+      "amountValue": {
+        "description": "The amount given with fractional digits, where fractions must be compliant to the currency definition.\nUp to 14 significant figures. Negative amounts are signed by minus.\nThe decimal separator is a dot.\n\n**Example:**\nValid representations for EUR with up to two decimals are:\n\n  * 1056\n  * 5768.2\n  * -1.50\n  * 5877.78\n",
+        "example": "5877.78",
+        "pattern": "-?[0-9]{1,14}(\\.[0-9]{1,3})?",
+        "type": "string"
+      },
+      "exchangeRateInformation1": {
+        "description": "as in ISO pain.001.001.03.ch.02 ExchangeRateInformation1",
+        "properties": {
+          "contractIdentification": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "exchangeRate": {
+            "type": "string"
+          },
+          "rateType": {
+            "enum": [
+              "SPOT",
+              "SALE",
+              "AGRD"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "purposeCode": {
+        "description": "ExternalPurpose1Code from ISO 20022.\n\nValues from ISO 20022 External Code List ExternalCodeSets_1Q2018 June 2018.\n",
+        "enum": [
+          "SALA",
+          "PENS"
+        ],
+        "type": "string"
+      },
+      "remittanceInformationStructured": {
+        "description": "Structured remittance information.\n",
+        "properties": {
+          "SCORorQRRorIPI": {
+            "enum": [
+              "SCOR",
+              "QRR",
+              "IPI"
+            ],
+            "example": "SCOR",
+            "type": "string"
+          },
+          "additionalRemittanceInformation": {
+            "maxLength": 140,
+            "type": "string"
+          },
+          "reference": {
+            "example": "15 00011 23456 78901 23456 78901",
+            "maxLength": 35,
+            "type": "string"
+          },
+          "referenceIssuer": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "referenceType": {
+            "maxLength": 35,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference"
+        ],
+        "type": "object"
+      },
+      "remittanceInformationUnstructured": {
+        "description": "Unstructured remittance information.\n",
+        "example": "Ref Number Merchant",
+        "maxLength": 140,
+        "type": "string"
+      },
+      "externalServiceLevel1Code": {
+        "description": "Specifies the external service level code in the format of character string with a maximum length of 4 characters.",
+        "enum": [
+          "SEPA",
+          "PRPT",
+          "SDVA",
+          "URGP"
+        ],
+        "maxLength": 4,
+        "type": "string"
+      },
+      "ultimateCreditor": {
+        "description": "Ultimate creditor.",
+        "example": "Ultimate Creditor",
+        "maxLength": 70,
+        "type": "string"
+      },
+      "ultimateDebtor": {
+        "description": "Ultimate debtor.",
+        "example": "Ultimate Debtor",
+        "maxLength": 70,
+        "type": "string"
+      },
+      "periodicPaymentInitiation_json": {
+        "description": "Generic Body for a periodic payment initation via JSON.\n\nThis generic JSON body can be used to represent valid periodic payment initiations for the following JSON based payment product,\nwhich where defined in the Implementation Guidelines:\n\n  * domestic-swiss-credit-transfers-isr\n  * domestic-swiss-credit-transfers\n  * domestic-swiss-credit-transfers-qr\n  * domestic-swiss-foreign-credit-transfers\n  * swiss-sepa-credit-transfers\n  * swiss-cross-border-credit-transfers\n\nFor the convenience of the implementer additional which are already predefinded in the Implementation Guidelines\nare included (but commented in source code), such that an ASPSP may add them easily.\n\nTake care: Since the format is intended to fit for all payment products\nthere are additional conditions which are NOT covered by this specification.\nPlease check the SIX Swiss Payment Standards implementation guidelines for details.\n\n\nThe following data element are depending on the actual payment product available (in source code):\n\n<table style=\"width:100%\">\n<tr><td></td><td>Payment Type 1: ISR</td><td>Payment Type 3: IBAN/postal account and IID/BIC</td><td>Payment Type 3: QR-bill</td><td>Payment Type 4: Foreign currency</td><td>Payment Type 5: Foreign SEPA</td><td>Payment Type 6: Foreign</td></tr>\n<tr><td>CH Domestic Data Element</td><td>domestic-swiss-credit-transfers-isr</td><td>domestic-swiss-credit-transfers</td><td>domestic-swiss-credit-transfers-qr</td><td>domestic-swiss-foreign-credit-transfers</td><td>swiss-sepa-credit-transfers</td><td>swiss-cross-border-credit-transfers</td></tr>\n<tr><td>endToEndIdentification</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>instructionIdentification</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>debtorAccount (incl. type)</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>debtorAgent</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>debtorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>debtorId</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td></tr>\n<tr><td>ultimateDebtor</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>instructedAmount (incl. currency)</td><td>mandatory</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>equivalentAmount</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>transactionCurrency</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>exchangeRateInformation</td><td>n.a.</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td></tr>\n<tr><td>creditorAccount</td><td>mandatory</td><td>mandatory</td><td>mandatory 8)</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorAgent</td><td>n.a.</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td></tr>\n<tr><td>creditorAgentName</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>dependent 5)</td><td>n.a.</td><td>dependent 5)</td></tr>\n<tr><td>creditorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorId</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorAddress</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorNameAndAddress</td><td>n.a.</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td></tr>\n<tr><td>ultimateCreditor</td><td>n.a.</td><td>optional</td><td>n.a. (for future use)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>chargeBearer</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>purposeCode</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>serviceLevel</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructured</td><td>n.a.</td><td>optional</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>remittanceInformationStructured</td><td>mandatory</td><td>optional</td><td>mandatory 6)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationStructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>requestedExecutionDate</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>requestedExecutionTime</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>intermediaryAgent</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>optional 2)</td><td>n.a.</td><td>optional 2)</td></tr>\n<tr><td>startDate</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>endDate</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>executionRule</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>frequency</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>dayOfExecution</td><td>conditional</td><td>conditional</td><td>conditional</td><td>conditional</td><td>conditional</td><td>conditional</td></tr>\n</table>\n\nFootnotes from the table:\n1) This element may only be used by agreement with the instructed financial institution.\n2) The element may only be used in consultation with the financial institution commissioned.\n3) The element is currently ignored by financial institutions.\n4) Dependence on creditorAccount, see SIX Swiss Payments Standards implementation guidelines.\n5) Type 4(V3), 6(V2, V3): Must be present. Type 4(V2): May be present. Other species: May not be present.\n6) QR-reference, creditor reference or IPI reference\n7) currencyOfTransfer is a subfield of equivalentAmount and may only be used if equivalentAmount is used instead of instructedAmount.\n8) QR-IBAN (CH/LI) must be present.\n\nIMPORTANT: In this API definition the following holds:\n  *  All data elements mentioned above are defined, but some of them are commented,\n    i.e. they are only visible in the source code and can be used by uncommenting them.\n  * Data elements which are mandatory in the table above for all payment products\n    are set to be mandatory in this specification.\n  * Data elements which are indicated in the table above as n.a. for all payment products are commented in the source code.\n  * Data elements which are indicated to be option, conditional or mandatory for at least one payment product\n    in the table above are set to be optional in the s specification except the case where all are definde to be mandatory.\n  * Data element which are inticated to be n.a. can be used by the ASPS if needed.\n    In this case uncomment tthe the relatetd lines in the source code.\n  * If one uses this data types for some payment products he has to ensure that the used data type is\n    valid according to the underlying payment product, e.g. by some appropriate validations.\n",
+        "properties": {
+          "chargeBearer": {
+            "$ref": "#/$defs/chargeBearer"
+          },
+          "creditorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "creditorAddress": {
+            "$ref": "#/$defs/address"
+          },
+          "creditorAgent": {
+            "$ref": "#/$defs/creditorAgent7-CH"
+          },
+          "creditorAgentName": {
+            "$ref": "#/$defs/creditorAgentName"
+          },
+          "creditorId": {
+            "$ref": "#/$defs/creditorId"
+          },
+          "creditorName": {
+            "$ref": "#/$defs/creditorName"
+          },
+          "creditorNameAndAddress": {
+            "$ref": "#/$defs/creditorNameAndAddress"
+          },
+          "dayOfExecution": {
+            "$ref": "#/$defs/dayOfExecution"
+          },
+          "debtorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "debtorAgent": {
+            "$ref": "#/$defs/debtorAgent7-CH"
+          },
+          "debtorId": {
+            "$ref": "#/$defs/debtorId"
+          },
+          "debtorName": {
+            "$ref": "#/$defs/debtorName"
+          },
+          "endDate": {
+            "$ref": "#/$defs/endDate"
+          },
+          "endToEndIdentification": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "equivalentAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "exchangeRateInformation": {
+            "$ref": "#/$defs/exchangeRateInformation1"
+          },
+          "executionRule": {
+            "$ref": "#/$defs/executionRule"
+          },
+          "frequency": {
+            "$ref": "#/$defs/frequencyCode"
+          },
+          "instructedAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "intermediaryAgent": {
+            "$ref": "#/$defs/bicfi"
+          },
+          "purposeCode": {
+            "$ref": "#/$defs/purposeCode"
+          },
+          "remittanceInformationStructured": {
+            "$ref": "#/$defs/remittanceInformationStructured"
+          },
+          "remittanceInformationUnstructured": {
+            "$ref": "#/$defs/remittanceInformationUnstructured"
+          },
+          "serviceLevel": {
+            "$ref": "#/$defs/externalServiceLevel1Code"
+          },
+          "startDate": {
+            "$ref": "#/$defs/startDate"
+          },
+          "transactionCurrency": {
+            "$ref": "#/$defs/currencyCode"
+          },
+          "ultimateCreditor": {
+            "$ref": "#/$defs/ultimateCreditor"
+          },
+          "ultimateDebtor": {
+            "$ref": "#/$defs/ultimateDebtor"
+          }
+        },
+        "required": [
+          "endToEndIdentification",
+          "debtorAccount",
+          "debtorName",
+          "creditorAccount",
+          "creditorName",
+          "startDate",
+          "frequency"
+        ],
+        "type": "object"
+      },
+      "dayOfExecution": {
+        "description": "Day of execution as string.\n\nThis string consists of up two characters.\nLeading zeroes are not allowed.\n\n31 is ultimo of the month.\n",
+        "enum": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31"
+        ],
+        "maxLength": 2,
+        "type": "string"
+      },
+      "endDate": {
+        "description": "The last applicable day of execution.\nIf not given, it is an infinite standing order.\n",
+        "format": "date",
+        "type": "string"
+      },
+      "executionRule": {
+        "description": "\"following\" or \"preceding\" supported as values.\nThis data attribute defines the behaviour when recurring payment dates falls on a weekend or bank holiday.\nThe payment is then executed either the \"preceding\" or \"following\" working day.\nASPSP might reject the request due to the communicated value, if rules in Online-Banking are not supporting\nthis execution rule.\n",
+        "enum": [
+          "following",
+          "preceding"
+        ],
+        "type": "string"
+      },
+      "frequencyCode": {
+        "description": "The following codes from the \"EventFrequency7Code\" of ISO 20022 are supported:\n- \"Daily\"\n- \"Weekly\"\n- \"EveryTwoWeeks\"\n- \"Monthly\"\n- \"EveryTwoMonths\"\n- \"Quarterly\"\n- \"SemiAnnual\"\n- \"Annual\"\n- \"MonthlyVariable\"\n",
+        "enum": [
+          "Daily",
+          "Weekly",
+          "EveryTwoWeeks",
+          "Monthly",
+          "EveryTwoMonths",
+          "Quarterly",
+          "SemiAnnual",
+          "Annual",
+          "MonthlyVariable"
+        ],
+        "type": "string"
+      },
+      "startDate": {
+        "description": "The first applicable day of execution starting from this date is the first payment.\n",
+        "format": "date",
+        "type": "string"
+      },
+      "bulkPaymentInitiation_json": {
+        "description": "Generic Body for a bulk payment initation via JSON.\n\npaymentInformationId is contained in code but commented since it is n.a.\nand not all ASPSP are able to support this field now.\nIn a later version the field will be mandatory.\n",
+        "properties": {
+          "batchBookingPreferred": {
+            "$ref": "#/$defs/batchBookingPreferred"
+          },
+          "debtorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "debtorAgent": {
+            "$ref": "#/$defs/debtorAgent7-CH"
+          },
+          "payments": {
+            "description": "A list of generic JSON bodies payment initations for bulk payments via JSON.\n\nNote: Some fields from single payments do not occcur in a bulk payment element\n",
+            "items": {
+              "$ref": "#/$defs/paymentInitiationBulkElement_json"
+            },
+            "type": "array"
+          },
+          "requestedExecutionDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "requestedExecutionTime": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "payments",
+          "debtorAccount",
+          "debtorAgent"
+        ],
+        "type": "object"
+      },
+      "batchBookingPreferred": {
+        "description": "If this element equals 'true', the PSU prefers only one booking entry.\nIf this element equals 'false', the PSU prefers individual booking of all contained individual transactions.\n\nThe ASPSP will follow this preference according to contracts agreed on with the PSU.\n",
+        "example": false,
+        "type": "boolean"
+      },
+      "paymentInitiationBulkElement_json": {
+        "description": "Generic body for a bulk payment initation entry.\n\nThe bulk entry type is a type which follows the JSON formats for the supported products for single payments\nexcluding the data elements (if supported):\n  * debtorAccount\n  * requestedExecutionDate,\n  * requestedExecutionTime.\nThese data elements may not be contained in any bulk entry.\n\nThis data object can be used to represent valid bulk payment initiations entry for the following JSON based payment product,\nwhich where defined in the Implementation Guidelines:\n\n  * domestic-swiss-credit-transfers-isr\n  * domestic-swiss-credit-transfers\n  * domestic-swiss-credit-transfers-qr\n  * domestic-swiss-foreign-credit-transfers\n  * swiss-sepa-credit-transfers\n  * swiss-cross-border-credit-transfers\n\nFor the convenience of the implementer additional which are already predefinded in the Implementation Guidelines\nare included (but commented in source code), such that an ASPSP may add them easily.\n\nTake care: Since the format is intended to fit for all payment products\nthere are additional conditions which are NOT covered by this specification.\nPlease check the SIX Swiss Payment Standards implementation guidelines for details.\n\n\nThe following data element are depending on the actual payment product available (in source code):\n\n<table style=\"width:100%\">\n<tr><td></td><td>Payment Type 1: ISR</td><td>Payment Type 3: IBAN/postal account and IID/BIC</td><td>Payment Type 3: QR-bill</td><td>Payment Type 4: Foreign currency</td><td>Payment Type 5: Foreign SEPA</td><td>Payment Type 6: Foreign</td></tr>\n<tr><td>CH Domestic Data Element</td><td>domestic-swiss-credit-transfers-isr</td><td>domestic-swiss-credit-transfers</td><td>domestic-swiss-credit-transfers-qr</td><td>domestic-swiss-foreign-credit-transfers</td><td>swiss-sepa-credit-transfers</td><td>swiss-cross-border-credit-transfers</td></tr>\n<tr><td>endToEndIdentification</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>instructionIdentification</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>debtorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>debtorId</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td><td>optional 3)</td></tr>\n<tr><td>ultimateDebtor</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>instructedAmount (incl. currency)</td><td>mandatory</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>equivalentAmount</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>transactionCurrency</td><td>n.a.</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td><td>dependent 1)</td></tr>\n<tr><td>exchangeRateInformation</td><td>n.a.</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td><td>optional 2)</td></tr>\n<tr><td>creditorAccount</td><td>mandatory</td><td>mandatory</td><td>mandatory 8)</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorAgent</td><td>n.a.</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td><td>dependent 4)</td></tr>\n<tr><td>creditorAgentName</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>dependent 5)</td><td>n.a.</td><td>dependent 5)</td></tr>\n<tr><td>creditorName</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td><td>mandatory</td></tr>\n<tr><td>creditorId</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorAddress</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>creditorNameAndAddress</td><td>n.a.</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td><td>dependent</td></tr>\n<tr><td>ultimateCreditor</td><td>n.a.</td><td>optional</td><td>n.a. (for future use)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>chargeBearer</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>purposeCode</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>serviceLevel</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td><td>mandatory</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructured</td><td>n.a.</td><td>optional</td><td>n.a.</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationUnstructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>remittanceInformationStructured</td><td>mandatory</td><td>optional</td><td>mandatory 6)</td><td>optional</td><td>optional</td><td>optional</td></tr>\n<tr><td>remittanceInformationStructuredArray</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>n.a.</td></tr>\n<tr><td>intermediaryAgent</td><td>n.a.</td><td>n.a.</td><td>n.a.</td><td>optional 2)</td><td>n.a.</td><td>optional 2)</td></tr>\n</table>\n\nFootnotes from the table:\n1) This element may only be used by agreement with the instructed financial institution.\n2) The element may only be used in consultation with the financial institution commissioned.\n3) The element is currently ignored by financial institutions.\n4) Dependence on creditorAccount, see SIX Swiss Payments Standards implementation guidelines.\n5) Type 4(V3), 6(V2, V3): Must be present. Type 4(V2): May be present. Other species: May not be present.\n6) QR-reference, creditor reference or IPI reference\n7) currencyOfTransfer is a subfield of equivalentAmount and may only be used if equivalentAmount is used instead of instructedAmount.\n8) QR-IBAN (CH/LI) must be present.\n\nIMPORTANT: In this API definition the following holds:\n  *  All data elements mentioned above are defined, but some of them are commented,\n    i.e. they are only visible in the source code and can be used by uncommenting them.\n  * Data elements which are mandatory in the table above for all payment products\n    are set to be mandatory in this specification.\n  * Data elements which are indicated in the table above as n.a. for all payment products are commented in the source code.\n  * Data elements which are indicated to be option, conditional or mandatory for at least one payment product\n    in the table above are set to be optional in the s specification except the case where all are definde to be mandatory.\n  * Data element which are inticated to be n.a. can be used by the ASPS if needed.\n    In this case uncomment tthe the relatetd lines in the source code.\n  * If one uses this data types for some payment products he has to ensure that the used data type is\n    valid according to the underlying payment product, e.g. by some appropriate validations.\n",
+        "properties": {
+          "chargeBearer": {
+            "$ref": "#/$defs/chargeBearer"
+          },
+          "creditorAccount": {
+            "$ref": "#/$defs/accountReference16-CH"
+          },
+          "creditorAddress": {
+            "$ref": "#/$defs/address"
+          },
+          "creditorAgent": {
+            "$ref": "#/$defs/creditorAgent7-CH"
+          },
+          "creditorAgentName": {
+            "$ref": "#/$defs/creditorAgentName"
+          },
+          "creditorId": {
+            "$ref": "#/$defs/creditorId"
+          },
+          "creditorName": {
+            "$ref": "#/$defs/creditorName"
+          },
+          "creditorNameAndAddress": {
+            "$ref": "#/$defs/creditorNameAndAddress"
+          },
+          "debtorId": {
+            "$ref": "#/$defs/debtorId"
+          },
+          "debtorName": {
+            "$ref": "#/$defs/debtorName"
+          },
+          "endToEndIdentification": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "equivalentAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "exchangeRateInformation": {
+            "$ref": "#/$defs/exchangeRateInformation1"
+          },
+          "instructedAmount": {
+            "$ref": "#/$defs/amount"
+          },
+          "intermediaryAgent": {
+            "$ref": "#/$defs/bicfi"
+          },
+          "purposeCode": {
+            "$ref": "#/$defs/purposeCode"
+          },
+          "remittanceInformationStructured": {
+            "$ref": "#/$defs/remittanceInformationStructured"
+          },
+          "remittanceInformationUnstructured": {
+            "$ref": "#/$defs/remittanceInformationUnstructured"
+          },
+          "serviceLevel": {
+            "$ref": "#/$defs/externalServiceLevel1Code"
+          },
+          "transactionCurrency": {
+            "$ref": "#/$defs/currencyCode"
+          },
+          "ultimateCreditor": {
+            "$ref": "#/$defs/ultimateCreditor"
+          },
+          "ultimateDebtor": {
+            "$ref": "#/$defs/ultimateDebtor"
+          }
+        },
+        "required": [
+          "endToEndIdentification",
+          "debtorName",
+          "creditorAccount",
+          "creditorName"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.dev.openbankingproject.ch/v1/{payment-service}/{payment-product}"
+    },
+    "headers": {
+      "X-Request-ID": {
+        "$": "X-Request-ID"
+      },
+      "Digest": {
+        "$": "Digest"
+      },
+      "Signature": {
+        "$": "Signature"
+      },
+      "TPP-Signature-Certificate": {
+        "$": "TPP-Signature-Certificate"
+      },
+      "PSU-ID": {
+        "$": "PSU-ID"
+      },
+      "PSU-ID-Type": {
+        "$": "PSU-ID-Type"
+      },
+      "PSU-Corporate-ID": {
+        "$": "PSU-Corporate-ID"
+      },
+      "PSU-Corporate-ID-Type": {
+        "$": "PSU-Corporate-ID-Type"
+      },
+      "Consent-ID": {
+        "$": "Consent-ID"
+      },
+      "PSU-IP-Address": {
+        "$": "PSU-IP-Address"
+      },
+      "TPP-Redirect-Preferred": {
+        "$": "TPP-Redirect-Preferred"
+      },
+      "TPP-Redirect-URI": {
+        "$": "TPP-Redirect-URI"
+      },
+      "TPP-Nok-Redirect-URI": {
+        "$": "TPP-Nok-Redirect-URI"
+      },
+      "TPP-Explicit-Authorisation-Preferred": {
+        "$": "TPP-Explicit-Authorisation-Preferred"
+      },
+      "TPP-Rejection-NoFunds-Preferred": {
+        "$": "TPP-Rejection-NoFunds-Preferred"
+      },
+      "TPP-Brand-Logging-Information": {
+        "$": "TPP-Brand-Logging-Information"
+      },
+      "TPP-Notification-URI": {
+        "$": "TPP-Notification-URI"
+      },
+      "TPP-Notification-Content-Preferred": {
+        "$": "TPP-Notification-Content-Preferred"
+      },
+      "PSU-IP-Port": {
+        "$": "PSU-IP-Port"
+      },
+      "PSU-Accept": {
+        "$": "PSU-Accept"
+      },
+      "PSU-Accept-Charset": {
+        "$": "PSU-Accept-Charset"
+      },
+      "PSU-Accept-Encoding": {
+        "$": "PSU-Accept-Encoding"
+      },
+      "PSU-Accept-Language": {
+        "$": "PSU-Accept-Language"
+      },
+      "PSU-User-Agent": {
+        "$": "PSU-User-Agent"
+      },
+      "PSU-Http-Method": {
+        "$": "PSU-Http-Method"
+      },
+      "PSU-Device-ID": {
+        "$": "PSU-Device-ID"
+      },
+      "PSU-Geo-Location": {
+        "$": "PSU-Geo-Location"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Body of the response for a successful payment initiation request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A list of hyperlinks to be recognised by the TPP.",
+              {
+                "$ul": [
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**challengeData**: It is contained in addition to the data element 'chosenScaMethod' if challenge data is needed for SCA.",
+              {
+                "$ul": [
+                  "**additionalInformation**: Additional explanation for the PSU to explain",
+                  "**data**: A collection of strings as challenge data.",
+                  "**image**: PNG data (max. 512 kilobyte) to be displayed to the PSU,",
+                  "**imageLink**: A link where the ASPSP will provides the challenge image for the TPP.",
+                  "**otpFormat**: The format type of the OTP to be typed in. The admitted values are \"characters\" or \"integer\".",
+                  "**otpMaxLength**: The maximal length for the OTP to be typed in by the PSU."
+                ]
+              }
+            ],
+            [
+              "**chosenScaMethod**: Authentication object.",
+              {
+                "$ul": [
+                  "**authenticationMethodId**: An identification provided by the ASPSP for the later identification of the authentication method selection.",
+                  "**authenticationType**: Type of the authentication method.",
+                  "**authenticationVersion**: Depending on the \"authenticationType\".",
+                  "**explanation**: Detailed information about the SCA method for the PSU.",
+                  "**name**: This is the name of the authentication method defined by the PSU in the Online Banking frontend of the ASPSP."
+                ]
+              }
+            ],
+            [
+              "**currencyConversionFee**",
+              {
+                "$ul": [
+                  "**amount**: The amount given with fractional digits, where fractions must be compliant to the currency definition.",
+                  "**currency**: ISO 4217 Alpha 3 currency code."
+                ]
+              }
+            ],
+            [
+              "**estimatedInterbankSettlementAmount**",
+              {
+                "$ul": [
+                  "**amount**: The amount given with fractional digits, where fractions must be compliant to the currency definition.",
+                  "**currency**: ISO 4217 Alpha 3 currency code."
+                ]
+              }
+            ],
+            [
+              "**estimatedTotalAmount**",
+              {
+                "$ul": [
+                  "**amount**: The amount given with fractional digits, where fractions must be compliant to the currency definition.",
+                  "**currency**: ISO 4217 Alpha 3 currency code."
+                ]
+              }
+            ],
+            "**paymentId**: Resource identification of the generated payment initiation resource.",
+            "**psuMessage**: Text to be displayed to the PSU.",
+            "**scaMethods**: This data element might be contained, if SCA is required and if the PSU has a choice between different",
+            "**tppMessages**",
+            "**transactionFeeIndicator**: If equals 'true', the transaction will involve specific transaction cost as shown by the ASPSP in",
+            [
+              "**transactionFees**",
+              {
+                "$ul": [
+                  "**amount**: The amount given with fractional digits, where fractions must be compliant to the currency definition.",
+                  "**currency**: ISO 4217 Alpha 3 currency code."
+                ]
+              }
+            ],
+            "**transactionStatus**: The transaction status is filled with codes of the ISO 20022 data table:"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 400.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 401.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 403.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 404.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "405": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 401.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "NextGen specific definition of reporting error information in case of a HTTP error code 409.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: A _link object with all availabel link types.",
+              {
+                "$ul": [
+                  [
+                    "**account**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**authoriseTransaction**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**balances**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardAccount**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**cardTransactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**confirmation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**download**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**first**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**last**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**next**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**previous**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaOAuth**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaRedirect**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**scaStatus**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**selectAuthenticationMethod**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**self**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithAuthenticationMethodSelection**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithPsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**startAuthorisationWithTransactionAuthorisation**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**status**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactionDetails**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**transactions**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateAdditionalPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateEncryptedPsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updateProprietaryData**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuAuthentication**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ],
+                  [
+                    "**updatePsuIdentification**: Link to a resource.",
+                    {
+                      "$ul": [
+                        "**href**: Link to a resource."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**tppMessages**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

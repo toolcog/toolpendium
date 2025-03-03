@@ -1,0 +1,72 @@
+{
+  "name": "toggle_group_enabled",
+  "description": "Disable a specific group within a feed to not sync",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "feed": {
+        "type": "string"
+      },
+      "group": {
+        "type": "string"
+      },
+      "enabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "feed",
+      "group",
+      "enabled"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "//system/feeds/{feed}/{group}{?enabled}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Metadata on a single feed based on what the engine finds from querying the endpoints",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**: Date the metadata record was created in engine (first seen on source)",
+            "**groups**",
+            "**last_full_sync**",
+            "**name**: name of the feed",
+            "**updated_at**: Date the metadata was last updated"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

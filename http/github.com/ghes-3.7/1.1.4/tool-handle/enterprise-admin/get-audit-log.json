@@ -1,0 +1,148 @@
+{
+  "name": "enterprise-admin_get-audit-log",
+  "description": "Gets the audit log for an enterprise. To use this endpoint, you must be an enterprise admin, and you must use an access token with the `admin:enterprise` scope.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "enterprise": {
+        "type": "string",
+        "description": "The slug version of the enterprise name. You can also substitute this value with the enterprise id."
+      },
+      "phrase": {
+        "type": "string",
+        "description": "A search phrase. For more information, see [Searching the audit log](https://docs.github.com/enterprise-server@3.7/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/searching-the-audit-log-for-your-enterprise#searching-the-audit-log)."
+      },
+      "include": {
+        "enum": [
+          "web",
+          "git",
+          "all"
+        ],
+        "type": "string",
+        "description": "The event types to include:\n\n- `web` - returns web (non-Git) events.\n- `git` - returns Git events.\n- `all` - returns both web and Git events.\n\nThe default is `web`."
+      },
+      "after": {
+        "type": "string",
+        "description": "A cursor, as given in the [Link header](https://docs.github.com/enterprise-server@3.7/rest/overview/resources-in-the-rest-api#link-header). If specified, the query only searches for events after this cursor."
+      },
+      "before": {
+        "type": "string",
+        "description": "A cursor, as given in the [Link header](https://docs.github.com/enterprise-server@3.7/rest/overview/resources-in-the-rest-api#link-header). If specified, the query only searches for events before this cursor."
+      },
+      "order": {
+        "enum": [
+          "desc",
+          "asc"
+        ],
+        "type": "string",
+        "description": "The order of audit log events. To list newest events first, specify `desc`. To list oldest events first, specify `asc`.\n\nThe default is `desc`."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      }
+    },
+    "required": [
+      "enterprise"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//enterprises/{enterprise}/audit-log{?phrase,include,after,before,order,page,per_page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**@timestamp**: The time the audit log event occurred, given as a [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time).",
+            "**_document_id**: A unique identifier for an audit event.",
+            "**action**: The name of the action that was performed, for example `user.login` or `repo.create`.",
+            "**active**",
+            "**active_was**",
+            "**actor**: The actor who performed the action.",
+            "**actor_id**: The id of the actor who performed the action.",
+            [
+              "**actor_location**",
+              {
+                "$ul": [
+                  "**country_name**"
+                ]
+              }
+            ],
+            "**blocked_user**: The username of the account being blocked.",
+            "**business**",
+            "**business_id**",
+            "**config**",
+            "**config_was**",
+            "**content_type**",
+            "**created_at**: The time the audit log event was recorded, given as a [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time).",
+            "**data**",
+            "**deploy_key_fingerprint**",
+            "**emoji**",
+            "**events**",
+            "**events_were**",
+            "**explanation**",
+            "**fingerprint**",
+            "**hook_id**",
+            "**limited_availability**",
+            "**message**",
+            "**name**",
+            "**old_user**",
+            "**openssh_public_key**",
+            "**operation_type**",
+            "**org**",
+            "**org_id**",
+            "**previous_visibility**",
+            "**read_only**",
+            "**repo**: The name of the repository.",
+            "**repository**: The name of the repository.",
+            "**repository_public**",
+            "**target_login**",
+            "**team**",
+            "**transport_protocol**: The type of protocol (for example, HTTP or SSH) used to transfer Git data.",
+            "**transport_protocol_name**: A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data.",
+            "**user**: The user that was affected by the action performed (if available).",
+            "**user_id**",
+            "**visibility**: The repository visibility, for example `public` or `private`."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

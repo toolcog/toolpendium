@@ -1,0 +1,142 @@
+{
+  "name": "get-automation-link-stat",
+  "description": "**This endpoint lets you retrieve click-tracking stats for a single Automation**.\n\nThe stats returned list the URLs embedded in your Automation and the number of clicks each one received.\n\nResponses are paginated. You can limit the number of responses returned per batch using the `page_size` query string parameter. The default is 50, but you specify a value between 1 and 100.\n\nYou can retrieve a specific page of responses with the `page_token` query string parameter.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "group_by": {
+        "items": {
+          "enum": [
+            "step_id"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Automations can have multiple steps. Including `step_id` as a `group_by` metric allows further granularity of stats."
+      },
+      "step_ids": {
+        "items": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "description": "Comma-separated list of `step_ids` that you want the link stats for."
+      },
+      "page_size": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of elements you want returned on each page."
+      },
+      "page_token": {
+        "type": "string",
+        "description": "The stats endpoints are paginated. To get the next page, call the passed `_metadata.next` URL. If `_metadata.prev` doesn't exist, you're at the first page. Similarly, if `_metadata.next` is not present, you're at the last page."
+      },
+      "id": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The ID of the Automation you want to get click tracking stats for. "
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/stats/automations/{id}/links{?group_by,step_ids,page_size,page_token}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "automations-link-stats-response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_metadata**",
+              {
+                "$ul": [
+                  "**count**: The number of items in the entire list, i.e., across all pages.",
+                  "**next**: The URL of the next page of results. If this field isn't present, you're at the end of the list.",
+                  "**prev**: The URL of the previous page of results. If this field isn't present, you're at the start of the list.",
+                  "**self**: The URL of the current page of results."
+                ]
+              }
+            ],
+            "**results**: ",
+            "**total_clicks**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

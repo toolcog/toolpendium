@@ -1,0 +1,535 @@
+{
+  "name": "UpdateCanary",
+  "description": "<p>Updates the configuration of a canary that has already been created.</p> <p>You can't use this operation to update the tags of an existing canary. To change the tags of an existing canary, use <a href=\"https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_TagResource.html\">TagResource</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "pattern": "^[0-9a-z_\\-]+$",
+        "minLength": 1,
+        "maxLength": 21,
+        "description": "<p>The name of the canary that you want to update. To find the names of your canaries, use <a href=\"https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_DescribeCanaries.html\">DescribeCanaries</a>.</p> <p>You cannot change the name of a canary that has already been created.</p>"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "Code": {
+            "description": "Use this structure to input your script code for the canary. This structure contains the Lambda handler with the location where the canary should start running the script. If the script is stored in an S3 bucket, the bucket name, key, and version are also included. If the script was passed into the canary directly, the script code is contained in the value of <code>Zipfile</code>. ",
+            "type": "object",
+            "properties": {
+              "S3Bucket": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "If your canary script is located in S3, specify the bucket name here. Do not include <code>s3://</code> as the start of the bucket name."
+                  }
+                ]
+              },
+              "S3Key": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "The S3 key of your script. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingObjects.html\">Working with Amazon S3 Objects</a>."
+                  }
+                ]
+              },
+              "S3Version": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "The S3 version ID of your script."
+                  }
+                ]
+              },
+              "ZipFile": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Blob"
+                  },
+                  {
+                    "description": "<p>If you input your canary script directly into the canary instead of referring to an S3 location, the value of this parameter is the base64-encoded contents of the .zip file that contains the script. It must be smaller than 225 Kb.</p> <p>For large canary scripts, we recommend that you use an S3 location instead of inputting it directly with this parameter.</p>"
+                  }
+                ]
+              },
+              "Handler": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/CodeHandler"
+                  },
+                  {
+                    "description": "The entry point to use for the source code when running the canary. For canaries that use the <code>syn-python-selenium-1.0</code> runtime or a <code>syn-nodejs.puppeteer</code> runtime earlier than <code>syn-nodejs.puppeteer-3.4</code>, the handler must be specified as <code> <i>fileName</i>.handler</code>. For <code>syn-python-selenium-1.1</code>, <code>syn-nodejs.puppeteer-3.4</code>, and later runtimes, the handler can be specified as <code> <i>fileName</i>.<i>functionName</i> </code>, or you can specify a folder where canary scripts reside as <code> <i>folder</i>/<i>fileName</i>.<i>functionName</i> </code>."
+                  }
+                ]
+              }
+            }
+          },
+          "ExecutionRoleArn": {
+            "description": "<p>The ARN of the IAM role to be used to run the canary. This role must already exist, and must include <code>lambda.amazonaws.com</code> as a principal in the trust policy. The role must also have the following permissions:</p> <ul> <li> <p> <code>s3:PutObject</code> </p> </li> <li> <p> <code>s3:GetBucketLocation</code> </p> </li> <li> <p> <code>s3:ListAllMyBuckets</code> </p> </li> <li> <p> <code>cloudwatch:PutMetricData</code> </p> </li> <li> <p> <code>logs:CreateLogGroup</code> </p> </li> <li> <p> <code>logs:CreateLogStream</code> </p> </li> <li> <p> <code>logs:CreateLogStream</code> </p> </li> </ul>",
+            "type": "string",
+            "pattern": "arn:(aws[a-zA-Z-]*)?:iam::\\d{12}:role/?[a-zA-Z_0-9+=,.@\\-_/]+",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "RuntimeVersion": {
+            "description": "Specifies the runtime version to use for the canary. For a list of valid runtime versions and for more information about runtime versions, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Library.html\"> Canary Runtime Versions</a>.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "Schedule": {
+            "description": "This structure specifies how often a canary is to make runs and the date and time when it should stop making runs.",
+            "type": "object",
+            "properties": {
+              "Expression": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "<p>A <code>rate</code> expression or a <code>cron</code> expression that defines how often the canary is to run.</p> <p>For a rate expression, The syntax is <code>rate(<i>number unit</i>)</code>. <i>unit</i> can be <code>minute</code>, <code>minutes</code>, or <code>hour</code>. </p> <p>For example, <code>rate(1 minute)</code> runs the canary once a minute, <code>rate(10 minutes)</code> runs it once every 10 minutes, and <code>rate(1 hour)</code> runs it once every hour. You can specify a frequency between <code>rate(1 minute)</code> and <code>rate(1 hour)</code>.</p> <p>Specifying <code>rate(0 minute)</code> or <code>rate(0 hour)</code> is a special value that causes the canary to run only once when it is started.</p> <p>Use <code>cron(<i>expression</i>)</code> to specify a cron expression. You can't schedule a canary to wait for more than a year before running. For information about the syntax for cron expressions, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_cron.html\"> Scheduling canary runs using cron</a>.</p>"
+                  }
+                ]
+              },
+              "DurationInSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MaxOneYearInSeconds"
+                  },
+                  {
+                    "description": "How long, in seconds, for the canary to continue making regular runs according to the schedule in the <code>Expression</code> value. If you specify 0, the canary continues making runs until you stop it. If you omit this field, the default of 0 is used."
+                  }
+                ]
+              }
+            }
+          },
+          "RunConfig": {
+            "description": "A structure that contains input information for a canary run.",
+            "type": "object",
+            "properties": {
+              "TimeoutInSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MaxFifteenMinutesInSeconds"
+                  },
+                  {
+                    "description": "<p>How long the canary is allowed to run before it must stop. You can't set this time to be longer than the frequency of the runs of this canary.</p> <p>If you omit this field, the frequency of the canary is used as this value, up to a maximum of 14 minutes.</p>"
+                  }
+                ]
+              },
+              "MemoryInMB": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MaxSize3008"
+                  },
+                  {
+                    "description": "The maximum amount of memory available to the canary while it is running, in MB. This value must be a multiple of 64."
+                  }
+                ]
+              },
+              "ActiveTracing": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NullableBoolean"
+                  },
+                  {
+                    "description": "<p>Specifies whether this canary is to use active X-Ray tracing when it runs. Active tracing enables this canary run to be displayed in the ServiceLens and X-Ray service maps even if the canary does not hit an endpoint that has X-Ray tracing enabled. Using X-Ray tracing incurs charges. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_tracing.html\"> Canaries and X-Ray tracing</a>.</p> <p>You can enable active tracing only for canaries that use version <code>syn-nodejs-2.0</code> or later for their canary runtime.</p>"
+                  }
+                ]
+              },
+              "EnvironmentVariables": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EnvironmentVariablesMap"
+                  },
+                  {
+                    "description": "<p>Specifies the keys and values to use for any environment variables used in the canary script. Use the following format:</p> <p>{ \"key1\" : \"value1\", \"key2\" : \"value2\", ...}</p> <p>Keys must start with a letter and be at least two characters. The total size of your environment variables cannot exceed 4 KB. You can't specify any Lambda reserved environment variables as the keys for your environment variables. For more information about reserved keys, see <a href=\"https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime\"> Runtime environment variables</a>.</p> <important> <p>The environment variables keys and values are not encrypted. Do not store sensitive information in this field.</p> </important>"
+                  }
+                ]
+              }
+            }
+          },
+          "SuccessRetentionPeriodInDays": {
+            "description": "The number of days to retain data about successful runs of this canary.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024
+          },
+          "FailureRetentionPeriodInDays": {
+            "description": "The number of days to retain data about failed runs of this canary.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024
+          },
+          "VpcConfig": {
+            "description": "If this canary is to test an endpoint in a VPC, this structure contains information about the subnets and security groups of the VPC endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_VPC.html\"> Running a Canary in a VPC</a>.",
+            "type": "object",
+            "properties": {
+              "SubnetIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SubnetIds"
+                  },
+                  {
+                    "description": "The IDs of the subnets where this canary is to run."
+                  }
+                ]
+              },
+              "SecurityGroupIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SecurityGroupIds"
+                  },
+                  {
+                    "description": "The IDs of the security groups for this canary."
+                  }
+                ]
+              }
+            }
+          },
+          "VisualReference": {
+            "description": "<p>An object that specifies what screenshots to use as a baseline for visual monitoring by this canary. It can optionally also specify parts of the screenshots to ignore during the visual monitoring comparison.</p> <p>Visual monitoring is supported only on canaries running the <b>syn-puppeteer-node-3.2</b> runtime or later. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Library_SyntheticsLogger_VisualTesting.html\"> Visual monitoring</a> and <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Blueprints_VisualTesting.html\"> Visual monitoring blueprint</a> </p>",
+            "type": "object",
+            "properties": {
+              "BaseScreenshots": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/BaseScreenshots"
+                  },
+                  {
+                    "description": "An array of screenshots that will be used as the baseline for visual monitoring in future runs of this canary. If there is a screenshot that you don't want to be used for visual monitoring, remove it from this array."
+                  }
+                ]
+              },
+              "BaseCanaryRunId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "Specifies which canary run to use the screenshots from as the baseline for future visual monitoring with this canary. Valid values are <code>nextrun</code> to use the screenshots from the next run after this update is made, <code>lastrun</code> to use the screenshots from the most recent run before this update was made, or the value of <code>Id</code> in the <a href=\"https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_CanaryRun.html\"> CanaryRun</a> from any past run of this canary."
+                  }
+                ]
+              }
+            }
+          },
+          "ArtifactS3Location": {
+            "description": "The location in Amazon S3 where Synthetics stores artifacts from the test runs of this canary. Artifacts include the log file, screenshots, and HAR files. The name of the S3 bucket can't include a period (.).",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "ArtifactConfig": {
+            "description": "A structure that contains the configuration for canary artifacts, including the encryption-at-rest settings for artifacts that the canary uploads to Amazon S3.",
+            "type": "object",
+            "properties": {
+              "S3Encryption": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3EncryptionConfig"
+                  },
+                  {
+                    "description": "A structure that contains the configuration of the encryption-at-rest settings for artifacts that the canary uploads to Amazon S3. Artifact encryption functionality is available only for canaries that use Synthetics runtime version syn-nodejs-puppeteer-3.3 or later. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_artifact_encryption.html\">Encrypting canary artifacts</a> "
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "name",
+      "body"
+    ],
+    "$defs": {
+      "String": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "Blob": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10000000
+      },
+      "CodeHandler": {
+        "type": "string",
+        "pattern": "^([0-9a-zA-Z_-]+\\/)*[0-9A-Za-z_\\\\-]+\\.[A-Za-z_][A-Za-z0-9_]*$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "MaxOneYearInSeconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 31622400
+      },
+      "MaxFifteenMinutesInSeconds": {
+        "type": "integer",
+        "minimum": 3,
+        "maximum": 840
+      },
+      "MaxSize3008": {
+        "type": "integer",
+        "minimum": 960,
+        "maximum": 3008
+      },
+      "NullableBoolean": {
+        "type": "boolean"
+      },
+      "EnvironmentVariablesMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/EnvironmentVariableValue"
+        }
+      },
+      "EnvironmentVariableValue": {
+        "type": "string"
+      },
+      "SubnetIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SubnetId"
+        },
+        "minItems": 0,
+        "maxItems": 16
+      },
+      "SubnetId": {
+        "type": "string"
+      },
+      "SecurityGroupIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SecurityGroupId"
+        },
+        "minItems": 0,
+        "maxItems": 5
+      },
+      "SecurityGroupId": {
+        "type": "string"
+      },
+      "BaseScreenshots": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BaseScreenshot"
+        }
+      },
+      "BaseScreenshot": {
+        "type": "object",
+        "required": [
+          "ScreenshotName"
+        ],
+        "properties": {
+          "ScreenshotName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The name of the screenshot. This is generated the first time the canary is run after the <code>UpdateCanary</code> operation that specified for this canary to perform visual monitoring."
+              }
+            ]
+          },
+          "IgnoreCoordinates": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BaseScreenshotIgnoreCoordinates"
+              },
+              {
+                "description": "Coordinates that define the part of a screen to ignore during screenshot comparisons. To obtain the coordinates to use here, use the CloudWatch console to draw the boundaries on the screen. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/synthetics_canaries_deletion.html\"> Editing or deleting a canary</a> "
+              }
+            ]
+          }
+        },
+        "description": "A structure representing a screenshot that is used as a baseline during visual monitoring comparisons made by the canary."
+      },
+      "BaseScreenshotIgnoreCoordinates": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BaseScreenshotConfigIgnoreCoordinate"
+        },
+        "minItems": 0,
+        "maxItems": 20
+      },
+      "BaseScreenshotConfigIgnoreCoordinate": {
+        "type": "string",
+        "pattern": "^(-?\\d{1,5}\\.?\\d{0,2},){3}(-?\\d{1,5}\\.?\\d{0,2}){1}$"
+      },
+      "S3EncryptionConfig": {
+        "type": "object",
+        "properties": {
+          "EncryptionMode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EncryptionMode"
+              },
+              {
+                "description": "<p> The encryption method to use for artifacts created by this canary. Specify <code>SSE_S3</code> to use server-side encryption (SSE) with an Amazon S3-managed key. Specify <code>SSE-KMS</code> to use server-side encryption with a customer-managed KMS key.</p> <p>If you omit this parameter, an Amazon Web Services-managed KMS key is used. </p>"
+              }
+            ]
+          },
+          "KmsKeyArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KmsKeyArn"
+              },
+              {
+                "description": "The ARN of the customer-managed KMS key to use, if you specify <code>SSE-KMS</code> for <code>EncryptionMode</code> "
+              }
+            ]
+          }
+        },
+        "description": "<p>A structure that contains the configuration of encryption-at-rest settings for canary artifacts that the canary uploads to Amazon S3. </p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_artifact_encryption.html\">Encrypting canary artifacts</a> </p>"
+      },
+      "EncryptionMode": {
+        "type": "string",
+        "enum": [
+          "SSE_S3",
+          "SSE_KMS"
+        ]
+      },
+      "KmsKeyArn": {
+        "type": "string",
+        "pattern": "arn:(aws[a-zA-Z-]*)?:kms:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\\d{1}:\\d{12}:key/[\\w\\-\\/]+",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://synthetics.us-east-1.amazonaws.com/canary/{name}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

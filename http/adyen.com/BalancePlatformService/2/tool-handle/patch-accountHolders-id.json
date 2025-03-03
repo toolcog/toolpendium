@@ -1,0 +1,945 @@
+{
+  "name": "patch-accountHolders-id",
+  "description": "Updates an account holder. When updating an account holder resource, if a parameter is not provided in the request, it is left unchanged.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The unique identifier of the account holder."
+      },
+      "body": {
+        "$ref": "#/$defs/AccountHolderUpdateRequest"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$defs": {
+      "AccountHolderUpdateRequest": {
+        "properties": {
+          "balancePlatform": {
+            "description": "The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id) to which the account holder belongs. Required in the request if your API credentials can be used for multiple balance platforms.",
+            "type": "string"
+          },
+          "capabilities": {
+            "additionalProperties": {
+              "$ref": "#/$defs/AccountHolderCapability"
+            },
+            "description": "Contains key-value pairs that specify the actions that an account holder can do in your platform. The key is a capability required for your integration. For example, **issueCard** for Issuing. The value is an object containing the settings for the capability.",
+            "type": "object"
+          },
+          "contactDetails": {
+            "$ref": "#/$defs/ContactDetails"
+          },
+          "description": {
+            "description": "Your description for the account holder, maximum 300 characters.",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A set of key and value pairs for general use.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
+            "type": "object"
+          },
+          "migratedAccountHolderCode": {
+            "description": "The unique identifier of the migrated account holder in the classic integration.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "primaryBalanceAccount": {
+            "description": "The ID of the account holder's primary balance account. By default, this is set to the first balance account that you create for the account holder. To assign a different balance account, send a PATCH request.",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Your reference for the account holder, maximum 150 characters.",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "status": {
+            "description": "The status of the account holder.\n\nPossible values: \n\n * **active**: The account holder is active. This is the default status when creating an account holder. \n\n * **inactive (Deprecated)**: The account holder is temporarily inactive due to missing KYC details. You can set the account back to active by providing the missing KYC details. \n\n * **suspended**: The account holder is permanently deactivated by Adyen. This action cannot be undone. \n\n* **closed**: The account holder is permanently deactivated by you. This action cannot be undone.",
+            "enum": [
+              "active",
+              "closed",
+              "inactive",
+              "suspended"
+            ],
+            "type": "string"
+          },
+          "timeZone": {
+            "description": "The time zone of the account holder. For example, **Europe/Amsterdam**.\nDefaults to the time zone of the balance platform if no time zone is set. For possible values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
+            "type": "string"
+          },
+          "verificationDeadlines": {
+            "description": "List of verification deadlines and the capabilities that will be disallowed if verification errors are not resolved.",
+            "items": {
+              "$ref": "#/$defs/VerificationDeadline"
+            },
+            "readOnly": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AccountHolderCapability": {
+        "properties": {
+          "allowed": {
+            "description": "Indicates whether the capability is allowed. Adyen sets this to **true** if the verification is successful and the account holder is permitted to use the capability.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "allowedLevel": {
+            "description": "The capability level that is allowed for the account holder.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "allowedSettings": {
+            "$ref": "#/$defs/CapabilitySettings"
+          },
+          "enabled": {
+            "description": "Indicates whether the capability is enabled. If **false**, the capability is temporarily disabled for the account holder.",
+            "type": "boolean"
+          },
+          "problems": {
+            "description": "Contains verification errors and the actions that you can take to resolve them.",
+            "items": {
+              "$ref": "#/$defs/CapabilityProblem"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "requested": {
+            "description": "Indicates whether the capability is requested. To check whether the account holder is permitted to use the capability, refer to the `allowed` field.",
+            "type": "boolean"
+          },
+          "requestedLevel": {
+            "description": "The requested level of the capability. Some capabilities, such as those used in [card issuing](https://docs.adyen.com/issuing/add-capabilities#capability-levels), have different levels. Levels increase the capability, but also require additional checks and increased monitoring.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "type": "string"
+          },
+          "requestedSettings": {
+            "$ref": "#/$defs/CapabilitySettings"
+          },
+          "transferInstruments": {
+            "description": "Contains the status of the transfer instruments associated with this capability. ",
+            "items": {
+              "$ref": "#/$defs/AccountSupportingEntityCapability"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "verificationStatus": {
+            "description": "The status of the verification checks for the capability.\n\nPossible values:\n\n* **pending**: Adyen is running the verification.\n\n* **invalid**: The verification failed. Check if the `errors` array contains more information.\n\n* **valid**: The verification has been successfully completed.\n\n* **rejected**: Adyen has verified the information, but found reasons to not allow the capability.\n",
+            "enum": [
+              "invalid",
+              "pending",
+              "rejected",
+              "valid"
+            ],
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CapabilitySettings": {
+        "properties": {
+          "amountPerIndustry": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Amount"
+            },
+            "description": "",
+            "type": "object"
+          },
+          "authorizedCardUsers": {
+            "description": "",
+            "type": "boolean"
+          },
+          "fundingSource": {
+            "description": "",
+            "items": {
+              "enum": [
+                "credit",
+                "debit",
+                "prepaid"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "interval": {
+            "description": "",
+            "enum": [
+              "daily",
+              "monthly",
+              "weekly"
+            ],
+            "type": "string"
+          },
+          "maxAmount": {
+            "$ref": "#/$defs/Amount"
+          }
+        },
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "CapabilityProblem": {
+        "properties": {
+          "entity": {
+            "$ref": "#/$defs/CapabilityProblemEntity"
+          },
+          "verificationErrors": {
+            "description": "Contains information about the verification error.",
+            "items": {
+              "$ref": "#/$defs/VerificationError"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CapabilityProblemEntity": {
+        "properties": {
+          "documents": {
+            "description": "List of document IDs to which the verification errors related to the capabilities correspond to.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "The ID of the entity.",
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/$defs/CapabilityProblemEntity-recursive"
+          },
+          "type": {
+            "description": "Type of entity. \n\nPossible values: **LegalEntity**, **BankAccount**, **Document**.",
+            "enum": [
+              "BankAccount",
+              "Document",
+              "LegalEntity"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CapabilityProblemEntity-recursive": {
+        "properties": {
+          "documents": {
+            "description": "List of document IDs to which the verification errors related to the capabilities correspond to.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "The ID of the entity.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of entity. \n\nPossible values: **LegalEntity**, **BankAccount**, **Document**.",
+            "enum": [
+              "BankAccount",
+              "Document",
+              "LegalEntity"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VerificationError": {
+        "properties": {
+          "capabilities": {
+            "description": "Contains the capabilities that the verification error applies to.",
+            "items": {
+              "enum": [
+                "acceptExternalFunding",
+                "acceptPspFunding",
+                "acceptTransactionInRestrictedCountries",
+                "acceptTransactionInRestrictedCountriesCommercial",
+                "acceptTransactionInRestrictedCountriesConsumer",
+                "acceptTransactionInRestrictedIndustries",
+                "acceptTransactionInRestrictedIndustriesCommercial",
+                "acceptTransactionInRestrictedIndustriesConsumer",
+                "acquiring",
+                "atmWithdrawal",
+                "atmWithdrawalCommercial",
+                "atmWithdrawalConsumer",
+                "atmWithdrawalInRestrictedCountries",
+                "atmWithdrawalInRestrictedCountriesCommercial",
+                "atmWithdrawalInRestrictedCountriesConsumer",
+                "authorisedPaymentInstrumentUser",
+                "getGrantOffers",
+                "issueBankAccount",
+                "issueCard",
+                "issueCardCommercial",
+                "issueCardConsumer",
+                "localAcceptance",
+                "payout",
+                "payoutToTransferInstrument",
+                "processing",
+                "receiveFromBalanceAccount",
+                "receiveFromPlatformPayments",
+                "receiveFromThirdParty",
+                "receiveFromTransferInstrument",
+                "receiveGrants",
+                "receivePayments",
+                "sendToBalanceAccount",
+                "sendToThirdParty",
+                "sendToTransferInstrument",
+                "thirdPartyFunding",
+                "useCard",
+                "useCardCommercial",
+                "useCardConsumer",
+                "useCardInRestrictedCountries",
+                "useCardInRestrictedCountriesCommercial",
+                "useCardInRestrictedCountriesConsumer",
+                "useCardInRestrictedIndustries",
+                "useCardInRestrictedIndustriesCommercial",
+                "useCardInRestrictedIndustriesConsumer",
+                "withdrawFromAtm",
+                "withdrawFromAtmCommercial",
+                "withdrawFromAtmConsumer",
+                "withdrawFromAtmInRestrictedCountries",
+                "withdrawFromAtmInRestrictedCountriesCommercial",
+                "withdrawFromAtmInRestrictedCountriesConsumer"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "The verification error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A description of the error.",
+            "type": "string"
+          },
+          "remediatingActions": {
+            "description": "Contains the actions that you can take to resolve the verification error.",
+            "items": {
+              "$ref": "#/$defs/RemediatingAction"
+            },
+            "type": "array"
+          },
+          "subErrors": {
+            "description": "Contains more granular information about the verification error.",
+            "items": {
+              "$ref": "#/$defs/VerificationError-recursive"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "The type of error.\n\n Possible values: **invalidInput**, **dataMissing**.",
+            "enum": [
+              "dataMissing",
+              "invalidInput",
+              "pendingStatus"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RemediatingAction": {
+        "properties": {
+          "code": {
+            "description": "The remediating action code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A description of how you can resolve the verification error.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VerificationError-recursive": {
+        "properties": {
+          "capabilities": {
+            "description": "Contains the capabilities that the verification error applies to.",
+            "items": {
+              "enum": [
+                "acceptExternalFunding",
+                "acceptPspFunding",
+                "acceptTransactionInRestrictedCountries",
+                "acceptTransactionInRestrictedCountriesCommercial",
+                "acceptTransactionInRestrictedCountriesConsumer",
+                "acceptTransactionInRestrictedIndustries",
+                "acceptTransactionInRestrictedIndustriesCommercial",
+                "acceptTransactionInRestrictedIndustriesConsumer",
+                "acquiring",
+                "atmWithdrawal",
+                "atmWithdrawalCommercial",
+                "atmWithdrawalConsumer",
+                "atmWithdrawalInRestrictedCountries",
+                "atmWithdrawalInRestrictedCountriesCommercial",
+                "atmWithdrawalInRestrictedCountriesConsumer",
+                "authorisedPaymentInstrumentUser",
+                "getGrantOffers",
+                "issueBankAccount",
+                "issueCard",
+                "issueCardCommercial",
+                "issueCardConsumer",
+                "localAcceptance",
+                "payout",
+                "payoutToTransferInstrument",
+                "processing",
+                "receiveFromBalanceAccount",
+                "receiveFromPlatformPayments",
+                "receiveFromThirdParty",
+                "receiveFromTransferInstrument",
+                "receiveGrants",
+                "receivePayments",
+                "sendToBalanceAccount",
+                "sendToThirdParty",
+                "sendToTransferInstrument",
+                "thirdPartyFunding",
+                "useCard",
+                "useCardCommercial",
+                "useCardConsumer",
+                "useCardInRestrictedCountries",
+                "useCardInRestrictedCountriesCommercial",
+                "useCardInRestrictedCountriesConsumer",
+                "useCardInRestrictedIndustries",
+                "useCardInRestrictedIndustriesCommercial",
+                "useCardInRestrictedIndustriesConsumer",
+                "withdrawFromAtm",
+                "withdrawFromAtmCommercial",
+                "withdrawFromAtmConsumer",
+                "withdrawFromAtmInRestrictedCountries",
+                "withdrawFromAtmInRestrictedCountriesCommercial",
+                "withdrawFromAtmInRestrictedCountriesConsumer"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "The verification error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A description of the error.",
+            "type": "string"
+          },
+          "remediatingActions": {
+            "description": "Contains the actions that you can take to resolve the verification error.",
+            "items": {
+              "$ref": "#/$defs/RemediatingAction"
+            },
+            "type": "array"
+          },
+          "type": {
+            "description": "The type of error.\n\n Possible values: **invalidInput**, **dataMissing**.",
+            "enum": [
+              "dataMissing",
+              "invalidInput",
+              "pendingStatus"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AccountSupportingEntityCapability": {
+        "properties": {
+          "allowed": {
+            "description": "Indicates whether the supporting entity capability is allowed. Adyen sets this to **true** if the verification is successful and the account holder is permitted to use the capability.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "allowedLevel": {
+            "description": "The capability level that is allowed for the account holder.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Indicates whether the capability is enabled. If **false**, the capability is temporarily disabled for the account holder.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "The ID of the supporting entity.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "requested": {
+            "description": "Indicates whether the capability is requested. To check whether the account holder is permitted to use the capability, refer to the `allowed` field.",
+            "type": "boolean"
+          },
+          "requestedLevel": {
+            "description": "The requested level of the capability. Some capabilities, such as those used in [card issuing](https://docs.adyen.com/issuing/add-capabilities#capability-levels), have different levels. Levels increase the capability, but also require additional checks and increased monitoring.\n\nPossible values: **notApplicable**, **low**, **medium**, **high**.",
+            "enum": [
+              "high",
+              "low",
+              "medium",
+              "notApplicable"
+            ],
+            "type": "string"
+          },
+          "verificationStatus": {
+            "description": "The status of the verification checks for the supporting entity capability.\n\nPossible values:\n\n* **pending**: Adyen is running the verification.\n\n* **invalid**: The verification failed. Check if the `errors` array contains more information.\n\n* **valid**: The verification has been successfully completed.\n\n* **rejected**: Adyen has verified the information, but found reasons to not allow the capability.\n",
+            "enum": [
+              "invalid",
+              "pending",
+              "rejected",
+              "valid"
+            ],
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ContactDetails": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/Address"
+          },
+          "email": {
+            "description": "The email address of the account holder.",
+            "type": "string"
+          },
+          "phone": {
+            "$ref": "#/$defs/Phone"
+          },
+          "webAddress": {
+            "description": "The URL of the account holder's website.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "phone",
+          "address"
+        ],
+        "type": "object"
+      },
+      "Address": {
+        "properties": {
+          "city": {
+            "description": "The name of the city. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character ISO-3166-1 alpha-2 country code. For example, **US**.\n> If you don't know the country or are not collecting the country from the shopper, provide `country` as `ZZ`.",
+            "type": "string"
+          },
+          "houseNumberOrName": {
+            "description": "The number or name of the house. Maximum length: 3000 characters.",
+            "maxLength": 3000,
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.\n> Required for the US and Canada.",
+            "type": "string"
+          },
+          "street": {
+            "description": "The name of the street. Maximum length: 3000 characters.\n> The house number should not be included in this field; it should be separately provided via `houseNumberOrName`.",
+            "maxLength": 3000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "street",
+          "houseNumberOrName",
+          "city",
+          "postalCode",
+          "country"
+        ],
+        "type": "object"
+      },
+      "Phone": {
+        "properties": {
+          "number": {
+            "description": "The full phone number provided as a single string. \nFor example, **\"0031 6 11 22 33 44\"**, **\"+316/1122-3344\"**, \n\n or **\"(0031) 611223344\"**.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of phone number.\nPossible values: \n**Landline**, **Mobile**.\n",
+            "enum": [
+              "landline",
+              "mobile"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "type"
+        ],
+        "type": "object"
+      },
+      "VerificationDeadline": {
+        "properties": {
+          "capabilities": {
+            "description": "The names of the capabilities to be disallowed.",
+            "items": {
+              "enum": [
+                "acceptExternalFunding",
+                "acceptPspFunding",
+                "acceptTransactionInRestrictedCountries",
+                "acceptTransactionInRestrictedCountriesCommercial",
+                "acceptTransactionInRestrictedCountriesConsumer",
+                "acceptTransactionInRestrictedIndustries",
+                "acceptTransactionInRestrictedIndustriesCommercial",
+                "acceptTransactionInRestrictedIndustriesConsumer",
+                "acquiring",
+                "atmWithdrawal",
+                "atmWithdrawalCommercial",
+                "atmWithdrawalConsumer",
+                "atmWithdrawalInRestrictedCountries",
+                "atmWithdrawalInRestrictedCountriesCommercial",
+                "atmWithdrawalInRestrictedCountriesConsumer",
+                "authorisedPaymentInstrumentUser",
+                "getGrantOffers",
+                "issueBankAccount",
+                "issueCard",
+                "issueCardCommercial",
+                "issueCardConsumer",
+                "localAcceptance",
+                "payout",
+                "payoutToTransferInstrument",
+                "processing",
+                "receiveFromBalanceAccount",
+                "receiveFromPlatformPayments",
+                "receiveFromThirdParty",
+                "receiveFromTransferInstrument",
+                "receiveGrants",
+                "receivePayments",
+                "sendToBalanceAccount",
+                "sendToThirdParty",
+                "sendToTransferInstrument",
+                "thirdPartyFunding",
+                "useCard",
+                "useCardCommercial",
+                "useCardConsumer",
+                "useCardInRestrictedCountries",
+                "useCardInRestrictedCountriesCommercial",
+                "useCardInRestrictedCountriesConsumer",
+                "useCardInRestrictedIndustries",
+                "useCardInRestrictedIndustriesCommercial",
+                "useCardInRestrictedIndustriesConsumer",
+                "withdrawFromAtm",
+                "withdrawFromAtmCommercial",
+                "withdrawFromAtmConsumer",
+                "withdrawFromAtmInRestrictedCountries",
+                "withdrawFromAtmInRestrictedCountriesCommercial",
+                "withdrawFromAtmInRestrictedCountriesConsumer"
+              ],
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "entityIds": {
+            "description": "The unique identifiers of the bank account(s) that the deadline applies to",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "expiresAt": {
+            "description": "The date that verification is due by before capabilities are disallowed.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "capabilities"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://balanceplatform-api-test.adyen.com/bcl/v2/accountHolders/{id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**balancePlatform**: The unique identifier of the [balance platform](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/get/balancePlatforms/{id}__queryParam_id) to which the account holder belongs. Required in the request if your API credentials can be used for multiple balance platforms.",
+            "**capabilities**: Contains key-value pairs that specify the actions that an account holder can do in your platform. The key is a capability required for your integration. For example, **issueCard** for Issuing. The value is an object containing the settings for the capability.",
+            [
+              "**contactDetails**",
+              {
+                "$ul": [
+                  [
+                    "**address**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Maximum length: 3000 characters.",
+                        "**country**: The two-character ISO-3166-1 alpha-2 country code. For example, **US**.",
+                        "**houseNumberOrName**: The number or name of the house. Maximum length: 3000 characters.",
+                        "**postalCode**: A maximum of five digits for an address in the US, or a maximum of ten characters for an address in all other countries.",
+                        "**stateOrProvince**: The two-character ISO 3166-2 state or province code. For example, **CA** in the US or **ON** in Canada.",
+                        "**street**: The name of the street. Maximum length: 3000 characters."
+                      ]
+                    }
+                  ],
+                  "**email**: The email address of the account holder.",
+                  [
+                    "**phone**",
+                    {
+                      "$ul": [
+                        "**number**: The full phone number provided as a single string. ",
+                        "**type**: Type of phone number."
+                      ]
+                    }
+                  ],
+                  "**webAddress**: The URL of the account holder's website."
+                ]
+              }
+            ],
+            "**description**: Your description for the account holder, maximum 300 characters.",
+            "**id**: The unique identifier of the account holder.",
+            "**legalEntityId**: The unique identifier of the [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities#responses-200-id) associated with the account holder. Adyen performs a verification process against the legal entity of the account holder.",
+            "**metadata**: A set of key and value pairs for general use.",
+            "**migratedAccountHolderCode**: The unique identifier of the migrated account holder in the classic integration.",
+            "**primaryBalanceAccount**: The ID of the account holder's primary balance account. By default, this is set to the first balance account that you create for the account holder. To assign a different balance account, send a PATCH request.",
+            "**reference**: Your reference for the account holder, maximum 150 characters.",
+            "**status**: The status of the account holder.",
+            "**timeZone**: The time zone of the account holder. For example, **Europe/Amsterdam**.",
+            "**verificationDeadlines**: List of verification deadlines and the capabilities that will be disallowed if verification errors are not resolved."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            "**response**",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

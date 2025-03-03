@@ -1,0 +1,164 @@
+{
+  "name": "meeting",
+  "description": "Retrieve the details of a meeting.<br><br>\n**Scopes:** `meeting:read:admin` `meeting:read`<br>\n\n **[Rate Limit Label](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limits):** `Light` \n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "meetingId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The meeting ID in **long** format. The data type of this field is \"long\"(represented as int64 in JSON).\n\nWhile storing it in your database, store it as a **long** data type and **not as an integer**, as the Meeting IDs can be longer than 10 digits."
+      },
+      "occurrence_id": {
+        "type": "string",
+        "description": "Meeting Occurrence ID. Provide this field to view meeting details of a particular occurrence of the [recurring meeting](https://support.zoom.us/hc/en-us/articles/214973206-Scheduling-Recurring-Meetings)."
+      },
+      "show_previous_occurrences": {
+        "type": "boolean",
+        "description": "Set the value of this field to `true` if you would like to view meeting details of all previous occurrences of a [recurring meeting](https://support.zoom.us/hc/en-us/articles/214973206-Scheduling-Recurring-Meetings). "
+      }
+    },
+    "required": [
+      "meetingId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.zoom.us/v2/meetings/{meetingId}{?occurrence_id,show_previous_occurrences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Meeting object.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**assistant_id**: Unique identifier of the scheduler who scheduled this meeting on behalf of the host. This field is only returned if you used \"schedule_for\" option in the [Create a Meeting API request](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingcreate).",
+            "**host_email**: Email address of the meeting host.",
+            "**host_id**: ID of the user who is set as host of meeting.",
+            "**id**: [Meeting ID](https://support.zoom.us/hc/en-us/articles/201362373-What-is-a-Meeting-ID-): Unique identifier of the meeting in \"**long**\" format(represented as int64 data type in JSON), also known as the meeting number.",
+            "**uuid**: Unique meeting ID. Each meeting instance will generate its own Meeting UUID (i.e., after a meeting ends, a new UUID will be generated for the next instance of the meeting). You can retrieve a list of UUIDs from past meeting instances using [this API](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/pastmeetings) . Please double encode your UUID when using it for API calls if the UUID begins with a '/'or contains '//' in it.",
+            "**agenda**: Meeting description",
+            "**created_at**: Time of creation. ",
+            "**duration**: Meeting duration.",
+            "**encrypted_password**: Encrypted passcode for third party endpoints (H323/SIP).",
+            "**h323_password**: H.323/SIP room system passcode.",
+            "**join_url**: URL for participants to join the meeting. This URL should only be shared with users that you would like to invite for the meeting.",
+            "**occurrences**: Array of occurrence objects.",
+            "**password**: Meeting passcode.",
+            "**pmi**: Personal Meeting Id. Only used for scheduled meetings and recurring meetings with no fixed time.",
+            [
+              "**recurrence**: Recurrence object. Use this object only for a meeting with type `8` i.e., a recurring meeting with fixed time. ",
+              {
+                "$ul": [
+                  "**end_date_time**: Select the final date on which the meeting will recur before it is canceled. Should be in UTC time, such as 2017-11-25T12:00:00Z. (Cannot be used with \"end_times\".)",
+                  "**end_times**: Select how many times the meeting should recur before it is canceled. (Cannot be used with \"end_date_time\".) (default: 1)",
+                  "**monthly_day**: Use this field **only if you're scheduling a recurring meeting of type** `3` to state which day in a month, the meeting should recur. The value range is from 1 to 31. (default: 1)",
+                  "**monthly_week**: Use this field **only if you're scheduling a recurring meeting of type** `3` to state the week of the month when the meeting should recur. If you use this field, **you must also use the `monthly_week_day` field to state the day of the week when the meeting should recur.** <br>`-1` - Last week of the month.<br>`1` - First week of the month.<br>`2` - Second week of the month.<br>`3` - Third week of the month.<br>`4` - Fourth week of the month.",
+                  "**monthly_week_day**: Use this field **only if you're scheduling a recurring meeting of type** `3` to state a specific day in a week when the monthly meeting should recur. To use this field, you must also use the `monthly_week` field. ",
+                  "**repeat_interval**: Define the interval at which the meeting should recur. For instance, if you would like to schedule a meeting that recurs every two months, you must set the value of this field as `2` and the value of the `type` parameter as `3`. ",
+                  "**type**: Recurrence meeting types:<br>`1` - Daily.<br>`2` - Weekly.<br>`3` - Monthly.",
+                  "**weekly_days**: This field is required **if you're scheduling a recurring meeting of type** `2` to state which day(s) of the week the meeting should repeat. <br> <br> The value for this field could be a number between `1` to `7` in string format. For instance, if the meeting should recur on Sunday, provide `\"1\"` as the value of this field.<br><br> **Note:** If you would like the meeting to occur on multiple days of a week, you should provide comma separated values for this field. For instance, if the meeting should recur on Sundays and Tuesdays provide `\"1,3\"` as the value of this field. (default: 1)"
+                ]
+              }
+            ],
+            [
+              "**settings**: Meeting settings.",
+              {
+                "$ul": [
+                  "**allow_multiple_devices**: Allow attendees to join the meeting from multiple devices. This setting only works for meetings that require [registration](https://support.zoom.us/hc/en-us/articles/211579443-Setting-up-registration-for-a-meeting).",
+                  "**alternative_hosts**: Alternative host's emails or IDs: multiple values are separated by a semicolon.",
+                  "**alternative_hosts_email_notification**: Flag to determine whether to send email notifications to alternative hosts, default value is true. (default: true)",
+                  "**approval_type**: Enable registration and set approval for the registration. Note that this feature requires the host to be of **Licensed** user type. **Registration cannot be enabled for a basic user.** <br><br> (default: 2)",
+                  [
+                    "**approved_or_denied_countries_or_regions**: Approve or block users from specific regions/countries from joining this meeting. ",
+                    {
+                      "$ul": [
+                        "**approved_list**: List of countries/regions from where participants can join this meeting. ",
+                        "**denied_list**: List of countries/regions from where participants can not join this meeting. ",
+                        "**enable**: `true`: Setting enabled to either allow users or block users from specific regions to join your meetings. <br>",
+                        "**method**: Specify whether to allow users from specific regions to join this meeting; or block users from specific regions from joining this meeting. <br><br>"
+                      ]
+                    }
+                  ],
+                  "**audio**: Determine how participants can join the audio portion of the meeting.<br>`both` - Both Telephony and VoIP.<br>`telephony` - Telephony only.<br>`voip` - VoIP only. (default: both)",
+                  "**authentication_domains**: If user has configured [\"Sign Into Zoom with Specified Domains\"](https://support.zoom.us/hc/en-us/articles/360037117472-Authentication-Profiles-for-Meetings-and-Webinars#h_5c0df2e1-cfd2-469f-bb4a-c77d7c0cca6f) option, this will list the domains that are authenticated.",
+                  "**authentication_exception**: The participants added here will receive unique meeting invite links and bypass authentication.",
+                  "**authentication_name**: Authentication name set in the [authentication profile](https://support.zoom.us/hc/en-us/articles/360037117472-Authentication-Profiles-for-Meetings-and-Webinars#h_5c0df2e1-cfd2-469f-bb4a-c77d7c0cca6f).",
+                  "**authentication_option**: Meeting authentication option id.",
+                  "**auto_recording**: Automatic recording:<br>`local` - Record on local.<br>`cloud` -  Record on cloud.<br>`none` - Disabled. (default: none)",
+                  [
+                    "**breakout_room**: Setting to [pre-assign breakout rooms](https://support.zoom.us/hc/en-us/articles/360032752671-Pre-assigning-participants-to-breakout-rooms#h_36f71353-4190-48a2-b999-ca129861c1f4).",
+                    {
+                      "$ul": [
+                        "**enable**: Set the value of this field to `true` if you would like to enable the [breakout room pre-assign](https://support.zoom.us/hc/en-us/articles/360032752671-Pre-assigning-participants-to-breakout-rooms#h_36f71353-4190-48a2-b999-ca129861c1f4) option.",
+                        "**rooms**: Create room(s)."
+                      ]
+                    }
+                  ],
+                  "**close_registration**: Close registration after event date (default: false)",
+                  "**cn_meeting**: Host meeting in China. (default: false)",
+                  "**contact_email**: Contact email for registration",
+                  "**contact_name**: Contact name for registration",
+                  "**custom_keys**: Custom keys and values assigned to the meeting.",
+                  "**encryption_type**: Choose between enhanced encryption and [end-to-end encryption](https://support.zoom.us/hc/en-us/articles/360048660871) when starting or a meeting. When using end-to-end encryption, several features (e.g. cloud recording, phone/SIP/H.323 dial-in) will be **automatically disabled**. <br><br>The value of this field can be one of the following:<br>",
+                  "**enforce_login**: Only signed in users can join this meeting.",
+                  "**enforce_login_domains**: Only signed in users with specified domains can join meetings.",
+                  "**global_dial_in_countries**: List of global dial-in countries",
+                  "**global_dial_in_numbers**: Global Dial-in Countries/Regions",
+                  "**host_video**: Start video when the host joins the meeting.",
+                  "**in_meeting**: Host meeting in India. (default: false)",
+                  "**jbh_time**: If the value of \"join_before_host\" field is set to true, this field can be used to indicate time limits within which a participant may join a meeting before a host. The value of this field can be one of the following:",
+                  "**join_before_host**: Allow participants to join the meeting before the host starts the meeting. Only used for scheduled or recurring meetings. (default: false)",
+                  [
+                    "**language_interpretation**",
+                    {
+                      "$ul": [
+                        "**enable**",
+                        "**interpreters**: Information associated with the interpreter."
+                      ]
+                    }
+                  ],
+                  "**meeting_authentication**: `true`- Only authenticated users can join meetings.",
+                  "**mute_upon_entry**: Mute participants upon entry. (default: false)",
+                  "**participant_video**: Start video when participants join the meeting.",
+                  "**registrants_confirmation_email**: Send confirmation email to registrants upon successful registration.",
+                  "**registrants_email_notification**: Send email notifications to registrants about approval, cancellation, denial of the registration. The value of this field must be set to true in order to use the `registrants_confirmation_email` field.",
+                  "**registration_type**: Registration type. Used for recurring meeting with fixed time only. <br>`1` Attendees register once and can attend any of the occurrences.<br>`2` Attendees need to register for each occurrence to attend.<br>`3` Attendees register once and can choose one or more occurrences to attend. (default: 1)",
+                  "**show_share_button**: Show social share buttons on the meeting registration page.",
+                  "**use_pmi**: Use a personal meeting ID. Only used for scheduled meetings and recurring meetings with no fixed time. (default: false)",
+                  "**waiting_room**: Enable waiting room (default: false)",
+                  "**watermark**: Add watermark when viewing a shared screen. (default: false)"
+                ]
+              }
+            ],
+            "**start_time**: Meeting start time in GMT/UTC. Start time will not be returned if the meeting is an **instant** meeting. ",
+            "**start_url**: <br><aside>The <code>start_url</code> of a Meeting is a URL using which a host or an alternative host can start the Meeting. ",
+            "**status**: Meeting status",
+            "**timezone**: Timezone to format the meeting start time on the .",
+            "**topic**: Meeting topic.",
+            "**tracking_fields**: Tracking fields",
+            "**type**: Meeting Types:<br>`1` - Instant meeting.<br>`2` - Scheduled meeting.<br>`3` - Recurring meeting with no fixed time.<br>`4` - PMI Meeting<br> (default: 2)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

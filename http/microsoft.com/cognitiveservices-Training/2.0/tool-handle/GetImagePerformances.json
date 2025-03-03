@@ -1,0 +1,113 @@
+{
+  "name": "GetImagePerformances",
+  "description": "This API supports batching and range selection. By default it will only return first 50 images matching images.\r\nUse the {take} and {skip} parameters to control how many images to return in a given batch.\r\nThe filtering is on an and/or relationship. For example, if the provided tag ids are for the \"Dog\" and\r\n\"Cat\" tags, then only images tagged with Dog and/or Cat will be returned",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The project id"
+      },
+      "iterationId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The iteration id. Defaults to workspace"
+      },
+      "tagIds": {
+        "items": {
+          "nullable": false,
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A list of tags ids to filter the images. Defaults to all tagged images when null. Limited to 20"
+      },
+      "orderBy": {
+        "enum": [
+          "Newest",
+          "Oldest"
+        ],
+        "type": "string",
+        "description": "The ordering. Defaults to newest"
+      },
+      "take": {
+        "default": 50,
+        "format": "int32",
+        "type": "integer",
+        "description": "Maximum number of images to return. Defaults to 50, limited to 256"
+      },
+      "skip": {
+        "default": 0,
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of images to skip before beginning the image batch. Defaults to 0"
+      },
+      "Training-Key": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "projectId",
+      "iterationId",
+      "Training-Key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/Training/projects/{projectId}/iterations/{iterationId}/performance/images{?tagIds,orderBy,take,skip}"
+    },
+    "headers": {
+      "Training-Key": {
+        "$": "Training-Key"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Image performance model",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**",
+            "**height**",
+            "**id**",
+            "**imageUri**",
+            "**predictions**",
+            "**regions**",
+            "**tags**",
+            "**thumbnailUri**",
+            "**width**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

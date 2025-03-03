@@ -1,0 +1,410 @@
+{
+  "name": "CreateAssessment",
+  "description": " Creates an assessment in Audit Manager. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "assessmentReportsDestination",
+          "scope",
+          "roles",
+          "frameworkId"
+        ],
+        "properties": {
+          "name": {
+            "description": " The name of the assessment to be created. ",
+            "type": "string",
+            "pattern": "^[^\\\\]*$",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "description": {
+            "description": " The optional description of the assessment to be created. ",
+            "type": "string",
+            "pattern": "^[\\w\\W\\s\\S]*$",
+            "maxLength": 1000
+          },
+          "assessmentReportsDestination": {
+            "description": " The location where Audit Manager saves assessment reports for the given assessment. ",
+            "type": "object",
+            "properties": {
+              "destinationType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AssessmentReportDestinationType"
+                  },
+                  {
+                    "description": " The destination type, such as Amazon S3. "
+                  }
+                ]
+              },
+              "destination": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Url"
+                  },
+                  {
+                    "description": " The destination bucket where Audit Manager stores assessment reports. "
+                  }
+                ]
+              }
+            }
+          },
+          "scope": {
+            "description": " The wrapper that contains the Amazon Web Services accounts and services that are in scope for the assessment. ",
+            "type": "object",
+            "properties": {
+              "awsAccounts": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AWSAccounts"
+                  },
+                  {
+                    "description": " The Amazon Web Services accounts that are included in the scope of the assessment. "
+                  }
+                ]
+              },
+              "awsServices": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AWSServices"
+                  },
+                  {
+                    "description": " The Amazon Web Services services that are included in the scope of the assessment. "
+                  }
+                ]
+              }
+            }
+          },
+          "roles": {
+            "description": " The list of roles for the assessment. ",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Role"
+            }
+          },
+          "frameworkId": {
+            "description": " The identifier for the framework that the assessment will be created from. ",
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$",
+            "minLength": 36,
+            "maxLength": 36
+          },
+          "tags": {
+            "description": " The tags that are associated with the assessment. ",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AssessmentReportDestinationType": {
+        "type": "string",
+        "enum": [
+          "S3"
+        ]
+      },
+      "S3Url": {
+        "type": "string",
+        "pattern": "^(S|s)3:\\/\\/[a-zA-Z0-9\\-\\.\\(\\)\\'\\*\\_\\!\\/]+$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "AWSAccounts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AWSAccount"
+        }
+      },
+      "AWSAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AccountId"
+              },
+              {
+                "description": " The identifier for the Amazon Web Services account. "
+              }
+            ]
+          },
+          "emailAddress": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EmailAddress"
+              },
+              {
+                "description": " The email address that's associated with the Amazon Web Services account. "
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AccountName"
+              },
+              {
+                "description": " The name of the Amazon Web Services account. "
+              }
+            ]
+          }
+        },
+        "description": " The wrapper of Amazon Web Services account details, such as account ID or email address. "
+      },
+      "AccountId": {
+        "type": "string",
+        "pattern": "^[0-9]{12}$",
+        "minLength": 12,
+        "maxLength": 12
+      },
+      "EmailAddress": {
+        "type": "string",
+        "pattern": "^.*@.*$",
+        "minLength": 1,
+        "maxLength": 320
+      },
+      "AccountName": {
+        "type": "string",
+        "pattern": "^[\\u0020-\\u007E]+$",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "AWSServices": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AWSService"
+        }
+      },
+      "AWSService": {
+        "type": "object",
+        "properties": {
+          "serviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AWSServiceName"
+              },
+              {
+                "description": " The name of the Amazon Web Service. "
+              }
+            ]
+          }
+        },
+        "description": "<p> An Amazon Web Service such as Amazon S3 or CloudTrail. </p> <p>For an example of how to find an Amazon Web Service name and how to define it in your assessment scope, see the following:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_GetServicesInScope.html#API_GetServicesInScope_Example_2\">Finding an Amazon Web Service name to use in your assessment scope</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_GetServicesInScope.html#API_GetServicesInScope_Example_3\">Defining an Amazon Web Service name in your assessment scope</a> </p> </li> </ul>"
+      },
+      "AWSServiceName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9-\\s().]+$",
+        "minLength": 1,
+        "maxLength": 40
+      },
+      "Role": {
+        "type": "object",
+        "required": [
+          "roleType",
+          "roleArn"
+        ],
+        "properties": {
+          "roleType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleType"
+              },
+              {
+                "description": "<p> The type of customer persona. </p> <note> <p>In <code>CreateAssessment</code>, <code>roleType</code> can only be <code>PROCESS_OWNER</code>. </p> <p>In <code>UpdateSettings</code>, <code>roleType</code> can only be <code>PROCESS_OWNER</code>.</p> <p>In <code>BatchCreateDelegationByAssessment</code>, <code>roleType</code> can only be <code>RESOURCE_OWNER</code>.</p> </note>"
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IamArn"
+              },
+              {
+                "description": " The Amazon Resource Name (ARN) of the IAM role. "
+              }
+            ]
+          }
+        },
+        "description": " The wrapper that contains the Audit Manager role information of the current user. This includes the role type and IAM Amazon Resource Name (ARN). "
+      },
+      "RoleType": {
+        "type": "string",
+        "enum": [
+          "PROCESS_OWNER",
+          "RESOURCE_OWNER"
+        ]
+      },
+      "IamArn": {
+        "type": "string",
+        "pattern": "^arn:.*:iam:.*",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": ".{0,255}",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://auditmanager.us-east-1.amazonaws.com/assessments"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**assessment**:  An entity that defines the scope of audit evidence collected by Audit Manager. An Audit Manager assessment is an implementation of an Audit Manager framework. ",
+              {
+                "$ul": [
+                  "**arn**",
+                  "**awsAccount**",
+                  "**metadata**",
+                  "**framework**",
+                  "**tags**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

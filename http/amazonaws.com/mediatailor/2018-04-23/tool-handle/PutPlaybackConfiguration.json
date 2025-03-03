@@ -1,0 +1,369 @@
+{
+  "name": "PutPlaybackConfiguration",
+  "description": "Creates a playback configuration. For information about MediaTailor configurations, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/configurations.html\">Working with configurations in AWS Elemental MediaTailor</a>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "AdDecisionServerUrl": {
+            "description": "The URL for the ad decision server (ADS). This includes the specification of static parameters and placeholders for dynamic parameters. AWS Elemental MediaTailor substitutes player-specific and session-specific parameters as needed when calling the ADS. Alternately, for testing you can provide a static VAST URL. The maximum length is 25,000 characters.",
+            "type": "string"
+          },
+          "AvailSuppression": {
+            "description": "The configuration for avail suppression, also known as ad suppression. For more information about ad suppression, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/ad-behavior.html\">Ad Suppression</a>.",
+            "type": "object",
+            "properties": {
+              "FillPolicy": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FillPolicy"
+                  },
+                  {
+                    "description": "Defines the policy to apply to the avail suppression mode. <code>BEHIND_LIVE_EDGE</code> will always use the full avail suppression policy. <code>AFTER_LIVE_EDGE</code> mode can be used to invoke partial ad break fills when a session starts mid-break."
+                  }
+                ]
+              },
+              "Mode": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Mode"
+                  },
+                  {
+                    "description": "Sets the ad suppression mode. By default, ad suppression is off and all ad breaks are filled with ads or slate. When Mode is set to <code>BEHIND_LIVE_EDGE</code>, ad suppression is active and MediaTailor won't fill ad breaks on or behind the ad suppression Value time in the manifest lookback window. When Mode is set to <code>AFTER_LIVE_EDGE</code>, ad suppression is active and MediaTailor won't fill ad breaks that are within the live edge plus the avail suppression value."
+                  }
+                ]
+              },
+              "Value": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "A live edge offset time in HH:MM:SS. MediaTailor won't fill ad breaks on or behind this time in the manifest lookback window. If Value is set to 00:00:00, it is in sync with the live edge, and MediaTailor won't fill any ad breaks on or behind the live edge. If you set a Value time, MediaTailor won't fill any ad breaks on or behind this time in the manifest lookback window. For example, if you set 00:45:00, then MediaTailor will fill ad breaks that occur within 45 minutes behind the live edge, but won't fill ad breaks on or behind 45 minutes behind the live edge."
+                  }
+                ]
+              }
+            }
+          },
+          "Bumper": {
+            "description": "The configuration for bumpers. Bumpers are short audio or video clips that play at the start or before the end of an ad break. To learn more about bumpers, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/bumpers.html\">Bumpers</a>.",
+            "type": "object",
+            "properties": {
+              "EndUrl": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "The URL for the end bumper asset."
+                  }
+                ]
+              },
+              "StartUrl": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "The URL for the start bumper asset."
+                  }
+                ]
+              }
+            }
+          },
+          "CdnConfiguration": {
+            "description": "The configuration for using a content delivery network (CDN), like Amazon CloudFront, for content and ad segment management.",
+            "type": "object",
+            "properties": {
+              "AdSegmentUrlPrefix": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "A non-default content delivery network (CDN) to serve ad segments. By default, AWS Elemental MediaTailor uses Amazon CloudFront with default cache settings as its CDN for ad segments. To set up an alternate CDN, create a rule in your CDN for the origin ads.mediatailor.<i>&lt;region&gt;</i>.amazonaws.com. Then specify the rule's name in this <code>AdSegmentUrlPrefix</code>. When AWS Elemental MediaTailor serves a manifest, it reports your CDN as the source for ad segments."
+                  }
+                ]
+              },
+              "ContentSegmentUrlPrefix": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "A content delivery network (CDN) to cache content segments, so that content requests don’t always have to go to the origin server. First, create a rule in your CDN for the content segment origin server. Then specify the rule's name in this <code>ContentSegmentUrlPrefix</code>. When AWS Elemental MediaTailor serves a manifest, it reports your CDN as the source for content segments."
+                  }
+                ]
+              }
+            }
+          },
+          "ConfigurationAliases": {
+            "description": "The predefined aliases for dynamic variables.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/__mapOf__string"
+            }
+          },
+          "DashConfiguration": {
+            "description": "The configuration for DASH PUT operations.",
+            "type": "object",
+            "properties": {
+              "MpdLocation": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "The setting that controls whether MediaTailor includes the Location tag in DASH manifests. MediaTailor populates the Location tag with the URL for manifest update requests, to be used by players that don't support sticky redirects. Disable this if you have CDN routing rules set up for accessing MediaTailor manifests, and you are either using client-side reporting or your players support sticky HTTP redirects. Valid values are <code>DISABLED</code> and <code>EMT_DEFAULT</code>. The <code>EMT_DEFAULT</code> setting enables the inclusion of the tag and is the default value."
+                  }
+                ]
+              },
+              "OriginManifestType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/OriginManifestType"
+                  },
+                  {
+                    "description": "The setting that controls whether MediaTailor handles manifests from the origin server as multi-period manifests or single-period manifests. If your origin server produces single-period manifests, set this to <code>SINGLE_PERIOD</code>. The default setting is <code>MULTI_PERIOD</code>. For multi-period manifests, omit this setting or set it to <code>MULTI_PERIOD</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "LivePreRollConfiguration": {
+            "description": "The configuration for pre-roll ad insertion.",
+            "type": "object",
+            "properties": {
+              "AdDecisionServerUrl": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__string"
+                  },
+                  {
+                    "description": "The URL for the ad decision server (ADS) for pre-roll ads. This includes the specification of static parameters and placeholders for dynamic parameters. AWS Elemental MediaTailor substitutes player-specific and session-specific parameters as needed when calling the ADS. Alternately, for testing, you can provide a static VAST URL. The maximum length is 25,000 characters."
+                  }
+                ]
+              },
+              "MaxDurationSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/__integer"
+                  },
+                  {
+                    "description": "The maximum allowed duration for the pre-roll ad avail. AWS Elemental MediaTailor won't play pre-roll ads to exceed this duration, regardless of the total duration of ads that the ADS returns."
+                  }
+                ]
+              }
+            }
+          },
+          "ManifestProcessingRules": {
+            "description": "The configuration for manifest processing rules. Manifest processing rules enable customization of the personalized manifests created by MediaTailor.",
+            "type": "object",
+            "properties": {
+              "AdMarkerPassthrough": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AdMarkerPassthrough"
+                  },
+                  {
+                    "description": "<p>For HLS, when set to <code>true</code>, MediaTailor passes through <code>EXT-X-CUE-IN</code>, <code>EXT-X-CUE-OUT</code>, and <code>EXT-X-SPLICEPOINT-SCTE35</code> ad markers from the origin manifest to the MediaTailor personalized manifest.</p> <p>No logic is applied to these ad markers. For example, if <code>EXT-X-CUE-OUT</code> has a value of <code>60</code>, but no ads are filled for that ad break, MediaTailor will not set the value to <code>0</code>.</p>"
+                  }
+                ]
+              }
+            }
+          },
+          "Name": {
+            "description": "The identifier for the playback configuration.",
+            "type": "string"
+          },
+          "PersonalizationThresholdSeconds": {
+            "description": "Defines the maximum duration of underfilled ad time (in seconds) allowed in an ad break. If the duration of underfilled ad time exceeds the personalization threshold, then the personalization of the ad break is abandoned and the underlying content is shown. This feature applies to <i>ad replacement</i> in live and VOD streams, rather than ad insertion, because it relies on an underlying content stream. For more information about ad break behavior, including ad replacement and insertion, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/ad-behavior.html\">Ad Behavior in AWS Elemental MediaTailor</a>.",
+            "type": "integer",
+            "minimum": 1
+          },
+          "SlateAdUrl": {
+            "description": "The URL for a high-quality video asset to transcode and use to fill in time that's not used by ads. AWS Elemental MediaTailor shows the slate to fill in gaps in media content. Configuring the slate is optional for non-VPAID configurations. For VPAID, the slate is required because MediaTailor provides it in the slots that are designated for dynamic ad content. The slate must be a high-quality asset that contains both audio and video.",
+            "type": "string"
+          },
+          "tags": {
+            "description": "The tags to assign to the playback configuration. Tags are key-value pairs that you can associate with Amazon resources to help with organization, access control, and cost tracking. For more information, see <a href=\"https://docs.aws.amazon.com/mediatailor/latest/ug/tagging.html\">Tagging AWS Elemental MediaTailor Resources</a>.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/__string"
+            }
+          },
+          "TranscodeProfileName": {
+            "description": "The name that is used to associate this playback configuration with a custom transcode profile. This overrides the dynamic transcoding defaults of MediaTailor. Use this only if you have already set up custom profiles with the help of AWS Support.",
+            "type": "string"
+          },
+          "VideoContentSourceUrl": {
+            "description": "The URL prefix for the parent manifest for the stream, minus the asset ID. The maximum length is 512 characters.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "FillPolicy": {
+        "type": "string",
+        "enum": [
+          "FULL_AVAIL_ONLY",
+          "PARTIAL_AVAIL"
+        ]
+      },
+      "Mode": {
+        "type": "string",
+        "enum": [
+          "OFF",
+          "BEHIND_LIVE_EDGE",
+          "AFTER_LIVE_EDGE"
+        ]
+      },
+      "__string": {
+        "type": "string"
+      },
+      "__mapOf__string": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/__string"
+        }
+      },
+      "OriginManifestType": {
+        "type": "string",
+        "enum": [
+          "SINGLE_PERIOD",
+          "MULTI_PERIOD"
+        ]
+      },
+      "__integer": {
+        "type": "integer"
+      },
+      "AdMarkerPassthrough": {
+        "type": "object",
+        "properties": {
+          "Enabled": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/__boolean"
+              },
+              {
+                "description": "Enables ad marker passthrough for your configuration."
+              }
+            ]
+          }
+        },
+        "description": "<p>For HLS, when set to <code>true</code>, MediaTailor passes through <code>EXT-X-CUE-IN</code>, <code>EXT-X-CUE-OUT</code>, and <code>EXT-X-SPLICEPOINT-SCTE35</code> ad markers from the origin manifest to the MediaTailor personalized manifest.</p> <p>No logic is applied to these ad markers. For example, if <code>EXT-X-CUE-OUT</code> has a value of <code>60</code>, but no ads are filled for that ad break, MediaTailor will not set the value to <code>0</code>.</p>"
+      },
+      "__boolean": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://api.mediatailor.us-east-1.amazonaws.com/playbackConfiguration"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**AdDecisionServerUrl**",
+            "**AvailSuppression**",
+            "**Bumper**",
+            "**CdnConfiguration**",
+            "**ConfigurationAliases**",
+            "**DashConfiguration**",
+            "**HlsConfiguration**",
+            "**LivePreRollConfiguration**",
+            "**LogConfiguration**",
+            "**ManifestProcessingRules**",
+            "**Name**",
+            "**PersonalizationThresholdSeconds**",
+            "**PlaybackConfigurationArn**",
+            "**PlaybackEndpointPrefix**",
+            "**SessionInitializationEndpointPrefix**",
+            "**SlateAdUrl**",
+            "**Tags**",
+            "**TranscodeProfileName**",
+            "**VideoContentSourceUrl**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

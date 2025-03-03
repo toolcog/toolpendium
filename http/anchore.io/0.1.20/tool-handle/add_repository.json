@@ -1,0 +1,81 @@
+{
+  "name": "add_repository",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "repository": {
+        "type": "string",
+        "description": "full repository to add e.g. docker.io/library/alpine"
+      },
+      "autosubscribe": {
+        "type": "boolean",
+        "description": "flag to enable/disable auto tag_update activation when new images from a repo are added"
+      },
+      "dryrun": {
+        "type": "boolean",
+        "description": "flag to return tags in the repository without actually watching the repository, default is false"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    },
+    "required": [
+      "repository"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//repositories{?repository,autosubscribe,dryrun}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List of subscriptions",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: Is the subscription currently active",
+            "**subscription_id**: the unique id for this subscription record",
+            "**subscription_key**: The key value that the subscription references. E.g. a tag value or a repo name.",
+            "**subscription_type**: The type of the subscription",
+            "**subscription_value**: The value of the subscription target",
+            "**userId**: The userId of the subscribed user"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

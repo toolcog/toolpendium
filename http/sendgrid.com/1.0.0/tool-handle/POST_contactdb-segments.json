@@ -1,0 +1,203 @@
+{
+  "name": "POST_contactdb-segments",
+  "description": "**This endpoint allows you to create a new segment.**\n\n\n  Valid operators for create and update depend on the type of the field for which you are searching.\n\n**Dates**\n- \"eq\", \"ne\", \"lt\" (before), \"gt\" (after)\n    - You may use MM/DD/YYYY for day granularity or an epoch for second granularity.\n- \"empty\", \"not_empty\"\n- \"is within\"\n    - You may use an [ISO 8601 date format](https://en.wikipedia.org/wiki/ISO_8601) or the # of days.\n\n**Text**\n- \"contains\"\n- \"eq\" (is/equals - matches the full field)\n- \"ne\" (is not/not equals - matches any field where the entire field is not the condition value)\n- \"empty\"\n- \"not_empty\"\n\n**Numbers**\n- \"eq\" (is/equals)\n- \"lt\" (is less than)\n- \"gt\" (is greater than)\n- \"empty\"\n- \"not_empty\"\n\n**Email Clicks and Opens**\n- \"eq\" (opened)\n- \"ne\" (not opened)\n\nAll field values must be a string.\n\n\nConditions using \"eq\" or \"ne\" for email clicks and opens should provide a \"field\" of either `clicks.campaign_identifier` or `opens.campaign_identifier`.\nThe condition value should be a string containing the id of a completed campaign.\n\n\nThe conditions list may contain multiple conditions, joined by an \"and\" or \"or\" in the \"and_or\" field.\n\nThe first condition in the conditions list must have an empty \"and_or\", and subsequent conditions must all specify an \"and_or\".",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/contactdb_segments"
+      }
+    },
+    "$defs": {
+      "contactdb_segments": {
+        "example": {
+          "conditions": [
+            {
+              "and_or": "",
+              "field": "last_name",
+              "operator": "eq",
+              "value": "Miller"
+            },
+            {
+              "and_or": "and",
+              "field": "last_clicked",
+              "operator": "gt",
+              "value": "01/02/2015"
+            },
+            {
+              "and_or": "or",
+              "field": "clicks.campaign_identifier",
+              "operator": "eq",
+              "value": "513"
+            }
+          ],
+          "list_id": 4,
+          "name": "Last Name Miller",
+          "recipient_count": 1234
+        },
+        "properties": {
+          "conditions": {
+            "description": "The conditions for a recipient to be included in this segment.",
+            "items": {
+              "$ref": "#/$defs/contactdb_segments_conditions"
+            },
+            "type": "array"
+          },
+          "list_id": {
+            "description": "The list id from which to make this segment. Not including this ID will mean your segment is created from the main contactdb rather than a list.",
+            "type": "integer"
+          },
+          "name": {
+            "description": "The name of this segment.",
+            "type": "string"
+          },
+          "recipient_count": {
+            "description": "The count of recipients in this list. This is not included on creation of segments.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "conditions"
+        ],
+        "title": "Create a Segment request",
+        "type": "object"
+      },
+      "contactdb_segments_conditions": {
+        "properties": {
+          "and_or": {
+            "enum": [
+              "and",
+              "or",
+              ""
+            ],
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "operator": {
+            "enum": [
+              "eq",
+              "ne",
+              "lt",
+              "gt",
+              "contains"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "value",
+          "operator"
+        ],
+        "title": "ContactDB: Segments: Conditions",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/contactdb/segments"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Create a Segment request"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The ID of the segment.",
+            "**conditions**: The conditions for a recipient to be included in this segment.",
+            "**list_id**: The list id from which to make this segment. Not including this ID will mean your segment is created from the main contactdb rather than a list.",
+            "**name**: The name of this segment.",
+            "**recipient_count**: The count of recipients in this list. This is not included on creation of segments."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

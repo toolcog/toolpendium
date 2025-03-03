@@ -1,0 +1,149 @@
+{
+  "name": "GetSubscriptionTimelineCollection",
+  "description": "Retrieve a list of order timeline messages.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "maximum": 1000,
+        "minimum": 0,
+        "type": "integer",
+        "description": "The collection items limit."
+      },
+      "offset": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "The collection items offset."
+      },
+      "filter": {
+        "type": "string",
+        "description": "The collection items filter requires a special format.\nUse \",\" for multiple allowed values.  Use \";\" for multiple fields.\nSee the [filter guide](https://api-reference.rebilly.com/#section/Using-filter-with-collections) for more options and examples about this format.\n"
+      },
+      "sort": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The collection items sort field and order (prefix with \"-\" for descending sort)."
+      },
+      "q": {
+        "type": "string",
+        "description": "The partial search of the text fields."
+      },
+      "id": {
+        "maxLength": 50,
+        "pattern": "^[@~\\-\\.\\w]+$",
+        "type": "string",
+        "description": "The resource identifier string."
+      },
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/subscriptions/{id}/timeline{?limit,offset,filter,sort,q}"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**_links**: The links related to resource.",
+            [
+              "**extraData**: Additional data.",
+              {
+                "$ul": [
+                  "**actions**: Actions available to a Timeline message. Can be empty in case no actions are available for a message.",
+                  [
+                    "**author**: Timeline comment author data.",
+                    {
+                      "$ul": [
+                        "**userFullName**",
+                        "**userId**"
+                      ]
+                    }
+                  ],
+                  "**links**",
+                  "**mentions**",
+                  "**tables**"
+                ]
+              }
+            ],
+            "**id**: The Timeline message identifier string.",
+            "**message**: The message that describes the message details.",
+            "**occurredTime**: Timeline message time.",
+            "**triggeredBy**: Shows who or what triggered the Timeline message.",
+            "**type**: Timeline message type."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "name": "list_images",
+  "description": "List all images visible to the user",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "history": {
+        "type": "boolean",
+        "description": "Include image history in the response"
+      },
+      "fulltag": {
+        "type": "string",
+        "description": "Full docker-pull string to filter results by (e.g. docker.io/library/nginx:latest, or myhost.com:5000/testimages:v1.1.1)"
+      },
+      "image_status": {
+        "default": "active",
+        "enum": [
+          "all",
+          "active",
+          "deleting"
+        ],
+        "type": "string",
+        "description": "Filter by image_status value on the record. Default if omitted is 'active'."
+      },
+      "analysis_status": {
+        "enum": [
+          "not_analyzed",
+          "analyzed",
+          "analyzing",
+          "analysis_failed"
+        ],
+        "type": "string",
+        "description": "Filter by analysis_status value on the record."
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//images{?history,fulltag,image_status,analysis_status}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A list of Anchore Images",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**analysis_status**: A state value for the current status of the analysis progress of the image",
+            "**annotations**",
+            "**created_at**",
+            "**imageDigest**",
+            "**image_content**: A metadata content record for a specific image, containing different content type entries",
+            "**image_detail**: Details specific to an image reference and type such as tag and image source",
+            "**image_status**: State of the image",
+            "**last_updated**",
+            "**record_version**: The version of the record, used for internal schema updates and data migrations.",
+            "**userId**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

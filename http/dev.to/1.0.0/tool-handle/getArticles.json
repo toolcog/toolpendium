@@ -1,0 +1,162 @@
+{
+  "name": "getArticles",
+  "description": "This endpoint allows the client to retrieve a list of articles.\n\n\"Articles\" are all the posts that users create on DEV that typically\nshow up in the feed. They can be a blog post, a discussion question,\na help thread etc. but is referred to as article within the code.\n\nBy default it will return featured, published articles ordered\nby descending popularity.\n\nIt supports pagination, each page will contain `30` articles by default.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "page": {
+        "default": 1,
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Pagination page"
+      },
+      "per_page": {
+        "default": 30,
+        "format": "int32",
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Page size (the number of items to return per page). The default maximum value can be overridden by \"API_PER_PAGE_MAX\" environment variable."
+      },
+      "tag": {
+        "type": "string",
+        "description": "Using this parameter will retrieve articles that contain the requested tag. Articles\nwill be ordered by descending popularity.This parameter can be used in conjuction with `top`."
+      },
+      "tags": {
+        "type": "string",
+        "description": "Using this parameter will retrieve articles with any of the comma-separated tags.\nArticles will be ordered by descending popularity."
+      },
+      "tags_exclude": {
+        "type": "string",
+        "description": "Using this parameter will retrieve articles that do _not_ contain _any_\nof comma-separated tags. Articles will be ordered by descending popularity."
+      },
+      "username": {
+        "type": "string",
+        "description": "Using this parameter will retrieve articles belonging\n            to a User or Organization ordered by descending publication date.\n            If `state=all` the number of items returned will be `1000` instead of the default `30`.\n            This parameter can be used in conjuction with `state`."
+      },
+      "state": {
+        "enum": [
+          "fresh",
+          "rising",
+          "all"
+        ],
+        "type": "string",
+        "description": "Using this parameter will allow the client to check which articles are fresh or rising.\n            If `state=fresh` the server will return fresh articles.\n            If `state=rising` the server will return rising articles.\n            This param can be used in conjuction with `username`, only if set to `all`."
+      },
+      "top": {
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Using this parameter will allow the client to return the most popular articles\nin the last `N` days.\n`top` indicates the number of days since publication of the articles returned.\nThis param can be used in conjuction with `tag`."
+      },
+      "collection_id": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Adding this will allow the client to return the list of articles\nbelonging to the requested collection, ordered by ascending publication date."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://dev.to/api/api/articles{?page,per_page,tag,tags,tags_exclude,username,state,top,collection_id}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Representation of an article or post returned in a list",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**canonical_url**",
+            "**cover_image**",
+            "**created_at**",
+            "**crossposted_at**",
+            "**description**",
+            "**edited_at**",
+            [
+              "**flare_tag**: Flare tag of the article",
+              {
+                "$ul": [
+                  "**bg_color_hex**: Background color (hexadecimal)",
+                  "**name**",
+                  "**text_color_hex**: Text color (hexadecimal)"
+                ]
+              }
+            ],
+            "**id**",
+            "**last_comment_at**",
+            [
+              "**organization**: The organization the resource belongs to",
+              {
+                "$ul": [
+                  "**name**",
+                  "**profile_image**: Profile image (640x640)",
+                  "**profile_image_90**: Profile image (90x90)",
+                  "**slug**",
+                  "**username**"
+                ]
+              }
+            ],
+            "**path**",
+            "**positive_reactions_count**",
+            "**public_reactions_count**",
+            "**published_at**",
+            "**published_timestamp**: Crossposting or published date time",
+            "**readable_publish_date**",
+            "**reading_time_minutes**: Reading time, in minutes",
+            "**slug**",
+            "**social_image**",
+            "**tag_list**",
+            "**tags**",
+            "**title**",
+            "**type_of**",
+            "**url**",
+            [
+              "**user**: The resource creator",
+              {
+                "$ul": [
+                  "**github_username**",
+                  "**name**",
+                  "**profile_image**: Profile image (640x640)",
+                  "**profile_image_90**: Profile image (90x90)",
+                  "**twitter_username**",
+                  "**username**",
+                  "**website_url**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

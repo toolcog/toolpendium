@@ -1,0 +1,361 @@
+{
+  "name": "PutProfileObjectType",
+  "description": "<p>Defines a ProfileObjectType.</p> <p>To add or remove tags on an existing ObjectType, see <a href=\"https://docs.aws.amazon.com/customerprofiles/latest/APIReference/API_TagResource.html\"> TagResource</a>/<a href=\"https://docs.aws.amazon.com/customerprofiles/latest/APIReference/API_UntagResource.html\">UntagResource</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "DomainName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "The unique name of the domain."
+      },
+      "ObjectTypeName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_][a-zA-Z_0-9-]*$",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the profile object type."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Description"
+        ],
+        "properties": {
+          "Description": {
+            "description": "Description of the profile object type.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "TemplateId": {
+            "description": "A unique identifier for the object template. For some attributes in the request, the service will use the default value from the object template when TemplateId is present. If these attributes are present in the request, the service may return a <code>BadRequestException</code>. These attributes include: AllowProfileCreation, SourceLastUpdatedTimestampFormat, Fields, and Keys. For example, if AllowProfileCreation is set to true when TemplateId is set, the service may return a <code>BadRequestException</code>.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "ExpirationDays": {
+            "description": "The number of days until the data in the object expires.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1098
+          },
+          "EncryptionKey": {
+            "description": "The customer-provided key to encrypt the profile object that will be created in this profile object type.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "AllowProfileCreation": {
+            "description": "Indicates whether a profile should be created when data is received if one doesn’t exist for an object of this type. The default is <code>FALSE</code>. If the AllowProfileCreation flag is set to <code>FALSE</code>, then the service tries to fetch a standard profile and associate this object with the profile. If it is set to <code>TRUE</code>, and if no match is found, then the service creates a new standard profile.",
+            "type": "boolean"
+          },
+          "SourceLastUpdatedTimestampFormat": {
+            "description": "The format of your <code>sourceLastUpdatedTimestamp</code> that was previously set up. ",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "Fields": {
+            "description": "A map of the name and ObjectType field.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/ObjectTypeField"
+            }
+          },
+          "Keys": {
+            "description": "A list of unique keys that can be used to map data to the profile.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/ObjectTypeKeyList"
+            }
+          },
+          "Tags": {
+            "description": "The tags used to organize, track, or control access for this resource.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "DomainName",
+      "ObjectTypeName",
+      "body"
+    ],
+    "$defs": {
+      "ObjectTypeField": {
+        "type": "object",
+        "properties": {
+          "Source": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/text"
+              },
+              {
+                "description": "A field of a ProfileObject. For example: _source.FirstName, where “_source” is a ProfileObjectType of a Zendesk user and “FirstName” is a field in that ObjectType."
+              }
+            ]
+          },
+          "Target": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/text"
+              },
+              {
+                "description": "The location of the data in the standard ProfileObject model. For example: _profile.Address.PostalCode."
+              }
+            ]
+          },
+          "ContentType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FieldContentType"
+              },
+              {
+                "description": "The content type of the field. Used for determining equality when searching."
+              }
+            ]
+          }
+        },
+        "description": "Represents a field in a ProfileObjectType."
+      },
+      "text": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      },
+      "FieldContentType": {
+        "type": "string",
+        "enum": [
+          "STRING",
+          "NUMBER",
+          "PHONE_NUMBER",
+          "EMAIL_ADDRESS",
+          "NAME"
+        ]
+      },
+      "ObjectTypeKeyList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ObjectTypeKey"
+        }
+      },
+      "ObjectTypeKey": {
+        "type": "object",
+        "properties": {
+          "StandardIdentifiers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StandardIdentifierList"
+              },
+              {
+                "description": "The types of keys that a ProfileObject can have. Each ProfileObject can have only 1 UNIQUE key but multiple PROFILE keys. PROFILE, ASSET, CASE, or ORDER means that this key can be used to tie an object to a PROFILE, ASSET, CASE, or ORDER respectively. UNIQUE means that it can be used to uniquely identify an object. If a key a is marked as SECONDARY, it will be used to search for profiles after all other PROFILE keys have been searched. A LOOKUP_ONLY key is only used to match a profile but is not persisted to be used for searching of the profile. A NEW_ONLY key is only used if the profile does not already exist before the object is ingested, otherwise it is only used for matching objects to profiles."
+              }
+            ]
+          },
+          "FieldNames": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FieldNameList"
+              },
+              {
+                "description": "The reference for the key name of the fields map."
+              }
+            ]
+          }
+        },
+        "description": "An object that defines the Key element of a ProfileObject. A Key is a special element that can be used to search for a customer profile."
+      },
+      "StandardIdentifierList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/StandardIdentifier"
+        }
+      },
+      "StandardIdentifier": {
+        "type": "string",
+        "enum": [
+          "PROFILE",
+          "ASSET",
+          "CASE",
+          "UNIQUE",
+          "SECONDARY",
+          "LOOKUP_ONLY",
+          "NEW_ONLY",
+          "ORDER"
+        ]
+      },
+      "FieldNameList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/name"
+        }
+      },
+      "name": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://profile.us-east-1.amazonaws.com/domains/{DomainName}/object-types/{ObjectTypeName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ObjectTypeName**",
+            "**Description**",
+            "**TemplateId**",
+            "**ExpirationDays**",
+            "**EncryptionKey**",
+            "**AllowProfileCreation**",
+            "**SourceLastUpdatedTimestampFormat**",
+            "**Fields**",
+            "**Keys**",
+            "**CreatedAt**",
+            "**LastUpdatedAt**",
+            "**Tags**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "name": "git_update-ref",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "ref": {
+        "type": "string",
+        "description": "The name of the fully qualified reference to update. For example, `refs/heads/master`. If the value doesn't start with `refs` and have at least two slashes, it will be rejected."
+      },
+      "body": {
+        "properties": {
+          "force": {
+            "default": false,
+            "description": "Indicates whether to force the update or to make sure the update is a fast-forward update. Leaving this out or setting it to `false` will make sure you're not overwriting work.",
+            "type": "boolean"
+          },
+          "sha": {
+            "description": "The SHA1 value to set this reference to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sha"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "ref",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/git/refs/{ref}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Git Reference"
+        },
+        "Git references within a repository",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**node_id**",
+            [
+              "**object**",
+              {
+                "$ul": [
+                  "**sha**: SHA for the reference",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**ref**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

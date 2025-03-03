@@ -1,0 +1,116 @@
+{
+  "name": "createServiceTransfer",
+  "description": "Creates a transfer request for the specified services. A request can contain any of the specified service types\nand any number of each service type. At this time, only Linodes can be transferred.\n\nWhen created successfully, a confirmation email is sent to the account that created this transfer containing a\ntransfer token and instructions on completing the transfer.\n\nWhen a transfer is [accepted](/docs/api/account/#service-transfer-accept), the requested services are moved to\nthe receiving account. Linode services will not experience interruptions due to the transfer process. Backups\nfor Linodes are transferred as well.\n\nDNS records that are associated with requested services will not be transferred or updated. Please ensure that\nassociated DNS records have been updated or communicated to the recipient prior to the transfer.\n\nA transfer can take up to three hours to complete once accepted. When a transfer is\ncompleted, billing for transferred services ends for the sending account and begins for the receiving account.\n\nThis command can only be accessed by the unrestricted users of an account.\n\nThere are several conditions that must be met in order to successfully create a transfer request:\n\n1. The account creating the transfer must not have a past due balance or active Terms of Service violation.\n\n1. The service must be owned by the account that is creating the transfer.\n\n1. The service must not be assigned to another Service Transfer that is pending or that has been accepted and is\nincomplete.\n\n1. Linodes must not:\n\n    * be assigned to a NodeBalancer, Firewall, VLAN, or Managed Service.\n\n    * have any attached Block Storage Volumes.\n\n    * have any shared IP addresses.\n\n    * have any assigned /56, /64, or /116 IPv6 ranges.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "entities": {
+            "$ref": "#/$defs/entities"
+          }
+        },
+        "required": [
+          "entities"
+        ],
+        "type": "object",
+        "description": "The services to include in this transfer request."
+      }
+    },
+    "$defs": {
+      "entities": {
+        "description": "A collection of the services to include in this transfer request, separated by type.\n",
+        "properties": {
+          "linodes": {
+            "description": "An array containing the IDs of each of the Linodes included in this transfer.\n",
+            "example": [
+              111,
+              222
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "x-linode-cli-display": 5
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/account/service-transfers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An object representing a Service Transfer.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: When this transfer was created.",
+            [
+              "**entities**: A collection of the services to include in this transfer request, separated by type.",
+              {
+                "$ul": [
+                  "**linodes**: An array containing the IDs of each of the Linodes included in this transfer."
+                ]
+              }
+            ],
+            "**expiry**: When this transfer expires. Transfers will automatically expire 24 hours after creation.",
+            "**is_sender**: If the requesting account created this transfer.",
+            "**status**: The status of the transfer request.",
+            "**token**: The token used to identify and accept or cancel this transfer.",
+            "**updated**: When this transfer was last updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

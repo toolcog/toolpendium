@@ -1,0 +1,97 @@
+{
+  "name": "getNetworkSensorAlertsOverviewByMetric",
+  "description": "Return an overview of alert occurrences over a timespan, by metric",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data. The maximum lookback period is 365 days from today."
+      },
+      "t1": {
+        "type": "string",
+        "description": "The end of the timespan for the data. t1 can be a maximum of 31 days after t0."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameters t0 and t1. The value must be in seconds and be less than or equal to 31 days. The default is 7 days."
+      },
+      "interval": {
+        "type": "integer",
+        "description": "The time interval in seconds for returned data. The valid intervals are: 86400, 604800. The default is 604800."
+      }
+    },
+    "required": [
+      "networkId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/sensor/alerts/overview/byMetric{?t0,t1,timespan,interval}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**counts**: Counts of sensor alerts over the timespan, by reading metric",
+              {
+                "$ul": [
+                  "**door**: Number of sensor alerts that occurred due to an open door",
+                  "**humidity**: Number of sensor alerts that occurred due to humidity readings",
+                  "**indoorAirQuality**: Number of sensor alerts that occurred due to indoor air quality readings",
+                  [
+                    "**noise**: Object containing the number of sensor alerts that occurred due to noise readings",
+                    {
+                      "$ul": [
+                        "**ambient**: Number of sensor alerts that occurred due to ambient noise readings"
+                      ]
+                    }
+                  ],
+                  "**pm25**: Number of sensor alerts that occurred due to PM2.5 readings",
+                  "**temperature**: Number of sensor alerts that occurred due to temperature readings",
+                  "**tvoc**: Number of sensor alerts that occurred due to TVOC readings",
+                  "**water**: Number of sensor alerts that occurred due to the presence of water"
+                ]
+              }
+            ],
+            "**endTs**: End of the timespan over which sensor alerts are counted",
+            "**startTs**: Start of the timespan over which sensor alerts are counted"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

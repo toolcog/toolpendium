@@ -1,0 +1,80 @@
+{
+  "name": "Road_Status",
+  "description": "Gets the specified roads with the status aggregated over the date range specified, or now until the end of today if no dates are passed.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ids": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Comma-separated list of road identifiers e.g. \"A406, A2\" or use \"all\" to ignore id filter (a full list of supported road identifiers can be found at the /Road/ endpoint)"
+      },
+      "dateRangeNullable.startDate": {
+        "format": "date-time",
+        "type": "string"
+      },
+      "dateRangeNullable.endDate": {
+        "format": "date-time",
+        "type": "string"
+      }
+    },
+    "required": [
+      "ids"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/Road/{ids}/Status{?dateRangeNullable.startDate,dateRangeNullable.endDate}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**bounds**: The Bounds of the Corridor, given by the south-east followed by the north-west co-ordinate\r",
+            "**displayName**: The display name of the Corridor e.g. \"North Circular (A406)\". This\r",
+            "**envelope**: The Envelope of the Corridor, given by the corner co-ordinates of a rectangular (four-point) polygon\r",
+            "**group**: The group name of the Corridor e.g. \"Central London\". Most corridors are not grouped, in which case this field can be null.",
+            "**id**: The Id of the Corridor e.g. \"A406\"",
+            "**statusAggregationEndDate**: The end of the period over which status has been aggregated, or null if this is the current corridor status.",
+            "**statusAggregationStartDate**: The start of the period over which status has been aggregated, or null if this is the current corridor status.",
+            "**statusSeverity**: Standard multi-mode status severity code",
+            "**statusSeverityDescription**: Description of the status severity as applied to RoadCorridors",
+            "**url**: URL to retrieve this Corridor."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "name": "git_get-all-refs",
+  "description": "Returns an array of all the references from your Git database, including notes and stashes if they exist on the server. Anything in the namespace is returned, not just `heads` and `tags`. If there are no references to list, a `404` is returned.\n\n**Note:** You need to explicitly [request a pull request](https://docs.github.com/enterprise-server@2.18/rest/reference/pulls#get-a-single-pull-request) to trigger a merge commit creation. For more information, see \"[Checking mergeability of pull requests](https://docs.github.com/enterprise-server@2.18/rest/guides/getting-started-with-the-git-database-api#checking-mergeability-of-pull-requests)\".\n\n```\nGET /repos/octocat/Hello-World/git/refs\n```\n\nYou can also request a sub-namespace. For example, to get all the tag references, you can call:\n\n```\nGET /repos/octocat/Hello-World/git/refs/tags\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string"
+      },
+      "repo": {
+        "type": "string"
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "Results per page (max 100)"
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      },
+      "namespace": {
+        "type": "string",
+        "description": "Automatically added"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "namespace"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://HOSTNAME/api/v3/repos/{owner}/{repo}/git/refs/{namespace}{?per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Git Reference list"
+        },
+        "Git references within a repository",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**node_id**",
+            [
+              "**object**",
+              {
+                "$ul": [
+                  "**sha**: SHA for the reference",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**ref**",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

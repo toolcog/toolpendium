@@ -1,0 +1,144 @@
+{
+  "name": "tweetCountsRecentSearch",
+  "description": "Returns Tweet Counts from the last 7 days that match a search query.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "example": "(from:TwitterDev OR from:TwitterAPI) has:media -is:retweet",
+        "maxLength": 4096,
+        "minLength": 1,
+        "type": "string",
+        "description": "One query/rule/filter for matching Tweets. Refer to https://t.co/rulelength to identify the max query length."
+      },
+      "start_time": {
+        "format": "date-time",
+        "type": "string",
+        "description": "YYYY-MM-DDTHH:mm:ssZ. The oldest UTC timestamp (from most recent 7 days) from which the Tweets will be provided. Timestamp is in second granularity and is inclusive (i.e. 12:00:01 includes the first second of the minute)."
+      },
+      "end_time": {
+        "format": "date-time",
+        "type": "string",
+        "description": "YYYY-MM-DDTHH:mm:ssZ. The newest, most recent UTC timestamp to which the Tweets will be provided. Timestamp is in second granularity and is exclusive (i.e. 12:00:01 excludes the first second of the minute)."
+      },
+      "since_id": {
+        "$ref": "#/components/schemas/TweetId",
+        "description": "Returns results with a Tweet ID greater than (that is, more recent than) the specified ID."
+      },
+      "until_id": {
+        "$ref": "#/components/schemas/TweetId",
+        "description": "Returns results with a Tweet ID less than (that is, older than) the specified ID."
+      },
+      "next_token": {
+        "$ref": "#/components/schemas/PaginationToken36",
+        "description": "This parameter is used to get the next 'page' of results. The value used with the parameter is pulled directly from the response provided by the API, and should not be modified."
+      },
+      "pagination_token": {
+        "$ref": "#/components/schemas/PaginationToken36",
+        "description": "This parameter is used to get the next 'page' of results. The value used with the parameter is pulled directly from the response provided by the API, and should not be modified."
+      },
+      "granularity": {
+        "default": "hour",
+        "enum": [
+          "minute",
+          "hour",
+          "day"
+        ],
+        "type": "string",
+        "description": "The granularity for the search counts results."
+      },
+      "search_count.fields": {
+        "description": "A comma separated list of SearchCount fields to display.",
+        "example": [
+          "end",
+          "start",
+          "tweet_count"
+        ],
+        "items": {
+          "enum": [
+            "end",
+            "start",
+            "tweet_count"
+          ],
+          "type": "string"
+        },
+        "minItems": 1,
+        "type": "array",
+        "uniqueItems": true
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.twitter.com/2/tweets/counts/recent{?query,start_time,end_time,since_id,until_id,next_token,pagination_token,granularity,search_count.fields}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**errors**",
+            [
+              "**meta**",
+              {
+                "$ul": [
+                  "**newest_id**: The newest id in this response.",
+                  "**next_token**: The next token.",
+                  "**oldest_id**: The oldest id in this response.",
+                  "**total_tweet_count**: The sum of results returned in this response."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

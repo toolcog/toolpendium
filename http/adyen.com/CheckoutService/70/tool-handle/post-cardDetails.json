@@ -1,0 +1,92 @@
+{
+  "name": "post-cardDetails",
+  "description": "Send a request with at least the first 6 digits of the card number to get a response with an array of brands on the card. If you include [your supported brands](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__reqParam_supportedBrands) in the request, the response also tells you if you support each [brand that was identified](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/cardDetails__resParam_details).\n\nIf you have an API-only integration and collect card data, use this endpoint to find out if the shopper's card is co-branded. For co-branded cards, you must let the shopper choose the brand to pay with  if you support both brands.\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Idempotency-Key": {
+        "type": "string",
+        "description": "A unique identifier for the message with a maximum of 64 characters (we recommend a UUID)."
+      },
+      "body": {
+        "$ref": "#/$defs/CardDetailsRequest"
+      }
+    },
+    "$defs": {
+      "CardDetailsRequest": {
+        "properties": {
+          "cardNumber": {
+            "description": "A minimum of the first 8 digits of the card number and a maximum of the full card number. 11 digits gives the best result. \n\nYou must be [fully PCI compliant](https://docs.adyen.com/development-resources/pci-dss-compliance-guide) to collect raw card data.",
+            "type": "string"
+          },
+          "countryCode": {
+            "description": "The shopper country.\n\nFormat: [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\nExample: NL or DE",
+            "type": "string"
+          },
+          "encryptedCardNumber": {
+            "description": "The encrypted card number.",
+            "type": "string"
+          },
+          "merchantAccount": {
+            "description": "The merchant account identifier, with which you want to process the transaction.",
+            "type": "string"
+          },
+          "supportedBrands": {
+            "description": "The card brands you support. This is the [`brands`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods__resParam_paymentMethods-brands) array from your [`/paymentMethods`](https://docs.adyen.com/api-explorer/#/CheckoutService/latest/post/paymentMethods) response. \n\nIf not included, our API uses the ones configured for your merchant account and, if provided, the country code.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cardNumber",
+          "merchantAccount"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://checkout-test.adyen.com/v70/cardDetails"
+    },
+    "headers": {
+      "Idempotency-Key": {
+        "$": "Idempotency-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**brands**: The list of brands identified for the card."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

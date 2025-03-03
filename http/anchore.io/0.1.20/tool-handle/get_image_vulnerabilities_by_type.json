@@ -1,0 +1,99 @@
+{
+  "name": "get_image_vulnerabilities_by_type",
+  "description": "Get vulnerabilities by type",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "imageDigest": {
+        "type": "string"
+      },
+      "vtype": {
+        "type": "string"
+      },
+      "force_refresh": {
+        "type": "boolean"
+      },
+      "vendor_only": {
+        "type": "boolean",
+        "description": "Filter results to include only vulnerabilities that are not marked as invalid by upstream OS vendor data. When set to true, it will filter out all vulnerabilities where `will_not_fix` is False. If false all vulnerabilities are returned regardless of `will_not_fix`"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    },
+    "required": [
+      "imageDigest",
+      "vtype"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//images/{imageDigest}/vuln/{vtype}{?force_refresh,vendor_only}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "envelope containing list of vulnerabilities",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**imageDigest**",
+            "**vulnerabilities**: List of Vulnerability objects",
+            "**vulnerability_type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

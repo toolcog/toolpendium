@@ -1,0 +1,411 @@
+{
+  "name": "updateGoalRelationship",
+  "description": "An existing goal relationship can be updated by making a PUT request on the URL for\nthat goal relationship. Only the fields provided in the `data` block will be updated;\nany unspecified fields will remain unchanged.\n\nReturns the complete updated goal relationship record.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "goal_relationship_gid": {
+        "type": "string",
+        "description": "Globally unique identifier for the goal relationship."
+      },
+      "opt_pretty": {
+        "type": "boolean",
+        "description": "Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging."
+      },
+      "opt_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Defines fields to return.\nSome requests return *compact* representations of objects in order to conserve resources and complete the request more efficiently. Other times requests return more information than you may need. This option allows you to list the exact set of fields that the API should be sure to return for the objects. The field names should be provided as paths, described below.\nThe id of included objects will always be returned, regardless of the field options."
+      },
+      "body": {
+        "properties": {
+          "data": {
+            "$ref": "#/$defs/GoalRelationshipRequest"
+          }
+        },
+        "type": "object",
+        "description": "The updated fields for the goal relationship."
+      }
+    },
+    "required": [
+      "goal_relationship_gid",
+      "body"
+    ],
+    "$defs": {
+      "GoalRelationshipRequest": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/GoalRelationshipBase"
+          },
+          {
+            "type": "object"
+          }
+        ]
+      },
+      "GoalRelationshipBase": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/GoalRelationshipCompact"
+          },
+          {
+            "properties": {
+              "supported_goal": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/GoalCompact"
+                  },
+                  {
+                    "description": "The goal that the supporting resource supports.",
+                    "readOnly": true,
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "GoalRelationshipCompact": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/AsanaResource"
+          },
+          {
+            "description": "A *goal relationship* is an object representing the relationship between a goal and another goal, a project, or a portfolio.",
+            "properties": {
+              "contribution_weight": {
+                "description": "The weight that the supporting resource's progress contributes to the supported goal's progress. This can only be 0 or 1.",
+                "example": 1,
+                "type": "number"
+              },
+              "resource_subtype": {
+                "description": "The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+                "enum": [
+                  "subgoal",
+                  "supporting_work"
+                ],
+                "example": "subgoal",
+                "readOnly": true,
+                "type": "string"
+              },
+              "supporting_resource": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ProjectCompact"
+                  },
+                  {
+                    "description": "The supporting resource that supports the goal. This can be either a project, portfolio, or goal.",
+                    "readOnly": true,
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "type": "object",
+            "x-docs-overrides": {
+              "properties.resource_type.example": "goal_relationship"
+            }
+          }
+        ]
+      },
+      "AsanaResource": {
+        "description": "A generic Asana Resource, containing a globally unique identifier.",
+        "properties": {
+          "gid": {
+            "description": "Globally unique identifier of the resource, as a string.",
+            "example": "12345",
+            "readOnly": true,
+            "type": "string",
+            "x-insert-after": false
+          },
+          "resource_type": {
+            "description": "The base type of this resource.",
+            "example": "task",
+            "readOnly": true,
+            "type": "string",
+            "x-insert-after": "gid"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectCompact": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/AsanaResource"
+          },
+          {
+            "description": "A *project* represents a prioritized list of tasks in Asana or a board with columns of tasks represented as cards. It exists in a single workspace or organization and is accessible to a subset of users in that workspace or organization, depending on its permissions.",
+            "properties": {
+              "name": {
+                "description": "Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer.",
+                "example": "Stuff to buy",
+                "type": "string"
+              }
+            },
+            "type": "object",
+            "x-docs-overrides": {
+              "properties.resource_type.example": "project"
+            }
+          }
+        ]
+      },
+      "GoalCompact": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/AsanaResource"
+          },
+          {
+            "properties": {
+              "name": {
+                "description": "The name of the goal.",
+                "example": "Grow web traffic by 30%",
+                "type": "string"
+              },
+              "owner": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/UserCompact"
+                  },
+                  {
+                    "nullable": true,
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "type": "object",
+            "x-docs-overrides": {
+              "properties.resource_type.example": "goal"
+            }
+          }
+        ]
+      },
+      "UserCompact": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/AsanaResource"
+          },
+          {
+            "description": "A *user* object represents an account in Asana that can be given access to various workspaces, projects, and tasks.",
+            "properties": {
+              "name": {
+                "description": "*Read-only except when same user as requester*. The user’s name.",
+                "example": "Greg Sanchez",
+                "type": "string"
+              }
+            },
+            "type": "object",
+            "x-docs-overrides": {
+              "properties.resource_type.example": "user"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://app.asana.com/api/1.0/goal_relationships/{goal_relationship_gid}{?opt_pretty,opt_fields}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: A generic Asana Resource, containing a globally unique identifier.",
+              {
+                "$ul": [
+                  "**gid**: Globally unique identifier of the resource, as a string.",
+                  "**resource_type**: The base type of this resource.",
+                  "**contribution_weight**: The weight that the supporting resource's progress contributes to the supported goal's progress. This can only be 0 or 1.",
+                  "**resource_subtype**: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+                  [
+                    "**supporting_resource**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer."
+                      ]
+                    }
+                  ],
+                  [
+                    "**supported_goal**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: The name of the goal.",
+                        [
+                          "**owner**: A generic Asana Resource, containing a globally unique identifier.",
+                          {
+                            "$ul": [
+                              "**gid**: Globally unique identifier of the resource, as a string.",
+                              "**resource_type**: The base type of this resource.",
+                              "**name**: *Read-only except when same user as requester*. The user’s name."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

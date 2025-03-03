@@ -1,0 +1,69 @@
+{
+  "name": "GET_suppression-bounces-email",
+  "description": "**This endpoint allows you to retrieve a specific bounce by email address.**",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "email"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/suppression/bounces/{email}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Bounce Response list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: The unix timestamp for when the bounce record was created at SendGrid.",
+            "**email**: The email address that was added to the bounce list.",
+            "**reason**: The reason for the bounce. This typically will be a bounce code, an enhanced code, and a description.",
+            "**status**: Enhanced SMTP bounce response"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

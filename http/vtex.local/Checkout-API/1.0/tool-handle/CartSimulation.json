@@ -1,0 +1,188 @@
+{
+  "name": "CartSimulation",
+  "description": "This endpoint is used to simulate a cart in VTEX Checkout.\r\n\r\nIt receives an **SKU ID**, the **quantity** of items in the cart and the ID of the **Seller**.\r\n\r\nIt sends back all information about the cart, such as the selling price of each item, rates and benefits data, payment and logistics info.\r\n\r\nThis is useful whenever you need to know the availability of fulfilling an order for a specific cart setting, since the API response will let you know the updated price, inventory and shipping data.\r\n\r\n**Important**: The fields (`sku id`, `quantity`, `seller`, `country`, `postalCode` and `geoCoordinates`) are just examples of content that you can simulate in your cart. You can add more fields to the request as per your need. Access the [orderForm](https://developers.vtex.com/docs/guides/orderform-fields) guide to check the available fields.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Content-Type": {
+        "default": "application/json",
+        "type": "string",
+        "description": "Type of the content being sent."
+      },
+      "Accept": {
+        "default": "application/json",
+        "type": "string",
+        "description": "HTTP Client Negotiation _Accept_ Header. Indicates the types of responses the client can understand."
+      },
+      "RnbBehavior": {
+        "default": 0,
+        "type": "integer",
+        "description": "This parameter defines which promotions apply to the simulation. Use `0` for simulations at cart stage, which means all promotions apply. In case of window simulation use `1`, which indicates promotions that apply nominal discounts over the total purchase value shouldn't be considered on the simulation.\n\r\n\rNote that if this not sent, the parameter is `1`."
+      },
+      "sc": {
+        "example": 1,
+        "type": "integer",
+        "description": "Trade Policy (Sales Channel) identification."
+      },
+      "body": {
+        "properties": {
+          "country": {
+            "description": "Three letter ISO code of the country of the shipping address. This value must be sent along with the `postalCode` or `geoCoordinates` values.",
+            "example": "BRA",
+            "type": "string"
+          },
+          "geoCoordinates": {
+            "default": [
+              -47.924747467041016,
+              -15.832582473754883
+            ],
+            "description": "Array containing two floats with geocoordinates, first longitude, then latitude.",
+            "items": {
+              "example": -47.924747467041016,
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "items": {
+            "description": "Array containing information about the SKUs inside the cart to be simulated.",
+            "items": {
+              "properties": {
+                "id": {
+                  "description": "The SKU ID.",
+                  "example": "1",
+                  "type": "string"
+                },
+                "quantity": {
+                  "description": "The quantity of items of this specific SKU in the cart to be simulated.",
+                  "example": 1,
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "seller": {
+                  "description": "The ID of the seller responsible for this SKU. This ID can be found in your VTEX Admin.",
+                  "example": "1",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "postalCode": {
+            "description": "Postal code.",
+            "example": "12345-000",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "quantity",
+          "seller"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "Content-Type",
+      "Accept"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://vtex.local/api/checkout/pub/orderForms/simulation{?RnbBehavior,sc}"
+    },
+    "headers": {
+      "Content-Type": {
+        "$": "Content-Type"
+      },
+      "Accept": {
+        "$": "Accept"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**country**: Three letter ISO code of the country of the shipping address.",
+            "**items**: Information on each item in the cart.",
+            "**logisticsInfo**: Array with logistics information on each item of the `items` array in the `orderForm`.",
+            "**marketingData**: Object containing promotion data such as coupon tracking information and internal or external UTMs.",
+            [
+              "**paymentData**: Payment data information.",
+              {
+                "$ul": [
+                  "**availableAccounts**: Available accounts.",
+                  "**availableAssociations**: Available associations.",
+                  "**availableTokens**: Available tokens.",
+                  "**giftCardMessages**: Array of gift card messages.",
+                  "**giftCards**: Gift card information, if it applies to the order.",
+                  [
+                    "**installmentOptions**: Installment options information.",
+                    {
+                      "$ul": [
+                        "**bin**: Bin.",
+                        [
+                          "**installments**: Installments information.",
+                          {
+                            "$ul": [
+                              "**count**: Count information.",
+                              "**hasInterestRate**: Indicates whether the payment has interest.",
+                              "**interestRate**: Interest rate value.",
+                              "**sellerMerchantInstallments**: Seller merchant installments information.",
+                              "**total**: Total value of the order without separating cents. For example, $24.99 is represented `2499`.",
+                              "**value**: Value of the order without the interest rate. The value is shown without separating cents."
+                            ]
+                          }
+                        ],
+                        "**paymentGroupName**: Payment group name.",
+                        "**paymentName**: Payment name.",
+                        "**paymentSystem**: Payment system identification.",
+                        "**value**: Total value assigned to this payment."
+                      ]
+                    }
+                  ],
+                  "**paymentSystems**: Information on payment systems.",
+                  "**payments**: Information on each payment."
+                ]
+              }
+            ],
+            "**postalCode**: Postal Code.",
+            [
+              "**ratesAndBenefitsData**: Information on rates and benefits that apply to the order.",
+              {
+                "$ul": [
+                  "**rateAndBenefitsIdentifiers**: List with rates and benefits identifiers.",
+                  "**teaser**: List with rates and benefits teasers."
+                ]
+              }
+            ],
+            "**selectableGifts**: Array containing the data of the item selected as a gift."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

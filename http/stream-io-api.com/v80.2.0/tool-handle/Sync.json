@@ -1,0 +1,249 @@
+{
+  "name": "Sync",
+  "description": "Returns all events happened since client disconnect in specified channels\n\nRequired permissions:\n- ReadChannel\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/SyncRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "SyncRequest": {
+        "nullable": true,
+        "properties": {
+          "channel_cids": {
+            "description": "List of channel CIDs to sync",
+            "items": {
+              "type": "string"
+            },
+            "maximum": 255,
+            "minimum": 1,
+            "title": "Channel CIDs",
+            "type": "array",
+            "x-stream-index": "001"
+          },
+          "client_id": {
+            "type": "string",
+            "x-stream-index": "006.002"
+          },
+          "connection_id": {
+            "type": "string",
+            "x-stream-index": "006.003"
+          },
+          "last_sync_at": {
+            "description": "Date from which synchronization should happen",
+            "format": "date-time",
+            "title": "Last sync at",
+            "type": "string",
+            "x-stream-index": "002"
+          },
+          "user": {
+            "$ref": "#/$defs/UserObjectRequest"
+          },
+          "user_id": {
+            "type": "string",
+            "x-stream-index": "005.001"
+          },
+          "watch": {
+            "description": "If set to true this will start watching requested and newly added channels that user has access to. If error occurred with this option enabled and it is not an input error - channels will still be watched.",
+            "title": "Watch synced channels",
+            "type": "boolean",
+            "x-stream-index": "004"
+          },
+          "with_inaccessible_cids": {
+            "description": "If set to true this will add 'inaccessible_cids' to response type",
+            "title": "With inaccessible CIDs",
+            "type": "boolean",
+            "x-stream-index": "003"
+          }
+        },
+        "required": [
+          "last_sync_at"
+        ],
+        "type": "object"
+      },
+      "UserObjectRequest": {
+        "additionalProperties": true,
+        "description": "Represents chat user",
+        "properties": {
+          "ban_expires": {
+            "description": "Expiration date of the ban",
+            "format": "date-time",
+            "title": "Ban expires",
+            "type": "string",
+            "x-stream-index": "015"
+          },
+          "banned": {
+            "description": "Whether a user is banned or not",
+            "title": "Banned",
+            "type": "boolean",
+            "x-stream-index": "014"
+          },
+          "id": {
+            "description": "Unique user identifier",
+            "title": "ID",
+            "type": "string",
+            "x-stream-index": "003"
+          },
+          "invisible": {
+            "type": "boolean",
+            "x-stream-index": "021"
+          },
+          "language": {
+            "description": "Preferred language of a user",
+            "title": "Language",
+            "type": "string",
+            "x-stream-index": "030"
+          },
+          "push_notifications": {
+            "$ref": "#/$defs/PushNotificationSettingsRequest"
+          },
+          "revoke_tokens_issued_before": {
+            "description": "Revocation date for tokens",
+            "format": "date-time",
+            "title": "Revoke tokens issued before",
+            "type": "string",
+            "x-stream-index": "037"
+          },
+          "role": {
+            "description": "Determines the set of user permissions",
+            "title": "Role",
+            "type": "string",
+            "x-stream-index": "004"
+          },
+          "teams": {
+            "description": "List of teams user is a part of",
+            "items": {
+              "type": "string"
+            },
+            "title": "Teams",
+            "type": "array",
+            "x-stream-index": "031"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "User object",
+        "type": "object"
+      },
+      "PushNotificationSettingsRequest": {
+        "properties": {
+          "disabled": {
+            "type": "boolean",
+            "x-stream-index": "001"
+          },
+          "disabled_until": {
+            "format": "date-time",
+            "type": "string",
+            "x-stream-index": "002"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://chat.stream-io-api.com/sync"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**duration**",
+            "**events**: List of events",
+            "**inaccessible_cids**: List of CIDs that user can't access"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**StatusCode**: Response HTTP status code",
+            "**code**: API error code",
+            "**details**: Additional error-specific information",
+            "**duration**: Request duration",
+            "**exception_fields**: Additional error info",
+            "**message**: Message describing an error",
+            "**more_info**: URL with additional information"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**StatusCode**: Response HTTP status code",
+            "**code**: API error code",
+            "**details**: Additional error-specific information",
+            "**duration**: Request duration",
+            "**exception_fields**: Additional error info",
+            "**message**: Message describing an error",
+            "**more_info**: URL with additional information"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

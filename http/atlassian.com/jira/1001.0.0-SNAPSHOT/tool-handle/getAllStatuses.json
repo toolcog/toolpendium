@@ -1,0 +1,65 @@
+{
+  "name": "getAllStatuses",
+  "description": "Returns the valid statuses for a project. The statuses are grouped by issue type, as each project has a set of valid issue types and each issue type has a set of valid statuses.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** *Browse Projects* [project permission](https://confluence.atlassian.com/x/yodKLg) for the project.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectIdOrKey": {
+        "type": "string",
+        "description": "The project ID or project key (case sensitive)."
+      }
+    },
+    "required": [
+      "projectIdOrKey"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/project/{projectIdOrKey}/statuses"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Status details for an issue type.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The ID of the issue type.",
+            "**name**: The name of the issue type.",
+            "**self**: The URL of the issue type's status details.",
+            "**statuses**: List of status details for the issue type.",
+            "**subtask**: Whether this issue type represents subtasks."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

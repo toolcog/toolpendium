@@ -1,0 +1,588 @@
+{
+  "name": "CreateJobTemplate",
+  "description": "Creates a job template. Job template stores values of StartJobRun API request in a template and can be used to start a job run. Job template allows two use cases: avoid repeating recurring StartJobRun API request values, enforcing certain values in StartJobRun API request.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "clientToken",
+          "jobTemplateData"
+        ],
+        "properties": {
+          "name": {
+            "description": "The specified name of the job template.",
+            "type": "string",
+            "pattern": "[\\.\\-_/#A-Za-z0-9]+",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "clientToken": {
+            "description": "The client token of the job template.",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "jobTemplateData": {
+            "description": "The values of StartJobRun API requests used in job runs started using the job template.",
+            "type": "object",
+            "properties": {
+              "executionRoleArn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ParametricIAMRoleArn"
+                  },
+                  {
+                    "description": "The execution role ARN of the job run."
+                  }
+                ]
+              },
+              "releaseLabel": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ParametricReleaseLabel"
+                  },
+                  {
+                    "description": " The release version of Amazon EMR."
+                  }
+                ]
+              },
+              "configurationOverrides": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ParametricConfigurationOverrides"
+                  },
+                  {
+                    "description": " The configuration settings that are used to override defaults configuration."
+                  }
+                ]
+              },
+              "jobDriver": {
+                "$ref": "#/$defs/JobDriver"
+              },
+              "parameterConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TemplateParameterConfigurationMap"
+                  },
+                  {
+                    "description": "The configuration of parameters existing in the job template."
+                  }
+                ]
+              },
+              "jobTags": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TagMap"
+                  },
+                  {
+                    "description": "The tags assigned to jobs started using the job template."
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "The tags that are associated with the job template.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/StringEmpty256"
+            }
+          },
+          "kmsKeyArn": {
+            "description": "The KMS key ARN used to encrypt the job template.",
+            "type": "string",
+            "pattern": "^(arn:(aws[a-zA-Z0-9-]*):kms:.+:(\\d{12})?:key\\/[(0-9a-zA-Z)-?]+|\\$\\{[a-zA-Z]\\w*\\})$",
+            "minLength": 3,
+            "maxLength": 2048
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ParametricIAMRoleArn": {
+        "type": "string",
+        "pattern": "(^arn:(aws[a-zA-Z0-9-]*):iam::(\\d{12})?:(role((\\u002F)|(\\u002F[\\u0021-\\u007F]+\\u002F))[\\w+=,.@-]+)$)|([\\.\\-_\\#A-Za-z0-9\\$\\{\\}]+)",
+        "minLength": 4,
+        "maxLength": 2048
+      },
+      "ParametricReleaseLabel": {
+        "type": "string",
+        "pattern": "([\\.\\-_/A-Za-z0-9]+|\\$\\{[a-zA-Z]\\w*\\})",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "ParametricConfigurationOverrides": {
+        "type": "object",
+        "properties": {
+          "applicationConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConfigurationList"
+              },
+              {
+                "description": " The configurations for the application running by the job run."
+              }
+            ]
+          },
+          "monitoringConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParametricMonitoringConfiguration"
+              },
+              {
+                "description": " The configurations for monitoring. "
+              }
+            ]
+          }
+        },
+        "description": " A configuration specification to be used to override existing configurations. This data type allows job template parameters to be specified within."
+      },
+      "ConfigurationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Configuration"
+        },
+        "maxItems": 100
+      },
+      "Configuration": {
+        "type": "object",
+        "required": [
+          "classification"
+        ],
+        "properties": {
+          "classification": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String1024"
+              },
+              {
+                "description": "The classification within a configuration."
+              }
+            ]
+          },
+          "properties": {
+            "description": "A set of properties specified within a configuration classification."
+          },
+          "configurations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConfigurationList"
+              },
+              {
+                "description": "A list of additional configurations to apply within a configuration object."
+              }
+            ]
+          }
+        },
+        "description": "A configuration specification to be used when provisioning virtual clusters, which can include configurations for applications and software bundled with Amazon EMR on EKS. A configuration consists of a classification, properties, and optional nested configurations. A classification refers to an application-specific configuration file. Properties are the settings you want to change in that file."
+      },
+      "String1024": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "ParametricMonitoringConfiguration": {
+        "type": "object",
+        "properties": {
+          "persistentAppUI": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TemplateParameter"
+              },
+              {
+                "description": " Monitoring configurations for the persistent application UI."
+              }
+            ]
+          },
+          "cloudWatchMonitoringConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParametricCloudWatchMonitoringConfiguration"
+              },
+              {
+                "description": " Monitoring configurations for CloudWatch."
+              }
+            ]
+          },
+          "s3MonitoringConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParametricS3MonitoringConfiguration"
+              },
+              {
+                "description": " Amazon S3 configuration for monitoring log publishing."
+              }
+            ]
+          }
+        },
+        "description": " Configuration setting for monitoring. This data type allows job template parameters to be specified within."
+      },
+      "TemplateParameter": {
+        "type": "string",
+        "pattern": "[\\.\\-_/#A-Za-z0-9\\$\\{\\}]+",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "ParametricCloudWatchMonitoringConfiguration": {
+        "type": "object",
+        "properties": {
+          "logGroupName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TemplateParameter"
+              },
+              {
+                "description": " The name of the log group for log publishing."
+              }
+            ]
+          },
+          "logStreamNamePrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String256"
+              },
+              {
+                "description": " The specified name prefix for log streams."
+              }
+            ]
+          }
+        },
+        "description": " A configuration for CloudWatch monitoring. You can configure your jobs to send log information to CloudWatch Logs. This data type allows job template parameters to be specified within."
+      },
+      "String256": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ParametricS3MonitoringConfiguration": {
+        "type": "object",
+        "properties": {
+          "logUri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UriString"
+              },
+              {
+                "description": "Amazon S3 destination URI for log publishing."
+              }
+            ]
+          }
+        },
+        "description": " Amazon S3 configuration for monitoring log publishing. You can configure your jobs to send log information to Amazon S3. This data type allows job template parameters to be specified within."
+      },
+      "UriString": {
+        "type": "string",
+        "pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDBFF-\\uDC00\\uDFFF\\r\\n\\t]*",
+        "minLength": 1,
+        "maxLength": 10280
+      },
+      "JobDriver": {
+        "type": "object",
+        "properties": {
+          "sparkSubmitJobDriver": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSubmitJobDriver"
+              },
+              {
+                "description": "The job driver parameters specified for spark submit."
+              }
+            ]
+          },
+          "sparkSqlJobDriver": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSqlJobDriver"
+              },
+              {
+                "description": "The job driver for job type."
+              }
+            ]
+          }
+        },
+        "description": "Specify the driver that the job runs on. Exactly one of the two available job drivers is required, either sparkSqlJobDriver or sparkSubmitJobDriver."
+      },
+      "SparkSubmitJobDriver": {
+        "type": "object",
+        "required": [
+          "entryPoint"
+        ],
+        "properties": {
+          "entryPoint": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointPath"
+              },
+              {
+                "description": "The entry point of job application."
+              }
+            ]
+          },
+          "entryPointArguments": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointArguments"
+              },
+              {
+                "description": "The arguments for job application."
+              }
+            ]
+          },
+          "sparkSubmitParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSubmitParameters"
+              },
+              {
+                "description": "The Spark submit parameters that are used for job runs."
+              }
+            ]
+          }
+        },
+        "description": "The information about job driver for Spark submit."
+      },
+      "EntryPointPath": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "EntryPointArguments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EntryPointArgument"
+        }
+      },
+      "EntryPointArgument": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 10280,
+        "format": "password"
+      },
+      "SparkSubmitParameters": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 102400,
+        "format": "password"
+      },
+      "SparkSqlJobDriver": {
+        "type": "object",
+        "properties": {
+          "entryPoint": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointPath"
+              },
+              {
+                "description": "The SQL file to be executed."
+              }
+            ]
+          },
+          "sparkSqlParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSqlParameters"
+              },
+              {
+                "description": "The Spark parameters to be included in the Spark SQL command."
+              }
+            ]
+          }
+        },
+        "description": "The job driver for job type."
+      },
+      "SparkSqlParameters": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 102400,
+        "format": "password"
+      },
+      "TemplateParameterConfigurationMap": {
+        "type": "object",
+        "maxProperties": 20,
+        "additionalProperties": {
+          "$ref": "#/$defs/TemplateParameterConfiguration"
+        }
+      },
+      "TemplateParameterConfiguration": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TemplateParameterDataType"
+              },
+              {
+                "description": "The type of the job template parameter. Allowed values are: ‘STRING’, ‘NUMBER’."
+              }
+            ]
+          },
+          "defaultValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String1024"
+              },
+              {
+                "description": "The default value for the job template parameter."
+              }
+            ]
+          }
+        },
+        "description": "The configuration of a job template parameter."
+      },
+      "TemplateParameterDataType": {
+        "type": "string",
+        "enum": [
+          "NUMBER",
+          "STRING"
+        ]
+      },
+      "TagMap": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 50,
+        "additionalProperties": {
+          "$ref": "#/$defs/StringEmpty256"
+        }
+      },
+      "StringEmpty256": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://emr-containers.us-east-1.amazonaws.com/jobtemplates"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**name**",
+            "**arn**",
+            "**createdAt**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

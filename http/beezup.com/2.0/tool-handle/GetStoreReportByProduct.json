@@ -1,0 +1,693 @@
+{
+  "name": "GetStoreReportByProduct",
+  "description": "Get the report by product",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "storeId": {
+        "format": "guid",
+        "type": "string",
+        "description": "Your store identifier"
+      },
+      "body": {
+        "$ref": "#/$defs/reportByProductRequest"
+      }
+    },
+    "required": [
+      "storeId",
+      "body"
+    ],
+    "$defs": {
+      "reportByProductRequest": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/orderedReportFilterCommonParameters"
+          },
+          {
+            "$ref": "#/$defs/paginationRequestParameters"
+          },
+          {
+            "properties": {
+              "analyticsProductColumnFilters": {
+                "$ref": "#/$defs/analyticsProductColumnFilters"
+              },
+              "productColumnsToDisplay": {
+                "$ref": "#/$defs/productColumnsToDisplay"
+              },
+              "productState": {
+                "$ref": "#/$defs/productStateFilter"
+              }
+            },
+            "required": [
+              "beginPeriodUtcDate",
+              "endPeriodUtcDate",
+              "advancedFilters",
+              "productState"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "orderedReportFilterCommonParameters": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/reportFilterCommonParameters"
+          },
+          {
+            "properties": {
+              "orderBy": {
+                "$ref": "#/$defs/performanceIndicatorType"
+              },
+              "orderByDirection": {
+                "$ref": "#/$defs/orderByDirection"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "description": "Contains common filter parameters with Order By functionnality"
+      },
+      "reportFilterCommonParameters": {
+        "description": "Contains common filter parameters",
+        "properties": {
+          "advancedFilters": {
+            "$ref": "#/$defs/reportAdvancedFilters"
+          },
+          "beginPeriodUtcDate": {
+            "description": "The begin date period you want to get the report. It's required only in case of custom period type !",
+            "example": "2006-11-20T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "categoryFilter": {
+            "$ref": "#/$defs/BeezUP.Common.CatalogCategoryFilter"
+          },
+          "channelId": {
+            "$ref": "#/$defs/BeezUP.Common.ChannelId"
+          },
+          "endPeriodUtcDate": {
+            "description": "The end date period you want to get the report. It's required only in case of custom period type !",
+            "example": "2006-12-20T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "performanceIndicatorFilters": {
+            "example": [
+              {
+                "indicator": "Cost",
+                "operatorName": "Equals",
+                "value": "10"
+              }
+            ],
+            "items": {
+              "$ref": "#/$defs/performanceIndicatorFilter"
+            },
+            "type": "array"
+          },
+          "periodType": {
+            "$ref": "#/$defs/reportFilterPeriodType"
+          }
+        },
+        "required": [
+          "periodType",
+          "advancedFilters"
+        ],
+        "type": "object"
+      },
+      "reportAdvancedFilters": {
+        "properties": {
+          "globalMarginPercent": {
+            "description": "If the margin type is 'Global', indicate the percentage of sale price.",
+            "example": "10",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "linkClickToOrderMaxDay": {
+            "default": "30",
+            "description": "If the linkOrderType is OnClickDate, indicate the max day to search the click from the order",
+            "example": "5",
+            "maximum": 180,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "linkClickToOrderType": {
+            "$ref": "#/$defs/linkClickToOrderType"
+          },
+          "marginType": {
+            "$ref": "#/$defs/marginType"
+          },
+          "onlyDirectSales": {
+            "default": "false",
+            "description": "If true, you will get only direct sales. Otherwise the indirect sales will be included.",
+            "example": "true",
+            "type": "boolean"
+          },
+          "onlyPaymentValidatedOrders": {
+            "default": "false",
+            "description": "If true, you will get the only the orders with payment validated. Otherwise, you will get all orders validated or not.",
+            "example": "true",
+            "type": "boolean"
+          },
+          "performanceIndicatorFormula": {
+            "$ref": "#/$defs/performanceIndicatorFormula"
+          }
+        },
+        "required": [
+          "marginType",
+          "linkClickToOrderType",
+          "onlyPaymentValidatedOrders",
+          "onlyDirectSales",
+          "performanceIndicatorFormula"
+        ],
+        "type": "object"
+      },
+      "linkClickToOrderType": {
+        "default": "OnPurchaseDate",
+        "enum": [
+          "OnPurchaseDate",
+          "OnClickDate"
+        ],
+        "example": "OnClickDate",
+        "type": "string"
+      },
+      "marginType": {
+        "default": "Tracker",
+        "enum": [
+          "Tracker",
+          "Global"
+        ],
+        "example": "Global",
+        "type": "string"
+      },
+      "performanceIndicatorFormula": {
+        "description": "The KPI formula",
+        "example": {
+          "firstParameter": "Cost",
+          "operatorName": "Multiply",
+          "secondParamter": "ROI",
+          "thirdParameter": "100"
+        },
+        "properties": {
+          "firstParameter": {
+            "$ref": "#/$defs/performanceIndicatorFormulaParameterType"
+          },
+          "operatorName": {
+            "$ref": "#/$defs/performanceIndicatorFormulaOperatorName"
+          },
+          "secondParameter": {
+            "$ref": "#/$defs/performanceIndicatorFormulaParameterType"
+          },
+          "thirdParameter": {
+            "default": "100",
+            "description": "Indicate the value of the third parameter of your formula",
+            "example": "100",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "performanceIndicatorFormulaParameterType": {
+        "description": "Indicate on which indicator or value you want to make your formula",
+        "enum": [
+          "Cost",
+          "TotalSales",
+          "Margin",
+          "TotalSalesMinusCost",
+          "MarginMinusCost",
+          "OrderCount",
+          "ClickCount",
+          "SoldProductCount",
+          "One"
+        ],
+        "example": "Cost",
+        "type": "string"
+      },
+      "performanceIndicatorFormulaOperatorName": {
+        "enum": [
+          "Multiply",
+          "Divide"
+        ],
+        "example": "Multiply",
+        "type": "string"
+      },
+      "BeezUP.Common.CatalogCategoryFilter": {
+        "properties": {
+          "categoryPath": {
+            "description": "Indicates on which catalog category path you want to make the filter",
+            "example": [
+              "Maison",
+              "Chambre"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "BeezUP.Common.ChannelId": {
+        "description": "The channel identifier",
+        "example": "2dc136a7-0d3d-4cc9-a825-a28a42c53e28",
+        "format": "guid",
+        "type": "string"
+      },
+      "performanceIndicatorFilter": {
+        "properties": {
+          "operatorName": {
+            "$ref": "#/$defs/performanceIndicatorFilterOperatorName"
+          },
+          "performanceIndicator": {
+            "$ref": "#/$defs/performanceIndicatorType"
+          },
+          "value": {
+            "description": "Indicates the filter value to apply on this indicator",
+            "example": "10.42",
+            "type": "number"
+          }
+        },
+        "required": [
+          "performanceIndicator",
+          "operatorName",
+          "value"
+        ],
+        "type": "object"
+      },
+      "performanceIndicatorFilterOperatorName": {
+        "description": "Indicates the operator you want to apply on this indicator",
+        "example": "Equals",
+        "type": "string",
+        "x-lov": "PerformanceIndicatorFilterOperatorName"
+      },
+      "performanceIndicatorType": {
+        "description": "Indicate on which indicator or value you want to make your formula",
+        "enum": [
+          "ClickCount",
+          "Cost",
+          "OrderCount",
+          "ProductCount",
+          "SoldProductCount",
+          "DisabledProductCount",
+          "EnabledProductCount",
+          "TotalSales",
+          "Margin",
+          "ROI",
+          "PerformanceIndicator"
+        ],
+        "example": "Cost",
+        "type": "string"
+      },
+      "reportFilterPeriodType": {
+        "description": "Indicates the period type we want use for the report filter",
+        "enum": [
+          "Custom",
+          "Yesterday",
+          "Last7Days",
+          "LastWeek",
+          "ThisMonth",
+          "Last30Days",
+          "LastMonth",
+          "Last60Days",
+          "Last90Days",
+          "Last3Months"
+        ],
+        "type": "string"
+      },
+      "orderByDirection": {
+        "description": "Indicate which direction to order results by",
+        "enum": [
+          "Ascending",
+          "Descending"
+        ],
+        "example": "Ascending",
+        "type": "string"
+      },
+      "paginationRequestParameters": {
+        "properties": {
+          "pageNumber": {
+            "$ref": "#/$defs/BeezUP.Common.PageNumber"
+          },
+          "pageSize": {
+            "$ref": "#/$defs/BeezUP.Common.PageSize"
+          }
+        },
+        "type": "object"
+      },
+      "BeezUP.Common.PageNumber": {
+        "default": "1",
+        "description": "Indicates the page number",
+        "example": "1",
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer"
+      },
+      "BeezUP.Common.PageSize": {
+        "default": "100",
+        "description": "Indicate the item count per page",
+        "example": "100",
+        "format": "int32",
+        "maximum": 100,
+        "minimum": 25,
+        "type": "integer"
+      },
+      "analyticsProductColumnFilters": {
+        "properties": {
+          "additionalAnalyticsProductColumnFilters": {
+            "$ref": "#/$defs/additionalAnalyticsProductColumnFilters"
+          },
+          "sku": {
+            "description": "The product sku filter",
+            "example": "M1234",
+            "type": "string"
+          },
+          "title": {
+            "description": "The product title filter",
+            "example": "Refrigérateur",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "additionalAnalyticsProductColumnFilters": {
+        "additionalProperties": {
+          "$ref": "#/$defs/analyticsProductColumnFilter"
+        },
+        "description": "Describes a filter on a product's column.\nThe key is the column identifier of your catalog or a custom column.\n",
+        "type": "object"
+      },
+      "analyticsProductColumnFilter": {
+        "example": {
+          "672644c7-5bd0-4e25-88c1-1f732bda5e4c": {
+            "operatorName": "NumericalGreaterThan",
+            "values": [
+              "100"
+            ]
+          }
+        },
+        "properties": {
+          "operatorName": {
+            "$ref": "#/$defs/analyticsProductColumnFilterOperatorName"
+          },
+          "values": {
+            "description": "Must be null if the operator is \"IsNull\" or \"IsNotNull\".\nCan contains multiple value in case of \"InList\" operator. Otherwise a single value is expected.\n",
+            "example": [
+              "My value"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "operatorName"
+        ],
+        "type": "object"
+      },
+      "analyticsProductColumnFilterOperatorName": {
+        "description": "Indicate the operator you want to apply on the columnId",
+        "type": "string",
+        "x-lov": "AnalyticsProductColumnFilterOperatorName"
+      },
+      "productColumnsToDisplay": {
+        "example": [
+          "4b460e31-3d1f-4117-922d-b159a64ec1d2"
+        ],
+        "items": {
+          "$ref": "#/$defs/BeezUP.Common.CatalogColumnId"
+        },
+        "maxItems": 1,
+        "minItems": 0,
+        "type": "array"
+      },
+      "BeezUP.Common.CatalogColumnId": {
+        "description": "The catalog column identifier (catalog or custom column)",
+        "example": "bea7c21e-948b-4ac3-9ffd-4396e62c4163",
+        "format": "guid",
+        "type": "string"
+      },
+      "productStateFilter": {
+        "default": "All",
+        "description": "You can filter on the product state.",
+        "enum": [
+          "All",
+          "Enabled",
+          "Disabled"
+        ],
+        "example": "All",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.beezup.com/v2/user/analytics/{storeId}/reports/byproduct"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**currencyCode**: The currency code <a href=\"https://en.wikipedia.org/wiki/ISO_4217\">(ISO 4217)</a>",
+            [
+              "**links**",
+              {
+                "$ul": [
+                  "**disableAllProducts**",
+                  "**disableProducts**",
+                  "**enableAllProducts**",
+                  "**enableProducts**"
+                ]
+              }
+            ],
+            [
+              "**paginationResult**",
+              {
+                "$ul": [
+                  "**entryCount**: The entry count currently returned",
+                  [
+                    "**links**: The navigation links 'first', 'last', 'next', 'previous'",
+                    {
+                      "$ul": [
+                        [
+                          "**first**",
+                          {
+                            "$ul": [
+                              "**allOptionalParamsProvided**: indicates whether all optionals params have been provided",
+                              "**allRequiredParamsProvided**: indicates whether all required params have been provided",
+                              "**description**: The description of the link",
+                              "**docUrl**: The documentation related to this operation.",
+                              "**href**: Indicate the relative uri for this link",
+                              [
+                                "**info**",
+                                {
+                                  "$ul": [
+                                    "**errors**",
+                                    "**informations**",
+                                    "**successes**",
+                                    "**warnings**"
+                                  ]
+                                }
+                              ],
+                              "**label**: The label corresponding to the link. This label is automatically translated based on the Accept-Language http header.",
+                              "**method**: Indicate the http method to use on this link (default: GET)",
+                              "**operationId**: The operationId to call.",
+                              "**parameters**",
+                              "**urlTemplated**: indicates whether the href is templated or not"
+                            ]
+                          }
+                        ],
+                        [
+                          "**last**",
+                          {
+                            "$ul": [
+                              "**allOptionalParamsProvided**: indicates whether all optionals params have been provided",
+                              "**allRequiredParamsProvided**: indicates whether all required params have been provided",
+                              "**description**: The description of the link",
+                              "**docUrl**: The documentation related to this operation.",
+                              "**href**: Indicate the relative uri for this link",
+                              [
+                                "**info**",
+                                {
+                                  "$ul": [
+                                    "**errors**",
+                                    "**informations**",
+                                    "**successes**",
+                                    "**warnings**"
+                                  ]
+                                }
+                              ],
+                              "**label**: The label corresponding to the link. This label is automatically translated based on the Accept-Language http header.",
+                              "**method**: Indicate the http method to use on this link (default: GET)",
+                              "**operationId**: The operationId to call.",
+                              "**parameters**",
+                              "**urlTemplated**: indicates whether the href is templated or not"
+                            ]
+                          }
+                        ],
+                        [
+                          "**next**",
+                          {
+                            "$ul": [
+                              "**allOptionalParamsProvided**: indicates whether all optionals params have been provided",
+                              "**allRequiredParamsProvided**: indicates whether all required params have been provided",
+                              "**description**: The description of the link",
+                              "**docUrl**: The documentation related to this operation.",
+                              "**href**: Indicate the relative uri for this link",
+                              [
+                                "**info**",
+                                {
+                                  "$ul": [
+                                    "**errors**",
+                                    "**informations**",
+                                    "**successes**",
+                                    "**warnings**"
+                                  ]
+                                }
+                              ],
+                              "**label**: The label corresponding to the link. This label is automatically translated based on the Accept-Language http header.",
+                              "**method**: Indicate the http method to use on this link (default: GET)",
+                              "**operationId**: The operationId to call.",
+                              "**parameters**",
+                              "**urlTemplated**: indicates whether the href is templated or not"
+                            ]
+                          }
+                        ],
+                        [
+                          "**previous**",
+                          {
+                            "$ul": [
+                              "**allOptionalParamsProvided**: indicates whether all optionals params have been provided",
+                              "**allRequiredParamsProvided**: indicates whether all required params have been provided",
+                              "**description**: The description of the link",
+                              "**docUrl**: The documentation related to this operation.",
+                              "**href**: Indicate the relative uri for this link",
+                              [
+                                "**info**",
+                                {
+                                  "$ul": [
+                                    "**errors**",
+                                    "**informations**",
+                                    "**successes**",
+                                    "**warnings**"
+                                  ]
+                                }
+                              ],
+                              "**label**: The label corresponding to the link. This label is automatically translated based on the Accept-Language http header.",
+                              "**method**: Indicate the http method to use on this link (default: GET)",
+                              "**operationId**: The operationId to call.",
+                              "**parameters**",
+                              "**urlTemplated**: indicates whether the href is templated or not"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**pageCount**: The page count",
+                  "**totalEntryCount**: The total entry count"
+                ]
+              }
+            ],
+            "**products**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

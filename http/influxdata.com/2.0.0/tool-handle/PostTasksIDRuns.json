@@ -1,0 +1,120 @@
+{
+  "name": "PostTasksIDRuns",
+  "description": "Manually start a task run, overriding the current schedule",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Zap-Trace-Span": {
+        "type": "string",
+        "description": "OpenTracing span context"
+      },
+      "taskID": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/RunManually"
+      }
+    },
+    "required": [
+      "taskID"
+    ],
+    "$defs": {
+      "RunManually": {
+        "properties": {
+          "scheduledFor": {
+            "description": "Time used for run's \"now\" option, RFC3339.  Default is the server's now time.",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v2/tasks/{taskID}/runs"
+    },
+    "headers": {
+      "Zap-Trace-Span": {
+        "$": "Zap-Trace-Span"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**finishedAt**: Time run finished executing, RFC3339Nano.",
+            "**id**",
+            [
+              "**links**",
+              {
+                "$ul": [
+                  "**retry**",
+                  "**self**",
+                  "**task**"
+                ]
+              }
+            ],
+            "**log**: An array of logs associated with the run.",
+            "**requestedAt**: Time run was manually requested, RFC3339Nano.",
+            "**scheduledFor**: Time used for run's \"now\" option, RFC3339.",
+            "**startedAt**: Time run started executing, RFC3339Nano.",
+            "**status**",
+            "**taskID**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: code is the machine-readable error code.",
+            "**err**: err is a stack of errors that occurred during processing of the request. Useful for debugging.",
+            "**message**: message is a human-readable message.",
+            "**op**: op describes the logical code operation during error. Useful for debugging."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

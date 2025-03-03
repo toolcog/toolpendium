@@ -1,0 +1,118 @@
+{
+  "name": "execute_app_action_endpoint",
+  "description": "Give us a plain english description of exact action you want to do. There should be dynamically generated documentation for this endpoint for each action that is exposed.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "exposed_app_action_id": {
+        "pattern": "^[A-Z0-9]{26}$",
+        "title": "Exposed App Action Id",
+        "type": "string",
+        "x-examples": [
+          "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        ]
+      },
+      "body": {
+        "$ref": "#/$defs/ExecuteRequest"
+      }
+    },
+    "required": [
+      "exposed_app_action_id",
+      "body"
+    ],
+    "$defs": {
+      "ExecuteRequest": {
+        "description": "This extends from ExecuteRequestBase to add the preview_only option.\n\n(1) Providers who allow side effects or (2) actions that do not have a side effect should use this class.",
+        "properties": {
+          "instructions": {
+            "description": "Plain english instructions. Provide as much detail as possible, even if other fields are present.",
+            "title": "Instructions",
+            "type": "string"
+          },
+          "preview_only": {
+            "default": false,
+            "description": "If true, we will not execute the action, but will return the params of the preview.",
+            "title": "Preview Only",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "instructions"
+        ],
+        "title": "ExecuteRequest",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://nla.zapier.com/api/v1/exposed/{exposed_app_action_id}/execute/"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ExecuteResponse"
+        },
+        "This is a summary of the results given the action that was executed.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action_used**: The name of the action that was executed.",
+            "**additional_results**: The rest of the full results. Always returns an array of objects",
+            "**assistant_hint**: A hint for the assistant on what to do next.",
+            "**error**: The error message if the execution failed.",
+            "**id**: The id of the execution log.",
+            "**input_params**: The params we used / will use to execute the action.",
+            "**result**: A trimmed down result of the first item of the full results. Ideal for humans and language models!",
+            "**result_field_labels**: Human readable labels for some of the keys in the result.",
+            "**review_url**: The URL to run the action or review the AI choices the AI made for input_params given instructions.",
+            "**status**: The status of the execution. (default: success)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ErrorResponse"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: Error message."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

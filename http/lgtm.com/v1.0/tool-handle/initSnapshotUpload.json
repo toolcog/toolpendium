@@ -1,0 +1,66 @@
+{
+  "name": "initSnapshotUpload",
+  "description": "Start a session to upload an externally-built database (which represents a snapshot of a codebase) to a project on LGTM. \n\nThis endpoint works for projects that are already on LGTM, and the selected language of  the database must already be configured. The project must be configured with 'upload' analysis mode. You can upload a \"bundled\" CodeQL database or a database exported by  the QL command-line tools (`odasa`).\n\nIf your database was generated using a version of the  command line that is older than LGTM,  LGTM will try to upgrade and analyze it when the upload is complete. You can include cached predicates in the upload, but they are ignored as the cache is  repopulated after the database has been upgraded and analyzed. However, if you want to include results with your database, make sure the database is  compatible before you start the upload session.  Incompatible databases with results won't be upgraded and therefore cannot be uploaded.  For further information on externally-built databases,  see [Preparing snapshots to upload to LGTM using the QL command-line tools](https://help.semmle.com/wiki/display/SD/Preparing+snapshots+to+upload+to+LGTM).\n\n    \nWhen the upload session has been successfully started, upload the database to the  upload URL returned in the response. The database can be uploaded to the upload URL in parts using  the [`PUT /snapshots/uploads/{session-id}`](https://lgtm.com/help/lgtm/api/api-v1#opIduploadPart) endpoint. After uploading all the parts you must call  the [`POST /snapshots/uploads/{session-id}`](https://lgtm.com/help/lgtm/api/api-v1#opIdcompleteUpload) endpoint to complete the upload session.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project-id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The numeric project identifier."
+      },
+      "language": {
+        "type": "string",
+        "description": "The language of the database to upload."
+      },
+      "commit": {
+        "type": "string",
+        "description": "The identifier of the analyzed commit."
+      },
+      "date": {
+        "format": "date-time",
+        "type": "string",
+        "description": "The date and time of the analyzed commit (default the current time)."
+      }
+    },
+    "required": [
+      "project-id",
+      "language",
+      "commit"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://lgtm.com/api/v1.0/snapshots/{project-id}/{language}{?commit,date}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: The identifier of the upload session",
+            "**url**: The URL for uploading file content."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "name": "BatchUpdateTableRows",
+  "description": "<p> The BatchUpdateTableRows API allows you to update one or more rows in a table in a workbook. </p> <p> You can specify the values to set in some or all of the columns in the table for the specified rows. If a column is not explicitly specified in a particular row, then that column will not be updated for that row. To clear out the data in a specific cell, you need to set the value as an empty string (\"\"). </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workbookId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the workbook where the rows are being updated.</p> <p> If a workbook with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "tableId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the table where the rows are being updated.</p> <p> If a table with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "rowsToUpdate"
+        ],
+        "properties": {
+          "rowsToUpdate": {
+            "description": "<p> The list of rows to update in the table. Each item in this list needs to contain the row id to update along with the map of column id to cell values for each column in that row that needs to be updated. You need to specify at least one row in this list, and for each row, you need to specify at least one column to update. </p> <p> Note that if one of the row or column ids in the request does not exist in the table, then the request fails and no updates are made to the table. </p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/UpdateRowData"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          },
+          "clientRequestToken": {
+            "description": "<p> The request token for performing the update action. Request tokens help to identify duplicate requests. If a call times out or fails due to a transient error like a failed network connection, you can retry the call with the same request token. The service ensures that if the first call using that request token is successfully performed, the second call will not perform the action again. </p> <p> Note that request tokens are valid only for a few minutes. You cannot use request tokens to dedupe requests spanning hours or days. </p>",
+            "type": "string",
+            "pattern": "^(?!\\s*$).+",
+            "minLength": 32,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "workbookId",
+      "tableId",
+      "body"
+    ],
+    "$defs": {
+      "UpdateRowData": {
+        "type": "object",
+        "required": [
+          "rowId",
+          "cellsToUpdate"
+        ],
+        "properties": {
+          "rowId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RowId"
+              },
+              {
+                "description": " The id of the row that needs to be updated. "
+              }
+            ]
+          },
+          "cellsToUpdate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RowDataInput"
+              },
+              {
+                "description": " A map representing the cells to update in the given row. The key is the column id of the cell and the value is the CellInput object that represents the data to set in that cell. "
+              }
+            ]
+          }
+        },
+        "description": " Data needed to create a single row in a table as part of the BatchCreateTableRows request. "
+      },
+      "RowId": {
+        "type": "string",
+        "pattern": "row:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 77,
+        "maxLength": 77
+      },
+      "RowDataInput": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 100,
+        "additionalProperties": {
+          "$ref": "#/$defs/CellInput"
+        }
+      },
+      "CellInput": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Fact"
+              },
+              {
+                "description": " Fact represents the data that is entered into a cell. This data can be free text or a formula. Formulas need to start with the equals (=) sign. "
+              }
+            ]
+          },
+          "facts": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FactList"
+              },
+              {
+                "description": " A list representing the values that are entered into a ROWSET cell. Facts list can have either only values or rowIDs, and rowIDs should from the same table. "
+              }
+            ]
+          }
+        },
+        "description": "<p> CellInput object contains the data needed to create or update cells in a table. </p> <note> <p> CellInput object has only a facts field or a fact field, but not both. A 400 bad request will be thrown if both fact and facts field are present. </p> </note>"
+      },
+      "Fact": {
+        "type": "string",
+        "pattern": "[\\s\\S]*",
+        "minLength": 0,
+        "maxLength": 8192,
+        "format": "password"
+      },
+      "FactList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Fact"
+        },
+        "minItems": 0,
+        "maxItems": 220
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://honeycode.us-east-1.amazonaws.com/workbooks/{workbookId}/tables/{tableId}/rows/batchupdate"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**workbookCursor**",
+            "**failedBatchItems**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

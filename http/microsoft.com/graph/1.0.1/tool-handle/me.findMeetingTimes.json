@@ -1,0 +1,707 @@
+{
+  "name": "me_findMeetingTimes",
+  "description": "Suggest meeting times and locations based on organizer and attendee availability, and time or location constraints specified as parameters. If **findMeetingTimes** cannot return any meeting suggestions, the response would indicate a reason in the **emptySuggestionsReason** property. \nBased on this value, you can better adjust the parameters and call **findMeetingTimes** again. The algorithm used to suggest meeting times and locations undergoes fine-tuning from time to time. In scenarios like test environments where the input parameters and calendar data remain static, expect that the suggested results may differ over time.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "attendees": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/microsoft.graph.attendeeBase"
+                },
+                {
+                  "nullable": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "isOrganizerOptional": {
+            "default": false,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "locationConstraint": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.locationConstraint"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          },
+          "maxCandidates": {
+            "format": "int32",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "nullable": true,
+            "type": "integer"
+          },
+          "meetingDuration": {
+            "format": "duration",
+            "nullable": true,
+            "pattern": "^-?P([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+([.][0-9]+)?S)?)?$",
+            "type": "string"
+          },
+          "minimumAttendeePercentage": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          },
+          "returnSuggestionReasons": {
+            "default": false,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "timeConstraint": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.timeConstraint"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "description": "Action parameters"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "microsoft.graph.attendeeBase": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/microsoft.graph.recipient"
+          },
+          {
+            "discriminator": {
+              "mapping": {
+                "#microsoft.graph.attendee": "#/components/schemas/microsoft.graph.attendee"
+              },
+              "propertyName": "@odata.type"
+            },
+            "properties": {
+              "@odata.type": {
+                "default": "#microsoft.graph.attendeeBase",
+                "type": "string"
+              },
+              "type": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/microsoft.graph.attendeeType"
+                  },
+                  {
+                    "nullable": true,
+                    "type": "object"
+                  }
+                ],
+                "description": "The type of attendee. The possible values are: required, optional, resource. Currently if the attendee is a person, findMeetingTimes always considers the person is of the Required type."
+              }
+            },
+            "required": [
+              "@odata.type"
+            ],
+            "title": "attendeeBase",
+            "type": "object"
+          }
+        ]
+      },
+      "microsoft.graph.recipient": {
+        "discriminator": {
+          "mapping": {
+            "#microsoft.graph.attendee": "#/components/schemas/microsoft.graph.attendee",
+            "#microsoft.graph.attendeeBase": "#/components/schemas/microsoft.graph.attendeeBase"
+          },
+          "propertyName": "@odata.type"
+        },
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "emailAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.emailAddress"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "The recipient's email address."
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "recipient",
+        "type": "object"
+      },
+      "microsoft.graph.emailAddress": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "address": {
+            "description": "The email address of the person or entity.",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The display name of the person or entity.",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "emailAddress",
+        "type": "object"
+      },
+      "microsoft.graph.attendeeType": {
+        "enum": [
+          "required",
+          "optional",
+          "resource"
+        ],
+        "title": "attendeeType",
+        "type": "string"
+      },
+      "microsoft.graph.locationConstraint": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "isRequired": {
+            "description": "The client requests the service to include in the response a meeting location for the meeting. If this is true and all the resources are busy, findMeetingTimes will not return any meeting time suggestions. If this is false and all the resources are busy, findMeetingTimes would still look for meeting times without locations.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "locations": {
+            "description": "Constraint information for one or more locations that the client requests for the meeting.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/microsoft.graph.locationConstraintItem"
+                },
+                {
+                  "nullable": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "suggestLocation": {
+            "description": "The client requests the service to suggest one or more meeting locations.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "locationConstraint",
+        "type": "object"
+      },
+      "microsoft.graph.locationConstraintItem": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/microsoft.graph.location"
+          },
+          {
+            "properties": {
+              "@odata.type": {
+                "default": "#microsoft.graph.locationConstraintItem",
+                "type": "string"
+              },
+              "resolveAvailability": {
+                "description": "If set to true and the specified resource is busy, findMeetingTimes looks for another resource that is free. If set to false and the specified resource is busy, findMeetingTimes returns the resource best ranked in the user's cache without checking if it's free. Default is true.",
+                "nullable": true,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "@odata.type"
+            ],
+            "title": "locationConstraintItem",
+            "type": "object"
+          }
+        ],
+        "x-ms-discriminator-value": "#microsoft.graph.locationConstraintItem"
+      },
+      "microsoft.graph.location": {
+        "discriminator": {
+          "mapping": {
+            "#microsoft.graph.locationConstraintItem": "#/components/schemas/microsoft.graph.locationConstraintItem"
+          },
+          "propertyName": "@odata.type"
+        },
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.physicalAddress"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "The street address of the location."
+          },
+          "coordinates": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.outlookGeoCoordinates"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "The geographic coordinates and elevation of the location."
+          },
+          "displayName": {
+            "description": "The name associated with the location.",
+            "nullable": true,
+            "type": "string"
+          },
+          "locationEmailAddress": {
+            "description": "Optional email address of the location.",
+            "nullable": true,
+            "type": "string"
+          },
+          "locationType": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.locationType"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "The type of location. The possible values are: default, conferenceRoom, homeAddress, businessAddress,geoCoordinates, streetAddress, hotel, restaurant, localBusiness, postalAddress. Read-only."
+          },
+          "locationUri": {
+            "description": "Optional URI representing the location.",
+            "nullable": true,
+            "type": "string"
+          },
+          "uniqueId": {
+            "description": "For internal use only.",
+            "nullable": true,
+            "type": "string"
+          },
+          "uniqueIdType": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.locationUniqueIdType"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "For internal use only."
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "location",
+        "type": "object"
+      },
+      "microsoft.graph.physicalAddress": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "city": {
+            "description": "The city.",
+            "nullable": true,
+            "type": "string"
+          },
+          "countryOrRegion": {
+            "description": "The country or region. It's a free-format string value, for example, 'United States'.",
+            "nullable": true,
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The postal code.",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "description": "The state.",
+            "nullable": true,
+            "type": "string"
+          },
+          "street": {
+            "description": "The street.",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "physicalAddress",
+        "type": "object"
+      },
+      "microsoft.graph.outlookGeoCoordinates": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "accuracy": {
+            "description": "The accuracy of the latitude and longitude. As an example, the accuracy can be measured in meters, such as the latitude and longitude are accurate to within 50 meters.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          },
+          "altitude": {
+            "description": "The altitude of the location.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          },
+          "altitudeAccuracy": {
+            "description": "The accuracy of the altitude.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          },
+          "latitude": {
+            "description": "The latitude of the location.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          },
+          "longitude": {
+            "description": "The longitude of the location.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "format": "double",
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/ReferenceNumeric"
+              }
+            ]
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "outlookGeoCoordinates",
+        "type": "object"
+      },
+      "ReferenceNumeric": {
+        "enum": [
+          "-INF",
+          "INF",
+          "NaN"
+        ]
+      },
+      "microsoft.graph.locationType": {
+        "enum": [
+          "default",
+          "conferenceRoom",
+          "homeAddress",
+          "businessAddress",
+          "geoCoordinates",
+          "streetAddress",
+          "hotel",
+          "restaurant",
+          "localBusiness",
+          "postalAddress"
+        ],
+        "title": "locationType",
+        "type": "string"
+      },
+      "microsoft.graph.locationUniqueIdType": {
+        "enum": [
+          "unknown",
+          "locationStore",
+          "directory",
+          "private",
+          "bing"
+        ],
+        "title": "locationUniqueIdType",
+        "type": "string"
+      },
+      "microsoft.graph.timeConstraint": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "activityDomain": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/microsoft.graph.activityDomain"
+              },
+              {
+                "nullable": true,
+                "type": "object"
+              }
+            ],
+            "description": "The nature of the activity, optional. The possible values are: work, personal, unrestricted, or unknown."
+          },
+          "timeSlots": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/microsoft.graph.timeSlot"
+                },
+                {
+                  "nullable": true,
+                  "type": "object"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "timeConstraint",
+        "type": "object"
+      },
+      "microsoft.graph.activityDomain": {
+        "enum": [
+          "unknown",
+          "work",
+          "personal",
+          "unrestricted"
+        ],
+        "title": "activityDomain",
+        "type": "string"
+      },
+      "microsoft.graph.timeSlot": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "end": {
+            "$ref": "#/$defs/microsoft.graph.dateTimeTimeZone"
+          },
+          "start": {
+            "$ref": "#/$defs/microsoft.graph.dateTimeTimeZone"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "timeSlot",
+        "type": "object"
+      },
+      "microsoft.graph.dateTimeTimeZone": {
+        "properties": {
+          "@odata.type": {
+            "type": "string"
+          },
+          "dateTime": {
+            "description": "A single point of time in a combined date and time representation ({date}T{time}; for example, 2017-08-29T04:00:00.0000000).",
+            "type": "string"
+          },
+          "timeZone": {
+            "description": "Represents a time zone, for example, 'Pacific Standard Time'. See below for more possible values.",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "@odata.type"
+        ],
+        "title": "dateTimeTimeZone",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://graph.microsoft.com/v1.0/me/microsoft.graph.findMeetingTimes"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "2XX": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "4XX": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**details**",
+                  [
+                    "**innererror**",
+                    {
+                      "$ul": [
+                        "**@odata.type**",
+                        "**Date**: Date when the error occured.",
+                        "**client-request-id**: Client request Id as sent by the client application.",
+                        "**request-id**: Request Id as tracked internally by the service"
+                      ]
+                    }
+                  ],
+                  "**message**",
+                  "**target**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "5XX": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**details**",
+                  [
+                    "**innererror**",
+                    {
+                      "$ul": [
+                        "**@odata.type**",
+                        "**Date**: Date when the error occured.",
+                        "**client-request-id**: Client request Id as sent by the client application.",
+                        "**request-id**: Request Id as tracked internally by the service"
+                      ]
+                    }
+                  ],
+                  "**message**",
+                  "**target**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

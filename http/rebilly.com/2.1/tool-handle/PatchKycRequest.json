@@ -1,0 +1,453 @@
+{
+  "name": "PatchKycRequest",
+  "description": "Update a KYC request.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "maxLength": 50,
+        "pattern": "^[@~\\-\\.\\w]+$",
+        "type": "string",
+        "description": "The resource identifier string."
+      },
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "body": {
+        "allOf": [
+          {
+            "properties": {
+              "customerId": {
+                "readOnly": true
+              }
+            }
+          },
+          {
+            "$ref": "#/$defs/KycRequest"
+          }
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$defs": {
+      "KycRequest": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/CommonKycRequest"
+          },
+          {
+            "properties": {
+              "_links": {
+                "description": "The links related to resource.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/SelfLink"
+                    },
+                    {
+                      "$ref": "#/$defs/KycDocumentsLink"
+                    },
+                    {
+                      "$ref": "#/$defs/KycGathererLink"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "readOnly": true,
+                "type": "array"
+              },
+              "customerId": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceId"
+                  }
+                ],
+                "description": "The сustomer's ID."
+              },
+              "matchLevel": {
+                "description": "The level of strictness for the document matches.",
+                "example": 2,
+                "maximum": 2,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "reason": {
+                "description": "Reason for uploading.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "customerId"
+            ]
+          }
+        ]
+      },
+      "CommonKycRequest": {
+        "properties": {
+          "createdTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Creation date/time."
+          },
+          "documents": {
+            "description": "Documents to be requested from customer.",
+            "items": {
+              "properties": {
+                "maxAttempts": {
+                  "default": 3,
+                  "description": "The number of document upload attempts. `0` treated as unlimited.",
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "subtypes": {
+                  "description": "Document subtype allowed for customer.",
+                  "items": {
+                    "$ref": "#/$defs/KycDocumentSubtypes"
+                  },
+                  "type": "array"
+                },
+                "type": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/KycDocumentTypes"
+                    }
+                  ],
+                  "description": "Document type to be requested from customer."
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "expirationTime": {
+            "description": "Expiration date/time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "readOnly": true
+          },
+          "redirectUrl": {
+            "description": "The URL to redirect the customer when an upload is completed.",
+            "format": "uri",
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Latest update date/time."
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "type": "object"
+      },
+      "ServerTimestamp": {
+        "description": "Read-only timestamp, automatically assigned on back-end.",
+        "format": "date-time",
+        "readOnly": true,
+        "type": "string"
+      },
+      "KycDocumentSubtypes": {
+        "enum": [
+          "passport",
+          "id-card",
+          "driver-license",
+          "birth-certificate",
+          "utility-bill",
+          "rental-receipt",
+          "lease-agreement",
+          "copy-credit-card",
+          "credit-card-statement",
+          "bank-statement",
+          "inheritance-documentation",
+          "tax-return",
+          "salary-slip",
+          "sale-of-assets",
+          "public-health-card",
+          "proof-of-age-card",
+          "reverse-of-id",
+          "public-service",
+          "ewallet-holder-details",
+          "ewallet-transaction-statement",
+          "other"
+        ],
+        "type": "string"
+      },
+      "KycDocumentTypes": {
+        "enum": [
+          "identity-proof",
+          "address-proof",
+          "funds-proof",
+          "purchase-proof"
+        ],
+        "type": "string"
+      },
+      "ResourceId": {
+        "description": "The resource ID. Defaults to UUID v4.",
+        "example": "4f6cf35x-2c4y-483z-a0a9-158621f77a21",
+        "maxLength": 50,
+        "type": "string"
+      },
+      "SelfLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "self"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "Link": {
+        "properties": {
+          "href": {
+            "description": "The link URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "href"
+        ],
+        "type": "object"
+      },
+      "KycDocumentsLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "kycDocuments"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "KycGathererLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "kycGatherer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/kyc-requests/{id}"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**createdTime**: Creation date/time.",
+            "**documents**: Documents to be requested from customer.",
+            "**expirationTime**: Expiration date/time.",
+            "**id**",
+            "**redirectUrl**: The URL to redirect the customer when an upload is completed.",
+            "**updatedTime**: Latest update date/time.",
+            "**_links**: The links related to resource.",
+            "**customerId**: The сustomer's ID.",
+            "**matchLevel**: The level of strictness for the document matches.",
+            "**reason**: Reason for uploading."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**",
+            "**invalidFields**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

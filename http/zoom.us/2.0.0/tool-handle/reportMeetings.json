@@ -1,0 +1,88 @@
+{
+  "name": "reportMeetings",
+  "description": "Retrieve [report](https://support.zoom.us/hc/en-us/articles/216378603-Meeting-Reporting) on a past meeting for a specified period of time. The time range for the report is limited to a month and the month should fall under the past six months.\n\nMeetings will only be returned in the response if the meeting has two or more unique participants.  <br><br>\n**Scopes:** `report:read:admin`<br>\n \n **[Rate Limit Label](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limits):** `Heavy`<br>\n**Prerequisites:**<br>\n* Pro or higher plan.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "description": "The user ID or email address of the user. For user-level apps, pass `me` as the value for userId."
+      },
+      "from": {
+        "format": "date",
+        "type": "string",
+        "description": "Start date in 'yyyy-mm-dd' format. The date range defined by the \"from\" and \"to\" parameters should only be one month as the report includes only one month worth of data at once."
+      },
+      "to": {
+        "format": "date",
+        "type": "string",
+        "description": "End date."
+      },
+      "page_size": {
+        "default": 30,
+        "maximum": 300,
+        "type": "integer",
+        "description": "The number of records returned within a single API call."
+      },
+      "next_page_token": {
+        "type": "string",
+        "description": "The next page token is used to paginate through large result sets. A next page token will be returned whenever the set of available results exceeds the current page size. The expiration period for this token is 15 minutes."
+      },
+      "type": {
+        "default": "past",
+        "enum": [
+          "past",
+          "pastOne"
+        ],
+        "type": "string",
+        "description": "The meeting types: <br>`past` - Past meetings.<br>`pastOne` - Past one user meetings. "
+      }
+    },
+    "required": [
+      "userId",
+      "from",
+      "to"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.zoom.us/v2/report/users/{userId}/meetings{?from,to,page_size,next_page_token,type}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Pagination Object.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**next_page_token**: The next page token is used to paginate through large result sets. A next page token will be returned whenever the set of available results exceeds the current page size. The expiration period for this token is 15 minutes.",
+            "**page_count**: The number of pages returned for the request made.",
+            "**page_number**: **Deprecated**: This field has been deprecated. Please use the \"next_page_token\" field for pagination instead of this field. (default: 1)",
+            "**page_size**: The number of records returned with a single API call. (default: 30)",
+            "**total_records**: The total number of all the records available across pages.",
+            "**from**: Start date for this report.",
+            "**meetings**: Array of meeting objects.",
+            "**to**: End date for this report."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

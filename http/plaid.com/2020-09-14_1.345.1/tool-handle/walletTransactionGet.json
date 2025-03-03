@@ -1,0 +1,134 @@
+{
+  "name": "walletTransactionGet",
+  "description": "Fetch a specific e-wallet transaction",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/WalletTransactionGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "WalletTransactionGetRequest": {
+        "description": "WalletTransactionGetRequest defines the request schema for `/wallet/transaction/get`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "transaction_id": {
+            "description": "The ID of the transaction to fetch",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "transaction_id"
+        ],
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/wallet/transaction/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "WalletTransaction"
+        },
+        "The transaction details",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**amount**: The amount and currency of a transaction",
+              {
+                "$ul": [
+                  "**iso_currency_code**: An ISO-4217 currency code, used with e-wallets and transactions.",
+                  "**value**: The amount of the transaction. Must contain at most two digits of precision e.g. `1.23`."
+                ]
+              }
+            ],
+            [
+              "**counterparty**: An object representing the e-wallet transaction's counterparty",
+              {
+                "$ul": [
+                  "**name**: The name of the counterparty",
+                  [
+                    "**numbers**: The counterparty's bank account numbers. Exactly one of IBAN or BACS data is required.",
+                    {
+                      "$ul": [
+                        [
+                          "**bacs**: An object containing a BACS account number and sort code. If an IBAN is not provided or if you need to accept domestic GBP-denominated payments, BACS data is required.",
+                          {
+                            "$ul": [
+                              "**account**: The account number of the account. Maximum of 10 characters.",
+                              "**sort_code**: The 6-character sort code of the account."
+                            ]
+                          }
+                        ],
+                        [
+                          "**international**: International Bank Account Number for a Wallet Transaction",
+                          {
+                            "$ul": [
+                              "**iban**: International Bank Account Number (IBAN)."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**created_at**: Timestamp when the transaction was created, in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format.",
+            "**last_status_update**: The date and time of the last time the `status` was updated, in IS0 8601 format",
+            "**payment_id**: The payment id that this transaction is associated with, if any. This is present only for transaction types `PIS_PAY_IN` and `REFUND`.",
+            "**reference**: A reference for the transaction",
+            "**status**: The status of the transaction.",
+            "**transaction_id**: A unique ID identifying the transaction",
+            "**type**: The type of the transaction. The supported transaction types that are returned are:",
+            "**wallet_id**: The EMI (E-Money Institution) wallet that this payment is associated with, if any. This wallet is used as an intermediary account to enable Plaid to reconcile the settlement of funds for Payment Initiation requests.",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

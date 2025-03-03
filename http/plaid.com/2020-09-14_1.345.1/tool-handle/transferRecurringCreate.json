@@ -1,0 +1,420 @@
+{
+  "name": "transferRecurringCreate",
+  "description": "Use the `/transfer/recurring/create` endpoint to initiate a new recurring transfer.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferRecurringCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransferRecurringCreateRequest": {
+        "description": "Defines the request schema for `/transfer/recurring/create`",
+        "properties": {
+          "access_token": {
+            "$ref": "#/$defs/TransferAccessToken"
+          },
+          "account_id": {
+            "$ref": "#/$defs/TransferAccountID"
+          },
+          "ach_class": {
+            "$ref": "#/$defs/ACHClass"
+          },
+          "amount": {
+            "$ref": "#/$defs/TransferAmount"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "description": {
+            "description": "The description of the recurring transfer.",
+            "type": "string"
+          },
+          "device": {
+            "$ref": "#/$defs/TransferDevice"
+          },
+          "funding_account_id": {
+            "$ref": "#/$defs/TransferFundingAccountIDRequest"
+          },
+          "idempotency_key": {
+            "$ref": "#/$defs/TransferRecurringIdempotencyKey"
+          },
+          "iso_currency_code": {
+            "deprecated": true,
+            "description": "The currency of the transfer amount. The default value is \"USD\".",
+            "type": "string",
+            "x-hidden-from-docs": true
+          },
+          "network": {
+            "$ref": "#/$defs/TransferNetwork"
+          },
+          "schedule": {
+            "$ref": "#/$defs/TransferRecurringSchedule"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "test_clock_id": {
+            "description": "Plaid’s unique identifier for a test clock.",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/$defs/TransferType"
+          },
+          "user": {
+            "$ref": "#/$defs/TransferUserInRequest"
+          },
+          "user_present": {
+            "description": "If the end user is initiating the specific transfer themselves via an interactive UI, this should be `true`; for automatic recurring payments where the end user is not actually initiating each individual transfer, it should be `false`.",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "access_token",
+          "idempotency_key",
+          "account_id",
+          "type",
+          "network",
+          "amount",
+          "user_present",
+          "schedule",
+          "user",
+          "device",
+          "description"
+        ],
+        "title": "TransferRecurringCreateRequest",
+        "type": "object"
+      },
+      "TransferAccessToken": {
+        "description": "The Plaid `access_token` for the account that will be debited or credited. Required if not using `payment_profile_token`.",
+        "type": "string"
+      },
+      "TransferAccountID": {
+        "description": "The Plaid `account_id` corresponding to the end-user account that will be debited or credited. Returned only if `account_id` was set on intent creation.",
+        "type": "string"
+      },
+      "ACHClass": {
+        "description": "Specifies the use case of the transfer. Required for transfers on an ACH network.\n\n`\"ccd\"` - Corporate Credit or Debit - fund transfer between two corporate bank accounts\n\n`\"ppd\"` - Prearranged Payment or Deposit - the transfer is part of a pre-existing relationship with a consumer, eg. bill payment\n\n`\"tel\"` - Telephone-Initiated Entry\n\n`\"web\"` - Internet-Initiated Entry - debits from a consumer’s account where their authorization is obtained over the Internet",
+        "enum": [
+          "ccd",
+          "ppd",
+          "tel",
+          "web"
+        ],
+        "title": "ACHClass",
+        "type": "string"
+      },
+      "TransferAmount": {
+        "description": "The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+        "title": "TransferAmount",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "TransferDevice": {
+        "additionalProperties": true,
+        "description": "Information about the device being used to initiate the authorization.",
+        "properties": {
+          "ip_address": {
+            "description": "The IP address of the device being used to initiate the authorization.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "The user agent of the device being used to initiate the authorization.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip_address",
+          "user_agent"
+        ],
+        "title": "TransferDevice",
+        "type": "object"
+      },
+      "TransferFundingAccountIDRequest": {
+        "description": "The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited. Defaults to the account configured during onboarding.",
+        "nullable": true,
+        "type": "string"
+      },
+      "TransferRecurringIdempotencyKey": {
+        "description": "A random key provided by the client, per unique recurring transfer. Maximum of 50 characters.\n\nThe API supports idempotency for safely retrying requests without accidentally performing the same operation twice. For example, if a request to create a recurring fails due to a network connection error, you can retry the request with the same idempotency key to guarantee that only a single recurring transfer is created.",
+        "maxLength": 50,
+        "title": "TransferRecurringIdempotencyKey",
+        "type": "string"
+      },
+      "TransferNetwork": {
+        "description": "The network or rails used for the transfer.\n\nFor transfers submitted as either `ach` or `same-day-ach` the cutoff for same-day is 9:30 AM Pacific Time and the cutoff for next-day transfers is 5:30 PM Pacific Time. It is recommended to submit a transfer at least 15 minutes before the cutoff time in order to ensure that it will be processed before the cutoff. Any transfer that is indicated as `same-day-ach` and that misses the same-day cutoff, but is submitted in time for the next-day cutoff, will be sent over next-day rails and will not incur same-day charges. Note that both legs of the transfer will be downgraded if applicable.",
+        "enum": [
+          "ach",
+          "same-day-ach",
+          "rtp"
+        ],
+        "title": "TransferNetwork",
+        "type": "string"
+      },
+      "TransferRecurringSchedule": {
+        "description": "The schedule that the recurring transfer will be executed on.",
+        "properties": {
+          "end_date": {
+            "description": "A date in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DD). The recurring transfer will end on the last `interval_execution_day` on or before the `end_date`.\nIf the `interval_execution_day` between the start date and the end date (inclusive) is also the same day that `/transfer/recurring/create` was called, the bank *may* make a payment on that day, but it is not guaranteed to do so.",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "interval_count": {
+            "$ref": "#/$defs/TransferScheduleIntervalCount"
+          },
+          "interval_execution_day": {
+            "description": "The day of the interval on which to schedule the transfer.\n\nIf the `interval_unit` is `week`, `interval_execution_day` should be an integer from 1 (Monday) to 5 (Friday).\n\nIf the `interval_unit` is `month`, `interval_execution_day` should be an integer indicating which day of the month to make the transfer on. Integers from 1 to 28 can be used to make a transfer on that day of the month. Negative integers from -1 to -5 can be used to make a transfer relative to the end of the month. To make a transfer on the last day of the month, use -1; to make the transfer on the second-to-last day, use -2, and so on.\n\nThe transfer will be originated on next available banking day if the designated day is a non banking day.",
+            "type": "integer"
+          },
+          "interval_unit": {
+            "$ref": "#/$defs/TransferScheduleIntervalUnit"
+          },
+          "start_date": {
+            "description": "A date in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DD). The recurring transfer will begin on the first `interval_execution_day` on or after the `start_date`.\n\nIf the first `interval_execution_day` on or after the start date is also the same day that `/transfer/recurring/create` was called, the bank *may* make the first payment on that day, but it is not guaranteed to do so.",
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interval_unit",
+          "interval_count",
+          "interval_execution_day",
+          "start_date"
+        ],
+        "title": "TransferRecurringSchedule",
+        "type": "object"
+      },
+      "TransferScheduleIntervalCount": {
+        "description": "The number of recurring `interval_units` between originations. The recurring interval(before holiday adjustment) is calculated by multiplying `interval_unit` and `interval_count`.\nFor instance, to schedule a recurring transfer which originates once every two weeks, set `interval_unit` = `week` and `interval_count` = 2.",
+        "title": "TransferScheduleIntervalCount",
+        "type": "integer"
+      },
+      "TransferScheduleIntervalUnit": {
+        "description": "The unit of the recurring interval.",
+        "enum": [
+          "week",
+          "month"
+        ],
+        "minLength": 1,
+        "title": "TransferScheduleIntervalUnit",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "TransferType": {
+        "description": "The type of transfer. This will be either `debit` or `credit`.  A `debit` indicates a transfer of money into the origination account; a `credit` indicates a transfer of money out of the origination account.",
+        "enum": [
+          "debit",
+          "credit"
+        ],
+        "title": "TransferType",
+        "type": "string"
+      },
+      "TransferUserInRequest": {
+        "additionalProperties": true,
+        "description": "The legal name and other information for the account holder.",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/TransferUserAddressInRequest"
+          },
+          "email_address": {
+            "description": "The user's email address.",
+            "type": "string"
+          },
+          "legal_name": {
+            "description": "The user's legal name.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The user's phone number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "legal_name"
+        ],
+        "title": "TransferUserInRequest",
+        "type": "object"
+      },
+      "TransferUserAddressInRequest": {
+        "additionalProperties": true,
+        "description": "The address associated with the account holder. Providing this data will improve the likelihood that Plaid will be able to guarantee the transfer, if applicable.",
+        "properties": {
+          "city": {
+            "description": "Ex. \"San Francisco\"",
+            "type": "string"
+          },
+          "country": {
+            "description": "A two-letter country code (e.g., \"US\").",
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "The postal code (e.g., \"94103\").",
+            "type": "string"
+          },
+          "region": {
+            "description": "The state or province (e.g., \"CA\").",
+            "type": "string"
+          },
+          "street": {
+            "description": "The street number and name (i.e., \"100 Market St.\").",
+            "type": "string"
+          }
+        },
+        "title": "TransferUserAddressInRequest",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transfer/recurring/create"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TransferRecurringCreateResponse"
+        },
+        "Defines the response schema for `/transfer/recurring/create`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**decision**: ",
+            [
+              "**decision_rationale**: The rationale for Plaid's decision regarding a proposed transfer. It is always set for `declined` decisions, and may or may not be null for `approved` decisions.",
+              {
+                "$ul": [
+                  "**code**: A code representing the rationale for approving or declining the proposed transfer. Possible values are:",
+                  "**description**: A human-readable description of the code associated with a transfer approval or transfer decline."
+                ]
+              }
+            ],
+            [
+              "**recurring_transfer**: Represents a recurring transfer within the Transfers API.",
+              {
+                "$ul": [
+                  "**account_id**: The Plaid `account_id` corresponding to the end-user account that will be debited or credited.",
+                  "**ach_class**: Specifies the use case of the transfer. Required for transfers on an ACH network.",
+                  "**amount**: The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+                  "**created**: The datetime when this transfer was created. This will be of the form `2006-01-02T15:04:05Z`",
+                  "**description**: The description of the recurring transfer.",
+                  "**funding_account_id**: The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited.",
+                  "**iso_currency_code**: The currency of the transfer amount, e.g. \"USD\"",
+                  "**network**: The network or rails used for the transfer.",
+                  "**next_origination_date**: A date in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DD).",
+                  "**origination_account_id**: Plaid’s unique identifier for the origination account that was used for this transfer.",
+                  "**recurring_transfer_id**: Plaid’s unique identifier for a recurring transfer.",
+                  [
+                    "**schedule**: The schedule that the recurring transfer will be executed on.",
+                    {
+                      "$ul": [
+                        "**end_date**: A date in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DD). The recurring transfer will end on the last `interval_execution_day` on or before the `end_date`.",
+                        "**interval_count**: The number of recurring `interval_units` between originations. The recurring interval(before holiday adjustment) is calculated by multiplying `interval_unit` and `interval_count`.",
+                        "**interval_execution_day**: The day of the interval on which to schedule the transfer.",
+                        "**interval_unit**: The unit of the recurring interval.",
+                        "**start_date**: A date in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DD). The recurring transfer will begin on the first `interval_execution_day` on or after the `start_date`."
+                      ]
+                    }
+                  ],
+                  "**status**: The status of the recurring transfer.",
+                  "**test_clock_id**: Plaid’s unique identifier for a test clock.",
+                  "**transfer_ids**",
+                  "**type**: The type of transfer. This will be either `debit` or `credit`.  A `debit` indicates a transfer of money into the origination account; a `credit` indicates a transfer of money out of the origination account.",
+                  [
+                    "**user**: The legal name and other information for the account holder.",
+                    {
+                      "$ul": [
+                        [
+                          "**address**: The address associated with the account holder.",
+                          {
+                            "$ul": [
+                              "**city**: Ex. \"San Francisco\"",
+                              "**country**: A two-letter country code (e.g., \"US\").",
+                              "**postal_code**: The postal code (e.g., \"94103\").",
+                              "**region**: The state or province (e.g., \"CA\").",
+                              "**street**: The street number and name (i.e., \"100 Market St.\")."
+                            ]
+                          }
+                        ],
+                        "**email_address**: The user's email address.",
+                        "**legal_name**: The user's legal name.",
+                        "**phone_number**: The user's phone number."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

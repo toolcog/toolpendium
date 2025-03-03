@@ -1,0 +1,266 @@
+{
+  "name": "PostKycDocumentMatches",
+  "description": "Updates a KYC document's documentMatches. Intended to be used for manual overrides.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "maxLength": 50,
+        "pattern": "^[@~\\-\\.\\w]+$",
+        "type": "string",
+        "description": "The resource identifier string."
+      },
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "body": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/IdentityMatches"
+          },
+          {
+            "$ref": "#/$defs/AddressMatches"
+          }
+        ],
+        "description": "Kyc document resource."
+      }
+    },
+    "required": [
+      "id",
+      "body"
+    ],
+    "$defs": {
+      "IdentityMatches": {
+        "properties": {
+          "containsImage": {
+            "description": "Flag that indicates if there is an image that contains a face on it.",
+            "example": true,
+            "type": "boolean"
+          },
+          "dateOfBirth": {
+            "description": "The date of birth found on the document, null if not found.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiryDate": {
+            "description": "The expiry date found on the document, null if not found.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "The customer first name if it was matched, null otherwise.",
+            "example": "John",
+            "type": "string"
+          },
+          "hasMinimalAge": {
+            "description": "Checks the minimal age, 21+ for USA and 18+ for all other countries. Null if dateOfBirth could not be determined.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "isIdentityDocument": {
+            "description": "Flag that indicates if this looks like and ID.",
+            "example": true,
+            "type": "boolean"
+          },
+          "isPublishedOnline": {
+            "description": "If there is an exact match found online.",
+            "example": false,
+            "type": "boolean"
+          },
+          "issueDate": {
+            "description": "The issued date found on the document, null if not found.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The customer last name if it was matched, null otherwise.",
+            "example": "Doe",
+            "type": "string"
+          },
+          "nationality": {
+            "description": "The nationality found on the document, null otherwise.",
+            "example": "US",
+            "maxLength": 3,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AddressMatches": {
+        "properties": {
+          "city": {
+            "description": "The customer city if it was matched, null otherwise.",
+            "example": "London",
+            "type": "string"
+          },
+          "date": {
+            "description": "The date on the document proving the document is recent.",
+            "example": "2021-01-01T00:00:00.000Z",
+            "format": "date",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "The customer first name if it was matched, null otherwise.",
+            "example": "John",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The customer last name if it was matched, null otherwise.",
+            "example": "Doe",
+            "type": "string"
+          },
+          "line1": {
+            "description": "The customer address if it was matched, null otherwise.",
+            "example": "36 Craven St",
+            "type": "string"
+          },
+          "phone": {
+            "description": "The phone of the company or agency that sent the document.",
+            "example": "(123) 456-7890",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The customer postal code if it was matched, null otherwise.",
+            "example": "WC2N 5NF",
+            "type": "string"
+          },
+          "region": {
+            "description": "The customer region if it was matched, null otherwise.",
+            "example": "London",
+            "type": "string"
+          },
+          "uniqueWords": {
+            "description": "The number of unique words in the document.",
+            "example": 175,
+            "type": "integer"
+          },
+          "uniqueWordsResult": {
+            "description": "Flag that indicates if the unique words passed the threshold.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "wordCount": {
+            "description": "The number of words in the document.",
+            "example": 350,
+            "type": "integer"
+          },
+          "wordCountResult": {
+            "description": "Flag that indicates if the word count passed the threshold.",
+            "example": true,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/kyc-documents/{id}/matches"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

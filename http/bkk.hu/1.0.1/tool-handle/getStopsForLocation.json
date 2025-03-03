@@ -1,0 +1,133 @@
+{
+  "name": "getStopsForLocation",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "lat": {
+        "format": "float",
+        "type": "number",
+        "description": "A helyszín középpontjának szélessgéi koordinátája."
+      },
+      "lon": {
+        "format": "float",
+        "type": "number",
+        "description": "A helyszín középpontjának hosszúsági koordinátája."
+      },
+      "latSpan": {
+        "format": "float",
+        "type": "number",
+        "description": "A lekérési terület szélességi íve. (Terület szélessége: `lat +/- latspan`)."
+      },
+      "lonSpan": {
+        "format": "float",
+        "type": "number",
+        "description": "A lekérési terület hosszúsági íve. (Terület hosszúsága: `lon +/- lonSpan`)."
+      },
+      "radius": {
+        "default": 100,
+        "format": "int32",
+        "type": "integer",
+        "description": "Ha a `latSpan` vagy a `longSpan` nincs kitöltve, a keresési terület a középpontól számított `radius` méter távolság mind a négy irányban."
+      },
+      "query": {
+        "type": "string",
+        "description": "A válasz szűrésére használt keresési kifejezés."
+      },
+      "minResult": {
+        "default": 5,
+        "format": "int32",
+        "type": "integer",
+        "description": "A visszaadott elemek minimális száma."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/stops-for-location{?lat,lon,latSpan,lonSpan,radius,query,minResult,appVersion,version,includeReferences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Lista esetén \"listWithReferences\".",
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**list**: A lekért adatok listája.",
+                  "**outOfRange**: Az értéke mindig `false`.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

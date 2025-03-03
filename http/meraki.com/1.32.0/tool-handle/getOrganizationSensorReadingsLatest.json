@@ -1,0 +1,100 @@
+{
+  "name": "getOrganizationSensorReadingsLatest",
+  "description": "Return the latest available reading for each metric from each sensor, sorted by sensor serial",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "perPage": {
+        "type": "integer",
+        "description": "The number of entries per page returned. Acceptable range is 3 - 100. Default is 100."
+      },
+      "startingAfter": {
+        "type": "string",
+        "description": "A token used by the server to indicate the start of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "endingBefore": {
+        "type": "string",
+        "description": "A token used by the server to indicate the end of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "networkIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter readings by network."
+      },
+      "serials": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter readings by sensor."
+      },
+      "metrics": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Types of sensor readings to retrieve. If no metrics are supplied, all available types of readings will be retrieved. Allowed values are battery, button, door, humidity, indoorAirQuality, noise, pm25, temperature, tvoc, and water."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/sensor/readings/latest{?perPage,startingAfter,endingBefore,networkIds,serials,metrics}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**network**: Network to which the sensor belongs.",
+              {
+                "$ul": [
+                  "**id**: ID of the network.",
+                  "**name**: Name of the network."
+                ]
+              }
+            ],
+            "**readings**: Array of latest readings from the sensor. Each object represents a single reading for a single metric.",
+            "**serial**: Serial number of the sensor that took the readings."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

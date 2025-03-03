@@ -1,0 +1,85 @@
+{
+  "name": "meteringPost",
+  "description": "Post meter reading and get it decorated. Best practice is to first create a new Stromkonto with the register method and choose a nice secret to protect updates. Now regularly send updates to get readings (consumption) split into green power (1.8.1) and grey power (1.8.2).\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "1.8.0": {
+            "description": "Meter Reading (prefered in Wh)",
+            "type": "integer"
+          },
+          "account": {
+            "description": "Stromkonto account (address) associated with this metering.",
+            "type": "string"
+          },
+          "energy": {
+            "description": "Alias for 1.8.0",
+            "type": "integer"
+          },
+          "secret": {
+            "description": "Some private password you might choose on first update. However you need to use the same secret on every further posts.",
+            "type": "string"
+          },
+          "value": {
+            "description": "Alias for 1.8.0",
+            "type": "integer"
+          },
+          "zip": {
+            "description": "Zipcode (Postleitzahl) of metered location",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.corrently.io/v2.0/metering/reading"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**1.8.0**: Reading as provided as input in Wh",
+            "**1.8.1**: Green energy calculated using Green Power Index (GrünstromIndex) in Wh",
+            "**1.8.2**: Grey energy calculated using Green Power Index (GrünstromIndex) in Wh",
+            "**_processingTime**: Time this reading got imported into consensus (e.q. signed timestamp).",
+            "**account**: Stromkonto/Metering address allocated (this is not the MELOID!)",
+            "**co2_g_oekostrom**: CO2 Emission of metered energy in a green energy mix (e.q. Ökostromtarif)",
+            "**co2_g_standard**: CO2 Emission of metered energy in a standard mix",
+            "**timeStamp**: API Consensus time this reading was fully received"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

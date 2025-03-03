@@ -1,0 +1,82 @@
+{
+  "name": "processorBalanceGet",
+  "description": "The `/processor/balance/get` endpoint returns the real-time balance for each of an Item's accounts. While other endpoints may return a balance object, only `/processor/balance/get` forces the available and current balance fields to be refreshed rather than cached. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/components/schemas/ProcessorBalanceGetRequest",
+        "description": "The `/processor/balance/get` endpoint returns the real-time balance for the account associated with a given `processor_token`.\n\nThe current balance is the total amount of funds in the account. The available balance is the current balance less any outstanding holds or debits that have not yet posted to the account.\n\nNote that not all institutions calculate the available balance. In the event that available balance is unavailable from the institution, Plaid will return an available balance value of `null`."
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/processor/balance/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "ProcessorBalanceGetResponse defines the response schema for `/processor/balance/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**account**: A single account at a financial institution.",
+              {
+                "$ul": [
+                  "**account_id**: Plaid’s unique identifier for the account. This value will not change unless Plaid can't reconcile the account with the data returned by the financial institution. This may occur, for example, when the name of the account changes. If this happens a new `account_id` will be assigned to the account.",
+                  [
+                    "**balances**: A set of fields describing the balance for an account. Balance information may be cached unless the balance object was returned by `/accounts/balance/get`.",
+                    {
+                      "$ul": [
+                        "**available**: The amount of funds available to be withdrawn from the account, as determined by the financial institution.",
+                        "**current**: The total amount of funds in or owed by the account.",
+                        "**iso_currency_code**: The ISO-4217 currency code of the balance. Always null if `unofficial_currency_code` is non-null.",
+                        "**last_updated_datetime**: Timestamp in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (`YYYY-MM-DDTHH:mm:ssZ`) indicating the last time that the balance for the given account has been updated",
+                        "**limit**: For `credit`-type accounts, this represents the credit limit.",
+                        "**unofficial_currency_code**: The unofficial currency code associated with the balance. Always null if `iso_currency_code` is non-null. Unofficial currency codes are used for currencies that do not have official ISO currency codes, such as cryptocurrencies and the currencies of certain countries."
+                      ]
+                    }
+                  ],
+                  "**mask**: The last 2-4 alphanumeric characters of an account's official account number. Note that the mask may be non-unique between an Item's accounts, and it may also not match the mask that the bank displays to the user.",
+                  "**name**: The name of the account, either assigned by the user or by the financial institution itself",
+                  "**official_name**: The official name of the account as given by the financial institution",
+                  "**persistent_account_id**: A unique and persistent identifier for accounts that can be used to trace multiple instances of the same account across different Items for depository accounts. This is currently an opt-in field and only supported for Chase Items.",
+                  "**subtype**: See the [Account type schema](https://plaid.com/docs/api/accounts/#account-type-schema) for a full listing of account types and corresponding subtypes.",
+                  "**type**: `investment:` Investment account. In API versions 2018-05-22 and earlier, this type is called `brokerage` instead.",
+                  "**verification_status**: The current verification status of an Auth Item initiated through Automated or Manual micro-deposits.  Returned for Auth Items only."
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

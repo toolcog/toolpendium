@@ -1,0 +1,181 @@
+{
+  "name": "evaluateJiraExpression",
+  "description": "Evaluates a Jira expression and returns its value.\n\nThis resource can be used to test Jira expressions that you plan to use elsewhere, or to fetch data in a flexible way. Consult the [Jira expressions documentation](https://developer.atlassian.com/cloud/jira/platform/jira-expressions/) for more details.\n\n#### Context variables ####\n\nThe following context variables are available to Jira expressions evaluated by this resource. Their presence depends on various factors; usually you need to manually request them in the context object sent in the payload, but some of them are added automatically under certain conditions.\n\n *  `user` ([User](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#user)): The current user. Always available and equal to `null` if the request is anonymous.\n *  `app` ([App](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#app)): The [Connect app](https://developer.atlassian.com/cloud/jira/platform/index/#connect-apps) that made the request. Available only for authenticated requests made by Connect Apps (read more here: [Authentication for Connect apps](https://developer.atlassian.com/cloud/jira/platform/security-for-connect-apps/)).\n *  `issue` ([Issue](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#issue)): The current issue. Available only when the issue is provided in the request context object.\n *  `issues` ([List](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#list) of [Issues](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#issue)): A collection of issues matching a JQL query. Available only when JQL is provided in the request context object.\n *  `project` ([Project](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#project)): The current project. Available only when the project is provided in the request context object.\n *  `sprint` ([Sprint](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#sprint)): The current sprint. Available only when the sprint is provided in the request context object.\n *  `board` ([Board](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#board)): The current board. Available only when the board is provided in the request context object.\n *  `serviceDesk` ([ServiceDesk](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#servicedesk)): The current service desk. Available only when the service desk is provided in the request context object.\n *  `customerRequest` ([CustomerRequest](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#customerrequest)): The current customer request. Available only when the customer request is provided in the request context object.\n\nAlso, custom context variables can be passed in the request with their types. Those variables can be accessed by key in the Jira expression. These variable types are available for use in a custom context:\n\n *  `user`: A [user](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#user) specified as an Atlassian account ID.\n *  `issue`: An [issue](https://developer.atlassian.com/cloud/jira/platform/jira-expressions-type-reference#issue) specified by ID or key. All the fields of the issue object are available in the Jira expression.\n *  `json`: A JSON object containing custom content.\n *  `list`: A JSON list of `user`, `issue`, or `json` variable types.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required**: None. However, an expression may return different results for different users depending on their permissions. For example, different users may see different comments on the same issue.  \nPermission to access Jira Software is required to access Jira Software context variables (`board` and `sprint`) or fields (for example, `issue.sprint`).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "expand": {
+        "type": "string",
+        "description": "Use [expand](#expansion) to include additional information in the response. This parameter accepts `meta.complexity` that returns information about the expression complexity. For example, the number of expensive operations used by the expression and how close the expression is to reaching the [complexity limit](https://developer.atlassian.com/cloud/jira/platform/jira-expressions/#restrictions). Useful when designing and debugging your expressions."
+      },
+      "body": {
+        "$ref": "#/components/schemas/JiraExpressionEvalRequestBean",
+        "description": "The Jira expression and the evaluation context."
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/expression/eval{?expand}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The result of evaluating a Jira expression.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**meta**",
+              {
+                "$ul": [
+                  [
+                    "**complexity**",
+                    {
+                      "$ul": [
+                        [
+                          "**beans**",
+                          {
+                            "$ul": [
+                              "**limit**: The maximum allowed complexity. The evaluation will fail if this value is exceeded.",
+                              "**value**: The complexity value of the current expression."
+                            ]
+                          }
+                        ],
+                        [
+                          "**expensiveOperations**",
+                          {
+                            "$ul": [
+                              "**limit**: The maximum allowed complexity. The evaluation will fail if this value is exceeded.",
+                              "**value**: The complexity value of the current expression."
+                            ]
+                          }
+                        ],
+                        [
+                          "**primitiveValues**",
+                          {
+                            "$ul": [
+                              "**limit**: The maximum allowed complexity. The evaluation will fail if this value is exceeded.",
+                              "**value**: The complexity value of the current expression."
+                            ]
+                          }
+                        ],
+                        [
+                          "**steps**",
+                          {
+                            "$ul": [
+                              "**limit**: The maximum allowed complexity. The evaluation will fail if this value is exceeded.",
+                              "**value**: The complexity value of the current expression."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "**issues**: Meta data describing the `issues` context variable.",
+                    {
+                      "$ul": [
+                        [
+                          "**jql**: The description of the page of issues loaded by the provided JQL query.",
+                          {
+                            "$ul": [
+                              "**count**: The number of issues that were loaded in this evaluation.",
+                              "**maxResults**: The maximum number of issues that could be loaded in this evaluation.",
+                              "**startAt**: The index of the first issue.",
+                              "**totalCount**: The total number of issues the JQL returned.",
+                              "**validationWarnings**: Any warnings related to the JQL query. Present only if the validation mode was set to `warn`."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**value**: The value of the evaluated expression. It may be a primitive JSON value or a Jira REST API object. (Some expressions do not produce any meaningful results—for example, an expression that returns a lambda function—if that's the case a simple string representation is returned. These string representations should not be relied upon and may change without notice.)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error messages from an operation.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorMessages**: The list of error messages produced by this operation. For example, \"input parameter 'key' must be provided\"",
+            "**errors**: The list of errors by parameter returned by the operation. For example,\"projectKey\": \"Project keys must start with an uppercase letter, followed by one or more uppercase alphanumeric characters.\"",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

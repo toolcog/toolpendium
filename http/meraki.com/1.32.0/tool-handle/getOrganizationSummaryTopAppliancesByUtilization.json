@@ -1,0 +1,99 @@
+{
+  "name": "getOrganizationSummaryTopAppliancesByUtilization",
+  "description": "Return the top 10 appliances sorted by utilization over given time range.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data."
+      },
+      "t1": {
+        "type": "string",
+        "description": "The end of the timespan for the data. t1 can be a maximum of 31 days after t0."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameters t0 and t1. The value must be in seconds and be less than or equal to 31 days. The default is 1 day."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/summary/top/appliances/byUtilization{?t0,t1,timespan}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**mac**: Mac address of the appliance",
+            "**model**: Model of the appliance",
+            "**name**: Name of the appliance",
+            [
+              "**network**: Network info",
+              {
+                "$ul": [
+                  "**id**: Network id",
+                  "**name**: Network name"
+                ]
+              }
+            ],
+            "**serial**: Serial number of the appliance",
+            [
+              "**utilization**: Utilization of the appliance",
+              {
+                "$ul": [
+                  [
+                    "**average**: Average utilization of the appliance",
+                    {
+                      "$ul": [
+                        "**percentage**: Average percentage utilization of the appliance"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

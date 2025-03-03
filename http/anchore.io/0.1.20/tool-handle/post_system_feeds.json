@@ -1,0 +1,91 @@
+{
+  "name": "post_system_feeds",
+  "description": "Execute a synchronous feed sync operation. The response will block until complete, then return the result summary.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "flush": {
+        "type": "boolean",
+        "description": "instruct system to flush existing data feeds records from anchore-engine"
+      },
+      "sync": {
+        "type": "boolean",
+        "description": "instruct system to re-sync data feeds"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//system/feeds{?flush,sync}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "An array of feed sync summaries representing the result of an explicit feed sync operation",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**feed**: The name of the feed synced",
+            "**groups**: Array of group sync results",
+            "**status**: The result of the sync operations, either co",
+            "**total_time_seconds**: The duratin, in seconds, of the sync of the feed, the sum of all the group syncs"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

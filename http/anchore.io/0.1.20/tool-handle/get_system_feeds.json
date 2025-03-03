@@ -1,0 +1,84 @@
+{
+  "name": "get_system_feeds",
+  "description": "Return a list of feed and their groups along with update and record count information. This data reflects the state of the policy engine, not the upstream feed service itself.",
+  "parameters": {
+    "type": "object"
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//system/feeds"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Metadata on a single feed based on what the engine finds from querying the endpoints",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**: Date the metadata record was created in engine (first seen on source)",
+            "**groups**",
+            "**last_full_sync**",
+            "**name**: name of the feed",
+            "**updated_at**: Date the metadata was last updated"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

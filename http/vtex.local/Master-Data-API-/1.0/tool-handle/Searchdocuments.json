@@ -1,0 +1,91 @@
+{
+  "name": "Searchdocuments",
+  "description": "Retrieves documents' information, while choosing which fields will be returned and filtering documents by specific fields.\r\n\r\n> The response header `REST-Content-Range` indicates the total amount of results for that specific search. For example, it may return `resources 0-100/136108`, which indicates it has returned results from 0 to 100 of a total 136108.\r\n\r\nBelow you can see some query examples and learn more about each query parameter.\n\r\n\r> Avoid sending too many requests with wildcards (`*`) in the search parameters or that use the `keyword` parameter. This may lead to this endpoint being temporarily blocked for your account. If this happens you will receive an error with status code `503`.\r\n\r\n## Query examples\r\n\r\n### Simple filter\r\n\r\n```\r\n/dataentities/Client/search?email=my@email.com\r\n```\r\n\r\n### Complex filter\r\n\r\n```\r\n/dataentities/Client/search?_where=(firstName=Jon OR lastName=Smith) OR (createdIn between 2001-01-01 AND 2016-01-01)\r\n```\r\n\r\n### Date Range\r\n\r\n```\r\n/dataentities/Client/search?_where=createdIn between 2001-01-01 AND 2016-01-01\r\n```\r\n\r\n### Range numeric fields\r\n\r\n```\r\n/dataentities/Client/search?_where=age between 18 AND 25\r\n```\r\n\r\n### Partial filter\r\n\r\n```\r\n/dataentities/Client/search?firstName=*Maria*\r\n```\r\n\r\n### Filter for null values\r\n\r\n```\r\n/dataentities/Client/search?_where=firstName is null\r\n```\r\n\r\n### Filter for non-null values\r\n\r\n```\r\n/dataentities/Client/search?_where=firstName is not null\r\n```\r\n\r\n### Filter for difference\r\n```\r\n/dataentities/Client/search?_where=firstName<>maria\r\n```\r\n\r\n### Filter greater than or less than\r\n```\r\n/dataentities/Client/search?_where=number>5\r\n/dataentities/Client/search?_where=date<2001-01-01\r\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "dataEntityName": {
+        "example": "Client",
+        "type": "string",
+        "description": "Name of the data entity. Defined by the api. Examples of native data entities you can use are `CL` for client profiles and `AD` for client addresses."
+      },
+      "Content-Type": {
+        "example": "application/json",
+        "type": "string",
+        "description": "Type of the content being sent."
+      },
+      "Accept": {
+        "example": "application/json",
+        "type": "string",
+        "description": "HTTP Client Negotiation _Accept_ Header. Indicates the types of responses the client can understand."
+      },
+      "REST-Range": {
+        "example": "resources=0-10",
+        "type": "string",
+        "description": "Defines the collection of documents to be returned. A range within the collection limited by 100 documents per query."
+      },
+      "_fields": {
+        "default": "email,firstName,document",
+        "type": "string",
+        "description": "Fields that should be returned by document. Separate fields' names with commas. For example `_fields=email,firstName,document`. You can also use `_all` to fetch all fields."
+      },
+      "_where": {
+        "example": "firstName is not null.",
+        "type": "string",
+        "description": "Filter specification."
+      },
+      "_schema": {
+        "example": "schema",
+        "type": "string",
+        "description": "Name of the schema the document to be created needs to be compliant with."
+      },
+      "_keyword": {
+        "example": "String to search",
+        "type": "string",
+        "description": "String to search. Use quotes for a partial query. For example, `_keyword=Maria` or `_keyword=\"Maria\"`."
+      },
+      "_sort": {
+        "default": "firstName ASC",
+        "type": "string",
+        "description": "Sets sorting mode in two parts. The first part is the name of the field you want to sort by. In the second part, use `ASC` for ascending or `DESC` for descending."
+      }
+    },
+    "required": [
+      "dataEntityName",
+      "Content-Type",
+      "Accept",
+      "REST-Range"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://vtex.local/api/dataentities/{dataEntityName}/search{?_fields,_where,_schema,_keyword,_sort}"
+    },
+    "headers": {
+      "Content-Type": {
+        "$": "Content-Type"
+      },
+      "Accept": {
+        "$": "Accept"
+      },
+      "REST-Range": {
+        "$": "REST-Range"
+      }
+    }
+  },
+  "responses": {
+    "503": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

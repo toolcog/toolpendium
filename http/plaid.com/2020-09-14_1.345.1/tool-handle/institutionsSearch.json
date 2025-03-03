@@ -1,0 +1,252 @@
+{
+  "name": "institutionsSearch",
+  "description": "Returns a JSON response containing details for institutions that match the query parameters, up to a maximum of ten institutions per query.\n\nVersioning note: API versions 2019-05-29 and earlier allow use of the `public_key` parameter instead of the `client_id` and `secret` parameters to authenticate to this endpoint. The `public_key` parameter has since been deprecated; all customers are encouraged to use `client_id` and `secret` instead.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/InstitutionsSearchRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "InstitutionsSearchRequest": {
+        "description": "InstitutionsSearchRequest defines the request schema for `/institutions/search`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "country_codes": {
+            "description": "Specify an array of Plaid-supported country codes this institution supports, using the ISO-3166-1 alpha-2 country code standard. In API versions 2019-05-29 and earlier, the `country_codes` parameter is an optional parameter within the `options` object and will default to `[US]` if it is not supplied.\n",
+            "items": {
+              "$ref": "#/$defs/CountryCode"
+            },
+            "type": "array"
+          },
+          "options": {
+            "$ref": "#/$defs/InstitutionsSearchRequestOptions"
+          },
+          "products": {
+            "description": "Filter the Institutions based on whether they support all products listed in `products`. Provide `null` to get institutions regardless of supported products. Note that when `auth` is specified as a product, if you are enabled for Instant Match or Automated Micro-deposits, institutions that support those products will be returned even if `auth` is not present in their product array.",
+            "items": {
+              "$ref": "#/$defs/Products"
+            },
+            "minItems": 1,
+            "nullable": true,
+            "type": "array",
+            "x-override-enum-values-shown": [
+              "assets",
+              "auth",
+              "balance",
+              "employment",
+              "identity",
+              "income_verification",
+              "investments",
+              "liabilities",
+              "identity_verification",
+              "payment_initiation",
+              "standing_orders",
+              "transactions",
+              "transfer"
+            ]
+          },
+          "query": {
+            "description": "The search query. Institutions with names matching the query are returned",
+            "minLength": 1,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "query",
+          "products",
+          "country_codes"
+        ],
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "CountryCode": {
+        "description": "ISO-3166-1 alpha-2 country code standard.",
+        "enum": [
+          "US",
+          "GB",
+          "ES",
+          "NL",
+          "FR",
+          "IE",
+          "CA",
+          "DE",
+          "IT",
+          "PL",
+          "DK",
+          "NO",
+          "SE",
+          "EE",
+          "LT",
+          "LV",
+          "PT"
+        ],
+        "title": "CountryCode",
+        "type": "string"
+      },
+      "InstitutionsSearchRequestOptions": {
+        "description": "An optional object to filter `/institutions/search` results.",
+        "properties": {
+          "include_auth_metadata": {
+            "default": false,
+            "description": "When `true`, returns metadata related to the Auth product indicating which auth methods are supported.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "include_optional_metadata": {
+            "description": "When true, return the institution's homepage URL, logo and primary brand color.",
+            "type": "boolean"
+          },
+          "include_payment_initiation_metadata": {
+            "default": false,
+            "description": "When `true`, returns metadata related to the Payment Initiation product indicating which payment configurations are supported.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "oauth": {
+            "description": "Limit results to institutions with or without mandatory OAuth login flows. Note that institutions will only have `oauth` set to `true` if *all* Items associated with that institution are required to use OAuth flows; institutions in a state of migration to OAuth may have the `oauth` attribute set to `false` even if they support OAuth.",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "payment_initiation": {
+            "$ref": "#/$defs/InstitutionsSearchPaymentInitiationOptions"
+          }
+        },
+        "type": "object"
+      },
+      "InstitutionsSearchPaymentInitiationOptions": {
+        "additionalProperties": true,
+        "description": "Additional options that will be used to filter institutions by various Payment Initiation configurations.",
+        "nullable": true,
+        "properties": {
+          "consent_id": {
+            "description": "A unique ID identifying the payment consent",
+            "nullable": true,
+            "type": "string"
+          },
+          "payment_id": {
+            "description": "A unique ID identifying the payment",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Products": {
+        "description": "A list of products that an institution can support. All Items must be initialized with at least one product. The Balance product is always available and does not need to be specified during initialization.",
+        "enum": [
+          "assets",
+          "auth",
+          "balance",
+          "identity",
+          "investments",
+          "liabilities",
+          "payment_initiation",
+          "identity_verification",
+          "transactions",
+          "credit_details",
+          "income",
+          "income_verification",
+          "deposit_switch",
+          "standing_orders",
+          "transfer",
+          "employment",
+          "recurring_transactions",
+          "signal"
+        ],
+        "title": "Products",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/institutions/search"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "InstitutionsSearchResponse defines the response schema for `/institutions/search`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**institutions**: An array of institutions matching the search criteria",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

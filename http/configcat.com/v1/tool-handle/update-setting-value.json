@@ -1,0 +1,384 @@
+{
+  "name": "update-setting-value",
+  "description": "This endpoint updates the value of a Feature Flag or Setting \nwith a collection of [JSON Patch](http://jsonpatch.com) operations in a specified Environment.\n\nOnly the `value`, `rolloutRules` and `percentageRules` attributes are modifiable by this endpoint.\n\nThe advantage of using JSON Patch is that you can describe individual update operations on a resource\nwithout touching attributes that you don't want to change. It supports collection reordering, so it also \ncan be used for reordering the targeting rules of a Feature Flag or Setting.\n\nFor example: We have the following resource.\n```\n{\n\t\"rolloutPercentageItems\": [\n\t\t{\n\t\t\t\"percentage\": 30,\n\t\t\t\"value\": true\n\t\t},\n\t\t{\n\t\t\t\"percentage\": 70,\n\t\t\t\"value\": false\n\t\t}\n\t],\n\t\"rolloutRules\": [],\n\t\"value\": false\n}\n```\nIf we send an update request body as below:\n```\n[\n\t{\n\t\t\"op\": \"replace\",\n\t\t\"path\": \"/value\",\n\t\t\"value\": true\n\t}\n]\n```\nOnly the default value is going to be set to `true` and all the Percentage Rules are remaining unchanged.\nSo we get a response like this:\n```\n{\n\t\"rolloutPercentageItems\": [\n\t\t{\n\t\t\t\"percentage\": 30,\n\t\t\t\"value\": true\n\t\t},\n\t\t{\n\t\t\t\"percentage\": 70,\n\t\t\t\"value\": false\n\t\t}\n\t],\n\t\"rolloutRules\": [],\n\t\"value\": true\n}\n```\n\nThe `rolloutRules` property describes two types of rules:\n\n- **Targeting rules**: When you want to add or update a targenting rule, the `comparator`, `comparisonAttribute`, and `comparisonValue` members are required.\n- **Segment rules**: When you want to add add or update a segment rule, the `segmentId` which identifies the desired segment and the `segmentComparator` members are required.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "environmentId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The identifier of the Environment."
+      },
+      "settingId": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The id of the Setting."
+      },
+      "reason": {
+        "type": "string",
+        "description": "The reason note for the Audit Log if the Product's \"Config changes require a reason\" preference is turned on."
+      },
+      "body": {
+        "$ref": "#/$defs/JsonPatch"
+      }
+    },
+    "required": [
+      "environmentId",
+      "settingId",
+      "body"
+    ],
+    "$defs": {
+      "JsonPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "operations": {
+            "items": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PatchOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "$ref": "#/$defs/JsonPointer"
+          },
+          "op": {
+            "$ref": "#/$defs/OperationType"
+          },
+          "path": {
+            "$ref": "#/$defs/JsonPointer"
+          },
+          "value": {
+            "$ref": "#/$defs/JsonNode"
+          }
+        },
+        "type": "object"
+      },
+      "JsonPointer": {
+        "additionalProperties": false,
+        "properties": {
+          "isUriEncoded": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/$defs/JsonPointerKind"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/$defs/PointerSegment"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
+          "source": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "JsonPointerKind": {
+        "enum": [
+          "unspecified",
+          "plain",
+          "uriEncoded"
+        ],
+        "type": "string"
+      },
+      "PointerSegment": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "value": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OperationType": {
+        "enum": [
+          "unknown",
+          "add",
+          "remove",
+          "replace",
+          "move",
+          "copy",
+          "test"
+        ],
+        "type": "string"
+      },
+      "JsonNode": {
+        "additionalProperties": false,
+        "properties": {
+          "options": {
+            "$ref": "#/$defs/JsonNodeOptions"
+          },
+          "parent": {
+            "$ref": "#/$defs/JsonNode"
+          },
+          "root": {
+            "$ref": "#/$defs/JsonNode"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNodeOptions": {
+        "additionalProperties": false,
+        "properties": {
+          "propertyNameCaseInsensitive": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api.configcat.com/v1/environments/{environmentId}/settings/{settingId}/value{?reason}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_embedded**",
+              {
+                "$ul": [
+                  [
+                    "**config**",
+                    {
+                      "$ul": [
+                        [
+                          "**_embedded**",
+                          {
+                            "$ul": [
+                              [
+                                "**product**",
+                                {
+                                  "$ul": [
+                                    [
+                                      "**_embedded**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**organization**",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**_links**",
+                                                  {
+                                                    "$ul": [
+                                                      "**members**",
+                                                      "**products**"
+                                                    ]
+                                                  }
+                                                ],
+                                                "**name**",
+                                                "**organizationId**"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**_links**",
+                                      {
+                                        "$ul": [
+                                          "**configs**",
+                                          "**environments**",
+                                          "**members**",
+                                          "**permission-groups**",
+                                          "**segments**",
+                                          "**self**",
+                                          "**tags**"
+                                        ]
+                                      }
+                                    ],
+                                    "**description**",
+                                    "**name**",
+                                    "**order**",
+                                    "**productId**",
+                                    "**reasonRequired**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**_links**",
+                          {
+                            "$ul": [
+                              "**self**",
+                              "**settings**"
+                            ]
+                          }
+                        ],
+                        "**configId**",
+                        "**description**",
+                        "**name**",
+                        "**order**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**environment**",
+                    {
+                      "$ul": [
+                        [
+                          "**_embedded**",
+                          {
+                            "$ul": [
+                              [
+                                "**product**",
+                                {
+                                  "$ul": [
+                                    [
+                                      "**_embedded**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**organization**",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**_links**",
+                                                  {
+                                                    "$ul": [
+                                                      "**members**",
+                                                      "**products**"
+                                                    ]
+                                                  }
+                                                ],
+                                                "**name**",
+                                                "**organizationId**"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**_links**",
+                                      {
+                                        "$ul": [
+                                          "**configs**",
+                                          "**environments**",
+                                          "**members**",
+                                          "**permission-groups**",
+                                          "**segments**",
+                                          "**self**",
+                                          "**tags**"
+                                        ]
+                                      }
+                                    ],
+                                    "**description**",
+                                    "**name**",
+                                    "**order**",
+                                    "**productId**",
+                                    "**reasonRequired**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**_links**",
+                          {
+                            "$ul": [
+                              "**self**"
+                            ]
+                          }
+                        ],
+                        "**color**",
+                        "**description**",
+                        "**environmentId**",
+                        "**name**",
+                        "**order**",
+                        "**reasonRequired**"
+                      ]
+                    }
+                  ],
+                  "**integrationLinks**",
+                  [
+                    "**setting**",
+                    {
+                      "$ul": [
+                        "**createdAt**",
+                        "**creatorEmail**",
+                        "**creatorFullName**",
+                        "**hint**",
+                        "**isWatching**",
+                        "**key**",
+                        "**name**",
+                        "**order**",
+                        "**settingId**",
+                        "**settingType**"
+                      ]
+                    }
+                  ],
+                  "**settingTags**"
+                ]
+              }
+            ],
+            [
+              "**_links**",
+              {
+                "$ul": [
+                  "**self**"
+                ]
+              }
+            ],
+            "**lastUpdaterUserEmail**",
+            "**lastUpdaterUserFullName**",
+            "**readOnly**",
+            "**rolloutPercentageItems**: The percentage rule collection.",
+            "**rolloutRules**: The targeting rule collection.",
+            "**updatedAt**",
+            "**value**: The value to serve. It must respect the setting type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

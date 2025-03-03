@@ -1,0 +1,247 @@
+{
+  "name": "ListFragments",
+  "description": "<p>Returns a list of <a>Fragment</a> objects from the specified stream and timestamp range within the archived data.</p> <p>Listing fragments is eventually consistent. This means that even if the producer receives an acknowledgment that a fragment is persisted, the result might not be returned immediately from a request to <code>ListFragments</code>. However, results are typically available in less than one second.</p> <note> <p>You must first call the <code>GetDataEndpoint</code> API to get an endpoint. Then send the <code>ListFragments</code> requests to this endpoint using the <a href=\"https://docs.aws.amazon.com/cli/latest/reference/\">--endpoint-url parameter</a>. </p> </note> <important> <p>If an error is thrown after invoking a Kinesis Video Streams archived media API, in addition to the HTTP status code and the response body, it includes the following pieces of information: </p> <ul> <li> <p> <code>x-amz-ErrorType</code> HTTP header – contains a more specific error type in addition to what the HTTP status code provides. </p> </li> <li> <p> <code>x-amz-RequestId</code> HTTP header – if you want to report an issue to Amazon Web Services, the support team can better diagnose the problem if given the Request Id.</p> </li> </ul> <p>Both the HTTP status code and the ErrorType header can be utilized to make programmatic decisions about whether errors are retry-able and under what conditions, as well as provide information on what actions the client programmer might need to take in order to successfully try again.</p> <p>For more information, see the <b>Errors</b> section at the bottom of this topic, as well as <a href=\"https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/CommonErrors.html\">Common Errors</a>. </p> </important>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "MaxResults": {
+        "type": "string",
+        "description": "Pagination limit"
+      },
+      "NextToken": {
+        "type": "string",
+        "description": "Pagination token"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "StreamName": {
+            "description": "The name of the stream from which to retrieve a fragment list. Specify either this parameter or the <code>StreamARN</code> parameter.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9_.-]+",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "StreamARN": {
+            "description": "The Amazon Resource Name (ARN) of the stream from which to retrieve a fragment list. Specify either this parameter or the <code>StreamName</code> parameter.",
+            "type": "string",
+            "pattern": "arn:[a-z\\d-]+:kinesisvideo:[a-z0-9-]+:[0-9]+:[a-z]+/[a-zA-Z0-9_.-]+/[0-9]+",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "MaxResults": {
+            "description": "The total number of fragments to return. If the total number of fragments available is more than the value specified in <code>max-results</code>, then a <a>ListFragmentsOutput$NextToken</a> is provided in the output that you can use to resume pagination.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "NextToken": {
+            "description": "A token to specify where to start paginating. This is the <a>ListFragmentsOutput$NextToken</a> from a previously truncated response.",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9+/]+={0,2}",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "FragmentSelector": {
+            "description": "<p>Describes the timestamp range and timestamp origin of a range of fragments.</p> <p>Only fragments with a start timestamp greater than or equal to the given start time and less than or equal to the end time are returned. For example, if a stream contains fragments with the following start timestamps: </p> <ul> <li> <p>00:00:00</p> </li> <li> <p>00:00:02</p> </li> <li> <p>00:00:04</p> </li> <li> <p>00:00:06</p> </li> </ul> <p> A fragment selector range with a start time of 00:00:01 and end time of 00:00:04 would return the fragments with start times of 00:00:02 and 00:00:04. </p>",
+            "type": "object",
+            "properties": {
+              "FragmentSelectorType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FragmentSelectorType"
+                  },
+                  {
+                    "description": "The origin of the timestamps to use (Server or Producer)."
+                  }
+                ]
+              },
+              "TimestampRange": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TimestampRange"
+                  },
+                  {
+                    "description": "The range of timestamps to return."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "FragmentSelectorType": {
+        "type": "string",
+        "enum": [
+          "PRODUCER_TIMESTAMP",
+          "SERVER_TIMESTAMP"
+        ]
+      },
+      "TimestampRange": {
+        "type": "object",
+        "required": [
+          "StartTimestamp",
+          "EndTimestamp"
+        ],
+        "properties": {
+          "StartTimestamp": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "The starting timestamp in the range of timestamps for which to return fragments."
+              }
+            ]
+          },
+          "EndTimestamp": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Timestamp"
+              },
+              {
+                "description": "The ending timestamp in the range of timestamps for which to return fragments."
+              }
+            ]
+          }
+        },
+        "description": "The range of timestamps for which to return fragments."
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://kinesisvideo.us-east-1.amazonaws.com/listFragments{?MaxResults,NextToken}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Fragments**",
+            "**NextToken**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

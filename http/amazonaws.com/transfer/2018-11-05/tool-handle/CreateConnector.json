@@ -1,0 +1,501 @@
+{
+  "name": "CreateConnector",
+  "description": "<p>Creates the connector, which captures the parameters for an outbound connection for the AS2 or SFTP protocol. The connector is required for sending files to an externally hosted AS2 or SFTP server. For more details about AS2 connectors, see <a href=\"https://docs.aws.amazon.com/transfer/latest/userguide/create-b2b-server.html#configure-as2-connector\">Create AS2 connectors</a>.</p> <note> <p>You must specify exactly one configuration object: either for AS2 (<code>As2Config</code>) or SFTP (<code>SftpConfig</code>).</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "TransferService.CreateConnector"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateConnectorRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreateConnectorRequest": {
+        "type": "object",
+        "required": [
+          "Url",
+          "AccessRole"
+        ],
+        "title": "CreateConnectorRequest",
+        "properties": {
+          "Url": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Url"
+              },
+              {
+                "description": "The URL of the partner's AS2 or SFTP endpoint."
+              }
+            ]
+          },
+          "As2Config": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/As2ConnectorConfig"
+              },
+              {
+                "description": "A structure that contains the parameters for an AS2 connector object."
+              }
+            ]
+          },
+          "AccessRole": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Role"
+              },
+              {
+                "description": "<p>With AS2, you can send files by calling <code>StartFileTransfer</code> and specifying the file paths in the request parameter, <code>SendFilePaths</code>. We use the file’s parent directory (for example, for <code>--send-file-paths /bucket/dir/file.txt</code>, parent directory is <code>/bucket/dir/</code>) to temporarily store a processed AS2 message file, store the MDN when we receive them from the partner, and write a final JSON file containing relevant metadata of the transmission. So, the <code>AccessRole</code> needs to provide read and write access to the parent directory of the file location used in the <code>StartFileTransfer</code> request. Additionally, you need to provide read and write access to the parent directory of the files that you intend to send with <code>StartFileTransfer</code>.</p> <p>If you are using Basic authentication for your AS2 connector, the access role requires the <code>secretsmanager:GetSecretValue</code> permission for the secret. If the secret is encrypted using a customer-managed key instead of the Amazon Web Services managed key in Secrets Manager, then the role also needs the <code>kms:Decrypt</code> permission for that key.</p>"
+              }
+            ]
+          },
+          "LoggingRole": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Role"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role that allows a connector to turn on CloudWatch logging for Amazon S3 events. When set, you can view connector activity in your CloudWatch logs."
+              }
+            ]
+          },
+          "Tags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Tags"
+              },
+              {
+                "description": "Key-value pairs that can be used to group and search for connectors. Tags are metadata attached to connectors for any purpose."
+              }
+            ]
+          },
+          "SftpConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SftpConnectorConfig"
+              },
+              {
+                "description": "A structure that contains the parameters for an SFTP connector object."
+              }
+            ]
+          }
+        }
+      },
+      "Url": {
+        "type": "string",
+        "maxLength": 255
+      },
+      "As2ConnectorConfig": {
+        "type": "object",
+        "properties": {
+          "LocalProfileId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProfileId"
+              },
+              {
+                "description": "A unique identifier for the AS2 local profile."
+              }
+            ]
+          },
+          "PartnerProfileId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ProfileId"
+              },
+              {
+                "description": "A unique identifier for the partner profile for the connector."
+              }
+            ]
+          },
+          "MessageSubject": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MessageSubject"
+              },
+              {
+                "description": "Used as the <code>Subject</code> HTTP header attribute in AS2 messages that are being sent with the connector."
+              }
+            ]
+          },
+          "Compression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CompressionEnum"
+              },
+              {
+                "description": "Specifies whether the AS2 file is compressed."
+              }
+            ]
+          },
+          "EncryptionAlgorithm": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EncryptionAlg"
+              },
+              {
+                "description": "<p>The algorithm that is used to encrypt the file.</p> <note> <p>You can only specify <code>NONE</code> if the URL for your connector uses HTTPS. This ensures that no traffic is sent in clear text.</p> </note>"
+              }
+            ]
+          },
+          "SigningAlgorithm": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SigningAlg"
+              },
+              {
+                "description": "The algorithm that is used to sign the AS2 messages sent with the connector."
+              }
+            ]
+          },
+          "MdnSigningAlgorithm": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MdnSigningAlg"
+              },
+              {
+                "description": "<p>The signing algorithm for the MDN response.</p> <note> <p>If set to DEFAULT (or not set at all), the value for <code>SigningAlgorithm</code> is used.</p> </note>"
+              }
+            ]
+          },
+          "MdnResponse": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MdnResponse"
+              },
+              {
+                "description": "<p>Used for outbound requests (from an Transfer Family server to a partner AS2 server) to determine whether the partner response for transfers is synchronous or asynchronous. Specify either of the following values:</p> <ul> <li> <p> <code>SYNC</code>: The system expects a synchronous MDN response, confirming that the file was transferred successfully (or not).</p> </li> <li> <p> <code>NONE</code>: Specifies that no MDN response is required.</p> </li> </ul>"
+              }
+            ]
+          },
+          "BasicAuthSecretId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/As2ConnectorSecretId"
+              },
+              {
+                "description": "<p>Provides Basic authentication support to the AS2 Connectors API. To use Basic authentication, you must provide the name or Amazon Resource Name (ARN) of a secret in Secrets Manager.</p> <p>The default value for this parameter is <code>null</code>, which indicates that Basic authentication is not enabled for the connector.</p> <p>If the connector should use Basic authentication, the secret needs to be in the following format:</p> <p> <code>{ \"Username\": \"user-name\", \"Password\": \"user-password\" }</code> </p> <p>Replace <code>user-name</code> and <code>user-password</code> with the credentials for the actual user that is being authenticated.</p> <p>Note the following:</p> <ul> <li> <p>You are storing these credentials in Secrets Manager, <i>not passing them directly</i> into this API.</p> </li> <li> <p>If you are using the API, SDKs, or CloudFormation to configure your connector, then you must create the secret before you can enable Basic authentication. However, if you are using the Amazon Web Services management console, you can have the system create the secret for you.</p> </li> </ul> <p>If you have previously enabled Basic authentication for a connector, you can disable it by using the <code>UpdateConnector</code> API call. For example, if you are using the CLI, you can run the following command to remove Basic authentication:</p> <p> <code>update-connector --connector-id my-connector-id --as2-config 'BasicAuthSecretId=\"\"'</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "Contains the details for an AS2 connector object. The connector object is used for AS2 outbound processes, to connect the Transfer Family customer with the trading partner."
+      },
+      "ProfileId": {
+        "type": "string",
+        "pattern": "^p-([0-9a-f]{17})$",
+        "minLength": 19,
+        "maxLength": 19
+      },
+      "MessageSubject": {
+        "type": "string",
+        "pattern": "^[\\p{Print}\\p{Blank}]+",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "CompressionEnum": {
+        "type": "string",
+        "enum": [
+          "ZLIB",
+          "DISABLED"
+        ]
+      },
+      "EncryptionAlg": {
+        "type": "string",
+        "enum": [
+          "AES128_CBC",
+          "AES192_CBC",
+          "AES256_CBC",
+          "NONE"
+        ]
+      },
+      "SigningAlg": {
+        "type": "string",
+        "enum": [
+          "SHA256",
+          "SHA384",
+          "SHA512",
+          "SHA1",
+          "NONE"
+        ]
+      },
+      "MdnSigningAlg": {
+        "type": "string",
+        "enum": [
+          "SHA256",
+          "SHA384",
+          "SHA512",
+          "SHA1",
+          "NONE",
+          "DEFAULT"
+        ]
+      },
+      "MdnResponse": {
+        "type": "string",
+        "enum": [
+          "SYNC",
+          "NONE"
+        ]
+      },
+      "As2ConnectorSecretId": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 2048
+      },
+      "Role": {
+        "type": "string",
+        "pattern": "arn:.*role/.*",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "Tags": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Tag"
+        },
+        "minItems": 1,
+        "maxItems": 50
+      },
+      "Tag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagKey"
+              },
+              {
+                "description": "The name assigned to the tag that you create."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagValue"
+              },
+              {
+                "description": "Contains one or more values that you assigned to the key name you create."
+              }
+            ]
+          }
+        },
+        "description": "Creates a key-value pair for a specific resource. Tags are metadata that you can use to search for and group a resource for various purposes. You can apply tags to servers, users, and roles. A tag key can take more than one value. For example, to group servers for accounting purposes, you might create a tag called <code>Group</code> and assign the values <code>Research</code> and <code>Accounting</code> to that group."
+      },
+      "TagKey": {
+        "type": "string",
+        "maxLength": 128
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "SftpConnectorConfig": {
+        "type": "object",
+        "properties": {
+          "UserSecretId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SecretId"
+              },
+              {
+                "description": "The identifiers for the secrets (in Amazon Web Services Secrets Manager) that contain the SFTP user's private keys or passwords."
+              }
+            ]
+          },
+          "TrustedHostKeys": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SftpConnectorTrustedHostKeyList"
+              },
+              {
+                "description": "<p>The public portion of the host key, or keys, that are used to authenticate the user to the external server to which you are connecting. You can use the <code>ssh-keyscan</code> command against the SFTP server to retrieve the necessary key.</p> <p>The three standard SSH public key format elements are <code>&lt;key type&gt;</code>, <code>&lt;body base64&gt;</code>, and an optional <code>&lt;comment&gt;</code>, with spaces between each element.</p> <p>For the trusted host key, Transfer Family accepts RSA and ECDSA keys.</p> <ul> <li> <p>For RSA keys, the key type is <code>ssh-rsa</code>.</p> </li> <li> <p>For ECDSA keys, the key type is either <code>ecdsa-sha2-nistp256</code>, <code>ecdsa-sha2-nistp384</code>, or <code>ecdsa-sha2-nistp521</code>, depending on the size of the key you generated.</p> </li> </ul>"
+              }
+            ]
+          }
+        },
+        "description": "Contains the details for an SFTP connector object. The connector object is used for transferring files to and from a partner's SFTP server."
+      },
+      "SecretId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "SftpConnectorTrustedHostKeyList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SftpConnectorTrustedHostKey"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "SftpConnectorTrustedHostKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://transfer.us-east-1.amazonaws.com/#X-Amz-Target=TransferService.CreateConnector"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ConnectorId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,309 @@
+{
+  "name": "UpdateListener",
+  "description": "Updates the specified listener for the specified service.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "listenerIdentifier": {
+        "type": "string",
+        "pattern": "^((listener-[0-9a-z]{17})|(^arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:service/svc-[0-9a-z]{17}/listener/listener-[0-9a-z]{17}$))$",
+        "minLength": 20,
+        "maxLength": 2048,
+        "description": "The ID or Amazon Resource Name (ARN) of the listener."
+      },
+      "serviceIdentifier": {
+        "type": "string",
+        "pattern": "^((svc-[0-9a-z]{17})|(arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:service/svc-[0-9a-z]{17}))$",
+        "minLength": 17,
+        "maxLength": 2048,
+        "description": "The ID or Amazon Resource Name (ARN) of the service."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "defaultAction"
+        ],
+        "properties": {
+          "defaultAction": {
+            "description": "Describes the action for a rule. Each rule must include exactly one of the following types of actions: <code>forward </code>or <code>fixed-response</code>, and it must be the last action to be performed.",
+            "type": "object",
+            "properties": {
+              "fixedResponse": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FixedResponseAction"
+                  },
+                  {
+                    "description": " Describes the rule action that returns a custom HTTP response. "
+                  }
+                ]
+              },
+              "forward": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ForwardAction"
+                  },
+                  {
+                    "description": "The forward action. Traffic that matches the rule is forwarded to the specified target groups."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "listenerIdentifier",
+      "serviceIdentifier",
+      "body"
+    ],
+    "$defs": {
+      "FixedResponseAction": {
+        "type": "object",
+        "required": [
+          "statusCode"
+        ],
+        "properties": {
+          "statusCode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HttpStatusCode"
+              },
+              {
+                "description": "The HTTP response code."
+              }
+            ]
+          }
+        },
+        "description": "Information about an action that returns a custom HTTP response. "
+      },
+      "HttpStatusCode": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 599
+      },
+      "ForwardAction": {
+        "type": "object",
+        "required": [
+          "targetGroups"
+        ],
+        "properties": {
+          "targetGroups": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WeightedTargetGroupList"
+              },
+              {
+                "description": "<p>The target groups. Traffic matching the rule is forwarded to the specified target groups. With forward actions, you can assign a weight that controls the prioritization and selection of each target group. This means that requests are distributed to individual target groups based on their weights. For example, if two target groups have the same weight, each target group receives half of the traffic.</p> <p>The default value is 1. This means that if only one target group is provided, there is no need to set the weight; 100% of traffic will go to that target group.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Describes a forward action. You can use forward actions to route requests to one or more target groups. "
+      },
+      "WeightedTargetGroupList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/WeightedTargetGroup"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "WeightedTargetGroup": {
+        "type": "object",
+        "required": [
+          "targetGroupIdentifier"
+        ],
+        "properties": {
+          "targetGroupIdentifier": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetGroupIdentifier"
+              },
+              {
+                "description": "The ID or Amazon Resource Name (ARN) of the target group."
+              }
+            ]
+          },
+          "weight": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TargetGroupWeight"
+              },
+              {
+                "description": "Only required if you specify multiple target groups for a forward action. The \"weight\" determines how requests are distributed to the target group. For example, if you specify two target groups, each with a weight of 10, each target group receives half the requests. If you specify two target groups, one with a weight of 10 and the other with a weight of 20, the target group with a weight of 20 receives twice as many requests as the other target group. If there's only one target group specified, then the default value is 100."
+              }
+            ]
+          }
+        },
+        "description": "Describes the weight of a target group."
+      },
+      "TargetGroupIdentifier": {
+        "type": "string",
+        "pattern": "^((tg-[0-9a-z]{17})|(arn:[a-z0-9\\-]+:vpc-lattice:[a-zA-Z0-9\\-]+:\\d{12}:targetgroup/tg-[0-9a-z]{17}))$",
+        "minLength": 17,
+        "maxLength": 2048
+      },
+      "TargetGroupWeight": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 999
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://vpc-lattice.us-east-1.amazonaws.com/services/{serviceIdentifier}/listeners/{listenerIdentifier}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**arn**",
+            "**defaultAction**",
+            "**id**",
+            "**name**",
+            "**port**",
+            "**protocol**",
+            "**serviceArn**",
+            "**serviceId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

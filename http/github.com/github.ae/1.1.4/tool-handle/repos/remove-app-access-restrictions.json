@@ -1,0 +1,186 @@
+{
+  "name": "repos_remove-app-access-restrictions",
+  "description": "Protected branches are available in public repositories with GitHub Free and GitHub Free for organizations, and in public and private repositories with GitHub Pro, GitHub Team, GitHub Enterprise Cloud, and GitHub Enterprise Server. For more information, see [GitHub's products](https://docs.github.com/github-ae@latest/github/getting-started-with-github/githubs-products) in the GitHub Help documentation.\n\nRemoves the ability of an app to push to this branch. Only installed GitHub Apps with `write` access to the `contents` permission can be added as authorized actors on a protected branch.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "branch": {
+        "type": "string",
+        "description": "The name of the branch. Cannot contain wildcard characters. To use wildcard characters in branch names, use [the GraphQL API](https://docs.github.com/github-ae@latest/graphql)."
+      },
+      "body": {
+        "oneOf": [
+          {
+            "example": {
+              "apps": [
+                "my-app"
+              ]
+            },
+            "properties": {
+              "apps": {
+                "description": "The GitHub Apps that have push access to this branch. Use the slugified version of the app name. **Note**: The list of users, apps, and teams in total is limited to 100 items.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "apps"
+            ],
+            "type": "object"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        ]
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "branch"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GitHub app list"
+        },
+        "GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**client_id**",
+            "**client_secret**",
+            "**created_at**",
+            "**description**",
+            "**events**: The list of events for the GitHub app",
+            "**external_url**",
+            "**html_url**",
+            "**id**: Unique identifier of the GitHub app",
+            "**installations_count**: The number of installations associated with the GitHub app",
+            "**name**: The name of the GitHub app",
+            "**node_id**",
+            [
+              "**owner**: A GitHub user.",
+              {
+                "$ul": [
+                  "**avatar_url**",
+                  "**email**",
+                  "**events_url**",
+                  "**followers_url**",
+                  "**following_url**",
+                  "**gists_url**",
+                  "**gravatar_id**",
+                  "**html_url**",
+                  "**id**",
+                  "**login**",
+                  "**name**",
+                  "**node_id**",
+                  "**organizations_url**",
+                  "**received_events_url**",
+                  "**repos_url**",
+                  "**site_admin**",
+                  "**starred_at**",
+                  "**starred_url**",
+                  "**subscriptions_url**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**pem**",
+            [
+              "**permissions**: The set of permissions for the GitHub app",
+              {
+                "$ul": [
+                  "**checks**",
+                  "**contents**",
+                  "**deployments**",
+                  "**issues**",
+                  "**metadata**"
+                ]
+              }
+            ],
+            "**slug**: The slug name of the GitHub app",
+            "**updated_at**",
+            "**webhook_secret**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

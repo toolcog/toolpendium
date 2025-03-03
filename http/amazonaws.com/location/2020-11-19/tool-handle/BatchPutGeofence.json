@@ -1,0 +1,317 @@
+{
+  "name": "BatchPutGeofence",
+  "description": "A batch request for storing geofence geometries into a given geofence collection, or updates the geometry of an existing geofence if a geofence ID is included in the request.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "CollectionName": {
+        "type": "string",
+        "pattern": "^[-._\\w]+$",
+        "minLength": 1,
+        "maxLength": 100,
+        "description": "The geofence collection storing the geofences."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Entries"
+        ],
+        "properties": {
+          "Entries": {
+            "description": "The batch of geofences to be stored in a geofence collection.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/BatchPutGeofenceRequestEntry"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        }
+      }
+    },
+    "required": [
+      "CollectionName",
+      "body"
+    ],
+    "$defs": {
+      "BatchPutGeofenceRequestEntry": {
+        "type": "object",
+        "required": [
+          "GeofenceId",
+          "Geometry"
+        ],
+        "properties": {
+          "GeofenceId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Id"
+              },
+              {
+                "description": "The identifier for the geofence to be stored in a given geofence collection."
+              }
+            ]
+          },
+          "GeofenceProperties": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PropertyMap"
+              },
+              {
+                "description": "<p>Associates one of more properties with the geofence. A property is a key-value pair stored with the geofence and added to any geofence event triggered with that geofence.</p> <p>Format: <code>\"key\" : \"value\"</code> </p>"
+              }
+            ]
+          },
+          "Geometry": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GeofenceGeometry"
+              },
+              {
+                "description": "<p>Contains the details of the position of the geofence. Can be either a polygon or a circle. Including both will return a validation error.</p> <note> <p>Each <a href=\"https://docs.aws.amazon.com/location-geofences/latest/APIReference/API_GeofenceGeometry.html\"> geofence polygon</a> can have a maximum of 1,000 vertices.</p> </note>"
+              }
+            ]
+          }
+        },
+        "description": "Contains geofence geometry details. "
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[-._\\p{L}\\p{N}]+$",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "PropertyMap": {
+        "type": "object",
+        "minProperties": 0,
+        "maxProperties": 3,
+        "additionalProperties": {
+          "$ref": "#/$defs/PropertyMapValueString"
+        }
+      },
+      "PropertyMapValueString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40
+      },
+      "GeofenceGeometry": {
+        "type": "object",
+        "properties": {
+          "Circle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Circle"
+              },
+              {
+                "description": "A circle on the earth, as defined by a center point and a radius."
+              }
+            ]
+          },
+          "Polygon": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LinearRings"
+              },
+              {
+                "description": "<p>A polygon is a list of linear rings which are each made up of a list of vertices.</p> <p>Each vertex is a 2-dimensional point of the form: <code>[longitude, latitude]</code>. This is represented as an array of doubles of length 2 (so <code>[double, double]</code>).</p> <p>An array of 4 or more vertices, where the first and last vertex are the same (to form a closed boundary), is called a linear ring. The linear ring vertices must be listed in counter-clockwise order around the ring’s interior. The linear ring is represented as an array of vertices, or an array of arrays of doubles (<code>[[double, double], ...]</code>).</p> <p>A geofence consists of a single linear ring. To allow for future expansion, the Polygon parameter takes an array of linear rings, which is represented as an array of arrays of arrays of doubles (<code>[[[double, double], ...], ...]</code>).</p> <p>A linear ring for use in geofences can consist of between 4 and 1,000 vertices.</p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains the geofence geometry details.</p> <p>A geofence geometry is made up of either a polygon or a circle. Can be either a polygon or a circle. Including both will return a validation error.</p> <note> <p>Amazon Location doesn't currently support polygons with holes, multipolygons, polygons that are wound clockwise, or that cross the antimeridian. </p> </note>"
+      },
+      "Circle": {
+        "type": "object",
+        "required": [
+          "Center",
+          "Radius"
+        ],
+        "properties": {
+          "Center": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Position"
+              },
+              {
+                "description": "A single point geometry, specifying the center of the circle, using <a href=\"https://gisgeography.com/wgs84-world-geodetic-system/\">WGS 84</a> coordinates, in the form <code>[longitude, latitude]</code>."
+              }
+            ]
+          },
+          "Radius": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Double"
+              },
+              {
+                "description": "The radius of the circle in meters. Must be greater than zero and no larger than 100,000 (100 kilometers)."
+              }
+            ]
+          }
+        },
+        "description": "A circle on the earth, as defined by a center point and a radius."
+      },
+      "Position": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Double"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "Double": {
+        "type": "number",
+        "format": "double"
+      },
+      "LinearRings": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/LinearRing"
+        },
+        "minItems": 1
+      },
+      "LinearRing": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Position"
+        },
+        "minItems": 4
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://geo.us-east-1.amazonaws.com/geofencing/v0/collections/{CollectionName}/put-geofences"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Errors**",
+            "**Successes**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

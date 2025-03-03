@@ -1,0 +1,310 @@
+{
+  "name": "BatchCreateAttendee",
+  "description": "Creates up to 100 attendees for an active Amazon Chime SDK meeting. For more information about the Amazon Chime SDK, see <a href=\"https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html\">Using the Amazon Chime SDK</a> in the <i>Amazon Chime Developer Guide</i>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "MeetingId": {
+        "type": "string",
+        "pattern": "[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}",
+        "description": "The Amazon Chime SDK ID of the meeting to which you're adding attendees."
+      },
+      "operation": {
+        "type": "string",
+        "enum": [
+          "batch-create"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Attendees"
+        ],
+        "properties": {
+          "Attendees": {
+            "description": "The attendee information, including attendees' IDs and join tokens.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CreateAttendeeRequestItem"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        }
+      }
+    },
+    "required": [
+      "MeetingId",
+      "operation",
+      "body"
+    ],
+    "$defs": {
+      "CreateAttendeeRequestItem": {
+        "type": "object",
+        "required": [
+          "ExternalUserId"
+        ],
+        "properties": {
+          "ExternalUserId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExternalUserId"
+              },
+              {
+                "description": "<p>The Amazon Chime SDK external user ID. An idempotency token. Links the attendee to an identity managed by a builder application.</p> <p>Pattern: <code>[-_&amp;@+=,(){}\\[\\]\\/«».:|'\"#a-zA-Z0-9À-ÿ\\s]*</code> </p> <p>Values that begin with <code>aws:</code> are reserved. You can't configure a value that uses this prefix. Case insensitive.</p>"
+              }
+            ]
+          },
+          "Capabilities": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttendeeCapabilities"
+              },
+              {
+                "description": "A list of one or more capabilities."
+              }
+            ]
+          }
+        },
+        "description": "The Amazon Chime SDK attendee fields to create, used with the BatchCreateAttendee action."
+      },
+      "ExternalUserId": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 64,
+        "format": "password"
+      },
+      "AttendeeCapabilities": {
+        "type": "object",
+        "required": [
+          "Audio",
+          "Video",
+          "Content"
+        ],
+        "properties": {
+          "Audio": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaCapabilities"
+              },
+              {
+                "description": "The audio capability assigned to an attendee."
+              }
+            ]
+          },
+          "Video": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaCapabilities"
+              },
+              {
+                "description": "The video capability assigned to an attendee."
+              }
+            ]
+          },
+          "Content": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MediaCapabilities"
+              },
+              {
+                "description": "The content capability assigned to an attendee."
+              }
+            ]
+          }
+        },
+        "description": "<p>The media capabilities of an attendee: audio, video, or content. </p> <note> <p>You use the capabilities with a set of values that control what the capabilities can do, such as <code>SendReceive</code> data. For more information about those values, see .</p> </note> <p>When using capabilities, be aware of these corner cases:</p> <ul> <li> <p>You can't set <code>content</code> capabilities to <code>SendReceive</code> or <code>Receive</code> unless you also set <code>video</code> capabilities to <code>SendReceive</code> or <code>Receive</code>. If you don't set the <code>video</code> capability to receive, the response will contain an HTTP 400 Bad Request status code. However, you can set your <code>video</code> capability to receive and you set your <code>content</code> capability to not receive.</p> </li> <li> <p>When you change an <code>audio</code> capability from <code>None</code> or <code>Receive</code> to <code>Send</code> or <code>SendReceive</code> , and if the attendee left their microphone unmuted, audio will flow from the attendee to the other meeting participants.</p> </li> <li> <p>When you change a <code>video</code> or <code>content</code> capability from <code>None</code> or <code>Receive</code> to <code>Send</code> or <code>SendReceive</code> , and if the attendee turned on their video or content streams, remote attendees can receive those streams, but only after media renegotiation between the client and the Amazon Chime back-end server.</p> </li> </ul>"
+      },
+      "MediaCapabilities": {
+        "type": "string",
+        "enum": [
+          "SendReceive",
+          "Send",
+          "Receive",
+          "None"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://meetings-chime.us-east-1.amazonaws.com/meetings/{MeetingId}/attendees#operation=batch-create{?operation}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Attendees**",
+            "**Errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

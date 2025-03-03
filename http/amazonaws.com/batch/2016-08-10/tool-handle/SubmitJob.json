@@ -1,0 +1,822 @@
+{
+  "name": "SubmitJob",
+  "description": "<p>Submits an Batch job from a job definition. Parameters that are specified during <a>SubmitJob</a> override parameters defined in the job definition. vCPU and memory requirements that are specified in the <code>resourceRequirements</code> objects in the job definition are the exception. They can't be overridden this way using the <code>memory</code> and <code>vcpus</code> parameters. Rather, you must specify updates to job definition parameters in a <code>resourceRequirements</code> object that's included in the <code>containerOverrides</code> parameter.</p> <note> <p>Job queues with a scheduling policy are limited to 500 active fair share identifiers at a time. </p> </note> <important> <p>Jobs that run on Fargate resources can't be guaranteed to run for more than 14 days. This is because, after 14 days, Fargate resources might become unavailable and job might be terminated.</p> </important>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "jobName",
+          "jobQueue",
+          "jobDefinition"
+        ],
+        "properties": {
+          "jobName": {
+            "description": "The name of the job. It can be up to 128 letters long. The first character must be alphanumeric, can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores (_).",
+            "type": "string"
+          },
+          "jobQueue": {
+            "description": "The job queue where the job is submitted. You can specify either the name or the Amazon Resource Name (ARN) of the queue.",
+            "type": "string"
+          },
+          "shareIdentifier": {
+            "description": "<p>The share identifier for the job. Don't specify this parameter if the job queue doesn't have a scheduling policy. If the job queue has a scheduling policy, then this parameter must be specified.</p> <p>This string is limited to 255 alphanumeric characters, and can be followed by an asterisk (*).</p>",
+            "type": "string"
+          },
+          "schedulingPriorityOverride": {
+            "description": "<p>The scheduling priority for the job. This only affects jobs in job queues with a fair share policy. Jobs with a higher scheduling priority are scheduled before jobs with a lower scheduling priority. This overrides any scheduling priority in the job definition.</p> <p>The minimum supported value is 0 and the maximum supported value is 9999.</p>",
+            "type": "integer"
+          },
+          "arrayProperties": {
+            "description": "An object that represents an Batch array job.",
+            "type": "object",
+            "properties": {
+              "size": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "description": "The size of the array job."
+                  }
+                ]
+              }
+            }
+          },
+          "dependsOn": {
+            "description": "A list of dependencies for the job. A job can depend upon a maximum of 20 jobs. You can specify a <code>SEQUENTIAL</code> type dependency without specifying a job ID for array jobs so that each child array job completes sequentially, starting at index 0. You can also specify an <code>N_TO_N</code> type dependency with a job ID for array jobs. In that case, each index child of this job must wait for the corresponding index child of each dependency to complete before it can begin.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JobDependency"
+            }
+          },
+          "jobDefinition": {
+            "description": "<p>The job definition used by this job. This value can be one of <code>definition-name</code>, <code>definition-name:revision</code>, or the Amazon Resource Name (ARN) for the job definition, with or without the revision (<code>arn:aws:batch:<i>region</i>:<i>account</i>:job-definition/<i>definition-name</i>:<i>revision</i> </code>, or <code>arn:aws:batch:<i>region</i>:<i>account</i>:job-definition/<i>definition-name</i> </code>).</p> <p>If the revision is not specified, then the latest active revision is used.</p>",
+            "type": "string"
+          },
+          "parameters": {
+            "description": "Additional parameters passed to the job that replace parameter substitution placeholders that are set in the job definition. Parameters are specified as a key and value pair mapping. Parameters in a <code>SubmitJob</code> request override any corresponding parameter defaults from the job definition.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/String"
+            }
+          },
+          "containerOverrides": {
+            "description": "<p>The overrides that should be sent to a container.</p> <p>For information about using Batch overrides when you connect event sources to targets, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/pipes-reference/API_BatchContainerOverrides.html\">BatchContainerOverrides</a>.</p>",
+            "type": "object",
+            "properties": {
+              "vcpus": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "deprecated": true,
+                    "description": "This parameter is deprecated, use <code>resourceRequirements</code> to override the <code>vcpus</code> parameter that's set in the job definition. It's not supported for jobs running on Fargate resources. For jobs that run on EC2 resources, it overrides the <code>vcpus</code> parameter set in the job definition, but doesn't override any vCPU requirement specified in the <code>resourceRequirements</code> structure in the job definition. To override vCPU requirements that are specified in the <code>resourceRequirements</code> structure in the job definition, <code>resourceRequirements</code> must be specified in the <code>SubmitJob</code> request, with <code>type</code> set to <code>VCPU</code> and <code>value</code> set to the new value. For more information, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#override-resource-requirements\">Can't override job definition resource requirements</a> in the <i>Batch User Guide</i>.This field is deprecated, use resourceRequirements instead."
+                  }
+                ]
+              },
+              "memory": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "deprecated": true,
+                    "description": "This parameter is deprecated, use <code>resourceRequirements</code> to override the memory requirements specified in the job definition. It's not supported for jobs running on Fargate resources. For jobs that run on EC2 resources, it overrides the <code>memory</code> parameter set in the job definition, but doesn't override any memory requirement that's specified in the <code>resourceRequirements</code> structure in the job definition. To override memory requirements that are specified in the <code>resourceRequirements</code> structure in the job definition, <code>resourceRequirements</code> must be specified in the <code>SubmitJob</code> request, with <code>type</code> set to <code>MEMORY</code> and <code>value</code> set to the new value. For more information, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#override-resource-requirements\">Can't override job definition resource requirements</a> in the <i>Batch User Guide</i>.This field is deprecated, use resourceRequirements instead."
+                  }
+                ]
+              },
+              "command": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/StringList"
+                  },
+                  {
+                    "description": "<p>The command to send to the container that overrides the default command from the Docker image or the job definition.</p> <note> <p>This parameter can't contain an empty string.</p> </note>"
+                  }
+                ]
+              },
+              "instanceType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/String"
+                  },
+                  {
+                    "description": "<p>The instance type to use for a multi-node parallel job.</p> <note> <p>This parameter isn't applicable to single-node container jobs or jobs that run on Fargate resources, and shouldn't be provided.</p> </note>"
+                  }
+                ]
+              },
+              "environment": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EnvironmentVariables"
+                  },
+                  {
+                    "description": "<p>The environment variables to send to the container. You can add new environment variables, which are added to the container at launch, or you can override the existing environment variables from the Docker image or the job definition.</p> <note> <p>Environment variables cannot start with \"<code>AWS_BATCH</code>\". This naming convention is reserved for variables that Batch sets.</p> </note>"
+                  }
+                ]
+              },
+              "resourceRequirements": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ResourceRequirements"
+                  },
+                  {
+                    "description": "The type and amount of resources to assign to a container. This overrides the settings in the job definition. The supported resources include <code>GPU</code>, <code>MEMORY</code>, and <code>VCPU</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "nodeOverrides": {
+            "description": "<p>An object that represents any node overrides to a job definition that's used in a <a>SubmitJob</a> API operation.</p> <note> <p>This parameter isn't applicable to jobs that are running on Fargate resources. Don't provide it for these jobs. Rather, use <code>containerOverrides</code> instead.</p> </note>",
+            "type": "object",
+            "properties": {
+              "numNodes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "description": "<p>The number of nodes to use with a multi-node parallel job. This value overrides the number of nodes that are specified in the job definition. To use this override, you must meet the following conditions:</p> <ul> <li> <p>There must be at least one node range in your job definition that has an open upper boundary, such as <code>:</code> or <code>n:</code>.</p> </li> <li> <p>The lower boundary of the node range that's specified in the job definition must be fewer than the number of nodes specified in the override.</p> </li> <li> <p>The main node index that's specified in the job definition must be fewer than the number of nodes specified in the override.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "nodePropertyOverrides": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/NodePropertyOverrides"
+                  },
+                  {
+                    "description": "The node property overrides for the job."
+                  }
+                ]
+              }
+            }
+          },
+          "retryStrategy": {
+            "description": "The retry strategy that's associated with a job. For more information, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/job_retries.html\">Automated job retries</a> in the <i>Batch User Guide</i>.",
+            "type": "object",
+            "properties": {
+              "attempts": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "description": "The number of times to move a job to the <code>RUNNABLE</code> status. You can specify between 1 and 10 attempts. If the value of <code>attempts</code> is greater than one, the job is retried on failure the same number of attempts as the value."
+                  }
+                ]
+              },
+              "evaluateOnExit": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EvaluateOnExitList"
+                  },
+                  {
+                    "description": "Array of up to 5 objects that specify the conditions where jobs are retried or failed. If this parameter is specified, then the <code>attempts</code> parameter must also be specified. If none of the listed conditions match, then the job is retried."
+                  }
+                ]
+              }
+            }
+          },
+          "propagateTags": {
+            "description": "Specifies whether to propagate the tags from the job or job definition to the corresponding Amazon ECS task. If no value is specified, the tags aren't propagated. Tags can only be propagated to the tasks during task creation. For tags with the same name, job tags are given priority over job definitions tags. If the total number of combined tags from the job and job definition is over 50, the job is moved to the <code>FAILED</code> state. When specified, this overrides the tag propagation setting in the job definition.",
+            "type": "boolean"
+          },
+          "timeout": {
+            "description": "An object that represents a job timeout configuration.",
+            "type": "object",
+            "properties": {
+              "attemptDurationSeconds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Integer"
+                  },
+                  {
+                    "description": "<p>The job timeout time (in seconds) that's measured from the job attempt's <code>startedAt</code> timestamp. After this time passes, Batch terminates your jobs if they aren't finished. The minimum value for the timeout is 60 seconds.</p> <p>For array jobs, the timeout applies to the child jobs, not to the parent array job.</p> <p>For multi-node parallel (MNP) jobs, the timeout applies to the whole job, not to the individual nodes.</p>"
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "The tags that you apply to the job request to help you categorize and organize your resources. Each tag consists of a key and an optional value. For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services Resources</a> in <i>Amazon Web Services General Reference</i>.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "eksPropertiesOverride": {
+            "description": "An object that contains overrides for the Kubernetes resources of a job.",
+            "type": "object",
+            "properties": {
+              "podProperties": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EksPodPropertiesOverride"
+                  },
+                  {
+                    "description": "The overrides for the Kubernetes pod resources of a job."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Integer": {
+        "type": "integer"
+      },
+      "JobDependency": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The job ID of the Batch job that's associated with this dependency."
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ArrayJobDependency"
+              },
+              {
+                "description": "The type of the job dependency."
+              }
+            ]
+          }
+        },
+        "description": "An object that represents an Batch job dependency."
+      },
+      "String": {
+        "type": "string"
+      },
+      "ArrayJobDependency": {
+        "type": "string",
+        "enum": [
+          "N_TO_N",
+          "SEQUENTIAL"
+        ]
+      },
+      "StringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/String"
+        }
+      },
+      "EnvironmentVariables": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/KeyValuePair"
+        }
+      },
+      "KeyValuePair": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The name of the key-value pair. For environment variables, this is the name of the environment variable."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The value of the key-value pair. For environment variables, this is the value of the environment variable."
+              }
+            ]
+          }
+        },
+        "description": "A key-value pair object."
+      },
+      "ResourceRequirements": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ResourceRequirement"
+        }
+      },
+      "ResourceRequirement": {
+        "type": "object",
+        "required": [
+          "value",
+          "type"
+        ],
+        "properties": {
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "<p>The quantity of the specified resource to reserve for the container. The values vary based on the <code>type</code> specified.</p> <dl> <dt>type=\"GPU\"</dt> <dd> <p>The number of physical GPUs to reserve for the container. Make sure that the number of GPUs reserved for all containers in a job doesn't exceed the number of available GPUs on the compute resource that the job is launched on.</p> <note> <p>GPUs aren't available for jobs that are running on Fargate resources.</p> </note> </dd> <dt>type=\"MEMORY\"</dt> <dd> <p>The memory hard limit (in MiB) present to the container. This parameter is supported for jobs that are running on EC2 resources. If your container attempts to exceed the memory specified, the container is terminated. This parameter maps to <code>Memory</code> in the <a href=\"https://docs.docker.com/engine/api/v1.23/#create-a-container\">Create a container</a> section of the <a href=\"https://docs.docker.com/engine/api/v1.23/\">Docker Remote API</a> and the <code>--memory</code> option to <a href=\"https://docs.docker.com/engine/reference/run/\">docker run</a>. You must specify at least 4 MiB of memory for a job. This is required but can be specified in several places for multi-node parallel (MNP) jobs. It must be specified for each node at least once. This parameter maps to <code>Memory</code> in the <a href=\"https://docs.docker.com/engine/api/v1.23/#create-a-container\">Create a container</a> section of the <a href=\"https://docs.docker.com/engine/api/v1.23/\">Docker Remote API</a> and the <code>--memory</code> option to <a href=\"https://docs.docker.com/engine/reference/run/\">docker run</a>.</p> <note> <p>If you're trying to maximize your resource utilization by providing your jobs as much memory as possible for a particular instance type, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html\">Memory management</a> in the <i>Batch User Guide</i>.</p> </note> <p>For jobs that are running on Fargate resources, then <code>value</code> is the hard limit (in MiB), and must match one of the supported values and the <code>VCPU</code> values must be one of the values supported for that memory value.</p> <dl> <dt>value = 512</dt> <dd> <p> <code>VCPU</code> = 0.25</p> </dd> <dt>value = 1024</dt> <dd> <p> <code>VCPU</code> = 0.25 or 0.5</p> </dd> <dt>value = 2048</dt> <dd> <p> <code>VCPU</code> = 0.25, 0.5, or 1</p> </dd> <dt>value = 3072</dt> <dd> <p> <code>VCPU</code> = 0.5, or 1</p> </dd> <dt>value = 4096</dt> <dd> <p> <code>VCPU</code> = 0.5, 1, or 2</p> </dd> <dt>value = 5120, 6144, or 7168</dt> <dd> <p> <code>VCPU</code> = 1 or 2</p> </dd> <dt>value = 8192</dt> <dd> <p> <code>VCPU</code> = 1, 2, or 4</p> </dd> <dt>value = 9216, 10240, 11264, 12288, 13312, 14336, or 15360</dt> <dd> <p> <code>VCPU</code> = 2 or 4</p> </dd> <dt>value = 16384</dt> <dd> <p> <code>VCPU</code> = 2, 4, or 8</p> </dd> <dt>value = 17408, 18432, 19456, 21504, 22528, 23552, 25600, 26624, 27648, 29696, or 30720</dt> <dd> <p> <code>VCPU</code> = 4</p> </dd> <dt>value = 20480, 24576, or 28672</dt> <dd> <p> <code>VCPU</code> = 4 or 8</p> </dd> <dt>value = 36864, 45056, 53248, or 61440</dt> <dd> <p> <code>VCPU</code> = 8</p> </dd> <dt>value = 32768, 40960, 49152, or 57344</dt> <dd> <p> <code>VCPU</code> = 8 or 16</p> </dd> <dt>value = 65536, 73728, 81920, 90112, 98304, 106496, 114688, or 122880</dt> <dd> <p> <code>VCPU</code> = 16</p> </dd> </dl> </dd> <dt>type=\"VCPU\"</dt> <dd> <p>The number of vCPUs reserved for the container. This parameter maps to <code>CpuShares</code> in the <a href=\"https://docs.docker.com/engine/api/v1.23/#create-a-container\">Create a container</a> section of the <a href=\"https://docs.docker.com/engine/api/v1.23/\">Docker Remote API</a> and the <code>--cpu-shares</code> option to <a href=\"https://docs.docker.com/engine/reference/run/\">docker run</a>. Each vCPU is equivalent to 1,024 CPU shares. For EC2 resources, you must specify at least one vCPU. This is required but can be specified in several places; it must be specified for each node at least once.</p> <p>The default for the Fargate On-Demand vCPU resource count quota is 6 vCPUs. For more information about Fargate quotas, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/ecs-service.html#service-quotas-fargate\">Fargate quotas</a> in the <i>Amazon Web Services General Reference</i>.</p> <p>For jobs that are running on Fargate resources, then <code>value</code> must match one of the supported values and the <code>MEMORY</code> values must be one of the values supported for that <code>VCPU</code> value. The supported values are 0.25, 0.5, 1, 2, 4, 8, and 16</p> <dl> <dt>value = 0.25</dt> <dd> <p> <code>MEMORY</code> = 512, 1024, or 2048</p> </dd> <dt>value = 0.5</dt> <dd> <p> <code>MEMORY</code> = 1024, 2048, 3072, or 4096</p> </dd> <dt>value = 1</dt> <dd> <p> <code>MEMORY</code> = 2048, 3072, 4096, 5120, 6144, 7168, or 8192</p> </dd> <dt>value = 2</dt> <dd> <p> <code>MEMORY</code> = 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, or 16384</p> </dd> <dt>value = 4</dt> <dd> <p> <code>MEMORY</code> = 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408, 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672, 29696, or 30720</p> </dd> <dt>value = 8</dt> <dd> <p> <code>MEMORY</code> = 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, or 61440 </p> </dd> <dt>value = 16</dt> <dd> <p> <code>MEMORY</code> = 32768, 40960, 49152, 57344, 65536, 73728, 81920, 90112, 98304, 106496, 114688, or 122880 </p> </dd> </dl> </dd> </dl>"
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceType"
+              },
+              {
+                "description": "The type of resource to assign to a container. The supported resources include <code>GPU</code>, <code>MEMORY</code>, and <code>VCPU</code>."
+              }
+            ]
+          }
+        },
+        "description": "The type and amount of a resource to assign to a container. The supported resources include <code>GPU</code>, <code>MEMORY</code>, and <code>VCPU</code>."
+      },
+      "ResourceType": {
+        "type": "string",
+        "enum": [
+          "GPU",
+          "VCPU",
+          "MEMORY"
+        ]
+      },
+      "NodePropertyOverrides": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/NodePropertyOverride"
+        }
+      },
+      "NodePropertyOverride": {
+        "type": "object",
+        "required": [
+          "targetNodes"
+        ],
+        "properties": {
+          "targetNodes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The range of nodes, using node index values, that's used to override. A range of <code>0:3</code> indicates nodes with index values of <code>0</code> through <code>3</code>. If the starting range value is omitted (<code>:n</code>), then <code>0</code> is used to start the range. If the ending range value is omitted (<code>n:</code>), then the highest possible node index is used to end the range."
+              }
+            ]
+          },
+          "containerOverrides": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContainerOverrides"
+              },
+              {
+                "description": "The overrides that are sent to a node range."
+              }
+            ]
+          }
+        },
+        "description": "The object that represents any node overrides to a job definition that's used in a <a>SubmitJob</a> API operation."
+      },
+      "ContainerOverrides": {
+        "type": "object",
+        "properties": {
+          "vcpus": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "deprecated": true,
+                "description": "This parameter is deprecated, use <code>resourceRequirements</code> to override the <code>vcpus</code> parameter that's set in the job definition. It's not supported for jobs running on Fargate resources. For jobs that run on EC2 resources, it overrides the <code>vcpus</code> parameter set in the job definition, but doesn't override any vCPU requirement specified in the <code>resourceRequirements</code> structure in the job definition. To override vCPU requirements that are specified in the <code>resourceRequirements</code> structure in the job definition, <code>resourceRequirements</code> must be specified in the <code>SubmitJob</code> request, with <code>type</code> set to <code>VCPU</code> and <code>value</code> set to the new value. For more information, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#override-resource-requirements\">Can't override job definition resource requirements</a> in the <i>Batch User Guide</i>.This field is deprecated, use resourceRequirements instead."
+              }
+            ]
+          },
+          "memory": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Integer"
+              },
+              {
+                "deprecated": true,
+                "description": "This parameter is deprecated, use <code>resourceRequirements</code> to override the memory requirements specified in the job definition. It's not supported for jobs running on Fargate resources. For jobs that run on EC2 resources, it overrides the <code>memory</code> parameter set in the job definition, but doesn't override any memory requirement that's specified in the <code>resourceRequirements</code> structure in the job definition. To override memory requirements that are specified in the <code>resourceRequirements</code> structure in the job definition, <code>resourceRequirements</code> must be specified in the <code>SubmitJob</code> request, with <code>type</code> set to <code>MEMORY</code> and <code>value</code> set to the new value. For more information, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#override-resource-requirements\">Can't override job definition resource requirements</a> in the <i>Batch User Guide</i>.This field is deprecated, use resourceRequirements instead."
+              }
+            ]
+          },
+          "command": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "<p>The command to send to the container that overrides the default command from the Docker image or the job definition.</p> <note> <p>This parameter can't contain an empty string.</p> </note>"
+              }
+            ]
+          },
+          "instanceType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "<p>The instance type to use for a multi-node parallel job.</p> <note> <p>This parameter isn't applicable to single-node container jobs or jobs that run on Fargate resources, and shouldn't be provided.</p> </note>"
+              }
+            ]
+          },
+          "environment": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EnvironmentVariables"
+              },
+              {
+                "description": "<p>The environment variables to send to the container. You can add new environment variables, which are added to the container at launch, or you can override the existing environment variables from the Docker image or the job definition.</p> <note> <p>Environment variables cannot start with \"<code>AWS_BATCH</code>\". This naming convention is reserved for variables that Batch sets.</p> </note>"
+              }
+            ]
+          },
+          "resourceRequirements": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceRequirements"
+              },
+              {
+                "description": "The type and amount of resources to assign to a container. This overrides the settings in the job definition. The supported resources include <code>GPU</code>, <code>MEMORY</code>, and <code>VCPU</code>."
+              }
+            ]
+          }
+        },
+        "description": "<p>The overrides that should be sent to a container.</p> <p>For information about using Batch overrides when you connect event sources to targets, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/pipes-reference/API_BatchContainerOverrides.html\">BatchContainerOverrides</a>.</p>"
+      },
+      "EvaluateOnExitList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EvaluateOnExit"
+        }
+      },
+      "EvaluateOnExit": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "onStatusReason": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "Contains a glob pattern to match against the <code>StatusReason</code> returned for a job. The pattern can contain up to 512 characters. It can contain letters, numbers, periods (.), colons (:), and white spaces (including spaces or tabs). It can optionally end with an asterisk (*) so that only the start of the string needs to be an exact match."
+              }
+            ]
+          },
+          "onReason": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "Contains a glob pattern to match against the <code>Reason</code> returned for a job. The pattern can contain up to 512 characters. It can contain letters, numbers, periods (.), colons (:), and white space (including spaces and tabs). It can optionally end with an asterisk (*) so that only the start of the string needs to be an exact match."
+              }
+            ]
+          },
+          "onExitCode": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "<p>Contains a glob pattern to match against the decimal representation of the <code>ExitCode</code> returned for a job. The pattern can be up to 512 characters long. It can contain only numbers, and can end with an asterisk (*) so that only the start of the string needs to be an exact match.</p> <p>The string can contain up to 512 characters.</p>"
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RetryAction"
+              },
+              {
+                "description": "Specifies the action to take if all of the specified conditions (<code>onStatusReason</code>, <code>onReason</code>, and <code>onExitCode</code>) are met. The values aren't case sensitive."
+              }
+            ]
+          }
+        },
+        "description": "Specifies an array of up to 5 conditions to be met, and an action to take (<code>RETRY</code> or <code>EXIT</code>) if all conditions are met. If none of the <code>EvaluateOnExit</code> conditions in a <code>RetryStrategy</code> match, then the job is retried."
+      },
+      "RetryAction": {
+        "type": "string",
+        "enum": [
+          "RETRY",
+          "EXIT"
+        ]
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "EksPodPropertiesOverride": {
+        "type": "object",
+        "properties": {
+          "containers": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksContainerOverrideList"
+              },
+              {
+                "description": "The overrides for the container that's used on the Amazon EKS pod."
+              }
+            ]
+          },
+          "metadata": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksMetadata"
+              },
+              {
+                "description": "Metadata about the overrides for the container that's used on the Amazon EKS pod."
+              }
+            ]
+          }
+        },
+        "description": "An object that contains overrides for the Kubernetes pod properties of a job."
+      },
+      "EksContainerOverrideList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EksContainerOverride"
+        }
+      },
+      "EksContainerOverride": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The override of the Docker image that's used to start the container."
+              }
+            ]
+          },
+          "command": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "The command to send to the container that overrides the default command from the Docker image or the job definition."
+              }
+            ]
+          },
+          "args": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringList"
+              },
+              {
+                "description": "The arguments to the entrypoint to send to the container that overrides the default arguments from the Docker image or the job definition. For more information, see <a href=\"https://docs.docker.com/engine/reference/builder/#cmd\">CMD</a> in the <i>Dockerfile reference</i> and <a href=\"https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/\">Define a command an arguments for a pod</a> in the <i>Kubernetes documentation</i>."
+              }
+            ]
+          },
+          "env": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksContainerEnvironmentVariables"
+              },
+              {
+                "description": "<p>The environment variables to send to the container. You can add new environment variables, which are added to the container at launch. Or, you can override the existing environment variables from the Docker image or the job definition.</p> <note> <p>Environment variables cannot start with \"<code>AWS_BATCH</code>\". This naming convention is reserved for variables that Batch sets.</p> </note>"
+              }
+            ]
+          },
+          "resources": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksContainerResourceRequirements"
+              },
+              {
+                "description": "The type and amount of resources to assign to a container. These override the settings in the job definition. The supported resources include <code>memory</code>, <code>cpu</code>, and <code>nvidia.com/gpu</code>. For more information, see <a href=\"https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\">Resource management for pods and containers</a> in the <i>Kubernetes documentation</i>."
+              }
+            ]
+          }
+        },
+        "description": "Object representing any Kubernetes overrides to a job definition that's used in a <a>SubmitJob</a> API operation."
+      },
+      "EksContainerEnvironmentVariables": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EksContainerEnvironmentVariable"
+        }
+      },
+      "EksContainerEnvironmentVariable": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The name of the environment variable."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The value of the environment variable."
+              }
+            ]
+          }
+        },
+        "description": "An environment variable."
+      },
+      "EksContainerResourceRequirements": {
+        "type": "object",
+        "properties": {
+          "limits": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksLimits"
+              },
+              {
+                "description": "<p>The type and quantity of the resources to reserve for the container. The values vary based on the <code>name</code> that's specified. Resources can be requested using either the <code>limits</code> or the <code>requests</code> objects.</p> <dl> <dt>memory</dt> <dd> <p>The memory hard limit (in MiB) for the container, using whole integers, with a \"Mi\" suffix. If your container attempts to exceed the memory specified, the container is terminated. You must specify at least 4 MiB of memory for a job. <code>memory</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>memory</code> is specified in both places, then the value that's specified in <code>limits</code> must be equal to the value that's specified in <code>requests</code>.</p> <note> <p>To maximize your resource utilization, provide your jobs with as much memory as possible for the specific instance type that you are using. To learn how, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html\">Memory management</a> in the <i>Batch User Guide</i>.</p> </note> </dd> <dt>cpu</dt> <dd> <p>The number of CPUs that's reserved for the container. Values must be an even multiple of <code>0.25</code>. <code>cpu</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>cpu</code> is specified in both places, then the value that's specified in <code>limits</code> must be at least as large as the value that's specified in <code>requests</code>.</p> </dd> <dt>nvidia.com/gpu</dt> <dd> <p>The number of GPUs that's reserved for the container. Values must be a whole integer. <code>memory</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>memory</code> is specified in both places, then the value that's specified in <code>limits</code> must be equal to the value that's specified in <code>requests</code>.</p> </dd> </dl>"
+              }
+            ]
+          },
+          "requests": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksRequests"
+              },
+              {
+                "description": "<p>The type and quantity of the resources to request for the container. The values vary based on the <code>name</code> that's specified. Resources can be requested by using either the <code>limits</code> or the <code>requests</code> objects.</p> <dl> <dt>memory</dt> <dd> <p>The memory hard limit (in MiB) for the container, using whole integers, with a \"Mi\" suffix. If your container attempts to exceed the memory specified, the container is terminated. You must specify at least 4 MiB of memory for a job. <code>memory</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>memory</code> is specified in both, then the value that's specified in <code>limits</code> must be equal to the value that's specified in <code>requests</code>.</p> <note> <p>If you're trying to maximize your resource utilization by providing your jobs as much memory as possible for a particular instance type, see <a href=\"https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html\">Memory management</a> in the <i>Batch User Guide</i>.</p> </note> </dd> <dt>cpu</dt> <dd> <p>The number of CPUs that are reserved for the container. Values must be an even multiple of <code>0.25</code>. <code>cpu</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>cpu</code> is specified in both, then the value that's specified in <code>limits</code> must be at least as large as the value that's specified in <code>requests</code>.</p> </dd> <dt>nvidia.com/gpu</dt> <dd> <p>The number of GPUs that are reserved for the container. Values must be a whole integer. <code>nvidia.com/gpu</code> can be specified in <code>limits</code>, <code>requests</code>, or both. If <code>nvidia.com/gpu</code> is specified in both, then the value that's specified in <code>limits</code> must be equal to the value that's specified in <code>requests</code>.</p> </dd> </dl>"
+              }
+            ]
+          }
+        },
+        "description": "The type and amount of resources to assign to a container. The supported resources include <code>memory</code>, <code>cpu</code>, and <code>nvidia.com/gpu</code>. For more information, see <a href=\"https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\">Resource management for pods and containers</a> in the <i>Kubernetes documentation</i>."
+      },
+      "EksLimits": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "Quantity": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "EksRequests": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "EksMetadata": {
+        "type": "object",
+        "properties": {
+          "labels": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksLabelsMap"
+              },
+              {
+                "description": "Key-value pairs used to identify, sort, and organize cube resources. Can contain up to 63 uppercase letters, lowercase letters, numbers, hyphens (-), and underscores (_). Labels can be added or modified at any time. Each resource can have multiple labels, but each key must be unique for a given object."
+              }
+            ]
+          }
+        },
+        "description": "Describes and uniquely identifies Kubernetes resources. For example, the compute environment that a pod runs in or the <code>jobID</code> for a job running in the pod. For more information, see <a href=\"https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/\">Understanding Kubernetes Objects</a> in the <i>Kubernetes documentation</i>."
+      },
+      "EksLabelsMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/String"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://batch.us-east-1.amazonaws.com/v1/submitjob"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**jobArn**",
+            "**jobName**",
+            "**jobId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

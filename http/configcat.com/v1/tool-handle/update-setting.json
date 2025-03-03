@@ -1,0 +1,200 @@
+{
+  "name": "update-setting",
+  "description": "This endpoint updates the metadata of a Feature Flag or Setting \nwith a collection of [JSON Patch](http://jsonpatch.com) operations in a specified Config.\n\nOnly the `name`, `hint` and `tags` attributes are modifiable by this endpoint.\nThe `tags` attribute is a simple collection of the [tag IDs](#operation/get-tags) attached to the given setting.\n\nThe advantage of using JSON Patch is that you can describe individual update operations on a resource\nwithout touching attributes that you don't want to change.\n\nFor example: We have the following resource.\n```\n{\n\t\"settingId\": 5345,\n\t\"key\": \"myGrandFeature\",\n\t\"name\": \"Tihs is a naem with soem typos.\",\n\t\"hint\": \"This flag controls my grandioso feature.\",\n\t\"settingType\": \"boolean\",\n\t\"tags\": [\n\t\t{\n\t\t\t\"tagId\": 0,\n\t\t\t\"name\": \"sample tag\",\n\t\t\t\"color\": \"whale\"\n\t\t}\n\t]\n}\n```\nIf we send an update request body as below (it changes the name and adds the already existing tag with the id 2):\n```\n[\n\t{\n\t\t\"op\": \"replace\",\n\t\t\"path\": \"/name\",\n\t\t\"value\": \"This is the name without typos.\"\n\t},\n\t{\n\t\t\"op\": \"add\",\n\t\t\"path\": \"/tags/-\",\n\t\t\"value\": 2\n\t}\n]\n```\nOnly the `name` and `tags` are going to be updated and all the other attributes are remaining unchanged.\nSo we get a response like this:\n```\n{\n\t\"settingId\": 5345,\n\t\"key\": \"myGrandFeature\",\n\t\"name\": \"This is the name without typos.\",\n\t\"hint\": \"This flag controls my grandioso feature.\",\n\t\"settingType\": \"boolean\",\n\t\"tags\": [\n\t\t{\n\t\t\t\"tagId\": 0,\n\t\t\t\"name\": \"sample tag\",\n\t\t\t\"color\": \"whale\"\n\t\t},\n\t\t{\n\t\t\t\"tagId\": 2,\n\t\t\t\"name\": \"another tag\",\n\t\t\t\"color\": \"koala\"\n\t\t}\n\t]\n}\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "settingId": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The identifier of the Setting."
+      },
+      "body": {
+        "$ref": "#/$defs/JsonPatch"
+      }
+    },
+    "required": [
+      "settingId",
+      "body"
+    ],
+    "$defs": {
+      "JsonPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "operations": {
+            "items": {
+              "$ref": "#/$defs/PatchOperation"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PatchOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "$ref": "#/$defs/JsonPointer"
+          },
+          "op": {
+            "$ref": "#/$defs/OperationType"
+          },
+          "path": {
+            "$ref": "#/$defs/JsonPointer"
+          },
+          "value": {
+            "$ref": "#/$defs/JsonNode"
+          }
+        },
+        "type": "object"
+      },
+      "JsonPointer": {
+        "additionalProperties": false,
+        "properties": {
+          "isUriEncoded": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/$defs/JsonPointerKind"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/$defs/PointerSegment"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
+          "source": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "JsonPointerKind": {
+        "enum": [
+          "unspecified",
+          "plain",
+          "uriEncoded"
+        ],
+        "type": "string"
+      },
+      "PointerSegment": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "value": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OperationType": {
+        "enum": [
+          "unknown",
+          "add",
+          "remove",
+          "replace",
+          "move",
+          "copy",
+          "test"
+        ],
+        "type": "string"
+      },
+      "JsonNode": {
+        "additionalProperties": false,
+        "properties": {
+          "options": {
+            "$ref": "#/$defs/JsonNodeOptions"
+          },
+          "parent": {
+            "$ref": "#/$defs/JsonNode"
+          },
+          "root": {
+            "$ref": "#/$defs/JsonNode"
+          }
+        },
+        "type": "object"
+      },
+      "JsonNodeOptions": {
+        "additionalProperties": false,
+        "properties": {
+          "propertyNameCaseInsensitive": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api.configcat.com/v1/settings/{settingId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_embedded**",
+              {
+                "$ul": [
+                  "**tags**"
+                ]
+              }
+            ],
+            [
+              "**_links**",
+              {
+                "$ul": [
+                  "**self**"
+                ]
+              }
+            ],
+            "**configId**",
+            "**configName**",
+            "**hint**",
+            "**key**",
+            "**name**",
+            "**order**",
+            "**settingId**",
+            "**settingType**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

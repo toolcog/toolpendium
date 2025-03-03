@@ -1,0 +1,259 @@
+{
+  "name": "GetRecommendations",
+  "description": "<p>Returns a list of recommended items. For campaigns, the campaign's Amazon Resource Name (ARN) is required and the required user and item input depends on the recipe type used to create the solution backing the campaign as follows:</p> <ul> <li> <p>USER_PERSONALIZATION - <code>userId</code> required, <code>itemId</code> not used</p> </li> <li> <p>RELATED_ITEMS - <code>itemId</code> required, <code>userId</code> not used</p> </li> </ul> <note> <p>Campaigns that are backed by a solution created using a recipe of type PERSONALIZED_RANKING use the API.</p> </note> <p> For recommenders, the recommender's ARN is required and the required item and user input depends on the use case (domain-based recipe) backing the recommender. For information on use case requirements see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/domain-use-cases.html\">Choosing recommender use cases</a>. </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "campaignArn": {
+            "description": "The Amazon Resource Name (ARN) of the campaign to use for getting recommendations.",
+            "type": "string",
+            "pattern": "arn:([a-z\\d-]+):personalize:.*:.*:.+",
+            "maxLength": 256
+          },
+          "itemId": {
+            "description": "<p>The item ID to provide recommendations for.</p> <p>Required for <code>RELATED_ITEMS</code> recipe type.</p>",
+            "type": "string",
+            "maxLength": 256
+          },
+          "userId": {
+            "description": "<p>The user ID to provide recommendations for.</p> <p>Required for <code>USER_PERSONALIZATION</code> recipe type.</p>",
+            "type": "string",
+            "maxLength": 256
+          },
+          "numResults": {
+            "description": "The number of results to return. The default is 25. The maximum is 500.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "context": {
+            "description": "The contextual metadata to use when getting recommendations. Contextual metadata includes any interaction information that might be relevant when getting a user's recommendations, such as the user's current location or device type.",
+            "type": "object",
+            "maxProperties": 150,
+            "additionalProperties": {
+              "$ref": "#/$defs/AttributeValue"
+            }
+          },
+          "filterArn": {
+            "description": "<p>The ARN of the filter to apply to the returned recommendations. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering Recommendations</a>.</p> <p>When using this parameter, be sure the filter resource is <code>ACTIVE</code>.</p>",
+            "type": "string",
+            "pattern": "arn:([a-z\\d-]+):personalize:.*:.*:.+",
+            "maxLength": 256
+          },
+          "filterValues": {
+            "description": "<p>The values to use when filtering recommendations. For each placeholder parameter in your filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include items, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude items, you can omit the <code>filter-values</code>.In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering recommendations and user segments</a>.</p>",
+            "type": "object",
+            "maxProperties": 25,
+            "additionalProperties": {
+              "$ref": "#/$defs/FilterAttributeValue"
+            }
+          },
+          "recommenderArn": {
+            "description": "The Amazon Resource Name (ARN) of the recommender to use to get recommendations. Provide a recommender ARN if you created a Domain dataset group with a recommender for a domain use case.",
+            "type": "string",
+            "pattern": "arn:([a-z\\d-]+):personalize:.*:.*:.+",
+            "maxLength": 256
+          },
+          "promotions": {
+            "description": "The promotions to apply to the recommendation request. A promotion defines additional business rules that apply to a configurable subset of recommended items.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Promotion"
+            },
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AttributeValue": {
+        "type": "string",
+        "maxLength": 1000,
+        "format": "password"
+      },
+      "FilterAttributeValue": {
+        "type": "string",
+        "maxLength": 1000,
+        "format": "password"
+      },
+      "Promotion": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Name"
+              },
+              {
+                "description": "The name of the promotion."
+              }
+            ]
+          },
+          "percentPromotedItems": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PercentPromotedItems"
+              },
+              {
+                "description": "The percentage of recommended items to apply the promotion to."
+              }
+            ]
+          },
+          "filterArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the filter used by the promotion. This filter defines the criteria for promoted items. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/promoting-items.html#promotion-filters\">Promotion filters</a>."
+              }
+            ]
+          },
+          "filterValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterValues"
+              },
+              {
+                "description": "<p>The values to use when promoting items. For each placeholder parameter in your promotion's filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include items, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude items, you can omit the <code>filter-values</code>. In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information on creating filters, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering recommendations and user segments</a>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Contains information on a promotion. A promotion defines additional business rules that apply to a configurable subset of recommended items."
+      },
+      "Name": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9\\-_]*",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "PercentPromotedItems": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:([a-z\\d-]+):personalize:.*:.*:.+",
+        "maxLength": 256
+      },
+      "FilterValues": {
+        "type": "object",
+        "maxProperties": 25,
+        "additionalProperties": {
+          "$ref": "#/$defs/FilterAttributeValue"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://personalize-runtime.us-east-1.amazonaws.com/recommendations"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**itemList**",
+            "**recommendationId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

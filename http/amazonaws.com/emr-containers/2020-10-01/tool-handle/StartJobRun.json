@@ -1,0 +1,580 @@
+{
+  "name": "StartJobRun",
+  "description": "Starts a job run. A job run is a unit of work, such as a Spark jar, PySpark script, or SparkSQL query, that you submit to Amazon EMR on EKS.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "virtualClusterId": {
+        "type": "string",
+        "pattern": "[0-9a-z]+",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "The virtual cluster ID for which the job run request is submitted."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "clientToken"
+        ],
+        "properties": {
+          "name": {
+            "description": "The name of the job run.",
+            "type": "string",
+            "pattern": "[\\.\\-_/#A-Za-z0-9]+",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "clientToken": {
+            "description": "The client idempotency token of the job run request. ",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "executionRoleArn": {
+            "description": "The execution role ARN for the job run.",
+            "type": "string",
+            "pattern": "^arn:(aws[a-zA-Z0-9-]*):iam::(\\d{12})?:(role((\\u002F)|(\\u002F[\\u0021-\\u007F]+\\u002F))[\\w+=,.@-]+)$",
+            "minLength": 20,
+            "maxLength": 2048
+          },
+          "releaseLabel": {
+            "description": "The Amazon EMR release version to use for the job run.",
+            "type": "string",
+            "pattern": "[\\.\\-_/A-Za-z0-9]+",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "jobDriver": {
+            "description": "Specify the driver that the job runs on. Exactly one of the two available job drivers is required, either sparkSqlJobDriver or sparkSubmitJobDriver.",
+            "type": "object",
+            "properties": {
+              "sparkSubmitJobDriver": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SparkSubmitJobDriver"
+                  },
+                  {
+                    "description": "The job driver parameters specified for spark submit."
+                  }
+                ]
+              },
+              "sparkSqlJobDriver": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SparkSqlJobDriver"
+                  },
+                  {
+                    "description": "The job driver for job type."
+                  }
+                ]
+              }
+            }
+          },
+          "configurationOverrides": {
+            "description": "A configuration specification to be used to override existing configurations.",
+            "type": "object",
+            "properties": {
+              "applicationConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ConfigurationList"
+                  },
+                  {
+                    "description": "The configurations for the application running by the job run. "
+                  }
+                ]
+              },
+              "monitoringConfiguration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MonitoringConfiguration"
+                  },
+                  {
+                    "description": "The configurations for monitoring."
+                  }
+                ]
+              }
+            }
+          },
+          "tags": {
+            "description": "The tags assigned to job runs.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/StringEmpty256"
+            }
+          },
+          "jobTemplateId": {
+            "description": "The job template ID to be used to start the job run.",
+            "type": "string",
+            "pattern": "[0-9a-z]+",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "jobTemplateParameters": {
+            "description": "The values of job template parameters to start a job run.",
+            "type": "object",
+            "maxProperties": 20,
+            "additionalProperties": {
+              "$ref": "#/$defs/String1024"
+            }
+          },
+          "retryPolicyConfiguration": {
+            "description": "The configuration of the retry policy that the job runs on.",
+            "type": "object",
+            "properties": {
+              "maxAttempts": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/JavaInteger"
+                  },
+                  {
+                    "description": "The maximum number of attempts on the job's driver."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "virtualClusterId",
+      "body"
+    ],
+    "$defs": {
+      "SparkSubmitJobDriver": {
+        "type": "object",
+        "required": [
+          "entryPoint"
+        ],
+        "properties": {
+          "entryPoint": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointPath"
+              },
+              {
+                "description": "The entry point of job application."
+              }
+            ]
+          },
+          "entryPointArguments": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointArguments"
+              },
+              {
+                "description": "The arguments for job application."
+              }
+            ]
+          },
+          "sparkSubmitParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSubmitParameters"
+              },
+              {
+                "description": "The Spark submit parameters that are used for job runs."
+              }
+            ]
+          }
+        },
+        "description": "The information about job driver for Spark submit."
+      },
+      "EntryPointPath": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "EntryPointArguments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EntryPointArgument"
+        }
+      },
+      "EntryPointArgument": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 10280,
+        "format": "password"
+      },
+      "SparkSubmitParameters": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 102400,
+        "format": "password"
+      },
+      "SparkSqlJobDriver": {
+        "type": "object",
+        "properties": {
+          "entryPoint": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryPointPath"
+              },
+              {
+                "description": "The SQL file to be executed."
+              }
+            ]
+          },
+          "sparkSqlParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SparkSqlParameters"
+              },
+              {
+                "description": "The Spark parameters to be included in the Spark SQL command."
+              }
+            ]
+          }
+        },
+        "description": "The job driver for job type."
+      },
+      "SparkSqlParameters": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 102400,
+        "format": "password"
+      },
+      "ConfigurationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Configuration"
+        },
+        "maxItems": 100
+      },
+      "Configuration": {
+        "type": "object",
+        "required": [
+          "classification"
+        ],
+        "properties": {
+          "classification": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String1024"
+              },
+              {
+                "description": "The classification within a configuration."
+              }
+            ]
+          },
+          "properties": {
+            "description": "A set of properties specified within a configuration classification."
+          },
+          "configurations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ConfigurationList"
+              },
+              {
+                "description": "A list of additional configurations to apply within a configuration object."
+              }
+            ]
+          }
+        },
+        "description": "A configuration specification to be used when provisioning virtual clusters, which can include configurations for applications and software bundled with Amazon EMR on EKS. A configuration consists of a classification, properties, and optional nested configurations. A classification refers to an application-specific configuration file. Properties are the settings you want to change in that file."
+      },
+      "String1024": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "MonitoringConfiguration": {
+        "type": "object",
+        "properties": {
+          "persistentAppUI": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PersistentAppUI"
+              },
+              {
+                "description": "Monitoring configurations for the persistent application UI. "
+              }
+            ]
+          },
+          "cloudWatchMonitoringConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CloudWatchMonitoringConfiguration"
+              },
+              {
+                "description": "Monitoring configurations for CloudWatch."
+              }
+            ]
+          },
+          "s3MonitoringConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3MonitoringConfiguration"
+              },
+              {
+                "description": "Amazon S3 configuration for monitoring log publishing."
+              }
+            ]
+          },
+          "containerLogRotationConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContainerLogRotationConfiguration"
+              },
+              {
+                "description": "Enable or disable container log rotation."
+              }
+            ]
+          }
+        },
+        "description": "Configuration setting for monitoring."
+      },
+      "PersistentAppUI": {
+        "type": "string",
+        "enum": [
+          "ENABLED",
+          "DISABLED"
+        ]
+      },
+      "CloudWatchMonitoringConfiguration": {
+        "type": "object",
+        "required": [
+          "logGroupName"
+        ],
+        "properties": {
+          "logGroupName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LogGroupName"
+              },
+              {
+                "description": "The name of the log group for log publishing."
+              }
+            ]
+          },
+          "logStreamNamePrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String256"
+              },
+              {
+                "description": "The specified name prefix for log streams."
+              }
+            ]
+          }
+        },
+        "description": "A configuration for CloudWatch monitoring. You can configure your jobs to send log information to CloudWatch Logs."
+      },
+      "LogGroupName": {
+        "type": "string",
+        "pattern": "[\\.\\-_/#A-Za-z0-9]+",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "String256": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "S3MonitoringConfiguration": {
+        "type": "object",
+        "required": [
+          "logUri"
+        ],
+        "properties": {
+          "logUri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/UriString"
+              },
+              {
+                "description": "Amazon S3 destination URI for log publishing."
+              }
+            ]
+          }
+        },
+        "description": " Amazon S3 configuration for monitoring log publishing. You can configure your jobs to send log information to Amazon S3."
+      },
+      "UriString": {
+        "type": "string",
+        "pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDBFF-\\uDC00\\uDFFF\\r\\n\\t]*",
+        "minLength": 1,
+        "maxLength": 10280
+      },
+      "ContainerLogRotationConfiguration": {
+        "type": "object",
+        "required": [
+          "rotationSize",
+          "maxFilesToKeep"
+        ],
+        "properties": {
+          "rotationSize": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RotationSize"
+              },
+              {
+                "description": "The file size at which to rotate logs. Minimum of 2KB, Maximum of 2GB."
+              }
+            ]
+          },
+          "maxFilesToKeep": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxFilesToKeep"
+              },
+              {
+                "description": "The number of files to keep in container after rotation."
+              }
+            ]
+          }
+        },
+        "description": "The settings for container log rotation."
+      },
+      "RotationSize": {
+        "type": "string",
+        "pattern": "^\\d+(\\.\\d+)?[KMG][Bb]?$",
+        "minLength": 3,
+        "maxLength": 12
+      },
+      "MaxFilesToKeep": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      },
+      "StringEmpty256": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "JavaInteger": {
+        "type": "integer"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://emr-containers.us-east-1.amazonaws.com/virtualclusters/{virtualClusterId}/jobruns"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**name**",
+            "**arn**",
+            "**virtualClusterId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

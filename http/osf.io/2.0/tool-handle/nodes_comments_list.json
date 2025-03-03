@@ -1,0 +1,99 @@
+{
+  "name": "nodes_comments_list",
+  "description": "\nA paginated list of comments related to a given node.\n\nThe returned comments are sorted by their creation date, with the most recent comments appearing first.\n#### Permissions\nComments on public nodes are given read-only access to everyone.\n\nIf the node comment-level is `private`, only contributors have permission to comment.\n\nIf the comment-level is `public`, any logged-in OSF user can comment.\n\nComments on private nodes are only visible to contributors and administrators on the parent node.\n#### Returns\nReturns a JSON object containing `data` and `links` keys.\n\nThe `data` key contains an array of comment objects. Each resource in the array is a separate comment object.\n\nThe `links` key contains a dictionary of links that can be used for [pagination](#tag/Pagination).\n#### Filtering\nYou can optionally request that the response only include comments that match your filters by utilizing the `filter` query parameter, e.g. https://api.osf.io/v2/nodes/ezcuj/comments/?filter[target_id]=jg7sezmdnt93\n\nNodes may be filtered by their `deleted`, `target_id`, `date_created`, `date_modified`.\n\nMost fields are string fields and will be filtered using simple substring matching. Public and preprint are boolean fields, and can be filtered using truthy values, such as **true**, **false**, **0** or **1**. Note that quoting `true` or `false` in the query will cause the match to fail.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "node_id": {
+        "type": "string",
+        "description": "The unique identifier of the node."
+      }
+    },
+    "required": [
+      "node_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.test.osf.io/v2/nodes/{node_id}/comments/"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Comment list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**attributes**: The properties of the comment entity.",
+              {
+                "$ul": [
+                  "**can_edit**: Whether or not the current user has permission to edit this comment",
+                  "**content**: The content of the comment.",
+                  "**date_created**: The time at which the comment was created, as an iso8601 formatted timestamp.",
+                  "**date_modified**: The time at which the comment was last modified, as an iso8601 formatted timestamp.",
+                  "**deleted**: Whether or not the comment is deleted.",
+                  "**has_children**: Whether or not the comment has replies.",
+                  "**has_report**: Whether or not the comment the current user reported this as spam.",
+                  "**is_abuse**: Whether or not the comment is flagged or confirmed spam.",
+                  "**is_ham**: Whether or not an admin checked the legitimacy of this comment.",
+                  "**modified**: Whether or not the comment has been edited.",
+                  "**page**: The page type the comment is on, e.g. `node`, `registration`, `wiki`, `files`."
+                ]
+              }
+            ],
+            "**id**: The identifier of the comment entity.",
+            [
+              "**links**: URLs to alternative representations of the comment entity.",
+              {
+                "$ul": [
+                  "**self**: A link to the detail page for the comment."
+                ]
+              }
+            ],
+            [
+              "**relationships**: URLs to other entities or entity collections that have a relationship to the comment entity.",
+              {
+                "$ul": [
+                  "**node**: A relationship to the node the comment is on.",
+                  "**replies**: A relationship to the replies to the comment.",
+                  "**reports**: A relationship to the reports connected to the comment.",
+                  "**target**: A relationship to the target of the comment.",
+                  "**user**: A relationship to the user who created the comment."
+                ]
+              }
+            ],
+            "**type**: The type identifier of the comment entity (`comments`)."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

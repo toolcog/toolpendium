@@ -1,0 +1,174 @@
+{
+  "name": "getJournalEntries",
+  "description": "Get telephony journal\nOauthScopes: READ_CONVERSATIONS",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "telephonyConversationId": {
+        "maxLength": 2048,
+        "type": "string",
+        "description": "The id of the telephony conversation"
+      },
+      "timestamp": {
+        "default": 0,
+        "format": "int64",
+        "maximum": 9223372036854776000,
+        "minimum": 0,
+        "type": "number",
+        "description": "A timestamp, default = 0"
+      },
+      "numberOfEntries": {
+        "default": 25,
+        "format": "int32",
+        "maximum": 100,
+        "minimum": 1,
+        "type": "number",
+        "description": "The number of entries, between 1 and 100, default = 25"
+      },
+      "direction": {
+        "default": "AFTER",
+        "enum": [
+          "AFTER",
+          "BEFORE",
+          "BOTH"
+        ],
+        "maxLength": 2048,
+        "type": "string",
+        "description": "The direction (BEFORE||AFTER||BOTH), default = AFTER"
+      },
+      "journalFilter": {
+        "default": "ALL",
+        "enum": [
+          "ALL",
+          "MISSED",
+          "DIALED",
+          "RECEIVED",
+          "DIVERTED",
+          "VOICEMAILS",
+          "UNHERAD_VOICEMAILS"
+        ],
+        "maxLength": 2048,
+        "type": "string",
+        "description": "The filter, ALL||MISSED||DIALED||RECEIVED||DIVERTED||VOICEMAILS||UNHERAD_VOICEMAILS. default = ALL"
+      }
+    },
+    "required": [
+      "telephonyConversationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://circuitsandbox.net/rest/v2/telephony/{telephonyConversationId}/journal{?timestamp,numberOfEntries,direction,journalFilter}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**attachments**: Array of files attached to the item",
+            "**convId**: The ID of the conversation the item belongs to",
+            "**creationTime**: UTC timestamp when the item was created",
+            "**creatorId**: The ID of the user who created the conversation item",
+            "**includeInUnreadCount**: Indicates whether the item is included in the unread message count",
+            "**itemId**: The ID of the item",
+            "**modificationTime**: UTC timestamp when the conversation was modified",
+            [
+              "**rtc**",
+              {
+                "$ul": [
+                  [
+                    "**ended**",
+                    {
+                      "$ul": [
+                        "**duration**: The duration of the call.",
+                        "**maxNumberOfAttendees**: The maximum number of attendees during a call.",
+                        "**pickFromParticipant**: UserID of the pick from participant."
+                      ]
+                    }
+                  ],
+                  "**missed**: Indicates a missed call.",
+                  [
+                    "**moved**",
+                    {
+                      "$ul": [
+                        "**conversationId**: ID of the conversation moved from or to.",
+                        "**direction**: Moved from or to conversation."
+                      ]
+                    }
+                  ],
+                  "**rtcParticipants**: Participants of the call.",
+                  "**type**: The type of the RTC item."
+                ]
+              }
+            ],
+            [
+              "**system**",
+              {
+                "$ul": [
+                  "**affectedParticipants**: List off affected participants (user ID of the Circuit user) in case the item type PARTICIPANT_ADDED or PARTICIPANT_REMOVED",
+                  "**newTopic**: Filled with the new topic of a conversation if the type of the item is CONVERSATION_RENAMED.",
+                  "**oldTopic**: Filled with the previous topic of a conversation if the type of the item is CONVERSATION_RENAMED.",
+                  "**type**: The type of the system item"
+                ]
+              }
+            ],
+            [
+              "**text**",
+              {
+                "$ul": [
+                  "**content**: The content of the text item",
+                  "**contentType**: The type of the text item. It can be one of the following: RICH (with HTML content) or PLAIN (only text)",
+                  "**formMetaData**: The meta data form",
+                  "**isWebhookMessage**: Is this a webhook message?",
+                  "**likedUserIds**: Array of IDs of the users who liked the item",
+                  "**parentId**: The ID of the parent item of the text item. This field is optional and can be used for thread views",
+                  [
+                    "**preview**",
+                    {
+                      "$ul": [
+                        "**imageURI**: n/a",
+                        "**srcURL**: n/a",
+                        "**title**: n/a",
+                        "**type**: n/a"
+                      ]
+                    }
+                  ],
+                  "**state**: The state of the text item. It can be one of the following: CREATED (which denotes that it was not modified since its creation), EDITED (which denotes that the creator of this item modified the item) or DELETED (which denotes that the item itself exists but its content was removed)",
+                  "**subject**: TThe subject of the text item. This field is optional and maybe filled when creating the text item"
+                ]
+              }
+            ],
+            "**type**: The type of the conversation item. It can be one of the following TEXT, SYSTEM or RTC"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

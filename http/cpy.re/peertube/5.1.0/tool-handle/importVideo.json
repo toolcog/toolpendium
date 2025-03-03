@@ -1,0 +1,258 @@
+{
+  "name": "importVideo",
+  "description": "Import a torrent or magnetURI or HTTP resource (if enabled by the instance administrator)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/VideoCreateImport"
+      }
+    },
+    "$defs": {
+      "VideoCreateImport": {
+        "allOf": [
+          {
+            "additionalProperties": false,
+            "oneOf": [
+              {
+                "properties": {
+                  "targetUrl": {
+                    "$ref": "#/$defs/targetUrl"
+                  }
+                },
+                "required": [
+                  "targetUrl"
+                ]
+              },
+              {
+                "properties": {
+                  "magnetUri": {
+                    "$ref": "#/$defs/magnetUri"
+                  }
+                },
+                "required": [
+                  "magnetUri"
+                ]
+              },
+              {
+                "properties": {
+                  "torrentfile": {
+                    "$ref": "#/$defs/torrentfile"
+                  }
+                },
+                "required": [
+                  "torrentfile"
+                ]
+              }
+            ],
+            "type": "object"
+          },
+          {
+            "$ref": "#/$defs/VideoUploadRequestCommon"
+          }
+        ],
+        "required": [
+          "channelId",
+          "name"
+        ]
+      },
+      "targetUrl": {
+        "description": "remote URL where to find the import's source video",
+        "example": "https://framatube.org/videos/watch/9c9de5e8-0a1e-484a-b099-e80766180a6d",
+        "format": "url",
+        "type": "string"
+      },
+      "magnetUri": {
+        "description": "magnet URI allowing to resolve the import's source video",
+        "format": "uri",
+        "pattern": "/magnet:\\?xt=urn:[a-z0-9]+:[a-z0-9]{32}/i",
+        "type": "string"
+      },
+      "torrentfile": {
+        "description": "Torrent file containing only the video file",
+        "format": "binary",
+        "type": "string",
+        "writeOnly": true
+      },
+      "VideoUploadRequestCommon": {
+        "properties": {
+          "category": {
+            "$ref": "#/$defs/VideoCategorySet"
+          },
+          "channelId": {
+            "description": "Channel id that will contain this video",
+            "example": 3,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "commentsEnabled": {
+            "description": "Enable or disable comments for this video",
+            "type": "boolean"
+          },
+          "description": {
+            "description": "Video description",
+            "example": "**[Want to help to translate this video?](https://weblate.framasoft.org/projects/what-is-peertube-video/)**\\r\\n\\r\\n**Take back the control of your videos! [#JoinPeertube](https://joinpeertube.org)**\n",
+            "type": "string"
+          },
+          "downloadEnabled": {
+            "description": "Enable or disable downloading for this video",
+            "type": "boolean"
+          },
+          "language": {
+            "$ref": "#/$defs/VideoLanguageSet"
+          },
+          "licence": {
+            "$ref": "#/$defs/VideoLicenceSet"
+          },
+          "name": {
+            "description": "Video name",
+            "example": "What is PeerTube?",
+            "maxLength": 120,
+            "minLength": 3,
+            "type": "string"
+          },
+          "nsfw": {
+            "description": "Whether or not this video contains sensitive content",
+            "type": "boolean"
+          },
+          "originallyPublishedAt": {
+            "description": "Date when the content was originally published",
+            "format": "date-time",
+            "type": "string"
+          },
+          "previewfile": {
+            "description": "Video preview file",
+            "format": "binary",
+            "type": "string"
+          },
+          "privacy": {
+            "$ref": "#/$defs/VideoPrivacySet"
+          },
+          "scheduleUpdate": {
+            "$ref": "#/$defs/VideoScheduledUpdate"
+          },
+          "support": {
+            "description": "A text tell the audience how to support the video creator",
+            "example": "Please support our work on https://soutenir.framasoft.org/en/ <3",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Video tags (maximum 5 tags each between 2 and 30 characters)",
+            "example": [
+              "framasoft",
+              "peertube"
+            ],
+            "items": {
+              "maxLength": 30,
+              "minLength": 2,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "thumbnailfile": {
+            "description": "Video thumbnail file",
+            "format": "binary",
+            "type": "string"
+          },
+          "waitTranscoding": {
+            "description": "Whether or not we wait transcoding before publish the video",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "channelId",
+          "name"
+        ]
+      },
+      "VideoCategorySet": {
+        "description": "category id of the video (see [/videos/categories](#operation/getCategories))",
+        "example": 15,
+        "type": "integer"
+      },
+      "VideoLanguageSet": {
+        "description": "language id of the video (see [/videos/languages](#operation/getLanguages))",
+        "example": "en",
+        "type": "string"
+      },
+      "VideoLicenceSet": {
+        "description": "licence id of the video (see [/videos/licences](#operation/getLicences))",
+        "example": 2,
+        "type": "integer"
+      },
+      "VideoPrivacySet": {
+        "description": "privacy id of the video (see [/videos/privacies](#operation/getVideoPrivacyPolicies))",
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer"
+      },
+      "VideoScheduledUpdate": {
+        "properties": {
+          "privacy": {
+            "$ref": "#/$defs/VideoPrivacySet"
+          },
+          "updateAt": {
+            "description": "When to update the video",
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "updateAt"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://peertube2.cpy.re/api/v1/videos/imports"
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**video**",
+              {
+                "$ul": [
+                  "**id**: object id for the video",
+                  "**shortUUID**",
+                  "**uuid**: universal identifier for the video, that can be used across instances"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

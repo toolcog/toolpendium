@@ -1,0 +1,335 @@
+{
+  "name": "UpdateRecords",
+  "description": "<p>Posts updates to records and adds and deletes records for a dataset and user.</p> <p>The sync count in the record patch is your last known sync count for that record. The server will reject an UpdateRecords request with a ResourceConflictException if you try to patch a record with a new value but a stale sync count.</p><p>For example, if the sync count on the server is 5 for a key called highScore and you try and submit a new highScore with sync count of 4, the request will be rejected. To obtain the current sync count for a record, call ListRecords. On a successful update of the record, the response returns the new sync count for that record. You should present that sync count the next time you try to update that same record. When the record does not exist, specify the sync count as 0.</p> <p>This API can be called with temporary user credentials provided by Cognito Identity or with developer credentials.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "IdentityPoolId": {
+        "type": "string",
+        "pattern": "[\\w-]+:[0-9a-f-]+",
+        "minLength": 1,
+        "maxLength": 55,
+        "description": "A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE) created by Amazon Cognito. GUID generation is unique within a region."
+      },
+      "IdentityId": {
+        "type": "string",
+        "pattern": "[\\w-]+:[0-9a-f-]+",
+        "minLength": 1,
+        "maxLength": 55,
+        "description": "A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE) created by Amazon Cognito. GUID generation is unique within a region."
+      },
+      "DatasetName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.:-]+",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "A string of up to 128 characters. Allowed characters are a-z, A-Z, 0-9, '_' (underscore), '-' (dash), and '.' (dot)."
+      },
+      "x-amz-Client-Context": {
+        "type": "string",
+        "description": "Intended to supply a device ID that will populate the lastModifiedBy field referenced in other methods. The ClientContext field is not yet implemented."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "SyncSessionToken"
+        ],
+        "properties": {
+          "DeviceId": {
+            "description": "The unique ID generated for this device by Cognito.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "RecordPatches": {
+            "description": "A list of patch operations.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RecordPatch"
+            }
+          },
+          "SyncSessionToken": {
+            "description": "The SyncSessionToken returned by a previous call to ListRecords for this dataset and identity.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required": [
+      "IdentityPoolId",
+      "IdentityId",
+      "DatasetName",
+      "body"
+    ],
+    "$defs": {
+      "RecordPatch": {
+        "type": "object",
+        "required": [
+          "Op",
+          "Key",
+          "SyncCount"
+        ],
+        "properties": {
+          "Op": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Operation"
+              },
+              {
+                "description": "An operation, either replace or remove."
+              }
+            ]
+          },
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RecordKey"
+              },
+              {
+                "description": "The key associated with the record patch."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RecordValue"
+              },
+              {
+                "description": "The value associated with the record patch."
+              }
+            ]
+          },
+          "SyncCount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Last known server sync count for this record. Set to 0 if unknown."
+              }
+            ]
+          },
+          "DeviceLastModifiedDate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Date"
+              },
+              {
+                "description": "The last modified date of the client device."
+              }
+            ]
+          }
+        },
+        "description": "An update operation for a record."
+      },
+      "Operation": {
+        "type": "string",
+        "enum": [
+          "replace",
+          "remove"
+        ]
+      },
+      "RecordKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "RecordValue": {
+        "type": "string",
+        "maxLength": 1048575
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "Date": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://cognito-sync.us-east-1.amazonaws.com/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}"
+    },
+    "headers": {
+      "x-amz-Client-Context": {
+        "$": "x-amz-Client-Context"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Returned for a successful UpdateRecordsRequest.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Records**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

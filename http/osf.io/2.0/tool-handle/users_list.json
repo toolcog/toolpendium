@@ -1,0 +1,86 @@
+{
+  "name": "users_list",
+  "description": "\nA paginated list of all users registered on the OSF. The returned users are sorted by their `date_registered`, with the most recently registered users appearing first.\n\nThe subroute `/users/me/` is a special endpoint that always points to the currently logged-in user.\n#### Versioning\nAs of version `2.3`, merged users will not be returned from this endpoint.\n#### Returns\nReturns a JSON object containing `data` and `links` keys.\n\nThe `data` key contains an array of 10 users. Each resource in the array is a separate users object and contains the full representation of the user, meaning additional requests to a user's detail view are not necessary.\n\nThe `links` key contains a dictionary of links that can be used for [pagination](#tag/Pagination).\n\nThis request should never return an error.\n#### Filtering\nYou can optionally request that the response only include nodes that match your filters by utilizing the `filter` query parameter, e.g. https://api.osf.io/v2/users/?filter[family_name]=Nosek.\n\nUsers may be filtered by their `id`, `full_name`, `given_name`, `middle_name`, or `family_name`.",
+  "parameters": {
+    "type": "object"
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.test.osf.io/v2/users/"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "User list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**attributes**: The properties of the user entity.",
+              {
+                "$ul": [
+                  "**active**: Whether or not the user is an active user.",
+                  "**date_registered**: The time at which the user registered their account, as an iso8601 formatted timestamp.",
+                  "**family_name**: The family name of the user, used for bibliographic citations.",
+                  "**full_name**: The full name of the user, used for display on the OSF.",
+                  "**given_name**: The given name of the user, used for bibliographic citations.",
+                  "**locale**: The user's locale, e.g. 'en_US'.",
+                  "**middle_names**: The middle names of the user, used for bibliographic citations.",
+                  "**suffix**: The suffix of the user, used for bibliographic citations.",
+                  "**timezone**: The user's timezone, e.g. 'Etc/UTC'."
+                ]
+              }
+            ],
+            "**id**: The unique identifier of the user entity.",
+            [
+              "**links**: URLs to alternative representations of the user entity.",
+              {
+                "$ul": [
+                  "**html**: A link to the user's profile page on the OSF.",
+                  "**profile_image**: A link to the user's profile image."
+                ]
+              }
+            ],
+            [
+              "**relationships**: URLs to other entities or entity collections that have a relationship to the user entity.",
+              {
+                "$ul": [
+                  "**institutions**: A link to the list of institutions the user is affiliated with.",
+                  "**nodes**: A link to the list of nodes the user is a contributor to."
+                ]
+              }
+            ],
+            "**type**: The type identifier of the user entity (`users`)."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "name": "repos_list-webhooks",
+  "description": "Lists webhooks for a repository. `last response` may return null if there have not been any deliveries within 30 days.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/hooks{?per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Webhook list"
+        },
+        "Webhooks for repositories.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: Determines whether the hook is actually triggered on pushes.",
+            [
+              "**config**",
+              {
+                "$ul": [
+                  "**content_type**: The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`.",
+                  "**digest**",
+                  "**email**",
+                  "**insecure_ssl**",
+                  "**password**",
+                  "**room**",
+                  "**secret**: If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/enterprise-server@3.4/webhooks/event-payloads/#delivery-headers).",
+                  "**subdomain**",
+                  "**token**",
+                  "**url**: The URL to which the payloads will be delivered."
+                ]
+              }
+            ],
+            "**created_at**",
+            "**deliveries_url**",
+            "**events**: Determines what events the hook is triggered for. Default: ['push'].",
+            "**id**: Unique identifier of the webhook.",
+            [
+              "**last_response**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**message**",
+                  "**status**"
+                ]
+              }
+            ],
+            "**name**: The name of a valid service, use 'web' for a webhook.",
+            "**ping_url**",
+            "**test_url**",
+            "**type**",
+            "**updated_at**",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

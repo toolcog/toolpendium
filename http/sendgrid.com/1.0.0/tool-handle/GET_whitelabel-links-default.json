@@ -1,0 +1,91 @@
+{
+  "name": "GET_whitelabel-links-default",
+  "description": "**This endpoint allows you to retrieve the default branded link.**\n\nThe default branded link is the actual URL to be used when sending messages. If you have more than one branded link, the default is determined by the following order:\n\n* The validated branded link marked as `default` (set when you call the \"Create a branded link\" endpoint or by calling the \"Update a branded link\" endpoint on an existing link)\n* Legacy branded links (migrated from the whitelabel wizard)\n* Default SendGrid-branded links (i.e., `100.ct.sendgrid.net`)\n\nYou can submit this request as one of your subusers if you include their ID in the `on-behalf-of` header in the request.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "domain": {
+        "type": "string",
+        "description": "The domain to match against when finding the default branded link."
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/whitelabel/links/default{?domain}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Link Branding 200 Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**default**: Indicates if this is the default link branding.",
+            [
+              "**dns**: The DNS records generated for this link branding.",
+              {
+                "$ul": [
+                  [
+                    "**domain_cname**: The DNS record generated to point to your link branding subdomain.",
+                    {
+                      "$ul": [
+                        "**data**: The domain that the DNS record points to.",
+                        "**host**: The domain that this link branding will use for the links in your email.",
+                        "**type**: The type of DNS record that was generated.",
+                        "**valid**: Indicates if the DNS record is valid."
+                      ]
+                    }
+                  ],
+                  [
+                    "**owner_cname**: The DNS record generated to verify who created the link branding.",
+                    {
+                      "$ul": [
+                        "**data**: The domain that the DNS record points to.",
+                        "**host**: Used to verify the link branding. The subdomain of this domain is the ID of the user who created the link branding.",
+                        "**type**: The type of DNS record generated.",
+                        "**valid**: Indicates if the DNS record is valid."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**domain**: The root domain of the branded link.",
+            "**id**: The ID of the branded link.",
+            "**legacy**: Indicates if this link branding was created using the legacy whitelabel tool. If it is a legacy whitelabel, it will still function, but you'll need to create new link branding if you need to update it.",
+            "**subdomain**: The subdomain used to generate the DNS records for this link branding. This subdomain must be different from the subdomain used for your authenticated domain.",
+            "**user_id**: The ID of the user that this link branding is associated with.",
+            "**username**: The username of the account that this link branding is associated with.",
+            "**valid**: Indicates if this link branding is valid."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

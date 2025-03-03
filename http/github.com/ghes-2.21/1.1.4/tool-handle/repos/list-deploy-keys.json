@@ -1,0 +1,80 @@
+{
+  "name": "repos_list-deploy-keys",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string"
+      },
+      "repo": {
+        "type": "string"
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "Results per page (max 100)"
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://HOSTNAME/api/v3/repos/{owner}/{repo}/keys{?per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Deploy Key list"
+        },
+        "An SSH key granting access to a single repository.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**",
+            "**id**",
+            "**key**",
+            "**read_only**",
+            "**title**",
+            "**url**",
+            "**verified**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

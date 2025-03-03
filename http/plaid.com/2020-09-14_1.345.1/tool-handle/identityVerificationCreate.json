@@ -1,0 +1,524 @@
+{
+  "name": "identityVerificationCreate",
+  "description": "Create a new Identity Verification for the user specified by the `client_user_id` field. The requirements and behavior of the verification are determined by the `template_id` provided.\nIf you don't know whether the associated user already has an active Identity Verification, you can specify `\"is_idempotent\": true` in the request body. With idempotency enabled, a new Identity Verification will only be created if one does not already exist for the associated `client_user_id` and `template_id`. If an Identity Verification is found, it will be returned unmodified with an `200 OK` HTTP status code.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/IdentityVerificationCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "IdentityVerificationCreateRequest": {
+        "description": "Request schema for '/identity_verification/create'",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "gave_consent": {
+            "$ref": "#/$defs/IdentityVerificationConsent"
+          },
+          "is_idempotent": {
+            "$ref": "#/$defs/IdempotencyFlag"
+          },
+          "is_shareable": {
+            "description": "A flag specifying whether you would like Plaid to expose a shareable URL for the verification being created.",
+            "example": true,
+            "title": "EnableSharableLink",
+            "type": "boolean"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "template_id": {
+            "$ref": "#/$defs/IdentityVerificationTemplateID"
+          },
+          "user": {
+            "$ref": "#/$defs/IdentityVerificationRequestUser"
+          }
+        },
+        "required": [
+          "is_shareable",
+          "template_id",
+          "user",
+          "gave_consent"
+        ],
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "IdentityVerificationConsent": {
+        "default": false,
+        "description": "A flag specifying whether the end user has already agreed to a privacy policy specifying that their data will be shared with Plaid for verification purposes.\n\nIf `gave_consent` is set to `true`, the `accept_tos` step will be marked as `skipped` and the end user's session will start at the next step requirement.",
+        "example": true,
+        "title": "IdentityVerificationConsent",
+        "type": "boolean"
+      },
+      "IdempotencyFlag": {
+        "description": "An optional flag specifying how you would like Plaid to handle attempts to create an Identity Verification when an Identity Verification already exists for the provided `client_user_id` and `template_id`.\nIf idempotency is enabled, Plaid will return the existing Identity Verification. If idempotency is disabled, Plaid will reject the request with a `400 Bad Request` status code if an Identity Verification already exists for the supplied `client_user_id` and `template_id`.",
+        "example": true,
+        "nullable": true,
+        "title": "IdempotencyFlag",
+        "type": "boolean"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "IdentityVerificationTemplateID": {
+        "description": "ID of the associated Identity Verification template.",
+        "example": "idvtmp_4FrXJvfQU3zGUR",
+        "title": "IdentityVerificationTemplateID",
+        "type": "string"
+      },
+      "IdentityVerificationRequestUser": {
+        "additionalProperties": true,
+        "description": "User information collected outside of Link, most likely via your own onboarding process.\n\nEach of the following identity fields are optional:\n\n`email_address`\n\n`phone_number`\n\n`date_of_birth`\n\n`name`\n\n`address`\n\n`id_number`\n\nSpecifically, these fields are optional in that they can either be fully provided (satisfying every required field in their subschema) or omitted from the request entirely by not providing the key or value.\nProviding these fields via the API will result in Link skipping the data collection process for the associated user. All verification steps enabled in the associated Identity Verification Template will still be run. Verification steps will either be run immediately, or once the user completes the `accept_tos` step, depending on the value provided to the `gave_consent` field.",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/UserAddress"
+          },
+          "client_user_id": {
+            "$ref": "#/$defs/ClientUserID"
+          },
+          "date_of_birth": {
+            "$ref": "#/$defs/ISO8601Date"
+          },
+          "email_address": {
+            "$ref": "#/$defs/EmailAddress"
+          },
+          "id_number": {
+            "$ref": "#/$defs/UserIDNumber"
+          },
+          "name": {
+            "$ref": "#/$defs/IdentityVerificationRequestUserName"
+          },
+          "phone_number": {
+            "$ref": "#/$defs/IdentityVerificationUserPhoneNumber"
+          }
+        },
+        "required": [
+          "client_user_id"
+        ],
+        "type": "object"
+      },
+      "UserAddress": {
+        "additionalProperties": true,
+        "description": "Home address for the user.",
+        "nullable": true,
+        "properties": {
+          "city": {
+            "$ref": "#/$defs/City"
+          },
+          "country": {
+            "$ref": "#/$defs/GenericCountryCode"
+          },
+          "postal_code": {
+            "$ref": "#/$defs/PostalCode"
+          },
+          "region": {
+            "$ref": "#/$defs/Region"
+          },
+          "street": {
+            "$ref": "#/$defs/Street"
+          },
+          "street2": {
+            "$ref": "#/$defs/Street2"
+          }
+        },
+        "required": [
+          "street",
+          "city",
+          "region",
+          "postal_code",
+          "country"
+        ],
+        "type": "object"
+      },
+      "City": {
+        "description": "City from the end user's address",
+        "example": "Pawnee",
+        "title": "CityName",
+        "type": "string"
+      },
+      "GenericCountryCode": {
+        "description": "Valid, capitalized, two-letter ISO code representing the country of this object. Must be in ISO 3166-1 alpha-2 form.",
+        "example": "US",
+        "minLength": 2,
+        "title": "GenericCountryCode",
+        "type": "string"
+      },
+      "PostalCode": {
+        "description": "The postal code for the associated address. Between 2 and 10 alphanumeric characters. For US-based addresses this must be 5 numeric digits.",
+        "example": "46001",
+        "title": "PostalCode",
+        "type": "string"
+      },
+      "Region": {
+        "description": "An ISO 3166-2 subdivision code. Related terms would be \"state\", \"province\", \"prefecture\", \"zone\", \"subdivision\", etc.",
+        "example": "IN",
+        "title": "Region",
+        "type": "string"
+      },
+      "Street": {
+        "description": "The primary street portion of an address. If the user has submitted their address, this field will always be filled.",
+        "example": "123 Main St.",
+        "title": "Street",
+        "type": "string"
+      },
+      "Street2": {
+        "description": "Extra street information, like an apartment or suite number.",
+        "example": "Unit 42",
+        "nullable": true,
+        "title": "Street2",
+        "type": "string"
+      },
+      "ClientUserID": {
+        "description": "An identifier to help you connect this object to your internal systems. For example, your database ID corresponding to this object.",
+        "example": "your-db-id-3b24110",
+        "minLength": 1,
+        "title": "ClientUserID",
+        "type": "string"
+      },
+      "ISO8601Date": {
+        "description": "A date in the format YYYY-MM-DD (RFC 3339 Section 5.6).",
+        "example": "1990-05-29",
+        "format": "date",
+        "title": "ISO8601Date",
+        "type": "string"
+      },
+      "EmailAddress": {
+        "description": "A valid email address.",
+        "example": "user@example.com",
+        "format": "email",
+        "title": "EmailAddress",
+        "type": "string"
+      },
+      "UserIDNumber": {
+        "additionalProperties": true,
+        "description": "ID number submitted by the user, currently used only for the Identity Verification product. If the user has not submitted this data yet, this field will be `null`. Otherwise, both fields are guaranteed to be filled.",
+        "nullable": true,
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/IDNumberType"
+          },
+          "value": {
+            "$ref": "#/$defs/IDNumberValue"
+          }
+        },
+        "required": [
+          "value",
+          "type"
+        ],
+        "type": "object"
+      },
+      "IDNumberType": {
+        "description": "A globally unique and human readable ID type, specific to the country and document category. For more context on this field, see [Hybrid Input Validation](https://plaid.com/docs/identity-verification/hybrid-input-validation).",
+        "enum": [
+          "ar_dni",
+          "au_drivers_license",
+          "au_passport",
+          "br_cpf",
+          "ca_sin",
+          "cl_run",
+          "cn_resident_card",
+          "co_nit",
+          "dk_cpr",
+          "eg_national_id",
+          "es_dni",
+          "es_nie",
+          "hk_hkid",
+          "in_pan",
+          "it_cf",
+          "jo_civil_id",
+          "jp_my_number",
+          "ke_huduma_namba",
+          "kw_civil_id",
+          "mx_curp",
+          "mx_rfc",
+          "my_nric",
+          "ng_nin",
+          "nz_drivers_license",
+          "om_civil_id",
+          "ph_psn",
+          "pl_pesel",
+          "ro_cnp",
+          "sa_national_id",
+          "se_pin",
+          "sg_nric",
+          "tr_tc_kimlik",
+          "us_ssn",
+          "us_ssn_last_4",
+          "za_smart_id"
+        ],
+        "example": "us_ssn",
+        "title": "IDNumberType",
+        "type": "string"
+      },
+      "IDNumberValue": {
+        "description": "Value of identity document value typed in by user. Alpha-numeric, with all formatting characters stripped.",
+        "example": "123456789",
+        "title": "IDNumberValue",
+        "type": "string"
+      },
+      "IdentityVerificationRequestUserName": {
+        "description": "You can use this field to pre-populate the user's legal name; if it is provided here, they will not be prompted to enter their name in the identity verification attempt.",
+        "nullable": true,
+        "properties": {
+          "family_name": {
+            "$ref": "#/$defs/FamilyNameField"
+          },
+          "given_name": {
+            "$ref": "#/$defs/GivenNameField"
+          }
+        },
+        "required": [
+          "given_name",
+          "family_name"
+        ],
+        "type": "object"
+      },
+      "FamilyNameField": {
+        "description": "A string with at least one non-whitespace character, with a max length of 100 characters.",
+        "example": "Knope",
+        "title": "FamilyName",
+        "type": "string"
+      },
+      "GivenNameField": {
+        "description": "A string with at least one non-whitespace character, with a max length of 100 characters.",
+        "example": "Leslie",
+        "title": "GivenName",
+        "type": "string"
+      },
+      "IdentityVerificationUserPhoneNumber": {
+        "description": "A phone number in E.164 format.",
+        "example": "+19876543212",
+        "nullable": true,
+        "title": "PhoneNumber",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/identity_verification/create"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A identity verification attempt represents a customer's attempt to verify their identity, reflecting the required steps for completing the session, the results for each step, and information collected in the process.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**client_user_id**: An identifier to help you connect this object to your internal systems. For example, your database ID corresponding to this object.",
+            "**completed_at**: An ISO8601 formatted timestamp.",
+            "**created_at**: An ISO8601 formatted timestamp.",
+            [
+              "**documentary_verification**: Data, images, analysis, and results from the `documentary_verification` step. This field will be `null` unless `steps.documentary_verification` has reached a terminal state of either `success` or `failed`.",
+              {
+                "$ul": [
+                  "**documents**: An array of documents submitted to the `documentary_verification` step. Each entry represents one user submission, where each submission will contain both a front and back image, or just a front image, depending on the document type.",
+                  "**status**: The outcome status for the associated Identity Verification attempt's `documentary_verification` step. This field will always have the same value as `steps.documentary_verification`."
+                ]
+              }
+            ],
+            "**id**: ID of the associated Identity Verification attempt.",
+            [
+              "**kyc_check**: Additional information for the `kyc_check` step. This field will be `null` unless `steps.kyc_check` has reached a terminal state of either `success` or `failed`.",
+              {
+                "$ul": [
+                  [
+                    "**address**: Result summary object specifying how the `address` field matched.",
+                    {
+                      "$ul": [
+                        "**po_box**: Field describing whether the associated address is a post office box. Will be `yes` when a P.O. box is detected, `no` when Plaid confirmed the address is not a P.O. box, and `no_data` when Plaid was not able to determine if the address is a P.O. box.",
+                        "**summary**: An enum indicating the match type between data provided by user and data checked against an external data source.",
+                        "**type**: Field describing whether the associated address is being used for commercial or residential purposes."
+                      ]
+                    }
+                  ],
+                  [
+                    "**date_of_birth**: Result summary object specifying how the `date_of_birth` field matched.",
+                    {
+                      "$ul": [
+                        "**summary**: An enum indicating the match type between data provided by user and data checked against an external data source."
+                      ]
+                    }
+                  ],
+                  [
+                    "**id_number**: Result summary object specifying how the `id_number` field matched.",
+                    {
+                      "$ul": [
+                        "**summary**: An enum indicating the match type between data provided by user and data checked against an external data source."
+                      ]
+                    }
+                  ],
+                  [
+                    "**name**: Result summary object specifying how the `name` field matched.",
+                    {
+                      "$ul": [
+                        "**summary**: An enum indicating the match type between data provided by user and data checked against an external data source."
+                      ]
+                    }
+                  ],
+                  [
+                    "**phone_number**: Result summary object specifying how the `phone` field matched.",
+                    {
+                      "$ul": [
+                        "**summary**: An enum indicating the match type between data provided by user and data checked against an external data source."
+                      ]
+                    }
+                  ],
+                  "**status**: The outcome status for the associated Identity Verification attempt's `kyc_check` step. This field will always have the same value as `steps.kyc_check`."
+                ]
+              }
+            ],
+            "**previous_attempt_id**: The ID for the Identity Verification preceding this session. This field will only be filled if the current Identity Verification is a retry of a previous attempt.",
+            "**redacted_at**: An ISO8601 formatted timestamp.",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            [
+              "**risk_check**: Additional information for the `risk_check` step.",
+              {
+                "$ul": [
+                  [
+                    "**behavior**: Result summary object specifying values for `behavior` attributes of risk check, when available.",
+                    {
+                      "$ul": [
+                        "**bot_detected**: Field describing the outcome of a bot detection behavior risk check.",
+                        "**fraud_ring_detected**: Field describing the outcome of a fraud ring behavior risk check.",
+                        "**user_interactions**: Field describing the overall user interaction signals of a behavior risk check. This value represents how familiar the user is with the personal data they provide, based on a number of signals that are collected during their session."
+                      ]
+                    }
+                  ],
+                  "**devices**: Array of result summary objects specifying values for `device` attributes of risk check.",
+                  [
+                    "**email**: Result summary object specifying values for `email` attributes of risk check.",
+                    {
+                      "$ul": [
+                        "**breach_count**: Count of all known breaches of this email address if known.",
+                        "**domain_is_custom**: Indicates whether the email address domain is custom if known, i.e. a company domain and not free or disposable.",
+                        "**domain_is_disposable**: Indicates whether the email domain is listed as disposable if known. Disposable domains are often used to create email addresses that are part of a fake set of user details.",
+                        "**domain_is_free_provider**: Indicates whether the email address domain is a free provider such as Gmail or Hotmail if known.",
+                        "**domain_registered_at**: A date in the format YYYY-MM-DD (RFC 3339 Section 5.6).",
+                        "**first_breached_at**: A date in the format YYYY-MM-DD (RFC 3339 Section 5.6).",
+                        "**is_deliverable**: SMTP-MX check to confirm the email address exists if known.",
+                        "**last_breached_at**: A date in the format YYYY-MM-DD (RFC 3339 Section 5.6).",
+                        "**linked_services**",
+                        "**top_level_domain_is_suspicious**: Indicates whether the email address top level domain, which is the last part of the domain, is fraudulent or risky if known. In most cases, a suspicious top level domain is also associated with a disposable or high-risk domain."
+                      ]
+                    }
+                  ],
+                  [
+                    "**phone**: Result summary object specifying values for `phone` attributes of risk check.",
+                    {
+                      "$ul": [
+                        "**linked_services**"
+                      ]
+                    }
+                  ],
+                  "**status**: The status of a step in the identity verification process."
+                ]
+              }
+            ],
+            "**shareable_url**: A shareable URL that can be sent directly to the user to complete verification",
+            "**status**: The status of this Identity Verification attempt.",
+            [
+              "**steps**: Each step will be one of the following values:",
+              {
+                "$ul": [
+                  "**accept_tos**: The status of a step in the identity verification process.",
+                  "**documentary_verification**: The status of a step in the identity verification process.",
+                  "**kyc_check**: The status of a step in the identity verification process.",
+                  "**risk_check**: The status of a step in the identity verification process.",
+                  "**selfie_check**: The status of a step in the identity verification process.",
+                  "**verify_sms**: The status of a step in the identity verification process.",
+                  "**watchlist_screening**: The status of a step in the identity verification process."
+                ]
+              }
+            ],
+            [
+              "**template**: The resource ID and version number of the template configuring the behavior of a given identity verification.",
+              {
+                "$ul": [
+                  "**id**: ID of the associated Identity Verification template.",
+                  "**version**: Version of the associated Identity Verification template."
+                ]
+              }
+            ],
+            [
+              "**user**: The identity data that was either collected from the user or provided via API in order to perform an identity verification.",
+              {
+                "$ul": [
+                  [
+                    "**address**: Even if an address has been collected, some fields may be null depending on the region's addressing system. For example:",
+                    {
+                      "$ul": [
+                        "**city**: City from the end user's address",
+                        "**country**: Valid, capitalized, two-letter ISO code representing the country of this object. Must be in ISO 3166-1 alpha-2 form.",
+                        "**postal_code**: The postal code for the associated address. Between 2 and 10 alphanumeric characters. For US-based addresses this must be 5 numeric digits.",
+                        "**region**: An ISO 3166-2 subdivision code. Related terms would be \"state\", \"province\", \"prefecture\", \"zone\", \"subdivision\", etc.",
+                        "**street**: The primary street portion of an address. If the user has submitted their address, this field will always be filled.",
+                        "**street2**: Extra street information, like an apartment or suite number."
+                      ]
+                    }
+                  ],
+                  "**date_of_birth**: A date in the format YYYY-MM-DD (RFC 3339 Section 5.6).",
+                  "**email_address**: A valid email address.",
+                  [
+                    "**id_number**: ID number submitted by the user, currently used only for the Identity Verification product. If the user has not submitted this data yet, this field will be `null`. Otherwise, both fields are guaranteed to be filled.",
+                    {
+                      "$ul": [
+                        "**type**: A globally unique and human readable ID type, specific to the country and document category. For more context on this field, see [Hybrid Input Validation](https://plaid.com/docs/identity-verification/hybrid-input-validation).",
+                        "**value**: Value of identity document value typed in by user. Alpha-numeric, with all formatting characters stripped."
+                      ]
+                    }
+                  ],
+                  "**ip_address**: An IPv4 or IPV6 address.",
+                  [
+                    "**name**: The full name provided by the user. If the user has not submitted their name, this field will be null. Otherwise, both fields are guaranteed to be filled.",
+                    {
+                      "$ul": [
+                        "**family_name**: A string with at least one non-whitespace character, with a max length of 100 characters.",
+                        "**given_name**: A string with at least one non-whitespace character, with a max length of 100 characters."
+                      ]
+                    }
+                  ],
+                  "**phone_number**: A phone number in E.164 format."
+                ]
+              }
+            ],
+            "**watchlist_screening_id**: ID of the associated screening."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

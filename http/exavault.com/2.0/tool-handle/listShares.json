@@ -1,0 +1,129 @@
+{
+  "name": "listShares",
+  "description": "Get a list of shares that you would have access to view through the web interface. You can limit which results are returned by specifying specific types of shares you wish to view, finding things shared with a specific email address, as well as finding shares for specific folder names.\n\n\n**Notes:**\n\n- Authenticated user requires [share permission](/docs/account/04-users/00-introduction#managing-user-roles-and-permissions).\n- To get share objects with type send, authenticated user's role must be admin or master.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "type": "string",
+        "description": "API Key required to make the API call."
+      },
+      "ev-access-token": {
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "offset": {
+        "type": "integer",
+        "description": "Current offset of records (for pagination)"
+      },
+      "limit": {
+        "default": 100,
+        "type": "integer",
+        "description": "Limit of records to be returned (for pagination)"
+      },
+      "scope": {
+        "enum": [
+          "all",
+          "active",
+          "currentUser"
+        ],
+        "type": "string",
+        "description": "Set of shares to return. (**all**=all of them, **active**=shares that are currently active, **curentUser**=shares created by you)"
+      },
+      "sort": {
+        "enum": [
+          "created",
+          "-created"
+        ],
+        "type": "string",
+        "description": "What order the list of matches should be in."
+      },
+      "type": {
+        "enum": [
+          "receive",
+          "shared_folder",
+          "send"
+        ],
+        "type": "string",
+        "description": "Limit the list of matches to only certain types of shares."
+      },
+      "include": {
+        "type": "string",
+        "description": "Comma separated list of relationships to include in response. Possible values are **owner**, **resources**, **notifications**, **activity**."
+      },
+      "name": {
+        "example": "Customer*",
+        "type": "string",
+        "description": "When provided, only shares whose names include this value will be in the list. Supports wildcards, such as **send\\*** to return everything starting with \"send\".\n\nUse this parameter if you are searching for shares or receives for a specific folder name. For example **/Clients/ACME/To Be Processed**."
+      },
+      "recipient": {
+        "example": "test@example.com",
+        "type": "string",
+        "description": "Filter the results to include only shares that invited a certain email address. Supports wildcard matching so that **\\*@example.com** will give back entries shared with addresses ending in \"@example.com\". "
+      },
+      "message": {
+        "example": "submitted",
+        "type": "string",
+        "description": "When provided, only shares with a message that contains the text will be included in the list of matches. Both the subject and the body of all messages will be checked for matches. This will always be a wildcard match, so that searching for **taxes** will return any shares with a message that contains the word \"taxes\"."
+      },
+      "username": {
+        "example": "example",
+        "type": "string",
+        "description": "When provided, only shares created by the user with that `username` will be included in the list. Does not support wildcard searching."
+      },
+      "search": {
+        "type": "string",
+        "description": "Searches the share name, username, recipients, share messages fields for the provided value. Supports wildcard searches."
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/shares{?offset,limit,scope,sort,type,include,name,recipient,message,username,search}"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ShareCollectionResponse"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**included**",
+            "**responseStatus**: Http status code of the response.",
+            "**returnedResults**: Number of returned results.",
+            "**totalResults**: Total results found. "
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

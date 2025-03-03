@@ -1,0 +1,119 @@
+{
+  "name": "POST_v3-teammates",
+  "description": "**This endpoint allows you to invite a Teammate to your account via email.**\n\nYou can set a Teammate's initial permissions using the `scopes` array in the request body. Teammate's will receive a minimum set of scopes from Twilio SendGrid that are necessary for the Teammate to function.\n\n**Note:** A teammate invite will expire after 7 days, but you may resend the invitation at any time to reset the expiration date.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "body": {
+        "example": {
+          "email": "teammate1@example.com",
+          "is_admin": false,
+          "scopes": [
+            "user.profile.read",
+            "user.profile.update"
+          ]
+        },
+        "properties": {
+          "email": {
+            "description": "New teammate's email",
+            "maxLength": 255,
+            "minLength": 5,
+            "pattern": "^.*@.*\\..*",
+            "type": "string"
+          },
+          "is_admin": {
+            "default": false,
+            "description": "Set to true if teammate should be an admin user",
+            "type": "boolean"
+          },
+          "scopes": {
+            "description": "Set to specify list of scopes that teammate should have. Should be empty if teammate is an admin.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "email",
+          "scopes",
+          "is_admin"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/teammates"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**email**: Teammate's email address",
+            "**is_admin**: Set to true if teammate should have admin privileges",
+            "**scopes**: Initial set of permissions to give to teammate if they accept the invite",
+            "**token**: Token to identify invite"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

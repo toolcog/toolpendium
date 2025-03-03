@@ -1,0 +1,78 @@
+{
+  "name": "GET_suppression-spam_reports",
+  "description": "**This endpoint allows you to retrieve all spam reports.**",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_time": {
+        "type": "integer",
+        "description": "The start of the time range when a spam report was created (inclusive). This is a unix timestamp."
+      },
+      "end_time": {
+        "type": "integer",
+        "description": "The end of the time range when a spam report was created (inclusive). This is a unix timestamp."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Limit the number of results to be displayed per page."
+      },
+      "offset": {
+        "type": "integer",
+        "description": "Paging offset. The point in the list to begin displaying results."
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/suppression/spam_reports{?start_time,end_time,limit,offset}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Spam Reports Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: A Unix timestamp that indicates when the recipient marked your message as spam.",
+            "**email**: The email address of the recipient that marked your message as spam.",
+            "**ip**: The IP address that the message was sent from."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

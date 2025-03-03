@@ -1,0 +1,83 @@
+{
+  "name": "GetInboxRecipients",
+  "description": "List Inbox Recipients",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination."
+      },
+      "per_page": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended)."
+      },
+      "sort_by": {
+        "type": "object",
+        "description": "If set, sort records by the specified field in either `asc` or `desc` direction (e.g. `sort_by[has_registrations]=desc`). Valid fields are `has_registrations`."
+      },
+      "filter": {
+        "type": "object",
+        "description": "If set, return records where the specified field is equal to the supplied value. Valid fields are `has_registrations`."
+      },
+      "inbox_id": {
+        "format": "int32",
+        "type": "integer",
+        "description": "List recipients for the inbox with this ID."
+      }
+    },
+    "required": [
+      "inbox_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/inbox_recipients{?cursor,per_page,sort_by,filter,inbox_id}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List Inbox Recipients",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**company**: The recipient's company.",
+            "**name**: The recipient's name.",
+            "**note**: A note sent to the recipient with the inbox.",
+            "**recipient**: The recipient's email address.",
+            "**sent_at**: When the Inbox was shared with this recipient."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

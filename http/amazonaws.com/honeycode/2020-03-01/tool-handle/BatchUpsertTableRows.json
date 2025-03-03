@@ -1,0 +1,361 @@
+{
+  "name": "BatchUpsertTableRows",
+  "description": "<p> The BatchUpsertTableRows API allows you to upsert one or more rows in a table. The upsert operation takes a filter expression as input and evaluates it to find matching rows on the destination table. If matching rows are found, it will update the cells in the matching rows to new values specified in the request. If no matching rows are found, a new row is added at the end of the table and the cells in that row are set to the new values specified in the request. </p> <p> You can specify the values to set in some or all of the columns in the table for the matching or newly appended rows. If a column is not explicitly specified for a particular row, then that column will not be updated for that row. To clear out the data in a specific cell, you need to set the value as an empty string (\"\"). </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workbookId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the workbook where the rows are being upserted.</p> <p> If a workbook with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "tableId": {
+        "type": "string",
+        "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 36,
+        "maxLength": 36,
+        "description": "<p>The ID of the table where the rows are being upserted.</p> <p> If a table with the specified id could not be found, this API throws ResourceNotFoundException. </p>"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "rowsToUpsert"
+        ],
+        "properties": {
+          "rowsToUpsert": {
+            "description": "<p> The list of rows to upsert in the table. Each item in this list needs to have a batch item id to uniquely identify the element in the request, a filter expression to find the rows to update for that element and the cell values to set for each column in the upserted rows. You need to specify at least one item in this list. </p> <p> Note that if one of the filter formulas in the request fails to evaluate because of an error or one of the column ids in any of the rows does not exist in the table, then the request fails and no updates are made to the table. </p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/UpsertRowData"
+            }
+          },
+          "clientRequestToken": {
+            "description": "<p> The request token for performing the update action. Request tokens help to identify duplicate requests. If a call times out or fails due to a transient error like a failed network connection, you can retry the call with the same request token. The service ensures that if the first call using that request token is successfully performed, the second call will not perform the action again. </p> <p> Note that request tokens are valid only for a few minutes. You cannot use request tokens to dedupe requests spanning hours or days. </p>",
+            "type": "string",
+            "pattern": "^(?!\\s*$).+",
+            "minLength": 32,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "workbookId",
+      "tableId",
+      "body"
+    ],
+    "$defs": {
+      "UpsertRowData": {
+        "type": "object",
+        "required": [
+          "batchItemId",
+          "filter",
+          "cellsToUpdate"
+        ],
+        "properties": {
+          "batchItemId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BatchItemId"
+              },
+              {
+                "description": " An external identifier that represents a single item in the request that is being upserted as part of the BatchUpsertTableRows request. This can be any string that you can use to identify the item in the request. The BatchUpsertTableRows API puts the batch item id in the results to allow you to link data in the request to data in the results. "
+              }
+            ]
+          },
+          "filter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Filter"
+              },
+              {
+                "description": "<p> The filter formula to use to find existing matching rows to update. The formula needs to return zero or more rows. If the formula returns 0 rows, then a new row will be appended in the target table. If the formula returns one or more rows, then the returned rows will be updated. </p> <p> Note that the filter formula needs to return rows from the target table for the upsert operation to succeed. If the filter formula has a syntax error or it doesn't evaluate to zero or more rows in the target table for any one item in the input list, then the entire BatchUpsertTableRows request fails and no updates are made to the table. </p>"
+              }
+            ]
+          },
+          "cellsToUpdate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RowDataInput"
+              },
+              {
+                "description": " A map representing the cells to update for the matching rows or an appended row. The key is the column id of the cell and the value is the CellInput object that represents the data to set in that cell. "
+              }
+            ]
+          }
+        },
+        "description": " Data needed to upsert rows in a table as part of a single item in the BatchUpsertTableRows request. "
+      },
+      "BatchItemId": {
+        "type": "string",
+        "pattern": "^(?!\\s*$).+",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "Filter": {
+        "type": "object",
+        "required": [
+          "formula"
+        ],
+        "properties": {
+          "formula": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Formula"
+              },
+              {
+                "description": " A formula representing a filter function that returns zero or more matching rows from a table. Valid formulas in this field return a list of rows from a table. The most common ways of writing a formula to return a list of rows are to use the FindRow() or Filter() functions. Any other formula that returns zero or more rows is also acceptable. For example, you can use a formula that points to a cell that contains a filter function. "
+              }
+            ]
+          },
+          "contextRowId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RowId"
+              },
+              {
+                "description": " The optional contextRowId attribute can be used to specify the row id of the context row if the filter formula contains unqualified references to table columns and needs a context row to evaluate them successfully. "
+              }
+            ]
+          }
+        },
+        "description": " An object that represents a filter formula along with the id of the context row under which the filter function needs to evaluate. "
+      },
+      "Formula": {
+        "type": "string",
+        "pattern": "^=.*",
+        "minLength": 0,
+        "maxLength": 8192,
+        "format": "password"
+      },
+      "RowId": {
+        "type": "string",
+        "pattern": "row:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "minLength": 77,
+        "maxLength": 77
+      },
+      "RowDataInput": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 100,
+        "additionalProperties": {
+          "$ref": "#/$defs/CellInput"
+        }
+      },
+      "CellInput": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Fact"
+              },
+              {
+                "description": " Fact represents the data that is entered into a cell. This data can be free text or a formula. Formulas need to start with the equals (=) sign. "
+              }
+            ]
+          },
+          "facts": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FactList"
+              },
+              {
+                "description": " A list representing the values that are entered into a ROWSET cell. Facts list can have either only values or rowIDs, and rowIDs should from the same table. "
+              }
+            ]
+          }
+        },
+        "description": "<p> CellInput object contains the data needed to create or update cells in a table. </p> <note> <p> CellInput object has only a facts field or a fact field, but not both. A 400 bad request will be thrown if both fact and facts field are present. </p> </note>"
+      },
+      "Fact": {
+        "type": "string",
+        "pattern": "[\\s\\S]*",
+        "minLength": 0,
+        "maxLength": 8192,
+        "format": "password"
+      },
+      "FactList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Fact"
+        },
+        "minItems": 0,
+        "maxItems": 220
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://honeycode.us-east-1.amazonaws.com/workbooks/{workbookId}/tables/{tableId}/rows/batchupsert"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**rows**",
+            "**workbookCursor**",
+            "**failedBatchItems**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

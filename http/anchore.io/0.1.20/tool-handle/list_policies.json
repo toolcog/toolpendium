@@ -1,0 +1,86 @@
+{
+  "name": "list_policies",
+  "description": "List all saved policy bundles",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "detail": {
+        "type": "boolean",
+        "description": "Include policy bundle detail in the form of the full bundle content for each entry"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//policies{?detail}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List of PolicyBundleRecord objects",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: True if the bundle is currently defined to be used automatically",
+            "**created_at**",
+            "**last_updated**",
+            "**policyId**: The bundle's identifier",
+            "**policy_source**: Source location of where the policy bundle originated",
+            [
+              "**policybundle**: A bundle containing a set of policies, whitelists, and rules for mapping them to specific images",
+              {
+                "$ul": [
+                  "**blacklisted_images**: List of mapping rules that define which images should always result in a STOP/FAIL policy result regardless of policy content or presence in whitelisted_images",
+                  "**comment**: Description of the bundle, human readable",
+                  "**id**: Id of the bundle",
+                  "**mappings**: Mapping rules for defining which policy and whitelist(s) to apply to an image based on a match of the image tag or id. Evaluated in order.",
+                  "**name**: Human readable name for the bundle",
+                  "**policies**: Policies which define the go/stop/warn status of an image using rule matches on image properties",
+                  "**version**: Version id for this bundle format",
+                  "**whitelisted_images**: List of mapping rules that define which images should always be passed (unless also on the blacklist), regardless of policy result.",
+                  "**whitelists**: Whitelists which define which policy matches to disregard explicitly in the final policy decision"
+                ]
+              }
+            ],
+            "**userId**: UserId of the user that owns the bundle"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

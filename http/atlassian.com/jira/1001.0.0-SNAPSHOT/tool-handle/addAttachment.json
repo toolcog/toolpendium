@@ -1,0 +1,103 @@
+{
+  "name": "addAttachment",
+  "description": "Adds one or more attachments to an issue. Attachments are posted as multipart/form-data ([RFC 1867](https://www.ietf.org/rfc/rfc1867.txt)).\n\nNote that:\n\n *  The request must have a `X-Atlassian-Token: no-check` header, if not it is blocked. See [Special headers](#special-request-headers) for more information.\n *  The name of the multipart/form-data parameter that contains the attachments must be `file`.\n\nThe following examples upload a file called *myfile.txt* to the issue *TEST-123*:\n\n#### curl ####\n\n    curl --location --request POST 'https://your-domain.atlassian.net/rest/api/3/issue/TEST-123/attachments'\n     -u 'email@example.com:<api_token>'\n     -H 'X-Atlassian-Token: no-check'\n     --form 'file=@\"myfile.txt\"'\n\n#### Node.js ####\n\n    // This code sample uses the 'node-fetch' and 'form-data' libraries:\n     // https://www.npmjs.com/package/node-fetch\n     // https://www.npmjs.com/package/form-data\n     const fetch = require('node-fetch');\n     const FormData = require('form-data');\n     const fs = require('fs');\n    \n     const filePath = 'myfile.txt';\n     const form = new FormData();\n     const stats = fs.statSync(filePath);\n     const fileSizeInBytes = stats.size;\n     const fileStream = fs.createReadStream(filePath);\n    \n     form.append('file', fileStream, {knownLength: fileSizeInBytes});\n    \n     fetch('https://your-domain.atlassian.net/rest/api/3/issue/TEST-123/attachments', {\n         method: 'POST',\n         body: form,\n         headers: {\n             'Authorization': `Basic ${Buffer.from(\n                 'email@example.com:'\n             ).toString('base64')}`,\n             'Accept': 'application/json',\n             'X-Atlassian-Token': 'no-check'\n         }\n     })\n         .then(response => {\n             console.log(\n                 `Response: ${response.status} ${response.statusText}`\n             );\n             return response.text();\n         })\n         .then(text => console.log(text))\n         .catch(err => console.error(err));\n\n#### Java ####\n\n    // This code sample uses the  'Unirest' library:\n     // http://unirest.io/java.html\n     HttpResponse response = Unirest.post(\"https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments\")\n             .basicAuth(\"email@example.com\", \"\")\n             .header(\"Accept\", \"application/json\")\n             .header(\"X-Atlassian-Token\", \"no-check\")\n             .field(\"file\", new File(\"myfile.txt\"))\n             .asJson();\n    \n             System.out.println(response.getBody());\n\n#### Python ####\n\n    # This code sample uses the 'requests' library:\n     # http://docs.python-requests.org\n     import requests\n     from requests.auth import HTTPBasicAuth\n     import json\n    \n     url = \"https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments\"\n    \n     auth = HTTPBasicAuth(\"email@example.com\", \"\")\n    \n     headers = {\n        \"Accept\": \"application/json\",\n        \"X-Atlassian-Token\": \"no-check\"\n     }\n    \n     response = requests.request(\n        \"POST\",\n        url,\n        headers = headers,\n        auth = auth,\n        files = {\n             \"file\": (\"myfile.txt\", open(\"myfile.txt\",\"rb\"), \"application-type\")\n        }\n     )\n    \n     print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(\",\", \": \")))\n\n#### PHP ####\n\n    // This code sample uses the 'Unirest' library:\n     // http://unirest.io/php.html\n     Unirest\\Request::auth('email@example.com', '');\n    \n     $headers = array(\n       'Accept' => 'application/json',\n       'X-Atlassian-Token' => 'no-check'\n     );\n    \n     $parameters = array(\n       'file' => File::add('myfile.txt')\n     );\n    \n     $response = Unirest\\Request::post(\n       'https://your-domain.atlassian.net/rest/api/2/issue/{issueIdOrKey}/attachments',\n       $headers,\n       $parameters\n     );\n    \n     var_dump($response)\n\n#### Forge ####\n\n    // This sample uses Atlassian Forge and the `form-data` library.\n     // https://developer.atlassian.com/platform/forge/\n     // https://www.npmjs.com/package/form-data\n     import api from \"@forge/api\";\n     import FormData from \"form-data\";\n    \n     const form = new FormData();\n     form.append('file', fileStream, {knownLength: fileSizeInBytes});\n    \n     const response = await api.asApp().requestJira('/rest/api/2/issue/{issueIdOrKey}/attachments', {\n         method: 'POST',\n         body: form,\n         headers: {\n             'Accept': 'application/json',\n             'X-Atlassian-Token': 'no-check'\n         }\n     });\n    \n     console.log(`Response: ${response.status} ${response.statusText}`);\n     console.log(await response.json());\n\nTip: Use a client library. Many client libraries have classes for handling multipart POST operations. For example, in Java, the Apache HTTP Components library provides a [MultiPartEntity](http://hc.apache.org/httpcomponents-client-ga/httpmime/apidocs/org/apache/http/entity/mime/MultipartEntity.html) class for multipart POST operations.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:** \n\n *  *Browse Projects* and *Create attachments* [ project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue is in.\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "issueIdOrKey": {
+        "type": "string",
+        "description": "The ID or key of the issue that attachments are added to."
+      },
+      "body": {
+        "format": "binary",
+        "type": "string"
+      }
+    },
+    "required": [
+      "issueIdOrKey"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/issue/{issueIdOrKey}/attachments"
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Details about an attachment.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**author**: User details permitted by the user's Atlassian Account privacy settings. However, be aware of these exceptions:",
+              {
+                "$ul": [
+                  "**accountId**: The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
+                  "**accountType**: The type of account represented by this user. This will be one of 'atlassian' (normal users), 'app' (application user) or 'customer' (Jira Service Desk customer user)",
+                  "**active**: Whether the user is active.",
+                  [
+                    "**avatarUrls**",
+                    {
+                      "$ul": [
+                        "**16x16**: The URL of the item's 16x16 pixel avatar.",
+                        "**24x24**: The URL of the item's 24x24 pixel avatar.",
+                        "**32x32**: The URL of the item's 32x32 pixel avatar.",
+                        "**48x48**: The URL of the item's 48x48 pixel avatar."
+                      ]
+                    }
+                  ],
+                  "**displayName**: The display name of the user. Depending on the user’s privacy settings, this may return an alternative value.",
+                  "**emailAddress**: The email address of the user. Depending on the user’s privacy settings, this may be returned as null.",
+                  "**key**: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+                  "**name**: This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+                  "**self**: The URL of the user.",
+                  "**timeZone**: The time zone specified in the user's profile. Depending on the user’s privacy settings, this may be returned as null."
+                ]
+              }
+            ],
+            "**content**: The content of the attachment.",
+            "**created**: The datetime the attachment was created.",
+            "**filename**: The file name of the attachment.",
+            "**id**: The ID of the attachment.",
+            "**mimeType**: The MIME type of the attachment.",
+            "**self**: The URL of the attachment details response.",
+            "**size**: The size of the attachment.",
+            "**thumbnail**: The URL of a thumbnail representing the attachment."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

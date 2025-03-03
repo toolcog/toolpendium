@@ -1,0 +1,307 @@
+{
+  "name": "UpdateRuntimeConfiguration",
+  "description": "<p>Updates the current runtime configuration for the specified fleet, which tells Amazon GameLift how to launch server processes on all instances in the fleet. You can update a fleet's runtime configuration at any time after the fleet is created; it does not need to be in <code>ACTIVE</code> status.</p> <p>To update runtime configuration, specify the fleet ID and provide a <code>RuntimeConfiguration</code> with an updated set of server process configurations.</p> <p>If successful, the fleet's runtime configuration settings are updated. Each instance in the fleet regularly checks for and retrieves updated runtime configurations. Instances immediately begin complying with the new configuration by launching new server processes or not replacing existing processes when they shut down. Updating a fleet's runtime configuration never affects existing server processes.</p> <p> <b>Learn more</b> </p> <p> <a href=\"https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html\">Setting up Amazon GameLift fleets</a> </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "GameLift.UpdateRuntimeConfiguration"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/UpdateRuntimeConfigurationInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "UpdateRuntimeConfigurationInput": {
+        "type": "object",
+        "required": [
+          "FleetId",
+          "RuntimeConfiguration"
+        ],
+        "title": "UpdateRuntimeConfigurationInput",
+        "properties": {
+          "FleetId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FleetIdOrArn"
+              },
+              {
+                "description": "A unique identifier for the fleet to update runtime configuration for. You can use either the fleet ID or ARN value."
+              }
+            ]
+          },
+          "RuntimeConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RuntimeConfiguration"
+              },
+              {
+                "description": "Instructions for launching server processes on each instance in the fleet. Server processes run either a custom game build executable or a Realtime Servers script. The runtime configuration lists the types of server processes to run on an instance, how to launch them, and the number of processes to run concurrently."
+              }
+            ]
+          }
+        }
+      },
+      "FleetIdOrArn": {
+        "type": "string",
+        "pattern": "^fleet-\\S+|^arn:.*:fleet\\/fleet-\\S+"
+      },
+      "RuntimeConfiguration": {
+        "type": "object",
+        "properties": {
+          "ServerProcesses": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerProcessList"
+              },
+              {
+                "description": "A collection of server process configurations that identify what server processes to run on each instance in a fleet."
+              }
+            ]
+          },
+          "MaxConcurrentGameSessionActivations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxConcurrentGameSessionActivations"
+              },
+              {
+                "description": "The number of game sessions in status <code>ACTIVATING</code> to allow on an instance. This setting limits the instance resources that can be used for new game activations at any one time."
+              }
+            ]
+          },
+          "GameSessionActivationTimeoutSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GameSessionActivationTimeoutSeconds"
+              },
+              {
+                "description": "The maximum amount of time (in seconds) allowed to launch a new game session and have it report ready to host players. During this time, the game session is in status <code>ACTIVATING</code>. If the game session does not become active before the timeout, it is ended and the game session status is changed to <code>TERMINATED</code>."
+              }
+            ]
+          }
+        },
+        "description": "<p>A collection of server process configurations that describe the set of processes to run on each instance in a fleet. Server processes run either an executable in a custom game build or a Realtime Servers script. Amazon GameLift launches the configured processes, manages their life cycle, and replaces them as needed. Each instance checks regularly for an updated runtime configuration. </p> <p>A Amazon GameLift instance is limited to 50 processes running concurrently. To calculate the total number of processes in a runtime configuration, add the values of the <code>ConcurrentExecutions</code> parameter for each server process. Learn more about <a href=\"https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-multiprocess.html\"> Running Multiple Processes on a Fleet</a>.</p>"
+      },
+      "ServerProcessList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ServerProcess"
+        },
+        "minItems": 1,
+        "maxItems": 50
+      },
+      "ServerProcess": {
+        "type": "object",
+        "required": [
+          "LaunchPath",
+          "ConcurrentExecutions"
+        ],
+        "properties": {
+          "LaunchPath": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LaunchPathStringModel"
+              },
+              {
+                "description": "<p>The location of a game build executable or the Realtime script file that contains the <code>Init()</code> function. Game builds and Realtime scripts are installed on instances at the root: </p> <ul> <li> <p>Windows (custom game builds only): <code>C:\\game</code>. Example: \"<code>C:\\game\\MyGame\\server.exe</code>\" </p> </li> <li> <p>Linux: <code>/local/game</code>. Examples: \"<code>/local/game/MyGame/server.exe</code>\" or \"<code>/local/game/MyRealtimeScript.js</code>\"</p> </li> </ul>"
+              }
+            ]
+          },
+          "Parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LaunchParametersStringModel"
+              },
+              {
+                "description": "An optional list of parameters to pass to the server executable or Realtime script on launch."
+              }
+            ]
+          },
+          "ConcurrentExecutions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositiveInteger"
+              },
+              {
+                "description": "The number of server processes using this configuration that run concurrently on each instance."
+              }
+            ]
+          }
+        },
+        "description": "A set of instructions for launching server processes on each instance in a fleet. Server processes run either an executable in a custom game build or a Realtime Servers script. Server process configurations are part of a fleet's runtime configuration."
+      },
+      "LaunchPathStringModel": {
+        "type": "string",
+        "pattern": "[A-Za-z0-9_:.+\\/\\\\\\- ]+",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "LaunchParametersStringModel": {
+        "type": "string",
+        "pattern": "[A-Za-z0-9_:.+\\/\\\\\\- =@;{},?'\\[\\]\"]+",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "PositiveInteger": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "MaxConcurrentGameSessionActivations": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 2147483647
+      },
+      "GameSessionActivationTimeoutSeconds": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 600
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://gamelift.us-east-1.amazonaws.com/#X-Amz-Target=GameLift.UpdateRuntimeConfiguration"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**RuntimeConfiguration**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

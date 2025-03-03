@@ -1,0 +1,200 @@
+{
+  "name": "repos_create-pages-site",
+  "description": "Configures a GitHub Enterprise Server Pages site. For more information, see \"[About GitHub Pages](/github/working-with-github-pages/about-github-pages).\"",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string"
+      },
+      "repo": {
+        "type": "string"
+      },
+      "body": {
+        "description": "The source branch and directory used to publish your Pages site.",
+        "nullable": true,
+        "properties": {
+          "source": {
+            "description": "The source branch and directory used to publish your Pages site.",
+            "properties": {
+              "branch": {
+                "description": "The repository branch used to publish your site's source files. Can be either `master` or `gh-pages`.",
+                "enum": [
+                  "master",
+                  "gh-pages"
+                ],
+                "type": "string"
+              },
+              "path": {
+                "default": "/",
+                "description": "The repository directory that includes the source files for the Pages site. When `branch` is `master`, you can change `path` to `/docs`. When `branch` is `gh-pages`, you are unable to specify a `path` other than `/`.",
+                "enum": [
+                  "/",
+                  "/docs"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "branch"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://HOSTNAME/api/v3/repos/{owner}/{repo}/pages"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GitHub Pages"
+        },
+        "The configuration for GitHub Pages for a repository.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**cname**: The Pages site's custom domain",
+            "**custom_404**: Whether the Page has a custom 404 page. (default: false)",
+            "**html_url**: The web address the Page can be accessed from.",
+            [
+              "**https_certificate**",
+              {
+                "$ul": [
+                  "**description**",
+                  "**domains**: Array of the domain set and its alternate name (if it is configured)",
+                  "**expires_at**",
+                  "**state**"
+                ]
+              }
+            ],
+            "**https_enforced**: Whether https is enabled on the domain",
+            "**public**: Whether the GitHub Pages site is publicly visible. If set to `true`, the site is accessible to anyone on the internet. If set to `false`, the site will only be accessible to users who have at least `read` access to the repository that published the site.",
+            [
+              "**source**",
+              {
+                "$ul": [
+                  "**branch**",
+                  "**path**"
+                ]
+              }
+            ],
+            "**status**: The status of the most recent build of the Page.",
+            "**url**: The API address for accessing this Page resource."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

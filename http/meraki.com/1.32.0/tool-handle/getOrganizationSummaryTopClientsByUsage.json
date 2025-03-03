@@ -1,0 +1,94 @@
+{
+  "name": "getOrganizationSummaryTopClientsByUsage",
+  "description": "Return metrics for organization's top 10 clients by data usage (in mb) over given time range.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data."
+      },
+      "t1": {
+        "type": "string",
+        "description": "The end of the timespan for the data. t1 can be a maximum of 31 days after t0."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameters t0 and t1. The value must be in seconds and be less than or equal to 31 days. The default is 1 day."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/summary/top/clients/byUsage{?t0,t1,timespan}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**: ID of client",
+            "**mac**: MAC address of client",
+            "**name**: Name of client",
+            [
+              "**network**: ",
+              {
+                "$ul": [
+                  "**id**: ID of network",
+                  "**name**: Name of network"
+                ]
+              }
+            ],
+            [
+              "**usage**: Data usage information",
+              {
+                "$ul": [
+                  "**downstream**: Downstream data usage by client",
+                  "**percentage**: Percentage of total data usage by client",
+                  "**total**: Total data usage by client",
+                  "**upstream**: Upstream data usage by client"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

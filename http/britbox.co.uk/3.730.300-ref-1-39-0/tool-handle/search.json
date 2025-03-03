@@ -1,0 +1,518 @@
+{
+  "name": "search",
+  "description": "Search the catalog of items and people.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "term": {
+        "type": "string",
+        "description": "The search term to query."
+      },
+      "include": {
+        "items": {
+          "enum": [
+            "tv",
+            "movies",
+            "people",
+            "other"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "By default people, movies and tv (shows + programs) will be included\nin the search results.\n\nIf the `cas` feature flag is set, \"other\" items (`customAsset`s) will\nalso be included by default\n\nIf you don't want all of these types you can specifiy the specific\nincludes you care about.\n"
+      },
+      "group": {
+        "type": "boolean",
+        "description": "When this option is set, instead of all search result items being returned\nin a single list, they will instead be returned under two lists. One for\nmovies and another for tv (shows + programs).\n\nif the `cas` feature flag is set, a third `other` list will be\nincluded containing `customAsset` results\n\nDefault is undefined meaning items will be returned in a single list.\n\nThe array of `people` results will always be separate from items.\n"
+      },
+      "max_results": {
+        "default": 20,
+        "format": "int32",
+        "maximum": 50,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The maximum number of results to return."
+      },
+      "max_rating": {
+        "type": "string",
+        "description": "The maximum rating (inclusive) of items returned, e.g. 'auoflc-pg'."
+      },
+      "device": {
+        "default": "web_browser",
+        "type": "string",
+        "description": "The type of device the content is targeting."
+      },
+      "sub": {
+        "type": "string",
+        "description": "The active subscription code."
+      },
+      "segments": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of segments to filter the response by."
+      },
+      "ff": {
+        "items": {
+          "enum": [
+            "all",
+            "idp",
+            "ldp",
+            "hb",
+            "rpt",
+            "cas",
+            "lrl",
+            "cd"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of opt in feature flags which cause breaking changes to responses.\n\nWhile Rocket APIs look to avoid breaking changes under the active major version, the formats of responses\nmay need to evolve over this time.\n\nThese feature flags allow clients to select which response formats they expect and avoid breaking\nclients as these formats evolve under the current major version.\n\n### Flags\n\n- `all` - Enable all flags. Useful for testing. _Don't use in production_.\n- `idp` - Dynamic item detail pages with schedulable rows.\n- `ldp` - Dynamic list detail pages with schedulable rows.\n- `hb` - Hubble formatted image urls.\n- `rpt` - Updated resume point threshold logic.\n- `cas` - \"Custom Asset Search\", inlcude `customAssets` in search results.\n- `lrl` - Do not pre-populate related list if more than `max_list_prefetch` down the page.\n- `cd` - Custom Destination support.\n\nSee the `feature-flags.md` for available flag details.\n"
+      },
+      "lang": {
+        "type": "string",
+        "description": "Language code for the preferred language to be returned in the response.\n\nParameter value is case-insensitive and should be\n  - a valid 2 letter language code without region such as en, de\n  - or with region such as en_us, en_au\n\nIf undefined then defaults to 'en', unless the server has been configured\nwith a custom default.\n\nSee https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+      }
+    },
+    "required": [
+      "term"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/search{?term,include,group,max_results,max_rating,device,sub,segments,ff,lang}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**items**: A pageable list of items.",
+              {
+                "$ul": [
+                  "**customFields**: A map of custom fields defined by a curator for a list.",
+                  "**description**: A full description of this list.",
+                  "**id**: The id of this list",
+                  "**images**",
+                  "**itemTypes**: The types of items in the list",
+                  "**items**: A list of items",
+                  [
+                    "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                    {
+                      "$ul": [
+                        [
+                          "**ContinueWatching**: List data for ContinueWatching List",
+                          {
+                            "$ul": [
+                              "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "**paging**",
+                    {
+                      "$ul": [
+                        [
+                          "**authorization**",
+                          {
+                            "$ul": [
+                              "**scope**: The token scope required.",
+                              "**type**: The token type required to load the list."
+                            ]
+                          }
+                        ],
+                        "**next**: Path to load next page of data, or null if not available",
+                        [
+                          "**options**",
+                          {
+                            "$ul": [
+                              "**completed**: Items filtered by whether they've been fully watched or not.",
+                              "**itemType**: Specific item type filter.",
+                              "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                              "**order**: The applied sort order if any.",
+                              "**orderBy**: The applied sort ordering property if any.",
+                              "**pageSize**: The number of items to return in a list page."
+                            ]
+                          }
+                        ],
+                        "**page**: The current page number.",
+                        "**previous**: Path to load previous page of data, or null if not available.",
+                        "**size**: The current page size.",
+                        "**total**: The total number of pages available given the current page size."
+                      ]
+                    }
+                  ],
+                  "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                  "**path**: The path of this list",
+                  "**shortDescription**: A short description of this list.",
+                  "**size**: The total size of the list",
+                  "**tagline**: The tagline of the item.",
+                  "**themes**",
+                  "**title**: The title of this list"
+                ]
+              }
+            ],
+            [
+              "**movies**: A pageable list of items.",
+              {
+                "$ul": [
+                  "**customFields**: A map of custom fields defined by a curator for a list.",
+                  "**description**: A full description of this list.",
+                  "**id**: The id of this list",
+                  "**images**",
+                  "**itemTypes**: The types of items in the list",
+                  "**items**: A list of items",
+                  [
+                    "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                    {
+                      "$ul": [
+                        [
+                          "**ContinueWatching**: List data for ContinueWatching List",
+                          {
+                            "$ul": [
+                              "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "**paging**",
+                    {
+                      "$ul": [
+                        [
+                          "**authorization**",
+                          {
+                            "$ul": [
+                              "**scope**: The token scope required.",
+                              "**type**: The token type required to load the list."
+                            ]
+                          }
+                        ],
+                        "**next**: Path to load next page of data, or null if not available",
+                        [
+                          "**options**",
+                          {
+                            "$ul": [
+                              "**completed**: Items filtered by whether they've been fully watched or not.",
+                              "**itemType**: Specific item type filter.",
+                              "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                              "**order**: The applied sort order if any.",
+                              "**orderBy**: The applied sort ordering property if any.",
+                              "**pageSize**: The number of items to return in a list page."
+                            ]
+                          }
+                        ],
+                        "**page**: The current page number.",
+                        "**previous**: Path to load previous page of data, or null if not available.",
+                        "**size**: The current page size.",
+                        "**total**: The total number of pages available given the current page size."
+                      ]
+                    }
+                  ],
+                  "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                  "**path**: The path of this list",
+                  "**shortDescription**: A short description of this list.",
+                  "**size**: The total size of the list",
+                  "**tagline**: The tagline of the item.",
+                  "**themes**",
+                  "**title**: The title of this list"
+                ]
+              }
+            ],
+            [
+              "**other**: A pageable list of items.",
+              {
+                "$ul": [
+                  "**customFields**: A map of custom fields defined by a curator for a list.",
+                  "**description**: A full description of this list.",
+                  "**id**: The id of this list",
+                  "**images**",
+                  "**itemTypes**: The types of items in the list",
+                  "**items**: A list of items",
+                  [
+                    "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                    {
+                      "$ul": [
+                        [
+                          "**ContinueWatching**: List data for ContinueWatching List",
+                          {
+                            "$ul": [
+                              "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "**paging**",
+                    {
+                      "$ul": [
+                        [
+                          "**authorization**",
+                          {
+                            "$ul": [
+                              "**scope**: The token scope required.",
+                              "**type**: The token type required to load the list."
+                            ]
+                          }
+                        ],
+                        "**next**: Path to load next page of data, or null if not available",
+                        [
+                          "**options**",
+                          {
+                            "$ul": [
+                              "**completed**: Items filtered by whether they've been fully watched or not.",
+                              "**itemType**: Specific item type filter.",
+                              "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                              "**order**: The applied sort order if any.",
+                              "**orderBy**: The applied sort ordering property if any.",
+                              "**pageSize**: The number of items to return in a list page."
+                            ]
+                          }
+                        ],
+                        "**page**: The current page number.",
+                        "**previous**: Path to load previous page of data, or null if not available.",
+                        "**size**: The current page size.",
+                        "**total**: The total number of pages available given the current page size."
+                      ]
+                    }
+                  ],
+                  "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                  "**path**: The path of this list",
+                  "**shortDescription**: A short description of this list.",
+                  "**size**: The total size of the list",
+                  "**tagline**: The tagline of the item.",
+                  "**themes**",
+                  "**title**: The title of this list"
+                ]
+              }
+            ],
+            "**people**: The list of people relevant to the search term.",
+            "**term**: The search term.",
+            "**total**: The total number of results.",
+            [
+              "**tv**: A pageable list of items.",
+              {
+                "$ul": [
+                  "**customFields**: A map of custom fields defined by a curator for a list.",
+                  "**description**: A full description of this list.",
+                  "**id**: The id of this list",
+                  "**images**",
+                  "**itemTypes**: The types of items in the list",
+                  "**items**: A list of items",
+                  [
+                    "**listData**: Extra data to accompany ItemList content. The (single) key in the object is",
+                    {
+                      "$ul": [
+                        [
+                          "**ContinueWatching**: List data for ContinueWatching List",
+                          {
+                            "$ul": [
+                              "**itemInclusions**: Object where keys are itemIds for the items in the list and values are objects"
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  [
+                    "**paging**",
+                    {
+                      "$ul": [
+                        [
+                          "**authorization**",
+                          {
+                            "$ul": [
+                              "**scope**: The token scope required.",
+                              "**type**: The token type required to load the list."
+                            ]
+                          }
+                        ],
+                        "**next**: Path to load next page of data, or null if not available",
+                        [
+                          "**options**",
+                          {
+                            "$ul": [
+                              "**completed**: Items filtered by whether they've been fully watched or not.",
+                              "**itemType**: Specific item type filter.",
+                              "**maxRating**: The maximum rating (inclusive) of items returned, e.g. 'AUOFLC-PG'.",
+                              "**order**: The applied sort order if any.",
+                              "**orderBy**: The applied sort ordering property if any.",
+                              "**pageSize**: The number of items to return in a list page."
+                            ]
+                          }
+                        ],
+                        "**page**: The current page number.",
+                        "**previous**: Path to load previous page of data, or null if not available.",
+                        "**size**: The current page size.",
+                        "**total**: The total number of pages available given the current page size."
+                      ]
+                    }
+                  ],
+                  "**parameter**: If this list is parameterized, then this contains the parameter of the list in the format `name:value`.",
+                  "**path**: The path of this list",
+                  "**shortDescription**: A short description of this list.",
+                  "**size**: The total size of the list",
+                  "**tagline**: The tagline of the item.",
+                  "**themes**",
+                  "**title**: The title of this list"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

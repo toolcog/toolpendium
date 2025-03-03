@@ -1,0 +1,115 @@
+{
+  "name": "KeyUsage",
+  "description": "Reports the number of lookups consumed on a key for a range of days.\n\nA maximum interval of 90 days can be provided for analysis. If no start or end date is provided, the last 21 days will be used as the default interval.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "$ref": "#/$defs/ApiKeyParam"
+      },
+      "start": {
+        "$ref": "#/components/schemas/StartParam",
+        "description": "A start date/time in the form of a UNIX Timestamp in milliseconds, e.g. `1418556452651`. If no start time is provided, the start time will be assigned to a time 21 days prior to the end time."
+      },
+      "end": {
+        "$ref": "#/components/schemas/EndParam",
+        "description": "An end date/time in the form of a UNIX Timestamp in milliseconds, e.g. `1418556452651`. If no end time is provided, the current time will be used."
+      },
+      "tags": {
+        "$ref": "#/$defs/TagsParam"
+      },
+      "licensee": {
+        "$ref": "#/components/schemas/LicenseeParam",
+        "description": "Sublicensed keys only. This will restrict the analysed dataset to a specific licensee."
+      }
+    },
+    "required": [
+      "key"
+    ],
+    "$defs": {
+      "ApiKeyParam": {
+        "description": "Your API Key. Typically beings `ak_`.\n\nAvailable from your dashboard\n",
+        "example": "ak_test",
+        "title": "API Key",
+        "type": "string"
+      },
+      "TagsParam": {
+        "description": "A comma separated list of tags to query over. \n\nUseful if you want to specify the circumstances in which the request was made.\n\nIf multiple tags are specified, the response will only comprise of requests for which all the tags are satisfied - i.e. searching `\"foo,bar\"` will only query requests which tagged both `\"foo\"` and `\"bar\"`.\n",
+        "example": "foo,bar",
+        "title": "Tags",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.ideal-postcodes.co.uk/v1/keys/{key}/usage{?start,end,tags,licensee}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Key Usage Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**",
+            [
+              "**result**",
+              {
+                "$ul": [
+                  "**dailyCount**: An array of objects representing number of paid lookups made on specific days, ordered by date. Each object contains a `date` attribute, which represents the day and a `count` attribute, which represents the number of paid lookups made on that day.",
+                  "**end**: End date in ISO 8601 format.",
+                  "**start**: Start date in ISO 8601 format.",
+                  "**total**: Total of paid lookups performed in specified period."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: `400X` type error response code",
+            "**message**: Bad request error description",
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

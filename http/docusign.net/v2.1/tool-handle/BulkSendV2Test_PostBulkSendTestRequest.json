@@ -1,0 +1,108 @@
+{
+  "name": "BulkSendV2Test_PostBulkSendTestRequest",
+  "description": "This method tests a bulk send list for compatibility with the envelope or template that you want to send. For example, a template that has three roles is not compatible with a bulk send list that has only two recipients. For this reason, you might want to test compatibility first.\n\nA successful test result returns `true` for the `canBeSent` property. An unsuccessful test returns a JSON response that contains information about the errors that occurred.\n\nIf the test is successful, you can then send the envelope or template by using the [BulkSend::createBulkSendRequest][BulkSendRequest] method.\n\n## Envelope Compatibility Checks\n\nThis section describes the envelope compatibility checks that the system performs.\n\n**Top-Level Issues**\n\n- Envelopes must be in a sendable state.\n- The bulk send list must contain at least one copy (instance of an envelope), and no more than the maximum number of copies allowed for the account.\n- The envelope must not be null and must be visible to the current user.\n- The account cannot have more queued envelopes than the maximum number configured for the account.\n- The bulk send list must exist.\n\n**Recipients**\n\n- The envelope must have recipients.\n- If you are using an envelope, all of the recipients defined in the bulk send list must have corresponding recipient IDs in the envelope definition. If you are using a template, you must either match the recipient IDs or role IDs.\n- The envelope cannot contain a bulk recipient (an artifact of the legacy version of DocuSign's bulk send\n  functionality).\n\n**Recipient Tabs**\n\n- Every `recipient ID, tab label` pair in the bulk send list must correspond to a tab in the envelope.\n\n**Custom Fields**\n\n- Each envelope-level custom field in the bulk send list must correspond to the name of a `customField` in the\n  envelope definition. You do not have to match the recipient-level custom fields.\n\n[BulkSendRequest]:  /docs/esign-rest-api/reference/bulkenvelopes/bulksend/createbulksendrequest/\n\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "bulkSendListId": {
+        "type": "string",
+        "description": "The GUID of the bulk send list. This property is created after you post a new bulk send list."
+      },
+      "body": {
+        "$ref": "#/$defs/bulkSendRequest"
+      }
+    },
+    "required": [
+      "accountId",
+      "bulkSendListId"
+    ],
+    "$defs": {
+      "bulkSendRequest": {
+        "description": "This object contains information about the envelope or template that you want to send in bulk.",
+        "properties": {
+          "batchName": {
+            "description": "The human-readable name of the batch. If you do not set this value, it defaults to the `name` property of the `bulkSendingList` object.\n",
+            "type": "string"
+          },
+          "envelopeOrTemplateId": {
+            "description": "The GUID of the envelope or template that you want to send in bulk.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendRequest",
+        "x-ms-summary": "This object contains information about the envelope or template that you want to send in bulk."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/bulk_send_lists/{bulkSendListId}/test"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object contains the results of a bulk send test.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**canBeSent**: When **true,** the envelope or template is compatible with the bulk send list and can be sent by using the [BulkSend: createBulkSendRequest][BulkSendRequest] method.",
+            "**validationErrorDetails**: Human-readable details about any validation errors that occurred.",
+            "**validationErrors**: A list of validation errors that were encountered during the bulk send test."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

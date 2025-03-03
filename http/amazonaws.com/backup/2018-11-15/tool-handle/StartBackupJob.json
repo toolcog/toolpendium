@@ -1,0 +1,249 @@
+{
+  "name": "StartBackupJob",
+  "description": "Starts an on-demand backup job for the specified resource.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "BackupVaultName",
+          "ResourceArn",
+          "IamRoleArn"
+        ],
+        "properties": {
+          "BackupVaultName": {
+            "description": "The name of a logical container where backups are stored. Backup vaults are identified by names that are unique to the account used to create them and the Amazon Web Services Region where they are created. They consist of lowercase letters, numbers, and hyphens.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9\\-\\_]{2,50}$"
+          },
+          "ResourceArn": {
+            "description": "An Amazon Resource Name (ARN) that uniquely identifies a resource. The format of the ARN depends on the resource type.",
+            "type": "string"
+          },
+          "IamRoleArn": {
+            "description": "Specifies the IAM role ARN used to create the target recovery point; for example, <code>arn:aws:iam::123456789012:role/S3Access</code>.",
+            "type": "string"
+          },
+          "IdempotencyToken": {
+            "description": "A customer-chosen string that you can use to distinguish between otherwise identical calls to <code>StartBackupJob</code>. Retrying a successful request with the same idempotency token results in a success message with no action taken.",
+            "type": "string"
+          },
+          "StartWindowMinutes": {
+            "description": "<p>A value in minutes after a backup is scheduled before a job will be canceled if it doesn't start successfully. This value is optional, and the default is 8 hours. If this value is included, it must be at least 60 minutes to avoid errors.</p> <p>During the start window, the backup job status remains in <code>CREATED</code> status until it has successfully begun or until the start window time has run out. If within the start window time Backup receives an error that allows the job to be retried, Backup will automatically retry to begin the job at least every 10 minutes until the backup successfully begins (the job status changes to <code>RUNNING</code>) or until the job status changes to <code>EXPIRED</code> (which is expected to occur when the start window time is over).</p>",
+            "type": "integer"
+          },
+          "CompleteWindowMinutes": {
+            "description": "A value in minutes during which a successfully started backup must complete, or else Backup will cancel the job. This value is optional. This value begins counting down from when the backup was scheduled. It does not add additional time for <code>StartWindowMinutes</code>, or if the backup started later than scheduled.",
+            "type": "integer"
+          },
+          "Lifecycle": {
+            "description": "<p>Contains an array of <code>Transition</code> objects specifying how long in days before a recovery point transitions to cold storage or is deleted.</p> <p>Backups transitioned to cold storage must be stored in cold storage for a minimum of 90 days. Therefore, on the console, the “retention” setting must be 90 days greater than the “transition to cold after days” setting. The “transition to cold after days” setting cannot be changed after a backup has been transitioned to cold.</p> <p>Resource types that are able to be transitioned to cold storage are listed in the \"Lifecycle to cold storage\" section of the <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html#features-by-resource\"> Feature availability by resource</a> table. Backup ignores this expression for other resource types.</p>",
+            "type": "object",
+            "properties": {
+              "MoveToColdStorageAfterDays": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Long"
+                  },
+                  {
+                    "description": "Specifies the number of days after creation that a recovery point is moved to cold storage."
+                  }
+                ]
+              },
+              "DeleteAfterDays": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Long"
+                  },
+                  {
+                    "description": "Specifies the number of days after creation that a recovery point is deleted. Must be greater than 90 days plus <code>MoveToColdStorageAfterDays</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "RecoveryPointTags": {
+            "description": "To help organize your resources, you can assign your own metadata to the resources that you create. Each tag is a key-value pair.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "BackupOptions": {
+            "description": "<p>Specifies the backup option for a selected resource. This option is only available for Windows Volume Shadow Copy Service (VSS) backup jobs.</p> <p>Valid values: Set to <code>\"WindowsVSS\":\"enabled\"</code> to enable the <code>WindowsVSS</code> backup option and create a Windows VSS backup. Set to <code>\"WindowsVSS\"\"disabled\"</code> to create a regular backup. The <code>WindowsVSS</code> option is not enabled by default.</p>",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/BackupOptionValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Long": {
+        "type": "integer"
+      },
+      "TagValue": {
+        "type": "string"
+      },
+      "BackupOptionValue": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_\\.]{1,50}$"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://backup.us-east-1.amazonaws.com/backup-jobs"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**BackupJobId**",
+            "**RecoveryPointArn**",
+            "**CreationDate**",
+            "**IsParent**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

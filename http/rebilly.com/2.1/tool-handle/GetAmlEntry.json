@@ -1,0 +1,96 @@
+{
+  "name": "GetAmlEntry",
+  "description": "Search multiple PEP/Sanctions/Adverse Media lists with first and last name to find any blocklisted identities.\nPerforms a fuzzy search including soundex. Not all fields are guaranteed to be filled.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "firstName": {
+        "type": "string",
+        "description": "First name of individual to search."
+      },
+      "lastName": {
+        "type": "string",
+        "description": "Last name of individual to search."
+      },
+      "dob": {
+        "type": "string",
+        "description": "Date of birth in format YYYY-MM-DD."
+      },
+      "country": {
+        "type": "string",
+        "description": "Country of individual as an ISO Alpha-2 code."
+      }
+    },
+    "required": [
+      "firstName",
+      "lastName"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/aml{?firstName,lastName,dob,country}"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**_links**: The links related to resource, including links provided by the list.",
+            "**address**: Addresses related to the identity.",
+            "**aliases**: List of aliases, if any.",
+            "**comments**: Extra information (the content varies per list).",
+            "**confidence**: The source list's confidence in information.",
+            "**dob**: One or more possible dates of birth.",
+            "**firstName**: First Name.",
+            "**gender**: Gender of returned identity (if `type` is `individual`).",
+            "**lastName**: Last Name. `null` if it is a single-name entity.",
+            "**legalBasis**: List of references to legal documents if they exist.",
+            "**nationality**: The nationality of the identity.",
+            "**passport**: Passport information.",
+            "**regime**: Regime.",
+            "**source**: Which list this came from.",
+            "**sourceType**: The list type.",
+            "**title**: The title of their position.",
+            "**type**: The record type."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

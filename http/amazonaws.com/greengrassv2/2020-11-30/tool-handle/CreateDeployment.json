@@ -1,0 +1,749 @@
+{
+  "name": "CreateDeployment",
+  "description": "<p>Creates a continuous deployment for a target, which is a Greengrass core device or group of core devices. When you add a new core device to a group of core devices that has a deployment, IoT Greengrass deploys that group's deployment to the new device.</p> <p>You can define one deployment for each target. When you create a new deployment for a target that has an existing deployment, you replace the previous deployment. IoT Greengrass applies the new deployment to the target devices.</p> <p>Every deployment has a revision number that indicates how many deployment revisions you define for a target. Use this operation to create a new revision of an existing deployment.</p> <p>For more information, see the <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/create-deployments.html\">Create deployments</a> in the <i>IoT Greengrass V2 Developer Guide</i>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "targetArn"
+        ],
+        "properties": {
+          "targetArn": {
+            "description": "The <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\">ARN</a> of the target IoT thing or thing group. When creating a subdeployment, the targetARN can only be a thing group.",
+            "type": "string",
+            "pattern": "arn:[^:]*:iot:[^:]*:[0-9]+:(thing|thinggroup)/.+"
+          },
+          "deploymentName": {
+            "description": "The name of the deployment.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "components": {
+            "description": "The components to deploy. This is a dictionary, where each key is the name of a component, and each key's value is the version and configuration to deploy for that component.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/ComponentDeploymentSpecification"
+            }
+          },
+          "iotJobConfiguration": {
+            "description": "Contains information about an IoT job configuration.",
+            "type": "object",
+            "properties": {
+              "jobExecutionsRolloutConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IoTJobExecutionsRolloutConfig"
+                  },
+                  {
+                    "description": "The rollout configuration for the job. This configuration defines the rate at which the job rolls out to the fleet of target devices."
+                  }
+                ]
+              },
+              "abortConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IoTJobAbortConfig"
+                  },
+                  {
+                    "description": "The stop configuration for the job. This configuration defines when and how to stop a job rollout."
+                  }
+                ]
+              },
+              "timeoutConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IoTJobTimeoutConfig"
+                  },
+                  {
+                    "description": "The timeout configuration for the job. This configuration defines the amount of time each device has to complete the job."
+                  }
+                ]
+              }
+            }
+          },
+          "deploymentPolicies": {
+            "description": "Contains information about policies that define how a deployment updates components and handles failure.",
+            "type": "object",
+            "properties": {
+              "failureHandlingPolicy": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeploymentFailureHandlingPolicy"
+                  },
+                  {
+                    "description": "<p>The failure handling policy for the configuration deployment. This policy defines what to do if the deployment fails.</p> <p>Default: <code>ROLLBACK</code> </p>"
+                  }
+                ]
+              },
+              "componentUpdatePolicy": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeploymentComponentUpdatePolicy"
+                  },
+                  {
+                    "description": "The component update policy for the configuration deployment. This policy defines when it's safe to deploy the configuration to devices."
+                  }
+                ]
+              },
+              "configurationValidationPolicy": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeploymentConfigurationValidationPolicy"
+                  },
+                  {
+                    "description": "The configuration validation policy for the configuration deployment. This policy defines how long each component has to validate its configure updates."
+                  }
+                ]
+              }
+            }
+          },
+          "parentTargetArn": {
+            "description": "The parent deployment's target <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\">ARN</a> within a subdeployment.",
+            "type": "string",
+            "pattern": "arn:[^:]*:iot:[^:]*:[0-9]+:thinggroup/.+"
+          },
+          "tags": {
+            "description": "A list of key-value pairs that contain metadata for the resource. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/tag-resources.html\">Tag your resources</a> in the <i>IoT Greengrass V2 Developer Guide</i>.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 200,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "clientToken": {
+            "description": "A unique, case-sensitive identifier that you can provide to ensure that the request is idempotent. Idempotency means that the request is successfully processed only once, even if you send the request multiple times. When a request succeeds, and you specify the same client token for subsequent successful requests, the IoT Greengrass V2 service returns the successful response that it caches from the previous request. IoT Greengrass V2 caches successful responses for idempotent requests for up to 8 hours.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ComponentDeploymentSpecification": {
+        "type": "object",
+        "properties": {
+          "componentVersion": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentVersionString"
+              },
+              {
+                "description": "The version of the component."
+              }
+            ]
+          },
+          "configurationUpdate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentConfigurationUpdate"
+              },
+              {
+                "description": "The configuration updates to deploy for the component. You can define <i>reset</i> updates and <i>merge</i> updates. A reset updates the keys that you specify to the default configuration for the component. A merge updates the core device's component configuration with the keys and values that you specify. The IoT Greengrass Core software applies reset updates before it applies merge updates. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/update-component-configurations.html\">Update component configurations</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+              }
+            ]
+          },
+          "runWith": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentRunWith"
+              },
+              {
+                "description": "The system user and group that the IoT Greengrass Core software uses to run component processes on the core device. If you omit this parameter, the IoT Greengrass Core software uses the system user and group that you configure for the core device. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-user\">Configure the user and group that run components</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about a component to deploy."
+      },
+      "ComponentVersionString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "ComponentConfigurationUpdate": {
+        "type": "object",
+        "properties": {
+          "merge": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentConfigurationString"
+              },
+              {
+                "description": "A serialized JSON string that contains the configuration object to merge to target devices. The core device merges this configuration with the component's existing configuration. If this is the first time a component deploys on a device, the core device merges this configuration with the component's default configuration. This means that the core device keeps it's existing configuration for keys and values that you don't specify in this object. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/update-component-configurations.html#merge-configuration-update\">Merge configuration updates</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+              }
+            ]
+          },
+          "reset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentConfigurationPathList"
+              },
+              {
+                "description": "The list of configuration nodes to reset to default values on target devices. Use JSON pointers to specify each node to reset. JSON pointers start with a forward slash (<code>/</code>) and use forward slashes to separate the key for each level in the object. For more information, see the <a href=\"https://tools.ietf.org/html/rfc6901\">JSON pointer specification</a> and <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/update-component-configurations.html#reset-configuration-update\">Reset configuration updates</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about a deployment's update to a component's configuration on Greengrass core devices. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/update-component-configurations.html\">Update component configurations</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+      },
+      "ComponentConfigurationString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10485760
+      },
+      "ComponentConfigurationPathList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ComponentConfigurationPath"
+        }
+      },
+      "ComponentConfigurationPath": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "ComponentRunWith": {
+        "type": "object",
+        "properties": {
+          "posixUser": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "<p>The POSIX system user and, optionally, group to use to run this component on Linux core devices. The user, and group if specified, must exist on each Linux core device. Specify the user and group separated by a colon (<code>:</code>) in the following format: <code>user:group</code>. The group is optional. If you don't specify a group, the IoT Greengrass Core software uses the primary user for the group.</p> <p>If you omit this parameter, the IoT Greengrass Core software uses the default system user and group that you configure on the Greengrass nucleus component. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-user\">Configure the user and group that run components</a>.</p>"
+              }
+            ]
+          },
+          "systemResourceLimits": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SystemResourceLimits"
+              },
+              {
+                "description": "<p>The system resource limits to apply to this component's process on the core device. IoT Greengrass currently supports this feature on only Linux core devices.</p> <p>If you omit this parameter, the IoT Greengrass Core software uses the default system resource limits that you configure on the Greengrass nucleus component. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-system-resource-limits\">Configure system resource limits for components</a>.</p>"
+              }
+            ]
+          },
+          "windowsUser": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "<p>The Windows user to use to run this component on Windows core devices. The user must exist on each Windows core device, and its name and password must be in the LocalSystem account's Credentials Manager instance.</p> <p>If you omit this parameter, the IoT Greengrass Core software uses the default Windows user that you configure on the Greengrass nucleus component. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-user\">Configure the user and group that run components</a>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Contains information system user and group that the IoT Greengrass Core software uses to run component processes on the core device. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-user\">Configure the user and group that run components</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1
+      },
+      "SystemResourceLimits": {
+        "type": "object",
+        "properties": {
+          "memory": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Memory"
+              },
+              {
+                "description": "The maximum amount of RAM, expressed in kilobytes, that a component's processes can use on the core device."
+              }
+            ]
+          },
+          "cpus": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CPU"
+              },
+              {
+                "description": "The maximum amount of CPU time that a component's processes can use on the core device. A core device's total CPU time is equivalent to the device's number of CPU cores. For example, on a core device with 4 CPU cores, you can set this value to <code>2</code> to limit the component's processes to 50 percent usage of each CPU core. On a device with 1 CPU core, you can set this value to <code>0.25</code> to limit the component's processes to 25 percent usage of the CPU. If you set this value to a number greater than the number of CPU cores, the IoT Greengrass Core software doesn't limit the component's CPU usage."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about system resource limits that the IoT Greengrass Core software applies to a component's processes. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-component-system-resource-limits\">Configure system resource limits for components</a>."
+      },
+      "Memory": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9223372036854772000
+      },
+      "CPU": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0
+      },
+      "IoTJobExecutionsRolloutConfig": {
+        "type": "object",
+        "properties": {
+          "exponentialRate": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobExponentialRolloutRate"
+              },
+              {
+                "description": "The exponential rate to increase the job rollout rate."
+              }
+            ]
+          },
+          "maximumPerMinute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobMaxExecutionsPerMin"
+              },
+              {
+                "description": "The maximum number of devices that receive a pending job notification, per minute."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about the rollout configuration for a job. This configuration defines the rate at which the job deploys a configuration to a fleet of target devices."
+      },
+      "IoTJobExponentialRolloutRate": {
+        "type": "object",
+        "required": [
+          "baseRatePerMinute",
+          "incrementFactor",
+          "rateIncreaseCriteria"
+        ],
+        "properties": {
+          "baseRatePerMinute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobRolloutBaseRatePerMinute"
+              },
+              {
+                "description": "The minimum number of devices that receive a pending job notification, per minute, when the job starts. This parameter defines the initial rollout rate of the job."
+              }
+            ]
+          },
+          "incrementFactor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobRolloutIncrementFactor"
+              },
+              {
+                "description": "<p>The exponential factor to increase the rollout rate for the job.</p> <p>This parameter supports up to one digit after the decimal (for example, you can specify <code>1.5</code>, but not <code>1.55</code>).</p>"
+              }
+            ]
+          },
+          "rateIncreaseCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobRateIncreaseCriteria"
+              },
+              {
+                "description": "The criteria to increase the rollout rate for the job."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about an exponential rollout rate for a configuration deployment job."
+      },
+      "IoTJobRolloutBaseRatePerMinute": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "IoTJobRolloutIncrementFactor": {
+        "type": "number",
+        "format": "double",
+        "minimum": 1,
+        "maximum": 5
+      },
+      "IoTJobRateIncreaseCriteria": {
+        "type": "object",
+        "properties": {
+          "numberOfNotifiedThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobNumberOfThings"
+              },
+              {
+                "description": "The number of devices to receive the job notification before the rollout rate increases."
+              }
+            ]
+          },
+          "numberOfSucceededThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobNumberOfThings"
+              },
+              {
+                "description": "The number of devices to successfully run the configuration job before the rollout rate increases."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about criteria to meet before a job increases its rollout rate. Specify either <code>numberOfNotifiedThings</code> or <code>numberOfSucceededThings</code>."
+      },
+      "IoTJobNumberOfThings": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "IoTJobMaxExecutionsPerMin": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "IoTJobAbortConfig": {
+        "type": "object",
+        "required": [
+          "criteriaList"
+        ],
+        "properties": {
+          "criteriaList": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobAbortCriteriaList"
+              },
+              {
+                "description": "The list of criteria that define when and how to cancel the configuration deployment."
+              }
+            ]
+          }
+        },
+        "description": "Contains a list of criteria that define when and how to cancel a configuration deployment."
+      },
+      "IoTJobAbortCriteriaList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/IoTJobAbortCriteria"
+        },
+        "minItems": 1
+      },
+      "IoTJobAbortCriteria": {
+        "type": "object",
+        "required": [
+          "failureType",
+          "action",
+          "thresholdPercentage",
+          "minNumberOfExecutedThings"
+        ],
+        "properties": {
+          "failureType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobExecutionFailureType"
+              },
+              {
+                "description": "The type of job deployment failure that can cancel a job."
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobAbortAction"
+              },
+              {
+                "description": "The action to perform when the criteria are met."
+              }
+            ]
+          },
+          "thresholdPercentage": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobAbortThresholdPercentage"
+              },
+              {
+                "description": "<p>The minimum percentage of <code>failureType</code> failures that occur before the job can cancel.</p> <p>This parameter supports up to two digits after the decimal (for example, you can specify <code>10.9</code> or <code>10.99</code>, but not <code>10.999</code>).</p>"
+              }
+            ]
+          },
+          "minNumberOfExecutedThings": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobMinimumNumberOfExecutedThings"
+              },
+              {
+                "description": "The minimum number of things that receive the configuration before the job can cancel."
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains criteria that define when and how to cancel a job.</p> <p>The deployment stops if the following conditions are true:</p> <ol> <li> <p>The number of things that receive the deployment exceeds the <code>minNumberOfExecutedThings</code>.</p> </li> <li> <p>The percentage of failures with type <code>failureType</code> exceeds the <code>thresholdPercentage</code>.</p> </li> </ol>"
+      },
+      "IoTJobExecutionFailureType": {
+        "type": "string",
+        "enum": [
+          "FAILED",
+          "REJECTED",
+          "TIMED_OUT",
+          "ALL"
+        ]
+      },
+      "IoTJobAbortAction": {
+        "type": "string",
+        "enum": [
+          "CANCEL"
+        ]
+      },
+      "IoTJobAbortThresholdPercentage": {
+        "type": "number",
+        "format": "double",
+        "maximum": 100
+      },
+      "IoTJobMinimumNumberOfExecutedThings": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "IoTJobTimeoutConfig": {
+        "type": "object",
+        "properties": {
+          "inProgressTimeoutInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IoTJobInProgressTimeoutInMinutes"
+              },
+              {
+                "description": "<p>The amount of time, in minutes, that devices have to complete the job. The timer starts when the job status is set to <code>IN_PROGRESS</code>. If the job status doesn't change to a terminal state before the time expires, then the job status is set to <code>TIMED_OUT</code>.</p> <p>The timeout interval must be between 1 minute and 7 days (10080 minutes).</p>"
+              }
+            ]
+          }
+        },
+        "description": "Contains information about the timeout configuration for a job."
+      },
+      "IoTJobInProgressTimeoutInMinutes": {
+        "type": "integer"
+      },
+      "DeploymentFailureHandlingPolicy": {
+        "type": "string",
+        "enum": [
+          "ROLLBACK",
+          "DO_NOTHING"
+        ]
+      },
+      "DeploymentComponentUpdatePolicy": {
+        "type": "object",
+        "properties": {
+          "timeoutInSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OptionalInteger"
+              },
+              {
+                "description": "<p>The amount of time in seconds that each component on a device has to report that it's safe to update. If the component waits for longer than this timeout, then the deployment proceeds on the device.</p> <p>Default: <code>60</code> </p>"
+              }
+            ]
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeploymentComponentUpdatePolicyAction"
+              },
+              {
+                "description": "<p>Whether or not to notify components and wait for components to become safe to update. Choose from the following options:</p> <ul> <li> <p> <code>NOTIFY_COMPONENTS</code> – The deployment notifies each component before it stops and updates that component. Components can use the <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/interprocess-communication.html#ipc-operation-subscribetocomponentupdates\">SubscribeToComponentUpdates</a> IPC operation to receive these notifications. Then, components can respond with the <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/interprocess-communication.html#ipc-operation-defercomponentupdate\">DeferComponentUpdate</a> IPC operation. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/create-deployments.html\">Create deployments</a> in the <i>IoT Greengrass V2 Developer Guide</i>.</p> </li> <li> <p> <code>SKIP_NOTIFY_COMPONENTS</code> – The deployment doesn't notify components or wait for them to be safe to update.</p> </li> </ul> <p>Default: <code>NOTIFY_COMPONENTS</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains information about a deployment's policy that defines when components are safe to update.</p> <p>Each component on a device can report whether or not it's ready to update. After a component and its dependencies are ready, they can apply the update in the deployment. You can configure whether or not the deployment notifies components of an update and waits for a response. You specify the amount of time each component has to respond to the update notification.</p>"
+      },
+      "OptionalInteger": {
+        "type": "integer"
+      },
+      "DeploymentComponentUpdatePolicyAction": {
+        "type": "string",
+        "enum": [
+          "NOTIFY_COMPONENTS",
+          "SKIP_NOTIFY_COMPONENTS"
+        ]
+      },
+      "DeploymentConfigurationValidationPolicy": {
+        "type": "object",
+        "properties": {
+          "timeoutInSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OptionalInteger"
+              },
+              {
+                "description": "<p>The amount of time in seconds that a component can validate its configuration updates. If the validation time exceeds this timeout, then the deployment proceeds for the device.</p> <p>Default: <code>30</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "Contains information about how long a component on a core device can validate its configuration updates before it times out. Components can use the <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/interprocess-communication.html#ipc-operation-subscribetovalidateconfigurationupdates\">SubscribeToValidateConfigurationUpdates</a> IPC operation to receive notifications when a deployment specifies a configuration update. Then, components can respond with the <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/interprocess-communication.html#ipc-operation-sendconfigurationvalidityreport\">SendConfigurationValidityReport</a> IPC operation. For more information, see <a href=\"https://docs.aws.amazon.com/greengrass/v2/developerguide/create-deployments.html\">Create deployments</a> in the <i>IoT Greengrass V2 Developer Guide</i>."
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://greengrass.us-east-1.amazonaws.com/greengrass/v2/deployments"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**deploymentId**",
+            "**iotJobId**",
+            "**iotJobArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

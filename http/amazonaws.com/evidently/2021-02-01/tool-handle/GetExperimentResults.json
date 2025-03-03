@@ -1,0 +1,264 @@
+{
+  "name": "GetExperimentResults",
+  "description": "<p>Retrieves the results of a running or completed experiment. No results are available until there have been 100 events for each variation and at least 10 minutes have passed since the start of the experiment. To increase the statistical power, Evidently performs an additional offline p-value analysis at the end of the experiment. Offline p-value analysis can detect statistical significance in some cases where the anytime p-values used during the experiment do not find statistical significance.</p> <p>Experiment results are available up to 63 days after the start of the experiment. They are not available after that because of CloudWatch data retention policies.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "experiment": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127,
+        "description": "The name of the experiment to retrieve the results of."
+      },
+      "project": {
+        "type": "string",
+        "pattern": "(^[a-zA-Z0-9._-]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[a-zA-Z0-9._-]*)",
+        "minLength": 0,
+        "maxLength": 2048,
+        "description": "The name or ARN of the project that contains the experiment that you want to see the results of."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "metricNames",
+          "treatmentNames"
+        ],
+        "properties": {
+          "baseStat": {
+            "description": "The statistic used to calculate experiment results. Currently the only valid value is <code>mean</code>, which uses the mean of the collected values as the statistic.",
+            "type": "string",
+            "enum": [
+              "Mean"
+            ]
+          },
+          "endTime": {
+            "description": "The date and time that the experiment ended, if it is completed. This must be no longer than 30 days after the experiment start time.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "metricNames": {
+            "description": "The names of the experiment metrics that you want to see the results of.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CwDimensionSafeName"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "period": {
+            "description": "In seconds, the amount of time to aggregate results together. ",
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 90000
+          },
+          "reportNames": {
+            "description": "The names of the report types that you want to see. Currently, <code>BayesianInference</code> is the only valid value.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ExperimentReportName"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "resultStats": {
+            "description": "<p>The statistics that you want to see in the returned results.</p> <ul> <li> <p> <code>PValue</code> specifies to use p-values for the results. A p-value is used in hypothesis testing to measure how often you are willing to make a mistake in rejecting the null hypothesis. A general practice is to reject the null hypothesis and declare that the results are statistically significant when the p-value is less than 0.05.</p> </li> <li> <p> <code>ConfidenceInterval</code> specifies a confidence interval for the results. The confidence interval represents the range of values for the chosen metric that is likely to contain the true difference between the <code>baseStat</code> of a variation and the baseline. Evidently returns the 95% confidence interval. </p> </li> <li> <p> <code>TreatmentEffect</code> is the difference in the statistic specified by the <code>baseStat</code> parameter between each variation and the default variation. </p> </li> <li> <p> <code>BaseStat</code> returns the statistical values collected for the metric for each variation. The statistic uses the same statistic specified in the <code>baseStat</code> parameter. Therefore, if <code>baseStat</code> is <code>mean</code>, this returns the mean of the values collected for each variation.</p> </li> </ul>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ExperimentResultRequestType"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "startTime": {
+            "description": "The date and time that the experiment started.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "treatmentNames": {
+            "description": "The names of the experiment treatments that you want to see the results for.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TreatmentName"
+            },
+            "minItems": 1,
+            "maxItems": 5
+          }
+        }
+      }
+    },
+    "required": [
+      "experiment",
+      "project",
+      "body"
+    ],
+    "$defs": {
+      "CwDimensionSafeName": {
+        "type": "string",
+        "pattern": "^[\\S]+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "ExperimentReportName": {
+        "type": "string",
+        "enum": [
+          "BayesianInference"
+        ]
+      },
+      "ExperimentResultRequestType": {
+        "type": "string",
+        "enum": [
+          "BaseStat",
+          "TreatmentEffect",
+          "ConfidenceInterval",
+          "PValue"
+        ]
+      },
+      "TreatmentName": {
+        "type": "string",
+        "pattern": "^[-a-zA-Z0-9._]*$",
+        "minLength": 1,
+        "maxLength": 127
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://evidently.us-east-1.amazonaws.com/projects/{project}/experiments/{experiment}/results"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**details**",
+            "**reports**",
+            "**resultsData**",
+            "**timestamps**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "name": "repoDeleteFile",
+  "description": "Delete a file in a repository",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "owner of the repo"
+      },
+      "repo": {
+        "type": "string",
+        "description": "name of the repo"
+      },
+      "filepath": {
+        "type": "string",
+        "description": "path of the file to delete"
+      },
+      "body": {
+        "$ref": "#/$defs/DeleteFileOptions"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "filepath",
+      "body"
+    ],
+    "$defs": {
+      "DeleteFileOptions": {
+        "description": "DeleteFileOptions options for deleting files (used for other File structs below)\nNote: `author` and `committer` are optional (if only one is given, it will be used for the other, otherwise the authenticated user will be used)",
+        "properties": {
+          "author": {
+            "$ref": "#/$defs/Identity"
+          },
+          "branch": {
+            "description": "branch (optional) to base this file from. if not given, the default branch is used",
+            "type": "string",
+            "x-go-name": "BranchName"
+          },
+          "committer": {
+            "$ref": "#/$defs/Identity"
+          },
+          "dates": {
+            "$ref": "#/$defs/CommitDateOptions"
+          },
+          "message": {
+            "description": "message (optional) for the commit of this file. if not supplied, a default message will be used",
+            "type": "string",
+            "x-go-name": "Message"
+          },
+          "new_branch": {
+            "description": "new_branch (optional) will make a new branch from `branch` before creating the file",
+            "type": "string",
+            "x-go-name": "NewBranchName"
+          },
+          "sha": {
+            "description": "sha is the SHA for the file that already exists",
+            "type": "string",
+            "x-go-name": "SHA"
+          },
+          "signoff": {
+            "description": "Add a Signed-off-by trailer by the committer at the end of the commit log message.",
+            "type": "boolean",
+            "x-go-name": "Signoff"
+          }
+        },
+        "required": [
+          "sha"
+        ],
+        "type": "object",
+        "x-go-package": "code.gitea.io/gitea/modules/structs"
+      },
+      "Identity": {
+        "description": "Identity for a person's identity like an author or committer",
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string",
+            "x-go-name": "Email"
+          },
+          "name": {
+            "type": "string",
+            "x-go-name": "Name"
+          }
+        },
+        "type": "object",
+        "x-go-package": "code.gitea.io/gitea/modules/structs"
+      },
+      "CommitDateOptions": {
+        "description": "CommitDateOptions store dates for GIT_AUTHOR_DATE and GIT_COMMITTER_DATE",
+        "properties": {
+          "author": {
+            "format": "date-time",
+            "type": "string",
+            "x-go-name": "Author"
+          },
+          "committer": {
+            "format": "date-time",
+            "type": "string",
+            "x-go-name": "Committer"
+          }
+        },
+        "type": "object",
+        "x-go-package": "code.gitea.io/gitea/modules/structs"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "DELETE",
+    "url": {
+      "$uri": "/api/v1/repos/{owner}/{repo}/contents/{filepath}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "FileDeleteResponse contains information about a repo's file that was deleted",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**commit**",
+              {
+                "$ul": [
+                  [
+                    "**author**",
+                    {
+                      "$ul": [
+                        "**date**",
+                        "**email**",
+                        "**name**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**committer**",
+                    {
+                      "$ul": [
+                        "**date**",
+                        "**email**",
+                        "**name**"
+                      ]
+                    }
+                  ],
+                  "**created**",
+                  "**html_url**",
+                  "**message**",
+                  "**parents**",
+                  "**sha**",
+                  [
+                    "**tree**",
+                    {
+                      "$ul": [
+                        "**created**",
+                        "**sha**",
+                        "**url**"
+                      ]
+                    }
+                  ],
+                  "**url**"
+                ]
+              }
+            ],
+            "**content**",
+            [
+              "**verification**: PayloadCommitVerification represents the GPG verification of a commit",
+              {
+                "$ul": [
+                  "**payload**",
+                  "**reason**",
+                  "**signature**",
+                  [
+                    "**signer**: PayloadUser represents the author or committer of a commit",
+                    {
+                      "$ul": [
+                        "**email**",
+                        "**name**: Full name of the commit author",
+                        "**username**"
+                      ]
+                    }
+                  ],
+                  "**verified**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

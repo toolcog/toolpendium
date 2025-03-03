@@ -1,0 +1,156 @@
+{
+  "name": "paymentInitiationPaymentReverse",
+  "description": "Reverse a settled payment from a Plaid virtual account.\n\nThe original payment must be in a settled state to be refunded.\nTo refund partially, specify the amount as part of the request.\nIf the amount is not specified, the refund amount will be equal to all\nof the remaining payment amount that has not been refunded yet.\n\nThe refund will go back to the source account that initiated the payment.\nThe original payment must have been initiated to a Plaid virtual account\nso that this account can be used to initiate the refund.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/PaymentInitiationPaymentReverseRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PaymentInitiationPaymentReverseRequest": {
+        "description": "PaymentInitiationPaymentReverseRequest defines the request schema for `/payment_initiation/payment/reverse`",
+        "properties": {
+          "amount": {
+            "$ref": "#/$defs/PaymentAmountToRefund"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "idempotency_key": {
+            "$ref": "#/$defs/WalletTransactionIdempotencyKey"
+          },
+          "payment_id": {
+            "description": "The ID of the payment to reverse",
+            "type": "string"
+          },
+          "reference": {
+            "description": "A reference for the refund. This must be an alphanumeric string with 6 to 18 characters and must not contain any special characters or spaces.",
+            "maxLength": 18,
+            "minLength": 6,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "payment_id",
+          "idempotency_key",
+          "reference"
+        ],
+        "type": "object"
+      },
+      "PaymentAmountToRefund": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/PaymentAmountNullable"
+          },
+          {
+            "additionalProperties": true,
+            "description": "An amount to refund the payment partially. If this amount is not specified, the payment is refunded fully for the remaining amount.",
+            "type": "object"
+          }
+        ],
+        "description": "The amount and currency of a payment"
+      },
+      "PaymentAmountNullable": {
+        "additionalProperties": true,
+        "description": "The amount and currency of a payment",
+        "nullable": true,
+        "properties": {
+          "currency": {
+            "$ref": "#/$defs/PaymentAmountCurrency"
+          },
+          "value": {
+            "description": "The amount of the payment. Must contain at most two digits of precision e.g. `1.23`.",
+            "format": "double",
+            "minimum": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "currency",
+          "value"
+        ],
+        "title": "PaymentAmount",
+        "type": "object"
+      },
+      "PaymentAmountCurrency": {
+        "description": "The ISO-4217 currency code of the payment. For standing orders and payment consents, `\"GBP\"` must be used.",
+        "enum": [
+          "GBP",
+          "EUR",
+          "PLN",
+          "SEK",
+          "DKK",
+          "NOK"
+        ],
+        "maxLength": 3,
+        "minLength": 3,
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "WalletTransactionIdempotencyKey": {
+        "description": "A random key provided by the client, per unique wallet transaction. Maximum of 128 characters.\n\nThe API supports idempotency for safely retrying requests without accidentally performing the same operation twice. If a request to execute a wallet transaction fails due to a network connection error, then after a minimum delay of one minute, you can retry the request with the same idempotency key to guarantee that only a single wallet transaction is created. If the request was successfully processed, it will prevent any transaction that uses the same idempotency key, and was received within 24 hours of the first request, from being processed.",
+        "maxLength": 128,
+        "minLength": 1,
+        "title": "WalletTransactionIdempotencyKey",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/payment_initiation/payment/reverse"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "PaymentInitiationPaymentReverseResponse defines the response schema for `/payment_initation/payment/reverse`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**refund_id**: A unique ID identifying the refund",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**status**: The status of the transaction."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

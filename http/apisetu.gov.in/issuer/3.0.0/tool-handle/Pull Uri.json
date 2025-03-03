@@ -1,0 +1,84 @@
+{
+  "name": "Pull_Uri",
+  "description": "The Pull URI Request API has to be implemented by the issuers and will be consumed by Digital Locker application. This API will be invoked when a citizen searches the issuer repository for his/her certificate. If the certificate data is Aadhaar seeded, the issuer may choose to use Aadhaar number as the search parameter. Digital Locker provides Aadhaar number, name and date of birth as on Aadhaar to the issuer API as additional parameters. The option for these Aadhaar based parameters can be selected while configuring this API in Digital Locker Partner’s Portal. If the certificate data is not Aadhaar seeded then the issuer may use any other unique parameter e.g. driving license number to search for a driving license. These custom parameters will be passed in the UDF elements as shown in the sample request below. The custom parameter(s) can be configured while configuring the API in the DigiLocker Partner’s Portal. The Digital Locker system will query the issuer repository to fetch the URI for any document that match the search criteria. The citizen can save this URI in his/her Digital Locker. It is strongly recommended that the issuer API validate that the name, date of birth details sent by DigiLocker in Aadhaar parameters match with the corresponding details on the certificate before returning the certificate data. This will ensure that only authentic owners get access to a certificate.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Content-Type": {
+        "type": "string",
+        "description": "application/xml"
+      },
+      "x-digilocker-hmac": {
+        "type": "string",
+        "description": "This is used for authentication and to verify the integrity of the request. DigiLocker calculates the hash message authentication code (hmac) of the HTTP request body using SHA256 hashing algorithm and the API Key provided by the issuer as the hashing key. The API Key is specified by the issuer while configuring the Pull Doc API in DigiLocker Partner Portal. The resulting hmac is converted to Base64 format and sent in this parameter. It is strongly recommended that the issuer API calculates the hmac of the HTTP request body, convert it to Base64 and match it with this parameter to ensure authenticity of the request."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "Your API URL/Your Pull URI Request API Path"
+    },
+    "headers": {
+      "Content-Type": {
+        "$": "Content-Type"
+      },
+      "x-digilocker-hmac": {
+        "$": "x-digilocker-hmac"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**DocDetails**: Issuer can add meta content specific to document here.",
+              {
+                "$ul": [
+                  "**DOB**: The date of birth if sent in the original request.",
+                  "**DataContent**: Enclose the base64 byte encoded certificate metadata in XML format. The DataContent element should be sent only if the original request contains format attribute as “xml” or “both”.",
+                  "**DigiLockerId**: A unique 36 character DigiLocker Id as sent in the original request.",
+                  "**DocContent**: Enclose the Base64 byte encoded contents of PDF file in this element.",
+                  "**DocType**: The document type sent in the original request.",
+                  "**FullName**: The full name if sent in the original request.",
+                  "**UDF1**: Search parameters sent in the original request.",
+                  "**UDF2**: Search parameters sent in the original request.",
+                  "**UID**: The Aadhaar number if sent in the original request.",
+                  "**URI**: URI corresponding to the search criteria that identifies the document uniquely."
+                ]
+              }
+            ],
+            [
+              "**ResponseStatus**",
+              {
+                "$ul": [
+                  "**Status**: 1 for success, 0 for error and 9 for pending.",
+                  "**ts**: A timestamp value as sent in the request.",
+                  "**txn**: Transaction id value as sent in the request."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

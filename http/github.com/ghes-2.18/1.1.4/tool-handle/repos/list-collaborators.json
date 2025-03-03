@@ -1,0 +1,143 @@
+{
+  "name": "repos_list-collaborators",
+  "description": "For organization-owned repositories, the list of collaborators includes outside collaborators, organization members that are direct collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners.\n\nTeam members will include the members of child teams.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string"
+      },
+      "repo": {
+        "type": "string"
+      },
+      "affiliation": {
+        "default": "all",
+        "enum": [
+          "outside",
+          "direct",
+          "all"
+        ],
+        "type": "string",
+        "description": "Filter collaborators returned by their affiliation. Can be one of:  \n\\* `outside`: All outside collaborators of an organization-owned repository.  \n\\* `direct`: All collaborators with permissions to an organization-owned repository, regardless of organization membership status.  \n\\* `all`: All collaborators the authenticated user can see."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "Results per page (max 100)"
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://HOSTNAME/api/v3/repos/{owner}/{repo}/collaborators{?affiliation,per_page,page}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Collaborator list"
+        },
+        "Collaborator",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**avatar_url**",
+            "**email**",
+            "**events_url**",
+            "**followers_url**",
+            "**following_url**",
+            "**gists_url**",
+            "**gravatar_id**",
+            "**html_url**",
+            "**id**",
+            "**login**",
+            "**name**",
+            "**node_id**",
+            "**organizations_url**",
+            [
+              "**permissions**",
+              {
+                "$ul": [
+                  "**admin**",
+                  "**maintain**",
+                  "**pull**",
+                  "**push**",
+                  "**triage**"
+                ]
+              }
+            ],
+            "**received_events_url**",
+            "**repos_url**",
+            "**site_admin**",
+            "**starred_url**",
+            "**subscriptions_url**",
+            "**type**",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

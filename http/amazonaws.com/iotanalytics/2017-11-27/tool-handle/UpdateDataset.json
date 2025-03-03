@@ -1,0 +1,948 @@
+{
+  "name": "UpdateDataset",
+  "description": "Updates the settings of a dataset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "datasetName": {
+        "type": "string",
+        "pattern": "(^(?!_{2}))(^[a-zA-Z0-9_]+$)",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "The name of the dataset to update."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "actions"
+        ],
+        "properties": {
+          "actions": {
+            "description": "A list of <code>DatasetAction</code> objects.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DatasetAction"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "triggers": {
+            "description": "A list of <code>DatasetTrigger</code> objects. The list can be empty or can contain up to five <code>DatasetTrigger</code> objects.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DatasetTrigger"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "contentDeliveryRules": {
+            "description": "When dataset contents are created, they are delivered to destinations specified here.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DatasetContentDeliveryRule"
+            },
+            "minItems": 0,
+            "maxItems": 20
+          },
+          "retentionPeriod": {
+            "description": "How long, in days, message data is kept.",
+            "type": "object",
+            "properties": {
+              "unlimited": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/UnlimitedRetentionPeriod"
+                  },
+                  {
+                    "description": "If true, message data is kept indefinitely."
+                  }
+                ]
+              },
+              "numberOfDays": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RetentionPeriodInDays"
+                  },
+                  {
+                    "description": "The number of days that message data is kept. The <code>unlimited</code> parameter must be false."
+                  }
+                ]
+              }
+            }
+          },
+          "versioningConfiguration": {
+            "description": "Information about the versioning of dataset contents.",
+            "type": "object",
+            "properties": {
+              "unlimited": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/UnlimitedVersioning"
+                  },
+                  {
+                    "description": "If true, unlimited versions of dataset contents are kept."
+                  }
+                ]
+              },
+              "maxVersions": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MaxVersions"
+                  },
+                  {
+                    "description": "How many versions of dataset contents are kept. The <code>unlimited</code> parameter must be <code>false</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "lateDataRules": {
+            "description": "A list of data rules that send notifications to CloudWatch, when data arrives late. To specify <code>lateDataRules</code>, the dataset must use a <a href=\"https://docs.aws.amazon.com/iotanalytics/latest/APIReference/API_DeltaTime.html\">DeltaTimer</a> filter.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/LateDataRule"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    "required": [
+      "datasetName",
+      "body"
+    ],
+    "$defs": {
+      "DatasetAction": {
+        "type": "object",
+        "properties": {
+          "actionName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetActionName"
+              },
+              {
+                "description": "The name of the dataset action by which dataset contents are automatically created."
+              }
+            ]
+          },
+          "queryAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SqlQueryDatasetAction"
+              },
+              {
+                "description": "An <code>SqlQueryDatasetAction</code> object that uses an SQL query to automatically create dataset contents."
+              }
+            ]
+          },
+          "containerAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ContainerDatasetAction"
+              },
+              {
+                "description": "Information that allows the system to run a containerized application to create the dataset contents. The application must be in a Docker container along with any required support libraries."
+              }
+            ]
+          }
+        },
+        "description": "A <code>DatasetAction</code> object that specifies how dataset contents are automatically created."
+      },
+      "DatasetActionName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_]+$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "SqlQueryDatasetAction": {
+        "type": "object",
+        "required": [
+          "sqlQuery"
+        ],
+        "properties": {
+          "sqlQuery": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SqlQuery"
+              },
+              {
+                "description": "A SQL query string."
+              }
+            ]
+          },
+          "filters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueryFilters"
+              },
+              {
+                "description": "Prefilters applied to message data."
+              }
+            ]
+          }
+        },
+        "description": "The SQL query to modify the message."
+      },
+      "SqlQuery": {
+        "type": "string"
+      },
+      "QueryFilters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/QueryFilter"
+        },
+        "minItems": 0,
+        "maxItems": 1
+      },
+      "QueryFilter": {
+        "type": "object",
+        "properties": {
+          "deltaTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeltaTime"
+              },
+              {
+                "description": "Used to limit data to that which has arrived since the last execution of the action."
+              }
+            ]
+          }
+        },
+        "description": "Information that is used to filter message data, to segregate it according to the timeframe in which it arrives."
+      },
+      "DeltaTime": {
+        "type": "object",
+        "required": [
+          "offsetSeconds",
+          "timeExpression"
+        ],
+        "properties": {
+          "offsetSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OffsetSeconds"
+              },
+              {
+                "description": "The number of seconds of estimated in-flight lag time of message data. When you create dataset contents using message data from a specified timeframe, some message data might still be in flight when processing begins, and so do not arrive in time to be processed. Use this field to make allowances for the in flight time of your message data, so that data not processed from a previous timeframe is included with the next timeframe. Otherwise, missed message data would be excluded from processing during the next timeframe too, because its timestamp places it within the previous timeframe."
+              }
+            ]
+          },
+          "timeExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimeExpression"
+              },
+              {
+                "description": "An expression by which the time of the message data might be determined. This can be the name of a timestamp field or a SQL expression that is used to derive the time the message data was generated."
+              }
+            ]
+          }
+        },
+        "description": "Used to limit data to that which has arrived since the last execution of the action."
+      },
+      "OffsetSeconds": {
+        "type": "integer"
+      },
+      "TimeExpression": {
+        "type": "string"
+      },
+      "ContainerDatasetAction": {
+        "type": "object",
+        "required": [
+          "image",
+          "executionRoleArn",
+          "resourceConfiguration"
+        ],
+        "properties": {
+          "image": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Image"
+              },
+              {
+                "description": "The ARN of the Docker container stored in your account. The Docker container contains an application and required support libraries and is used to generate dataset contents."
+              }
+            ]
+          },
+          "executionRoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that gives permission to the system to access required resources to run the <code>containerAction</code>. This includes, at minimum, permission to retrieve the dataset contents that are the input to the containerized application."
+              }
+            ]
+          },
+          "resourceConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceConfiguration"
+              },
+              {
+                "description": "Configuration of the resource that executes the <code>containerAction</code>."
+              }
+            ]
+          },
+          "variables": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Variables"
+              },
+              {
+                "description": "The values of variables used in the context of the execution of the containerized application (basically, parameters passed to the application). Each variable must have a name and a value given by one of <code>stringValue</code>, <code>datasetContentVersionValue</code>, or <code>outputFileUriValue</code>."
+              }
+            ]
+          }
+        },
+        "description": "Information required to run the <code>containerAction</code> to produce dataset contents."
+      },
+      "Image": {
+        "type": "string",
+        "maxLength": 255
+      },
+      "RoleArn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "ResourceConfiguration": {
+        "type": "object",
+        "required": [
+          "computeType",
+          "volumeSizeInGB"
+        ],
+        "properties": {
+          "computeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComputeType"
+              },
+              {
+                "description": "The type of the compute resource used to execute the <code>containerAction</code>. Possible values are: <code>ACU_1</code> (vCPU=4, memory=16 GiB) or <code>ACU_2</code> (vCPU=8, memory=32 GiB)."
+              }
+            ]
+          },
+          "volumeSizeInGB": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VolumeSizeInGB"
+              },
+              {
+                "description": "The size, in GB, of the persistent storage available to the resource instance used to execute the <code>containerAction</code> (min: 1, max: 50)."
+              }
+            ]
+          }
+        },
+        "description": "The configuration of the resource used to execute the <code>containerAction</code>."
+      },
+      "ComputeType": {
+        "type": "string",
+        "enum": [
+          "ACU_1",
+          "ACU_2"
+        ]
+      },
+      "VolumeSizeInGB": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      },
+      "Variables": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Variable"
+        },
+        "minItems": 0,
+        "maxItems": 50
+      },
+      "Variable": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VariableName"
+              },
+              {
+                "description": "The name of the variable."
+              }
+            ]
+          },
+          "stringValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringValue"
+              },
+              {
+                "description": "The value of the variable as a string."
+              }
+            ]
+          },
+          "doubleValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DoubleValue"
+              },
+              {
+                "description": "The value of the variable as a double (numeric)."
+              }
+            ]
+          },
+          "datasetContentVersionValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetContentVersionValue"
+              },
+              {
+                "description": "The value of the variable as a structure that specifies a dataset content version."
+              }
+            ]
+          },
+          "outputFileUriValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OutputFileUriValue"
+              },
+              {
+                "description": "The value of the variable as a structure that specifies an output file URI."
+              }
+            ]
+          }
+        },
+        "description": "An instance of a variable to be passed to the <code>containerAction</code> execution. Each variable must have a name and a value given by one of <code>stringValue</code>, <code>datasetContentVersionValue</code>, or <code>outputFileUriValue</code>."
+      },
+      "VariableName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "StringValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024
+      },
+      "DoubleValue": {
+        "type": "number",
+        "format": "double"
+      },
+      "DatasetContentVersionValue": {
+        "type": "object",
+        "required": [
+          "datasetName"
+        ],
+        "properties": {
+          "datasetName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetName"
+              },
+              {
+                "description": "The name of the dataset whose latest contents are used as input to the notebook or application."
+              }
+            ]
+          }
+        },
+        "description": "The dataset whose latest contents are used as input to the notebook or application."
+      },
+      "DatasetName": {
+        "type": "string",
+        "pattern": "(^(?!_{2}))(^[a-zA-Z0-9_]+$)",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "OutputFileUriValue": {
+        "type": "object",
+        "required": [
+          "fileName"
+        ],
+        "properties": {
+          "fileName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OutputFileName"
+              },
+              {
+                "description": "The URI of the location where dataset contents are stored, usually the URI of a file in an S3 bucket."
+              }
+            ]
+          }
+        },
+        "description": "The value of the variable as a structure that specifies an output file URI."
+      },
+      "OutputFileName": {
+        "type": "string",
+        "pattern": "[\\w\\.-]{1,255}"
+      },
+      "DatasetTrigger": {
+        "type": "object",
+        "properties": {
+          "schedule": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Schedule"
+              },
+              {
+                "description": "The Schedule when the trigger is initiated."
+              }
+            ]
+          },
+          "dataset": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TriggeringDataset"
+              },
+              {
+                "description": "The dataset whose content creation triggers the creation of this dataset's contents."
+              }
+            ]
+          }
+        },
+        "description": "The <code>DatasetTrigger</code> that specifies when the dataset is automatically updated."
+      },
+      "Schedule": {
+        "type": "object",
+        "properties": {
+          "expression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ScheduleExpression"
+              },
+              {
+                "description": "The expression that defines when to trigger an update. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html\">Schedule Expressions for Rules</a> in the <i>Amazon CloudWatch Events User Guide</i>."
+              }
+            ]
+          }
+        },
+        "description": "The schedule for when to trigger an update."
+      },
+      "ScheduleExpression": {
+        "type": "string"
+      },
+      "TriggeringDataset": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetName"
+              },
+              {
+                "description": "The name of the dataset whose content generation triggers the new dataset content generation."
+              }
+            ]
+          }
+        },
+        "description": "Information about the dataset whose content generation triggers the new dataset content generation."
+      },
+      "DatasetContentDeliveryRule": {
+        "type": "object",
+        "required": [
+          "destination"
+        ],
+        "properties": {
+          "entryName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntryName"
+              },
+              {
+                "description": "The name of the dataset content delivery rules entry."
+              }
+            ]
+          },
+          "destination": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatasetContentDeliveryDestination"
+              },
+              {
+                "description": "The destination to which dataset contents are delivered."
+              }
+            ]
+          }
+        },
+        "description": "When dataset contents are created, they are delivered to destination specified here."
+      },
+      "EntryName": {
+        "type": "string"
+      },
+      "DatasetContentDeliveryDestination": {
+        "type": "object",
+        "properties": {
+          "iotEventsDestinationConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IotEventsDestinationConfiguration"
+              },
+              {
+                "description": "Configuration information for delivery of dataset contents to IoT Events."
+              }
+            ]
+          },
+          "s3DestinationConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3DestinationConfiguration"
+              },
+              {
+                "description": "Configuration information for delivery of dataset contents to Amazon S3."
+              }
+            ]
+          }
+        },
+        "description": "The destination to which dataset contents are delivered."
+      },
+      "IotEventsDestinationConfiguration": {
+        "type": "object",
+        "required": [
+          "inputName",
+          "roleArn"
+        ],
+        "properties": {
+          "inputName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IotEventsInputName"
+              },
+              {
+                "description": "The name of the IoT Events input to which dataset contents are delivered."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that grants IoT Analytics permission to deliver dataset contents to an IoT Events input."
+              }
+            ]
+          }
+        },
+        "description": "Configuration information for delivery of dataset contents to IoT Events."
+      },
+      "IotEventsInputName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "S3DestinationConfiguration": {
+        "type": "object",
+        "required": [
+          "bucket",
+          "key",
+          "roleArn"
+        ],
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BucketName"
+              },
+              {
+                "description": "The name of the S3 bucket to which dataset contents are delivered."
+              }
+            ]
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BucketKeyExpression"
+              },
+              {
+                "description": "<p>The key of the dataset contents object in an S3 bucket. Each object has a key that is a unique identifier. Each object has exactly one key.</p> <p>You can create a unique key with the following options:</p> <ul> <li> <p>Use <code>!{iotanalytics:scheduleTime}</code> to insert the time of a scheduled SQL query run.</p> </li> <li> <p>Use <code>!{iotanalytics:versionId}</code> to insert a unique hash that identifies a dataset content.</p> </li> <li> <p>Use <code>!{iotanalytics:creationTime}</code> to insert the creation time of a dataset content.</p> </li> </ul> <p>The following example creates a unique key for a CSV file: <code>dataset/mydataset/!{iotanalytics:scheduleTime}/!{iotanalytics:versionId}.csv</code> </p> <note> <p>If you don't use <code>!{iotanalytics:versionId}</code> to specify the key, you might get duplicate keys. For example, you might have two dataset contents with the same <code>scheduleTime</code> but different <code>versionId</code>s. This means that one dataset content overwrites the other. </p> </note>"
+              }
+            ]
+          },
+          "glueConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GlueConfiguration"
+              },
+              {
+                "description": "Configuration information for coordination with Glue, a fully managed extract, transform and load (ETL) service."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that grants IoT Analytics permission to interact with your Amazon S3 and Glue resources."
+              }
+            ]
+          }
+        },
+        "description": "Configuration information for delivery of dataset contents to Amazon Simple Storage Service (Amazon S3)."
+      },
+      "BucketName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9.\\-_]*$",
+        "minLength": 3,
+        "maxLength": 255
+      },
+      "BucketKeyExpression": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9!_.*'()/{}:-]*$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "GlueConfiguration": {
+        "type": "object",
+        "required": [
+          "tableName",
+          "databaseName"
+        ],
+        "properties": {
+          "tableName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GlueTableName"
+              },
+              {
+                "description": "The name of the table in your Glue Data Catalog that is used to perform the ETL operations. An Glue Data Catalog table contains partitioned data and descriptions of data sources and targets."
+              }
+            ]
+          },
+          "databaseName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GlueDatabaseName"
+              },
+              {
+                "description": "The name of the database in your Glue Data Catalog in which the table is located. An Glue Data Catalog database contains metadata tables."
+              }
+            ]
+          }
+        },
+        "description": "Configuration information for coordination with Glue, a fully managed extract, transform and load (ETL) service."
+      },
+      "GlueTableName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 150,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+      },
+      "GlueDatabaseName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 150,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+      },
+      "UnlimitedRetentionPeriod": {
+        "type": "boolean"
+      },
+      "RetentionPeriodInDays": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "UnlimitedVersioning": {
+        "type": "boolean"
+      },
+      "MaxVersions": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "LateDataRule": {
+        "type": "object",
+        "required": [
+          "ruleConfiguration"
+        ],
+        "properties": {
+          "ruleName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LateDataRuleName"
+              },
+              {
+                "description": "The name of the late data rule."
+              }
+            ]
+          },
+          "ruleConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LateDataRuleConfiguration"
+              },
+              {
+                "description": "The information needed to configure the late data rule."
+              }
+            ]
+          }
+        },
+        "description": "A structure that contains the name and configuration information of a late data rule."
+      },
+      "LateDataRuleName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_]+$",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "LateDataRuleConfiguration": {
+        "type": "object",
+        "properties": {
+          "deltaTimeSessionWindowConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeltaTimeSessionWindowConfiguration"
+              },
+              {
+                "description": "The information needed to configure a delta time session window."
+              }
+            ]
+          }
+        },
+        "description": "The information needed to configure a delta time session window."
+      },
+      "DeltaTimeSessionWindowConfiguration": {
+        "type": "object",
+        "required": [
+          "timeoutInMinutes"
+        ],
+        "properties": {
+          "timeoutInMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTimeoutInMinutes"
+              },
+              {
+                "description": "<p>A time interval. You can use <code>timeoutInMinutes</code> so that IoT Analytics can batch up late data notifications that have been generated since the last execution. IoT Analytics sends one batch of notifications to Amazon CloudWatch Events at one time.</p> <p>For more information about how to write a timestamp expression, see <a href=\"https://prestodb.io/docs/0.172/functions/datetime.html\">Date and Time Functions and Operators</a>, in the <i>Presto 0.172 Documentation</i>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>A structure that contains the configuration information of a delta time session window.</p> <p> <a href=\"https://docs.aws.amazon.com/iotanalytics/latest/APIReference/API_DeltaTime.html\"> <code>DeltaTime</code> </a> specifies a time interval. You can use <code>DeltaTime</code> to create dataset contents with data that has arrived in the data store since the last execution. For an example of <code>DeltaTime</code>, see <a href=\"https://docs.aws.amazon.com/iotanalytics/latest/userguide/automate-create-dataset.html#automate-example6\"> Creating a SQL dataset with a delta window (CLI)</a> in the <i>IoT Analytics User Guide</i>.</p>"
+      },
+      "SessionTimeoutInMinutes": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://iotanalytics.us-east-1.amazonaws.com/datasets/{datasetName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

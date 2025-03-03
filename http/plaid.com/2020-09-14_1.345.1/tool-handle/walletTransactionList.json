@@ -1,0 +1,119 @@
+{
+  "name": "walletTransactionList",
+  "description": "This endpoint lists the latest transactions of the specified e-wallet. Transactions are returned in descending order by the `created_at` time.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/WalletTransactionListRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "WalletTransactionListRequest": {
+        "description": "WalletTransactionListRequest defines the request schema for `/wallet/transaction/list`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "count": {
+            "default": 10,
+            "description": "The number of transactions to fetch",
+            "maximum": 200,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "cursor": {
+            "description": "A base64 value representing the latest transaction that has already been requested. Set this to `next_cursor` received from the previous `/wallet/transaction/list` request. If provided, the response will only contain transactions created before that transaction. If omitted, the response will contain transactions starting from the most recent, and in descending order by the `created_at` time.",
+            "maxLength": 256,
+            "type": "string"
+          },
+          "options": {
+            "$ref": "#/$defs/WalletTransactionListRequestOptions"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "wallet_id": {
+            "description": "The ID of the e-wallet to fetch transactions from",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "wallet_id"
+        ],
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "WalletTransactionListRequestOptions": {
+        "description": "Additional wallet transaction options",
+        "nullable": true,
+        "properties": {
+          "end_time": {
+            "description": "Timestamp in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DDThh:mm:ssZ) for filtering transactions, inclusive of the provided date.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "Timestamp in [ISO 8601](https://wikipedia.org/wiki/ISO_8601) format (YYYY-MM-DDThh:mm:ssZ) for filtering transactions, inclusive of the provided date.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/wallet/transaction/list"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "WalletTransactionListResponse defines the response schema for `/wallet/transaction/list`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**next_cursor**: Cursor used for fetching transactions created before the latest transaction provided in this response",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**transactions**: An array of transactions of an e-wallet, associated with the given `wallet_id`"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

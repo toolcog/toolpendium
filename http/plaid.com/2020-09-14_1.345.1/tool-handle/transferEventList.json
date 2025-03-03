@@ -1,0 +1,208 @@
+{
+  "name": "transferEventList",
+  "description": "Use the `/transfer/event/list` endpoint to get a list of transfer events based on specified filter criteria.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferEventListRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransferEventListRequest": {
+        "description": "Defines the request schema for `/transfer/event/list`",
+        "properties": {
+          "account_id": {
+            "description": "The account ID to get events for all transactions to/from an account.",
+            "nullable": true,
+            "type": "string"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "count": {
+            "default": 25,
+            "description": "The maximum number of transfer events to return. If the number of events matching the above parameters is greater than `count`, the most recent events will be returned.",
+            "maximum": 25,
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "end_date": {
+            "description": "The end datetime of transfers to list. This should be in RFC 3339 format (i.e. `2019-12-06T22:35:49Z`)",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "event_types": {
+            "description": "Filter events by event type.",
+            "items": {
+              "$ref": "#/$defs/TransferEventType"
+            },
+            "type": "array"
+          },
+          "funding_account_id": {
+            "description": "Filter transfer events to only those with the specified `funding_account_id`.",
+            "nullable": true,
+            "type": "string"
+          },
+          "offset": {
+            "default": 0,
+            "description": "The offset into the list of transfer events. When `count`=25 and `offset`=0, the first 25 events will be returned. When `count`=25 and `offset`=25, the next 25 events will be returned.",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "origination_account_id": {
+            "deprecated": true,
+            "description": "The origination account ID to get events for transfers from a specific origination account.",
+            "nullable": true,
+            "type": "string",
+            "x-hidden-from-docs": true
+          },
+          "originator_client_id": {
+            "description": "Filter transfer events to only those with the specified originator client.",
+            "nullable": true,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "start_date": {
+            "description": "The start datetime of transfers to list. This should be in RFC 3339 format (i.e. `2019-12-06T22:35:49Z`)",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "sweep_id": {
+            "description": "Plaid’s unique identifier for a sweep.",
+            "type": "string"
+          },
+          "transfer_id": {
+            "description": "Plaid’s unique identifier for a transfer.",
+            "nullable": true,
+            "title": "TransferID",
+            "type": "string"
+          },
+          "transfer_type": {
+            "$ref": "#/$defs/TransferEventListTransferType"
+          }
+        },
+        "title": "TransferEventListRequest",
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "TransferEventType": {
+        "description": "The type of event that this transfer represents.\n\n`pending`: A new transfer was created; it is in the pending state.\n\n`cancelled`: The transfer was cancelled by the client.\n\n`failed`: The transfer failed, no funds were moved.\n\n`posted`: The transfer has been successfully submitted to the payment network.\n\n`settled`: Credits are available to be withdrawn or debits have been deducted from the Plaid linked account.\n\n`returned`: A posted transfer was returned.\n\n`swept`: The transfer was swept to / from the sweep account.\n\n`swept_settled`: Credits are available to be withdrawn or debits have been deducted from the customer’s business checking account.\n\n`return_swept`: Due to the transfer being returned, funds were pulled from or pushed back to the sweep account.",
+        "enum": [
+          "pending",
+          "cancelled",
+          "failed",
+          "posted",
+          "settled",
+          "returned",
+          "swept",
+          "swept_settled",
+          "return_swept"
+        ],
+        "title": "TransferEventType",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "TransferEventListTransferType": {
+        "description": "The type of transfer. This will be either `debit` or `credit`.  A `debit` indicates a transfer of money into your origination account; a `credit` indicates a transfer of money out of your origination account.",
+        "enum": [
+          "debit",
+          "credit",
+          null
+        ],
+        "nullable": true,
+        "title": "TransferType",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transfer/event/list"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TransferEventListResponse"
+        },
+        "Defines the response schema for `/transfer/event/list`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "**transfer_events**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "name": "UpdateFramework",
+  "description": "Updates an existing framework identified by its <code>FrameworkName</code> with the input document in JSON format.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "frameworkName": {
+        "type": "string",
+        "pattern": "[a-zA-Z][_a-zA-Z0-9]*",
+        "minLength": 1,
+        "maxLength": 256,
+        "description": "The unique name of a framework. This name is between 1 and 256 characters, starting with a letter, and consisting of letters (a-z, A-Z), numbers (0-9), and underscores (_)."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "FrameworkDescription": {
+            "description": "An optional description of the framework with a maximum 1,024 characters.",
+            "type": "string",
+            "pattern": ".*\\S.*",
+            "minLength": 0,
+            "maxLength": 1024
+          },
+          "FrameworkControls": {
+            "description": "A list of the controls that make up the framework. Each control in the list has a name, input parameters, and scope.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/FrameworkControl"
+            }
+          },
+          "IdempotencyToken": {
+            "description": "A customer-chosen string that you can use to distinguish between otherwise identical calls to <code>UpdateFrameworkInput</code>. Retrying a successful request with the same idempotency token results in a success message with no action taken.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required": [
+      "frameworkName",
+      "body"
+    ],
+    "$defs": {
+      "FrameworkControl": {
+        "type": "object",
+        "required": [
+          "ControlName"
+        ],
+        "properties": {
+          "ControlName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ControlName"
+              },
+              {
+                "description": "The name of a control. This name is between 1 and 256 characters."
+              }
+            ]
+          },
+          "ControlInputParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ControlInputParameters"
+              },
+              {
+                "description": "A list of <code>ParameterName</code> and <code>ParameterValue</code> pairs."
+              }
+            ]
+          },
+          "ControlScope": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ControlScope"
+              },
+              {
+                "description": "The scope of a control. The control scope defines what the control will evaluate. Three examples of control scopes are: a specific backup plan, all backup plans with a specific tag, or all backup plans. For more information, see <a href=\"aws-backup/latest/devguide/API_ControlScope.html\"> <code>ControlScope</code>.</a> "
+              }
+            ]
+          }
+        },
+        "description": "Contains detailed information about all of the controls of a framework. Each framework must contain at least one control."
+      },
+      "ControlName": {
+        "type": "string"
+      },
+      "ControlInputParameters": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ControlInputParameter"
+        }
+      },
+      "ControlInputParameter": {
+        "type": "object",
+        "properties": {
+          "ParameterName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterName"
+              },
+              {
+                "description": "The name of a parameter, for example, <code>BackupPlanFrequency</code>."
+              }
+            ]
+          },
+          "ParameterValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ParameterValue"
+              },
+              {
+                "description": "The value of parameter, for example, <code>hourly</code>."
+              }
+            ]
+          }
+        },
+        "description": "A list of parameters for a control. A control can have zero, one, or more than one parameter. An example of a control with two parameters is: \"backup plan frequency is at least <code>daily</code> and the retention period is at least <code>1 year</code>\". The first parameter is <code>daily</code>. The second parameter is <code>1 year</code>."
+      },
+      "ParameterName": {
+        "type": "string"
+      },
+      "ParameterValue": {
+        "type": "string"
+      },
+      "ControlScope": {
+        "type": "object",
+        "properties": {
+          "ComplianceResourceIds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComplianceResourceIdList"
+              },
+              {
+                "description": "The ID of the only Amazon Web Services resource that you want your control scope to contain."
+              }
+            ]
+          },
+          "ComplianceResourceTypes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceTypeList"
+              },
+              {
+                "description": "Describes whether the control scope includes one or more types of resources, such as <code>EFS</code> or <code>RDS</code>."
+              }
+            ]
+          },
+          "Tags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/stringMap"
+              },
+              {
+                "description": "The tag key-value pair applied to those Amazon Web Services resources that you want to trigger an evaluation for a rule. A maximum of one key-value pair can be provided. The tag value is optional, but it cannot be an empty string. The structure to assign a tag is: <code>[{\"Key\":\"string\",\"Value\":\"string\"}]</code>."
+              }
+            ]
+          }
+        },
+        "description": "<p>A framework consists of one or more controls. Each control has its own control scope. The control scope can include one or more resource types, a combination of a tag key and value, or a combination of one resource type and one resource ID. If no scope is specified, evaluations for the rule are triggered when any resource in your recording group changes in configuration.</p> <note> <p>To set a control scope that includes all of a particular resource, leave the <code>ControlScope</code> empty or do not pass it when calling <code>CreateFramework</code>.</p> </note>"
+      },
+      "ComplianceResourceIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/string"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "string": {
+        "type": "string"
+      },
+      "ResourceTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ARN"
+        }
+      },
+      "ARN": {
+        "type": "string"
+      },
+      "stringMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/string"
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://backup.us-east-1.amazonaws.com/audit/frameworks/{frameworkName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**FrameworkName**",
+            "**FrameworkArn**",
+            "**CreationTime**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

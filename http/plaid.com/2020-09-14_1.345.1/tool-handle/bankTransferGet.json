@@ -1,0 +1,163 @@
+{
+  "name": "bankTransferGet",
+  "description": "The `/bank_transfer/get` fetches information about the bank transfer corresponding to the given `bank_transfer_id`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/BankTransferGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "BankTransferGetRequest": {
+        "description": "Defines the request schema for `/bank_transfer/get`",
+        "properties": {
+          "bank_transfer_id": {
+            "$ref": "#/$defs/BankTransferID"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "bank_transfer_id"
+        ],
+        "title": "BankTransferGetRequest",
+        "type": "object"
+      },
+      "BankTransferID": {
+        "description": "Plaid’s unique identifier for a bank transfer.",
+        "title": "BankTransferID",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/bank_transfer/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "BankTransferGetResponse"
+        },
+        "Defines the response schema for `/bank_transfer/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**bank_transfer**: Represents a bank transfer within the Bank Transfers API.",
+              {
+                "$ul": [
+                  "**account_id**: The account ID that should be credited/debited for this bank transfer.",
+                  "**ach_class**: Specifies the use case of the transfer. Required for transfers on an ACH network.",
+                  "**amount**: The amount of the bank transfer (decimal string with two digits of precision e.g. \"10.00\").",
+                  "**cancellable**: When `true`, you can still cancel this bank transfer.",
+                  "**created**: The datetime when this bank transfer was created. This will be of the form `2006-01-02T15:04:05Z`",
+                  "**custom_tag**: A string containing the custom tag provided by the client in the create request. Will be null if not provided.",
+                  "**description**: The description of the transfer.",
+                  "**direction**: Indicates the direction of the transfer: `outbound` for API-initiated transfers, or `inbound` for payments received by the FBO account.",
+                  [
+                    "**failure_reason**: The failure reason if the type of this transfer is `\"failed\"` or `\"reversed\"`. Null value otherwise.",
+                    {
+                      "$ul": [
+                        "**ach_return_code**: The ACH return code, e.g. `R01`.  A return code will be provided if and only if the transfer status is `reversed`. For a full listing of ACH return codes, see [Bank Transfers errors](https://plaid.com/docs/errors/bank-transfers/#ach-return-codes).",
+                        "**description**: A human-readable description of the reason for the failure or reversal."
+                      ]
+                    }
+                  ],
+                  "**id**: Plaid’s unique identifier for a bank transfer.",
+                  "**iso_currency_code**: The currency of the transfer amount, e.g. \"USD\"",
+                  "**metadata**: The Metadata object is a mapping of client-provided string fields to any string value. The following limitations apply:",
+                  "**network**: The network or rails used for the transfer. Valid options are `ach`, `same-day-ach`, or `wire`.",
+                  "**origination_account_id**: Plaid’s unique identifier for the origination account that was used for this transfer.",
+                  "**status**: The status of the transfer.",
+                  "**type**: The type of bank transfer. This will be either `debit` or `credit`.  A `debit` indicates a transfer of money into the origination account; a `credit` indicates a transfer of money out of the origination account.",
+                  [
+                    "**user**: The legal name and other information for the account holder.",
+                    {
+                      "$ul": [
+                        "**email_address**: The account holder’s email.",
+                        "**legal_name**: The account holder’s full legal name. If the transfer `ach_class` is `ccd`, this should be the business name of the account holder.",
+                        "**routing_number**: The account holder's routing number. This field is only used in response data. Do not provide this field when making requests."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

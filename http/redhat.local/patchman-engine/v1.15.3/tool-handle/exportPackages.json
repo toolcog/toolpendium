@@ -1,0 +1,86 @@
+{
+  "name": "exportPackages",
+  "description": "Show me all installed packages across my systems",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "sort": {
+        "enum": [
+          "id",
+          "name",
+          "systems_installed",
+          "systems_updatable"
+        ],
+        "type": "string",
+        "description": "Sort field"
+      },
+      "search": {
+        "type": "string",
+        "description": "Find matching text"
+      },
+      "filter[name]": {
+        "type": "string",
+        "description": "Filter"
+      },
+      "filter[systems_installed]": {
+        "type": "string",
+        "description": "Filter"
+      },
+      "filter[systems_updatable]": {
+        "type": "string",
+        "description": "Filter"
+      },
+      "filter[summary]": {
+        "type": "string",
+        "description": "Filter"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://redhat.local/api/patch/v1/export/packages{?sort,search,filter[name],filter[systems_installed],filter[systems_updatable],filter[summary]}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**name**",
+            "**summary**",
+            "**systems_installed**",
+            "**systems_updatable**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

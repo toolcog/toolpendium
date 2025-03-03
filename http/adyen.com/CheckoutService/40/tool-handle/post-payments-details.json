@@ -1,0 +1,362 @@
+{
+  "name": "post-payments-details",
+  "description": "Submits details for a payment created using `/payments`. This step is only needed when no final state has been reached on the `/payments` request, for example when the shopper was redirected to another page to complete the payment.\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Idempotency-Key": {
+        "type": "string",
+        "description": "A unique identifier for the message with a maximum of 64 characters (we recommend a UUID)."
+      },
+      "body": {
+        "$ref": "#/$defs/PaymentDetailsRequest"
+      }
+    },
+    "$defs": {
+      "PaymentDetailsRequest": {
+        "properties": {
+          "details": {
+            "$ref": "#/$defs/PaymentCompletionDetails"
+          },
+          "paymentData": {
+            "description": "The `paymentData` value from the `/payments` response. Required if the `/payments` response contained `paymentData`. ",
+            "maxLength": 200000,
+            "type": "string"
+          },
+          "threeDSAuthenticationOnly": {
+            "description": "Change the `authenticationOnly` indicator originally set in the `/payments` request. Only needs to be set if you want to modify the value set previously.",
+            "type": "boolean",
+            "x-addedInVersion": "40"
+          }
+        },
+        "required": [
+          "details"
+        ],
+        "type": "object"
+      },
+      "PaymentCompletionDetails": {
+        "properties": {
+          "MD": {
+            "description": "A payment session identifier returned by the card issuer.",
+            "maxLength": 20000,
+            "type": "string"
+          },
+          "PaReq": {
+            "description": "(3D) Payment Authentication Request data for the card issuer.",
+            "type": "string"
+          },
+          "PaRes": {
+            "description": "(3D) Payment Authentication Response data by the card issuer.",
+            "maxLength": 20000,
+            "type": "string"
+          },
+          "authorization_token": {
+            "type": "string"
+          },
+          "billingToken": {
+            "description": "PayPal-generated token for recurring payments.",
+            "type": "string"
+          },
+          "cupsecureplus.smscode": {
+            "description": "The SMS verification code collected from the shopper.",
+            "type": "string"
+          },
+          "facilitatorAccessToken": {
+            "description": "PayPal-generated third party access token.",
+            "type": "string"
+          },
+          "oneTimePasscode": {
+            "description": "A random number sent to the mobile phone number of the shopper to verify the payment.",
+            "type": "string"
+          },
+          "orderID": {
+            "description": "PayPal-assigned ID for the order.",
+            "type": "string"
+          },
+          "payerID": {
+            "description": "PayPal-assigned ID for the payer (shopper).",
+            "type": "string"
+          },
+          "payload": {
+            "description": "Payload appended to the `returnURL` as a result of the redirect.",
+            "maxLength": 20000,
+            "type": "string"
+          },
+          "paymentID": {
+            "description": "PayPal-generated ID for the payment.",
+            "type": "string"
+          },
+          "paymentStatus": {
+            "description": "Value passed from the WeChat MiniProgram `wx.requestPayment` **complete** callback. Possible values: any value starting with `requestPayment:`.",
+            "type": "string"
+          },
+          "redirectResult": {
+            "description": "The result of the redirect as appended to the `returnURL`.",
+            "maxLength": 20000,
+            "type": "string"
+          },
+          "resultCode": {
+            "description": "Value you received from the WeChat Pay SDK.",
+            "type": "string"
+          },
+          "threeDSResult": {
+            "description": "Base64-encoded string returned by the Component after the challenge flow. It contains the following parameters: `transStatus`, `authorisationToken`.",
+            "maxLength": 50000,
+            "type": "string"
+          },
+          "threeds2.challengeResult": {
+            "description": "Base64-encoded string returned by the Component after the challenge flow. It contains the following parameter: `transStatus`.",
+            "maxLength": 50000,
+            "type": "string"
+          },
+          "threeds2.fingerprint": {
+            "description": "Base64-encoded string returned by the Component after the challenge flow. It contains the following parameter: `threeDSCompInd`.",
+            "maxLength": 100000,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://checkout-test.adyen.com/v40/payments/details"
+    },
+    "headers": {
+      "Idempotency-Key": {
+        "$": "Idempotency-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**additionalData**: Contains additional information about the payment. Some data fields are included only if you select them first: Go to **Customer Area** > **Developers** > **Additional data**.",
+            "**authentication**: Contains `threeds2.fingerprint` or `threeds2.challengeToken` values to be used in further calls to `/payments/details` endpoint. ",
+            "**details**: When non-empty, contains all the fields that you must submit to the `/payments/details` endpoint.",
+            [
+              "**fraudResult**",
+              {
+                "$ul": [
+                  "**accountScore**: The total fraud score generated by the risk checks.",
+                  "**results**: The result of the individual risk checks."
+                ]
+              }
+            ],
+            "**merchantReference**: The reference used during the /payments request.",
+            [
+              "**order**",
+              {
+                "$ul": [
+                  [
+                    "**amount**",
+                    {
+                      "$ul": [
+                        "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                        "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                      ]
+                    }
+                  ],
+                  "**expiresAt**: The expiry date for the order.",
+                  "**orderData**: The encrypted order data.",
+                  "**pspReference**: The `pspReference` that belongs to the order.",
+                  "**reference**: The merchant reference for the order.",
+                  [
+                    "**remainingAmount**",
+                    {
+                      "$ul": [
+                        "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                        "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**outputDetails**: Contains the details that will be presented to the shopper.",
+            "**paymentData**: When non-empty, contains a value that you must submit to the `/payments/details` endpoint.",
+            "**pspReference**: Adyen's 16-character string reference associated with the transaction/request. This value is globally unique; quote it when communicating with us about this request.",
+            [
+              "**redirect**",
+              {
+                "$ul": [
+                  "**data**: When the redirect URL must be accessed via POST, use this data to post to the redirect URL.",
+                  "**method**: The web method that you must use to access the redirect URL.",
+                  "**url**: The URL, to which you must redirect a shopper to complete a payment."
+                ]
+              }
+            ],
+            "**refusalReason**: If the payment's authorisation is refused or an error occurs during authorisation, this field holds Adyen's mapped reason for the refusal or a description of the error. When a transaction fails, the authorisation response includes `resultCode` and `refusalReason` values.",
+            "**refusalReasonCode**: Code that specifies the refusal reason. For more information, see [Authorisation refusal reasons](https://docs.adyen.com/development-resources/refusal-reasons).",
+            "**resultCode**: The result of the payment. For more information, see [Result codes](https://docs.adyen.com/online-payments/payment-result-codes).",
+            "**shopperLocale**: The shopperLocale."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

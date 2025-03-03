@@ -1,0 +1,77 @@
+{
+  "name": "app_statistics_timetable_purchases",
+  "description": "",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appId": {
+        "type": "integer",
+        "description": "The identifier of the Sinao application you are using. Each application corresponds to a company and an accounting. A user can have several Sinao applications. To retrieve the identifiers of its applications, you must call the endpoint `/apps`."
+      },
+      "detailed": {
+        "default": false,
+        "type": "boolean"
+      },
+      "groups": {
+        "default": "[ [-730, -30], [-30, -1], [-1, 7], [7, 15], [15, 30], [30, 730] ]",
+        "description": "Array of intervals in days count",
+        "items": {
+          "description": "Interval like [x, y] where x, y are a number of days between today. Example, to have all invoices overdue by more than 30 days but less than 60 : [-60, -30]",
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "appId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.sinao.app/v1/apps/{appId}/statistics/timetable/purchases{?detailed,groups}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**balance**",
+            "**count**",
+            "**data**",
+            "**interval**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

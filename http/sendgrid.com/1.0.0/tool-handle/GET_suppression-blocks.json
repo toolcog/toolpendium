@@ -1,0 +1,79 @@
+{
+  "name": "GET_suppression-blocks",
+  "description": "**This endpoint allows you to retrieve all email addresses that are currently on your blocks list.**",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_time": {
+        "type": "integer",
+        "description": "The start of the time range when a blocked email was created (inclusive). This is a unix timestamp."
+      },
+      "end_time": {
+        "type": "integer",
+        "description": "The end of the time range when a blocked email was created (inclusive). This is a unix timestamp."
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Limit the number of results to be displayed per page."
+      },
+      "offset": {
+        "type": "integer",
+        "description": "The point in the list to begin displaying results."
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/suppression/blocks{?start_time,end_time,limit,offset}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Blocks Response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: A Unix timestamp indicating when the email address was added to the blocks list.",
+            "**email**: The email address that was added to the block list.",
+            "**reason**: An explanation for the reason of the block.",
+            "**status**: The status of the block."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

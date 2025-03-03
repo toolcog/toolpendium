@@ -1,0 +1,162 @@
+{
+  "name": "ExportConfigurations_Create",
+  "description": "Create new export configuration",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner_name": {
+        "type": "string",
+        "description": "The name of the owner"
+      },
+      "app_name": {
+        "type": "string",
+        "description": "The name of the application"
+      },
+      "body": {
+        "description": "Export configurations.",
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "properties": {
+          "backfill": {
+            "description": "Field to determine if backfilling should occur. The default value is true. If set to false export starts from date and time of config creation.",
+            "type": "boolean"
+          },
+          "export_entities": {
+            "items": {
+              "enum": [
+                "crashes",
+                "errors",
+                "attachments",
+                "no_logs"
+              ],
+              "type": "string",
+              "x-ms-enum": {
+                "modelAsString": false,
+                "name": "ExportEntity"
+              }
+            },
+            "type": "array"
+          },
+          "resource_group": {
+            "description": "The resource group name on azure",
+            "type": "string"
+          },
+          "resource_name": {
+            "description": "The resource name on azure",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of export configuration",
+            "enum": [
+              "blob_storage_connection_string",
+              "application_insights_instrumentation_key",
+              "blob_storage_linked_subscription",
+              "application_insights_linked_subscription"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner_name",
+      "app_name",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.appcenter.ms/v0.1/apps/{owner_name}/{app_name}/export_configurations"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Export configuration result",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**creation_time**: Creation time in ISO 8601 format",
+            [
+              "**export_configuration**: Export configuration",
+              {
+                "$ul": [
+                  "**backfill**: Field to determine if backfilling should occur. The default value is true. If set to false export starts from date and time of config creation.",
+                  "**export_entities**",
+                  "**resource_group**: The resource group name on azure",
+                  "**resource_name**: The resource name on azure",
+                  "**type**: Type of export configuration"
+                ]
+              }
+            ],
+            "**export_entities**",
+            "**export_type**: Target resource type of export configuration",
+            "**id**: Export configuration id",
+            "**last_run_time**: Latest time in ISO 8601 format when export completed successfully",
+            "**resource_group**: resource group for the storage account/App Insights resource",
+            "**resource_name**: Storage accout or Appinsights resource name",
+            "**state**: State of the export job",
+            "**state_info**: Additional information about export configuration state"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**message**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

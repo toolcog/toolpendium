@@ -1,0 +1,110 @@
+{
+  "name": "getEventAlliances",
+  "description": "Gets a list of Elimination Alliances for the given Event.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "event_key": {
+        "type": "string",
+        "description": "TBA Event Key, eg `2016nytr`"
+      }
+    },
+    "required": [
+      "event_key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/event/{event_key}/alliances"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**backup**: Backup team called in, may be null.",
+              {
+                "$ul": [
+                  "**in**: Team key that was called in as the backup.",
+                  "**out**: Team key that was replaced by the backup team."
+                ]
+              }
+            ],
+            "**declines**: List of teams that declined the alliance.",
+            "**name**: Alliance name, may be null.",
+            "**picks**: List of team keys picked for the alliance. First pick is captain.",
+            [
+              "**status**",
+              {
+                "$ul": [
+                  [
+                    "**current_level_record**: A Win-Loss-Tie record for a team, or an alliance.",
+                    {
+                      "$ul": [
+                        "**losses**: Number of losses.",
+                        "**ties**: Number of ties.",
+                        "**wins**: Number of wins."
+                      ]
+                    }
+                  ],
+                  "**level**",
+                  "**playoff_average**",
+                  [
+                    "**record**: A Win-Loss-Tie record for a team, or an alliance.",
+                    {
+                      "$ul": [
+                        "**losses**: Number of losses.",
+                        "**ties**: Number of ties.",
+                        "**wins**: Number of wins."
+                      ]
+                    }
+                  ],
+                  "**status**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "name": "updateDataSource",
+  "description": "Update the configuration of a data source",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "datasourceId": {
+        "example": "test-data-source",
+        "type": "string",
+        "description": "Id of the data source"
+      },
+      "body": {
+        "$ref": "#/$defs/datasource"
+      }
+    },
+    "required": [
+      "datasourceId"
+    ],
+    "$defs": {
+      "datasource": {
+        "properties": {
+          "description": {
+            "description": "Description of the goal of the data source to create.",
+            "example": "Synchronize example data from the CMDB",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enable or disable data source.",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Unique identifier of the data source to create.",
+            "example": "test-data-source",
+            "type": "string"
+          },
+          "name": {
+            "description": "The human readable name of the data source to create.",
+            "example": "Test data source",
+            "type": "string"
+          },
+          "runParameters": {
+            "description": "Parameters to configure when the data source is fetched to update node properties.",
+            "properties": {
+              "onGeneration": {
+                "description": "Trigger a fetch at the beginning of a policy generation",
+                "example": true,
+                "type": "boolean"
+              },
+              "onNewNode": {
+                "description": "Trigger a fetch when a new node is accepted, for that node",
+                "example": true,
+                "type": "boolean"
+              },
+              "schedule": {
+                "description": "Configure if data source should be fetch periodically",
+                "properties": {
+                  "type": {
+                    "description": "`scheduled` enables periodic update, `notscheduled` disables them",
+                    "enum": [
+                      "scheduled",
+                      "notscheduled"
+                    ],
+                    "example": "scheduled",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "description": "Define and configure data source type.",
+            "properties": {
+              "name": {
+                "description": "Data source type name",
+                "enum": [
+                  "HTTP"
+                ],
+                "example": "HTTP",
+                "type": "string"
+              },
+              "parameters": {
+                "description": "You can use Rudder variable expansion (`${rudder.node`, `${node.properties...}`)",
+                "properties": {
+                  "checkSsl": {
+                    "description": "Check SSL certificate validity for https. Must be set to false for self-signed certificate",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "headers": {
+                    "description": "Represent HTTP headers for the query. Rudder expansion available.",
+                    "items": {
+                      "properties": {
+                        "name": {
+                          "description": "Name of the header",
+                          "example": "X-API-Key",
+                          "type": "string"
+                        },
+                        "value": {
+                          "description": "Value of the header",
+                          "example": "05ce8e3d9df6",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "path": {
+                    "description": "JSON path (as defined in [the specification](https://github.com/jayway/JsonPath/), without the leading `$.`) to find the interesting sub-json or string/number/boolean value in the answer. Let empty to use the whole answer as value.",
+                    "type": "string"
+                  },
+                  "requestMethod": {
+                    "description": "HTTP method to use to contact the URL.",
+                    "enum": [
+                      "GET",
+                      "POST"
+                    ],
+                    "example": "GET",
+                    "type": "string"
+                  },
+                  "requestMode": {
+                    "description": "Configure the strategy used to query the HTTP data source.",
+                    "properties": {
+                      "name": {
+                        "description": "Node by node strategy",
+                        "enum": [
+                          "byNode"
+                        ],
+                        "example": "byNode",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "requestTimeout": {
+                    "description": "Timeout in seconds for each HTTP request",
+                    "example": 10,
+                    "type": "integer"
+                  },
+                  "url": {
+                    "description": "URL to contact. Rudder expansion available.",
+                    "example": "http://jsonplaceholder.typicode.com/users/1",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "updateTimeout": {
+            "description": "Duration in seconds before aborting data source update. The main goal is to prevent never ending requests. If a periodicity if configured, you should set that timeout at a lower value.",
+            "example": 30,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://rudder.example.local/rudder/api/latest/datasources/{datasourceId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: The id of the action",
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**datasources**"
+                ]
+              }
+            ],
+            "**result**: Result of the request"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "name": "code-scanning_list-alert-instances",
+  "description": "Lists all instances of the specified code scanning alert.\nYou must use an access token with the `security_events` scope to use this endpoint with private repos,\nthe `public_repo` scope also grants permission to read security events on public repos only.\nGitHub Apps must have the `security_events` read permission to use this endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "alert_number": {
+        "$ref": "#/components/schemas/alert-number",
+        "description": "The number that identifies an alert. You can find this at the end of the URL for a code scanning alert within GitHub, and in the `number` field in the response from the `GET /repos/{owner}/{repo}/code-scanning/alerts` operation."
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Page number of the results to fetch."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "ref": {
+        "$ref": "#/components/schemas/code-scanning-ref",
+        "description": "The Git reference for the results you want to list. The `ref` for a branch can be formatted either as `refs/heads/<branch name>` or simply `<branch name>`. To reference a pull request use `refs/pull/<number>/merge`."
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "alert_number"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances{?page,per_page,ref}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**analysis_key**: Identifies the configuration under which the analysis was executed. For example, in GitHub Actions this includes the workflow filename and job name.",
+            "**category**: Identifies the configuration under which the analysis was executed. Used to distinguish between multiple analyses for the same tool and commit, but performed on different languages or different parts of the code.",
+            "**classifications**: Classifications that have been applied to the file that triggered the alert.",
+            "**commit_sha**",
+            "**environment**: Identifies the variable values associated with the environment in which the analysis that generated this alert instance was performed, such as the language that was analyzed.",
+            "**html_url**",
+            [
+              "**location**: Describe a region within a file for the alert.",
+              {
+                "$ul": [
+                  "**end_column**",
+                  "**end_line**",
+                  "**path**",
+                  "**start_column**",
+                  "**start_line**"
+                ]
+              }
+            ],
+            [
+              "**message**",
+              {
+                "$ul": [
+                  "**text**"
+                ]
+              }
+            ],
+            "**ref**: The full Git reference, formatted as `refs/heads/<branch name>`,",
+            "**state**: State of a code scanning alert."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "503": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**documentation_url**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,770 @@
+{
+  "name": "datastore_projects_runAggregationQuery",
+  "description": "Runs an aggregation query.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "type": "string",
+        "description": "Required. The ID of the project against which to make the request."
+      },
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/RunAggregationQueryRequest"
+      }
+    },
+    "required": [
+      "projectId"
+    ],
+    "$defs": {
+      "RunAggregationQueryRequest": {
+        "description": "The request for Datastore.RunAggregationQuery.",
+        "properties": {
+          "aggregationQuery": {
+            "$ref": "#/$defs/AggregationQuery"
+          },
+          "databaseId": {
+            "description": "The ID of the database against which to make the request. '(default)' is not allowed; please use empty string '' to refer the default database.",
+            "type": "string"
+          },
+          "gqlQuery": {
+            "$ref": "#/$defs/GqlQuery"
+          },
+          "partitionId": {
+            "$ref": "#/$defs/PartitionId"
+          },
+          "readOptions": {
+            "$ref": "#/$defs/ReadOptions"
+          }
+        },
+        "type": "object"
+      },
+      "AggregationQuery": {
+        "description": "Datastore query for running an aggregation over a Query.",
+        "properties": {
+          "aggregations": {
+            "description": "Optional. Series of aggregations to apply over the results of the `nested_query`. Requires: * A minimum of one and maximum of five aggregations per query.",
+            "items": {
+              "$ref": "#/$defs/Aggregation"
+            },
+            "type": "array"
+          },
+          "nestedQuery": {
+            "$ref": "#/$defs/Query"
+          }
+        },
+        "type": "object"
+      },
+      "Aggregation": {
+        "description": "Defines an aggregation that produces a single result.",
+        "properties": {
+          "alias": {
+            "description": "Optional. Optional name of the property to store the result of the aggregation. If not provided, Datastore will pick a default name following the format `property_`. For example: ``` AGGREGATE COUNT_UP_TO(1) AS count_up_to_1, COUNT_UP_TO(2), COUNT_UP_TO(3) AS count_up_to_3, COUNT(*) OVER ( ... ); ``` becomes: ``` AGGREGATE COUNT_UP_TO(1) AS count_up_to_1, COUNT_UP_TO(2) AS property_1, COUNT_UP_TO(3) AS count_up_to_3, COUNT(*) AS property_2 OVER ( ... ); ``` Requires: * Must be unique across all aggregation aliases. * Conform to entity property name limitations.",
+            "type": "string"
+          },
+          "avg": {
+            "$ref": "#/$defs/Avg"
+          },
+          "count": {
+            "$ref": "#/$defs/Count"
+          },
+          "sum": {
+            "$ref": "#/$defs/Sum"
+          }
+        },
+        "type": "object"
+      },
+      "Avg": {
+        "description": "Average of the values of the requested property. * Only numeric values will be aggregated. All non-numeric values including `NULL` are skipped. * If the aggregated values contain `NaN`, returns `NaN`. Infinity math follows IEEE-754 standards. * If the aggregated value set is empty, returns `NULL`. * Always returns the result as a double.",
+        "properties": {
+          "property": {
+            "$ref": "#/$defs/PropertyReference"
+          }
+        },
+        "type": "object"
+      },
+      "PropertyReference": {
+        "description": "A reference to a property relative to the kind expressions.",
+        "properties": {
+          "name": {
+            "description": "A reference to a property. Requires: * MUST be a dot-delimited (`.`) string of segments, where each segment conforms to entity property name limitations.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Count": {
+        "description": "Count of entities that match the query. The `COUNT(*)` aggregation function operates on the entire entity so it does not require a field reference.",
+        "properties": {
+          "upTo": {
+            "description": "Optional. Optional constraint on the maximum number of entities to count. This provides a way to set an upper bound on the number of entities to scan, limiting latency, and cost. Unspecified is interpreted as no bound. If a zero value is provided, a count result of zero should always be expected. High-Level Example: ``` AGGREGATE COUNT_UP_TO(1000) OVER ( SELECT * FROM k ); ``` Requires: * Must be non-negative when present.",
+            "format": "int64",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Sum": {
+        "description": "Sum of the values of the requested property. * Only numeric values will be aggregated. All non-numeric values including `NULL` are skipped. * If the aggregated values contain `NaN`, returns `NaN`. Infinity math follows IEEE-754 standards. * If the aggregated value set is empty, returns 0. * Returns a 64-bit integer if all aggregated numbers are integers and the sum result does not overflow. Otherwise, the result is returned as a double. Note that even if all the aggregated values are integers, the result is returned as a double if it cannot fit within a 64-bit signed integer. When this occurs, the returned value will lose precision. * When underflow occurs, floating-point aggregation is non-deterministic. This means that running the same query repeatedly without any changes to the underlying values could produce slightly different results each time. In those cases, values should be stored as integers over floating-point numbers.",
+        "properties": {
+          "property": {
+            "$ref": "#/$defs/PropertyReference"
+          }
+        },
+        "type": "object"
+      },
+      "Query": {
+        "description": "A query for entities.",
+        "properties": {
+          "distinctOn": {
+            "description": "The properties to make distinct. The query results will contain the first result for each distinct combination of values for the given properties (if empty, all results are returned). Requires: * If `order` is specified, the set of distinct on properties must appear before the non-distinct on properties in `order`.",
+            "items": {
+              "$ref": "#/$defs/PropertyReference"
+            },
+            "type": "array"
+          },
+          "endCursor": {
+            "description": "An ending point for the query results. Query cursors are returned in query result batches and [can only be used to limit the same query](https://cloud.google.com/datastore/docs/concepts/queries#cursors_limits_and_offsets).",
+            "format": "byte",
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/$defs/Filter"
+          },
+          "kind": {
+            "description": "The kinds to query (if empty, returns entities of all kinds). Currently at most 1 kind may be specified.",
+            "items": {
+              "$ref": "#/$defs/KindExpression"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "description": "The maximum number of results to return. Applies after all other constraints. Optional. Unspecified is interpreted as no limit. Must be >= 0 if specified.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "offset": {
+            "description": "The number of results to skip. Applies before limit, but after all other constraints. Optional. Must be >= 0 if specified.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "order": {
+            "description": "The order to apply to the query results (if empty, order is unspecified).",
+            "items": {
+              "$ref": "#/$defs/PropertyOrder"
+            },
+            "type": "array"
+          },
+          "projection": {
+            "description": "The projection to return. Defaults to returning all properties.",
+            "items": {
+              "$ref": "#/$defs/Projection"
+            },
+            "type": "array"
+          },
+          "startCursor": {
+            "description": "A starting point for the query results. Query cursors are returned in query result batches and [can only be used to continue the same query](https://cloud.google.com/datastore/docs/concepts/queries#cursors_limits_and_offsets).",
+            "format": "byte",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Filter": {
+        "description": "A holder for any type of filter.",
+        "properties": {
+          "compositeFilter": {
+            "$ref": "#/$defs/CompositeFilter"
+          },
+          "propertyFilter": {
+            "$ref": "#/$defs/PropertyFilter"
+          }
+        },
+        "type": "object"
+      },
+      "CompositeFilter": {
+        "description": "A filter that merges multiple other filters using the given operator.",
+        "properties": {
+          "filters": {
+            "description": "The list of filters to combine. Requires: * At least one filter is present.",
+            "items": {
+              "$ref": "#/$defs/Filter"
+            },
+            "type": "array"
+          },
+          "op": {
+            "description": "The operator for combining multiple filters.",
+            "enum": [
+              "OPERATOR_UNSPECIFIED",
+              "AND",
+              "OR"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PropertyFilter": {
+        "description": "A filter on a specific property.",
+        "properties": {
+          "op": {
+            "description": "The operator to filter by.",
+            "enum": [
+              "OPERATOR_UNSPECIFIED",
+              "LESS_THAN",
+              "LESS_THAN_OR_EQUAL",
+              "GREATER_THAN",
+              "GREATER_THAN_OR_EQUAL",
+              "EQUAL",
+              "IN",
+              "NOT_EQUAL",
+              "HAS_ANCESTOR",
+              "NOT_IN"
+            ],
+            "type": "string"
+          },
+          "property": {
+            "$ref": "#/$defs/PropertyReference"
+          },
+          "value": {
+            "$ref": "#/$defs/Value"
+          }
+        },
+        "type": "object"
+      },
+      "Value": {
+        "description": "A message that can hold any of the supported value types and associated metadata.",
+        "properties": {
+          "arrayValue": {
+            "$ref": "#/$defs/ArrayValue"
+          },
+          "blobValue": {
+            "description": "A blob value. May have at most 1,000,000 bytes. When `exclude_from_indexes` is false, may have at most 1500 bytes. In JSON requests, must be base64-encoded.",
+            "format": "byte",
+            "type": "string"
+          },
+          "booleanValue": {
+            "description": "A boolean value.",
+            "type": "boolean"
+          },
+          "doubleValue": {
+            "description": "A double value.",
+            "format": "double",
+            "type": "number"
+          },
+          "entityValue": {
+            "$ref": "#/$defs/Entity"
+          },
+          "excludeFromIndexes": {
+            "description": "If the value should be excluded from all indexes including those defined explicitly.",
+            "type": "boolean"
+          },
+          "geoPointValue": {
+            "$ref": "#/$defs/LatLng"
+          },
+          "integerValue": {
+            "description": "An integer value.",
+            "format": "int64",
+            "type": "string"
+          },
+          "keyValue": {
+            "$ref": "#/$defs/Key"
+          },
+          "meaning": {
+            "description": "The `meaning` field should only be populated for backwards compatibility.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "nullValue": {
+            "description": "A null value.",
+            "enum": [
+              "NULL_VALUE"
+            ],
+            "type": "string"
+          },
+          "stringValue": {
+            "description": "A UTF-8 encoded string value. When `exclude_from_indexes` is false (it is indexed) , may have at most 1500 bytes. Otherwise, may be set to at most 1,000,000 bytes.",
+            "type": "string"
+          },
+          "timestampValue": {
+            "description": "A timestamp value. When stored in the Datastore, precise only to microseconds; any additional precision is rounded down.",
+            "format": "google-datetime",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ArrayValue": {
+        "description": "An array value.",
+        "properties": {
+          "values": {
+            "description": "Values in the array. The order of values in an array is preserved as long as all values have identical settings for 'exclude_from_indexes'.",
+            "items": {
+              "$ref": "#/$defs/Value"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Entity": {
+        "description": "A Datastore data object. Must not exceed 1 MiB - 4 bytes.",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/Key"
+          },
+          "properties": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Value"
+            },
+            "description": "The entity's properties. The map's keys are property names. A property name matching regex `__.*__` is reserved. A reserved property name is forbidden in certain documented contexts. The map keys, represented as UTF-8, must not exceed 1,500 bytes and cannot be empty.",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "Key": {
+        "description": "A unique identifier for an entity. If a key's partition ID or any of its path kinds or names are reserved/read-only, the key is reserved/read-only. A reserved/read-only key is forbidden in certain documented contexts.",
+        "properties": {
+          "partitionId": {
+            "$ref": "#/$defs/PartitionId"
+          },
+          "path": {
+            "description": "The entity path. An entity path consists of one or more elements composed of a kind and a string or numerical identifier, which identify entities. The first element identifies a _root entity_, the second element identifies a _child_ of the root entity, the third element identifies a child of the second entity, and so forth. The entities identified by all prefixes of the path are called the element's _ancestors_. An entity path is always fully complete: *all* of the entity's ancestors are required to be in the path along with the entity identifier itself. The only exception is that in some documented cases, the identifier in the last path element (for the entity) itself may be omitted. For example, the last path element of the key of `Mutation.insert` may have no identifier. A path can never be empty, and a path can have at most 100 elements.",
+            "items": {
+              "$ref": "#/$defs/PathElement"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PartitionId": {
+        "description": "A partition ID identifies a grouping of entities. The grouping is always by project and namespace, however the namespace ID may be empty. A partition ID contains several dimensions: project ID and namespace ID. Partition dimensions: - May be `\"\"`. - Must be valid UTF-8 bytes. - Must have values that match regex `[A-Za-z\\d\\.\\-_]{1,100}` If the value of any dimension matches regex `__.*__`, the partition is reserved/read-only. A reserved/read-only partition ID is forbidden in certain documented contexts. Foreign partition IDs (in which the project ID does not match the context project ID ) are discouraged. Reads and writes of foreign partition IDs may fail if the project is not in an active state.",
+        "properties": {
+          "databaseId": {
+            "description": "If not empty, the ID of the database to which the entities belong.",
+            "type": "string"
+          },
+          "namespaceId": {
+            "description": "If not empty, the ID of the namespace to which the entities belong.",
+            "type": "string"
+          },
+          "projectId": {
+            "description": "The ID of the project to which the entities belong.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PathElement": {
+        "description": "A (kind, ID/name) pair used to construct a key path. If either name or ID is set, the element is complete. If neither is set, the element is incomplete.",
+        "properties": {
+          "id": {
+            "description": "The auto-allocated ID of the entity. Never equal to zero. Values less than zero are discouraged and may not be supported in the future.",
+            "format": "int64",
+            "type": "string"
+          },
+          "kind": {
+            "description": "The kind of the entity. A kind matching regex `__.*__` is reserved/read-only. A kind must not contain more than 1500 bytes when UTF-8 encoded. Cannot be `\"\"`. Must be valid UTF-8 bytes. Legacy values that are not valid UTF-8 are encoded as `__bytes__` where `` is the base-64 encoding of the bytes.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the entity. A name matching regex `__.*__` is reserved/read-only. A name must not be more than 1500 bytes when UTF-8 encoded. Cannot be `\"\"`. Must be valid UTF-8 bytes. Legacy values that are not valid UTF-8 are encoded as `__bytes__` where `` is the base-64 encoding of the bytes.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LatLng": {
+        "description": "An object that represents a latitude/longitude pair. This is expressed as a pair of doubles to represent degrees latitude and degrees longitude. Unless specified otherwise, this object must conform to the WGS84 standard. Values must be within normalized ranges.",
+        "properties": {
+          "latitude": {
+            "description": "The latitude in degrees. It must be in the range [-90.0, +90.0].",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "The longitude in degrees. It must be in the range [-180.0, +180.0].",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "KindExpression": {
+        "description": "A representation of a kind.",
+        "properties": {
+          "name": {
+            "description": "The name of the kind.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PropertyOrder": {
+        "description": "The desired order for a specific property.",
+        "properties": {
+          "direction": {
+            "description": "The direction to order by. Defaults to `ASCENDING`.",
+            "enum": [
+              "DIRECTION_UNSPECIFIED",
+              "ASCENDING",
+              "DESCENDING"
+            ],
+            "type": "string"
+          },
+          "property": {
+            "$ref": "#/$defs/PropertyReference"
+          }
+        },
+        "type": "object"
+      },
+      "Projection": {
+        "description": "A representation of a property in a projection.",
+        "properties": {
+          "property": {
+            "$ref": "#/$defs/PropertyReference"
+          }
+        },
+        "type": "object"
+      },
+      "GqlQuery": {
+        "description": "A [GQL query](https://cloud.google.com/datastore/docs/apis/gql/gql_reference).",
+        "properties": {
+          "allowLiterals": {
+            "description": "When false, the query string must not contain any literals and instead must bind all values. For example, `SELECT * FROM Kind WHERE a = 'string literal'` is not allowed, while `SELECT * FROM Kind WHERE a = @value` is.",
+            "type": "boolean"
+          },
+          "namedBindings": {
+            "additionalProperties": {
+              "$ref": "#/$defs/GqlQueryParameter"
+            },
+            "description": "For each non-reserved named binding site in the query string, there must be a named parameter with that name, but not necessarily the inverse. Key must match regex `A-Za-z_$*`, must not match regex `__.*__`, and must not be `\"\"`.",
+            "type": "object"
+          },
+          "positionalBindings": {
+            "description": "Numbered binding site @1 references the first numbered parameter, effectively using 1-based indexing, rather than the usual 0. For each binding site numbered i in `query_string`, there must be an i-th numbered parameter. The inverse must also be true.",
+            "items": {
+              "$ref": "#/$defs/GqlQueryParameter"
+            },
+            "type": "array"
+          },
+          "queryString": {
+            "description": "A string of the format described [here](https://cloud.google.com/datastore/docs/apis/gql/gql_reference).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GqlQueryParameter": {
+        "description": "A binding parameter for a GQL query.",
+        "properties": {
+          "cursor": {
+            "description": "A query cursor. Query cursors are returned in query result batches.",
+            "format": "byte",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/$defs/Value"
+          }
+        },
+        "type": "object"
+      },
+      "ReadOptions": {
+        "description": "The options shared by read requests.",
+        "properties": {
+          "newTransaction": {
+            "$ref": "#/$defs/TransactionOptions"
+          },
+          "readConsistency": {
+            "description": "The non-transactional read consistency to use.",
+            "enum": [
+              "READ_CONSISTENCY_UNSPECIFIED",
+              "STRONG",
+              "EVENTUAL"
+            ],
+            "type": "string"
+          },
+          "readTime": {
+            "description": "Reads entities as they were at the given time. This value is only supported for Cloud Firestore in Datastore mode. This must be a microsecond precision timestamp within the past one hour, or if Point-in-Time Recovery is enabled, can additionally be a whole minute timestamp within the past 7 days.",
+            "format": "google-datetime",
+            "type": "string"
+          },
+          "transaction": {
+            "description": "The identifier of the transaction in which to read. A transaction identifier is returned by a call to Datastore.BeginTransaction.",
+            "format": "byte",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TransactionOptions": {
+        "description": "Options for beginning a new transaction. Transactions can be created explicitly with calls to Datastore.BeginTransaction or implicitly by setting ReadOptions.new_transaction in read requests.",
+        "properties": {
+          "readOnly": {
+            "$ref": "#/$defs/ReadOnly"
+          },
+          "readWrite": {
+            "$ref": "#/$defs/ReadWrite"
+          }
+        },
+        "type": "object"
+      },
+      "ReadOnly": {
+        "description": "Options specific to read-only transactions.",
+        "properties": {
+          "readTime": {
+            "description": "Reads entities at the given time. This must be a microsecond precision timestamp within the past one hour, or if Point-in-Time Recovery is enabled, can additionally be a whole minute timestamp within the past 7 days.",
+            "format": "google-datetime",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReadWrite": {
+        "description": "Options specific to read / write transactions.",
+        "properties": {
+          "previousTransaction": {
+            "description": "The transaction identifier of the transaction being retried.",
+            "format": "byte",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://datastore.googleapis.com//v1/projects/{projectId}:runAggregationQuery{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response for Datastore.RunAggregationQuery.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**batch**: A batch of aggregation results produced by an aggregation query.",
+              {
+                "$ul": [
+                  "**aggregationResults**: The aggregation results for this batch.",
+                  "**moreResults**: The state of the query after the current batch. Only COUNT(*) aggregations are supported in the initial launch. Therefore, expected result type is limited to `NO_MORE_RESULTS`.",
+                  "**readTime**: Read timestamp this batch was returned from. In a single transaction, subsequent query result batches for the same query can have a greater timestamp. Each batch's read timestamp is valid for all preceding batches."
+                ]
+              }
+            ],
+            [
+              "**query**: Datastore query for running an aggregation over a Query.",
+              {
+                "$ul": [
+                  "**aggregations**: Optional. Series of aggregations to apply over the results of the `nested_query`. Requires: * A minimum of one and maximum of five aggregations per query.",
+                  [
+                    "**nestedQuery**: A query for entities.",
+                    {
+                      "$ul": [
+                        "**distinctOn**: The properties to make distinct. The query results will contain the first result for each distinct combination of values for the given properties (if empty, all results are returned). Requires: * If `order` is specified, the set of distinct on properties must appear before the non-distinct on properties in `order`.",
+                        "**endCursor**: An ending point for the query results. Query cursors are returned in query result batches and [can only be used to limit the same query](https://cloud.google.com/datastore/docs/concepts/queries#cursors_limits_and_offsets).",
+                        [
+                          "**filter**: A holder for any type of filter.",
+                          {
+                            "$ul": [
+                              [
+                                "**compositeFilter**: A filter that merges multiple other filters using the given operator.",
+                                {
+                                  "$ul": [
+                                    "**filters**: The list of filters to combine. Requires: * At least one filter is present.",
+                                    "**op**: The operator for combining multiple filters."
+                                  ]
+                                }
+                              ],
+                              [
+                                "**propertyFilter**: A filter on a specific property.",
+                                {
+                                  "$ul": [
+                                    "**op**: The operator to filter by.",
+                                    [
+                                      "**property**: A reference to a property relative to the kind expressions.",
+                                      {
+                                        "$ul": [
+                                          "**name**: A reference to a property. Requires: * MUST be a dot-delimited (`.`) string of segments, where each segment conforms to entity property name limitations."
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**value**: A message that can hold any of the supported value types and associated metadata.",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**arrayValue**: An array value.",
+                                            {
+                                              "$ul": [
+                                                "**values**: Values in the array. The order of values in an array is preserved as long as all values have identical settings for 'exclude_from_indexes'."
+                                              ]
+                                            }
+                                          ],
+                                          "**blobValue**: A blob value. May have at most 1,000,000 bytes. When `exclude_from_indexes` is false, may have at most 1500 bytes. In JSON requests, must be base64-encoded.",
+                                          "**booleanValue**: A boolean value.",
+                                          "**doubleValue**: A double value.",
+                                          [
+                                            "**entityValue**: A Datastore data object. Must not exceed 1 MiB - 4 bytes.",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**key**: A unique identifier for an entity. If a key's partition ID or any of its path kinds or names are reserved/read-only, the key is reserved/read-only. A reserved/read-only key is forbidden in certain documented contexts.",
+                                                  {
+                                                    "$ul": [
+                                                      [
+                                                        "**partitionId**: A partition ID identifies a grouping of entities. The grouping is always by project and namespace, however the namespace ID may be empty. A partition ID contains several dimensions: project ID and namespace ID. Partition dimensions: - May be `\"\"`. - Must be valid UTF-8 bytes. - Must have values that match regex `[A-Za-z\\d\\.\\-_]{1,100}` If the value of any dimension matches regex `__.*__`, the partition is reserved/read-only. A reserved/read-only partition ID is forbidden in certain documented contexts. Foreign partition IDs (in which the project ID does not match the context project ID ) are discouraged. Reads and writes of foreign partition IDs may fail if the project is not in an active state.",
+                                                        {
+                                                          "$ul": [
+                                                            "**databaseId**: If not empty, the ID of the database to which the entities belong.",
+                                                            "**namespaceId**: If not empty, the ID of the namespace to which the entities belong.",
+                                                            "**projectId**: The ID of the project to which the entities belong."
+                                                          ]
+                                                        }
+                                                      ],
+                                                      "**path**: The entity path. An entity path consists of one or more elements composed of a kind and a string or numerical identifier, which identify entities. The first element identifies a _root entity_, the second element identifies a _child_ of the root entity, the third element identifies a child of the second entity, and so forth. The entities identified by all prefixes of the path are called the element's _ancestors_. An entity path is always fully complete: *all* of the entity's ancestors are required to be in the path along with the entity identifier itself. The only exception is that in some documented cases, the identifier in the last path element (for the entity) itself may be omitted. For example, the last path element of the key of `Mutation.insert` may have no identifier. A path can never be empty, and a path can have at most 100 elements."
+                                                    ]
+                                                  }
+                                                ],
+                                                "**properties**: The entity's properties. The map's keys are property names. A property name matching regex `__.*__` is reserved. A reserved property name is forbidden in certain documented contexts. The map keys, represented as UTF-8, must not exceed 1,500 bytes and cannot be empty."
+                                              ]
+                                            }
+                                          ],
+                                          "**excludeFromIndexes**: If the value should be excluded from all indexes including those defined explicitly.",
+                                          [
+                                            "**geoPointValue**: An object that represents a latitude/longitude pair. This is expressed as a pair of doubles to represent degrees latitude and degrees longitude. Unless specified otherwise, this object must conform to the WGS84 standard. Values must be within normalized ranges.",
+                                            {
+                                              "$ul": [
+                                                "**latitude**: The latitude in degrees. It must be in the range [-90.0, +90.0].",
+                                                "**longitude**: The longitude in degrees. It must be in the range [-180.0, +180.0]."
+                                              ]
+                                            }
+                                          ],
+                                          "**integerValue**: An integer value.",
+                                          [
+                                            "**keyValue**: A unique identifier for an entity. If a key's partition ID or any of its path kinds or names are reserved/read-only, the key is reserved/read-only. A reserved/read-only key is forbidden in certain documented contexts.",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**partitionId**: A partition ID identifies a grouping of entities. The grouping is always by project and namespace, however the namespace ID may be empty. A partition ID contains several dimensions: project ID and namespace ID. Partition dimensions: - May be `\"\"`. - Must be valid UTF-8 bytes. - Must have values that match regex `[A-Za-z\\d\\.\\-_]{1,100}` If the value of any dimension matches regex `__.*__`, the partition is reserved/read-only. A reserved/read-only partition ID is forbidden in certain documented contexts. Foreign partition IDs (in which the project ID does not match the context project ID ) are discouraged. Reads and writes of foreign partition IDs may fail if the project is not in an active state.",
+                                                  {
+                                                    "$ul": [
+                                                      "**databaseId**: If not empty, the ID of the database to which the entities belong.",
+                                                      "**namespaceId**: If not empty, the ID of the namespace to which the entities belong.",
+                                                      "**projectId**: The ID of the project to which the entities belong."
+                                                    ]
+                                                  }
+                                                ],
+                                                "**path**: The entity path. An entity path consists of one or more elements composed of a kind and a string or numerical identifier, which identify entities. The first element identifies a _root entity_, the second element identifies a _child_ of the root entity, the third element identifies a child of the second entity, and so forth. The entities identified by all prefixes of the path are called the element's _ancestors_. An entity path is always fully complete: *all* of the entity's ancestors are required to be in the path along with the entity identifier itself. The only exception is that in some documented cases, the identifier in the last path element (for the entity) itself may be omitted. For example, the last path element of the key of `Mutation.insert` may have no identifier. A path can never be empty, and a path can have at most 100 elements."
+                                              ]
+                                            }
+                                          ],
+                                          "**meaning**: The `meaning` field should only be populated for backwards compatibility.",
+                                          "**nullValue**: A null value.",
+                                          "**stringValue**: A UTF-8 encoded string value. When `exclude_from_indexes` is false (it is indexed) , may have at most 1500 bytes. Otherwise, may be set to at most 1,000,000 bytes.",
+                                          "**timestampValue**: A timestamp value. When stored in the Datastore, precise only to microseconds; any additional precision is rounded down."
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**kind**: The kinds to query (if empty, returns entities of all kinds). Currently at most 1 kind may be specified.",
+                        "**limit**: The maximum number of results to return. Applies after all other constraints. Optional. Unspecified is interpreted as no limit. Must be >= 0 if specified.",
+                        "**offset**: The number of results to skip. Applies before limit, but after all other constraints. Optional. Must be >= 0 if specified.",
+                        "**order**: The order to apply to the query results (if empty, order is unspecified).",
+                        "**projection**: The projection to return. Defaults to returning all properties.",
+                        "**startCursor**: A starting point for the query results. Query cursors are returned in query result batches and [can only be used to continue the same query](https://cloud.google.com/datastore/docs/concepts/queries#cursors_limits_and_offsets)."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**transaction**: The identifier of the transaction that was started as part of this RunAggregationQuery request. Set only when ReadOptions.new_transaction was set in RunAggregationQueryRequest.read_options."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

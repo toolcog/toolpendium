@@ -1,0 +1,378 @@
+{
+  "name": "UpdateTableObjects",
+  "description": "Updates the manifest of Amazon S3 objects that make up the specified governed table.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "DatabaseName",
+          "TableName",
+          "WriteOperations"
+        ],
+        "properties": {
+          "CatalogId": {
+            "description": "The catalog containing the governed table to update. Defaults to the caller’s account ID.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+          },
+          "DatabaseName": {
+            "description": "The database containing the governed table to update.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+          },
+          "TableName": {
+            "description": "The governed table to update.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\t]*"
+          },
+          "TransactionId": {
+            "description": "The transaction at which to do the write.",
+            "type": "string",
+            "pattern": "[\\p{L}\\p{N}\\p{P}]*",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "WriteOperations": {
+            "description": "A list of <code>WriteOperation</code> objects that define an object to add to or delete from the manifest for a governed table.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/WriteOperation"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "WriteOperation": {
+        "type": "object",
+        "properties": {
+          "AddObject": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AddObjectInput"
+              },
+              {
+                "description": "A new object to add to the governed table."
+              }
+            ]
+          },
+          "DeleteObject": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DeleteObjectInput"
+              },
+              {
+                "description": "An object to delete from the governed table."
+              }
+            ]
+          }
+        },
+        "description": "Defines an object to add to or delete from a governed table."
+      },
+      "AddObjectInput": {
+        "type": "object",
+        "required": [
+          "Uri",
+          "ETag",
+          "Size"
+        ],
+        "properties": {
+          "Uri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/URI"
+              },
+              {
+                "description": "The Amazon S3 location of the object."
+              }
+            ]
+          },
+          "ETag": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ETagString"
+              },
+              {
+                "description": "The Amazon S3 ETag of the object. Returned by <code>GetTableObjects</code> for validation and used to identify changes to the underlying data."
+              }
+            ]
+          },
+          "Size": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ObjectSize"
+              },
+              {
+                "description": "The size of the Amazon S3 object in bytes."
+              }
+            ]
+          },
+          "PartitionValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PartitionValuesList"
+              },
+              {
+                "description": "<p>A list of partition values for the object. A value must be specified for each partition key associated with the table.</p> <p>The supported data types are integer, long, date(yyyy-MM-dd), timestamp(yyyy-MM-dd HH:mm:ssXXX or yyyy-MM-dd HH:mm:ss\"), string and decimal.</p>"
+              }
+            ]
+          }
+        },
+        "description": "A new object to add to the governed table."
+      },
+      "URI": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
+      },
+      "ETagString": {
+        "type": "string",
+        "pattern": "[\\p{L}\\p{N}\\p{P}]*",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "ObjectSize": {
+        "type": "integer"
+      },
+      "PartitionValuesList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/PartitionValueString"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "PartitionValueString": {
+        "type": "string",
+        "maxLength": 1024
+      },
+      "DeleteObjectInput": {
+        "type": "object",
+        "required": [
+          "Uri"
+        ],
+        "properties": {
+          "Uri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/URI"
+              },
+              {
+                "description": "The Amazon S3 location of the object to delete."
+              }
+            ]
+          },
+          "ETag": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ETagString"
+              },
+              {
+                "description": "The Amazon S3 ETag of the object. Returned by <code>GetTableObjects</code> for validation and used to identify changes to the underlying data."
+              }
+            ]
+          },
+          "PartitionValues": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PartitionValuesList"
+              },
+              {
+                "description": "A list of partition values for the object. A value must be specified for each partition key associated with the governed table."
+              }
+            ]
+          }
+        },
+        "description": "An object to delete from the governed table."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://lakeformation.us-east-1.amazonaws.com/UpdateTableObjects"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

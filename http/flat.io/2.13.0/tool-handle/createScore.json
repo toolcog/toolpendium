@@ -1,0 +1,309 @@
+{
+  "name": "createScore",
+  "description": "Use this API method to **create a new music score in the current User account**. You will need a MusicXML 3 (`vnd.recordare.musicxml` or `vnd.recordare.musicxml+xml`), a MIDI (`audio/midi`), Guitar Pro (GP3, GP4, GP5, GPX, GP), PowerTab, TuxGuitar, or MuseScore file to create the new Flat document.\n\nThis API call will automatically create the first revision of the document, the score can be modified by the using our web application or by uploading a new revision of this file (`POST /v2/scores/{score}/revisions/{revision}`).\n\nThe currently authenticated user will be granted owner of the file and will be able to add other collaborators (users and groups).\n\nIf no `collection` is specified, the API will create the score in the most appropriate collection. This can be the `root` collection or a different collection based on the user's settings or API authentication method.\nIf a `collection` is specified and this one has more public privacy settings than the score (e.g. `public` vs `private` for the score), the privacy settings of the created score will be adjusted to the collection ones.\nYou can check the adjusted privacy settings in the returned score `privacy`, and optionally adjust these settings if needed using `PUT /scores/{score}`.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/ScoreCreation"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ScoreCreation": {
+        "description": "A new created score",
+        "example": {
+          "data": "<score-partwise version=\"3.0\"></score-partwise>",
+          "googleDriveFolder": "0B-0000000000000000",
+          "privacy": "private",
+          "title": "My new score"
+        },
+        "properties": {
+          "collection": {
+            "description": "Unique identifier of a collection where the score will be created.\nIf no collection identifier is provided, the score will be stored in the `root` directory.\n",
+            "type": "string"
+          },
+          "data": {
+            "description": "The data of the score file. It must be a MusicXML 3 file (`vnd.recordare.musicxml` or `vnd.recordare.musicxml+xml`), a MIDI file (`audio/midi`) or a Flat.json (aka Adagio.json) file.\nBinary payloads (`vnd.recordare.musicxml` and `audio/midi`) can be encoded in Base64, in this case the `dataEncoding` property must match the encoding used for the API request.\n",
+            "example": "<score-partwise version=\"3.0\"></score-partwise>",
+            "type": "string"
+          },
+          "dataEncoding": {
+            "description": "The optional encoding of the score data. This property must match the encoding used for the `data` property.",
+            "enum": [
+              "base64"
+            ],
+            "type": "string"
+          },
+          "filename": {
+            "description": "If this is an imported file, its filename",
+            "type": "string"
+          },
+          "googleDriveFolder": {
+            "description": "If the user uses Google Drive and this properties is specified, the file will be created in this directory. The currently user creating the file must be granted to write in this directory.\n",
+            "type": "string"
+          },
+          "privacy": {
+            "$ref": "#/$defs/ScorePrivacy"
+          },
+          "source": {
+            "$ref": "#/$defs/ScoreSource"
+          },
+          "title": {
+            "description": "The title of the new score. If the title is too long, the API may trim this one.\n\nIf this title is not specified, the API will try to (in this order):\n  - Use the title contained in the file (e.g. [`movement-title`](https://usermanuals.musicxml.com/MusicXML/Content/EL-MusicXML-movement-title.htm) or [`credit-words`](https://usermanuals.musicxml.com/MusicXML/Content/EL-MusicXML-credit-words.htm) for [MusicXML](http://www.musicxml.com/) files).\n  - Use the name of the file for files from a specified `source` (e.g. Google Drive) or the one in the `filename` property\n  - Set a default title (e.g. \"New Music Score\")\n",
+            "type": "string"
+          }
+        },
+        "required": [
+          "privacy"
+        ],
+        "type": "object"
+      },
+      "ScorePrivacy": {
+        "description": "The score main privacy mode.\n\n- `public`: The score is public on the Internet. This one can be accessible at the url `https://flat.io/score/{score}` and can be modified and administred by specified collaborators users.\n- `private`: The score is private and can be only accessed, modified and administred by specified collaborators users.\n- `privateLink`: The score is private but can be accessed using a private link `htmlUrl` or the private key in the property `sharingKey`.\n- `organizationPublic`: _Available only with [Flat for Education](https://flat.io/edu)._ The score is public in the organization: users of the same organization can access to this one. The score can be modified and administred by specified collaborators users.\n\nThe score can also be individually shared to a set of users or groups using the different collaborators API methods.\n\nWhen a file is synchronized from an external source (e.g. Google Drive) and the sharing options are changed on the source, Flat will chose the best privacy mode for the file.\n\nWhen using a [Flat for Education](https://flat.io/edu) account, some of the modes may not be available if disabled by an administrator of the organization (e.g. by default the `public` mode is not available).\n",
+        "enum": [
+          "public",
+          "private",
+          "organizationPublic",
+          "privateLink"
+        ],
+        "type": "string"
+      },
+      "ScoreSource": {
+        "example": {
+          "googleDrive": "0B-0000000000000001"
+        },
+        "properties": {
+          "googleDrive": {
+            "description": "If the score is a file on Google Drive, this field property must contain its identifier. To use this method, the Drive file must be public or the Flat Drive App must have access to the file.\n",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.flat.io/v2/scores"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A summary of the score details",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**htmlUrl**: The url where the score can be viewed in a web browser",
+            "**id**: The unique identifier of the score",
+            "**privacy**: The score main privacy mode.",
+            "**sharingKey**: The private sharing key of the score (available when the `privacy` mode is set to `privateLink`)",
+            "**title**: The title of the score",
+            [
+              "**user**",
+              {
+                "$ul": [
+                  "**firstname**: Firstname of the user (for education users)",
+                  "**id**: The user unique identifier",
+                  "**isFlatTeam**: Will be 'true' if user is part of the Flat Team",
+                  "**isPowerUser**: User license status. 'true' if user is an individual Power user",
+                  "**lastname**: Lastname of the user (for education users)",
+                  "**name**: A displayable name for the user (for consumer users)",
+                  "**picture**: The URL of the picture to display",
+                  "**printableName**: The name that can be directly printed (name, firstname & lastname, or username)",
+                  "**type**: The type of user account",
+                  "**username**: The user name (unique for the organization)",
+                  "**classRole**: User's Class Role (for Edu users only)",
+                  "**htmlUrl**: Link to user profile (for Indiv. users only)",
+                  "**organization**: Organization ID (for Edu users only)",
+                  "**organizationRole**: User's Organization Role (for Edu users only)"
+                ]
+              }
+            ],
+            "**arranger**: Arranger of the score",
+            "**collaborators**: The list of the collaborators of the score",
+            "**collections**: The List of parent collections, which includes all the collections this score is included. Please note that you might not have access to all of them.",
+            [
+              "**comments**: A computed version of the total, unique, weekly and monthly number of",
+              {
+                "$ul": [
+                  "**monthly**: The monthly unique number of comments added to the score",
+                  "**total**: The total number of comments added to the score",
+                  "**unique**: The unique (1/user) number of comments added to the score",
+                  "**weekly**: The weekly unique number of comments added to the score"
+                ]
+              }
+            ],
+            "**composer**: Composer of the score",
+            "**creationDate**: The date when the score was created",
+            "**creationType**: The type of creation (an orginal, an arrangement)",
+            "**description**: Description of the creation",
+            "**durationTime**: In seconds, an approximative duration of the score",
+            "**googleDriveFileId**: If the user uses Google Drive and the score exists on Google Drive, this field will contain the unique identifier of the Flat score on Google Drive. You can access the document using the url: `https://drive.google.com/open?id={googleDriveFileId}`",
+            "**instruments**: An array of the instrument identifiers used in the last version of the score. This is mainly used to display a list of the instruments in the Flat's UI or instruments icons. The format of the strings is `{instrument-group}.{instrument-id}`.",
+            "**license**: License of the creation. Read more about the Creative Commons licenses on https://creativecommons.org/licenses/",
+            "**licenseText**: Additional license text written on the exported/printed score",
+            [
+              "**likes**: A computed version of the weekly, monthly and total of number of likes",
+              {
+                "$ul": [
+                  "**monthly**: The number of new likes during the last month",
+                  "**total**: The total number of likes of the score",
+                  "**weekly**: The number of new likes during the last week"
+                ]
+              }
+            ],
+            "**lyricist**: Lyricist of the score",
+            "**mainTempoQpm**: The main tempo of the score (in QPM)",
+            "**modificationDate**: The date of the last revision of the score",
+            "**numberMeasures**: The number of measures in the score",
+            "**organization**: If the score has been created in an organization, the identifier of this organization. This property is especially used with the score privacy `organizationPublic`.",
+            "**parentScore**: If the score has been forked, the unique identifier of the parent score.",
+            [
+              "**plays**: A computed version of the total, weekly, and monthly number of plays of",
+              {
+                "$ul": [
+                  "**monthly**: The monthly number of plays of the score",
+                  "**total**: The total number of plays of the score",
+                  "**weekly**: The weekly number of plays of the score"
+                ]
+              }
+            ],
+            "**publicationDate**: The date when the score was published on Flat",
+            [
+              "**rights**: The rights of the current user on a score or collection",
+              {
+                "$ul": [
+                  "**aclAdmin**: `True` if the current user can manage the current document (i.e. share, delete) (default: false)",
+                  "**aclRead**: `True` if the current user can read the current document (default: false)",
+                  "**aclWrite**: `True` if the current user can modify the current document. (default: false)",
+                  "**isCollaborator**: `True` if the current user is a collaborator of the current document (direct or via group). (default: false)"
+                ]
+              }
+            ],
+            "**samples**: An array of the audio samples identifiers used the different score parts.",
+            "**subtitle**: Subtitle of the score",
+            "**tags**: Tags describing the score",
+            [
+              "**views**: A computed version of the total, weekly, and monthly number of views of",
+              {
+                "$ul": [
+                  "**monthly**: The monthly number of views of the score",
+                  "**total**: The total number of views of the score",
+                  "**weekly**: The weekly number of views of the score"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An API Error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A corresponding code for this error",
+            "**id**: An unique error identifier generated for the request",
+            "**message**: A printable message for this message",
+            "**param**: The related parameter that caused the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

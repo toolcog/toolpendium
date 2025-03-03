@@ -1,0 +1,120 @@
+{
+  "name": "getOrganizationDevicesAvailabilities",
+  "description": "List the availability information for devices in an organization. The data returned by this endpoint is updated every 5 minutes.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationId": {
+        "type": "string"
+      },
+      "perPage": {
+        "type": "integer",
+        "description": "The number of entries per page returned. Acceptable range is 3 - 1000. Default is 1000."
+      },
+      "startingAfter": {
+        "type": "string",
+        "description": "A token used by the server to indicate the start of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "endingBefore": {
+        "type": "string",
+        "description": "A token used by the server to indicate the end of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "networkIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter device availabilities by network ID. This filter uses multiple exact matches."
+      },
+      "productTypes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter device availabilities by device product types. This filter uses multiple exact matches."
+      },
+      "serials": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to filter device availabilities by device serial numbers. This filter uses multiple exact matches."
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "An optional parameter to filter devices by tags. The filtering is case-sensitive. If tags are included, 'tagsFilterType' should also be included (see below). This filter uses multiple exact matches."
+      },
+      "tagsFilterType": {
+        "enum": [
+          "withAllTags",
+          "withAnyTags"
+        ],
+        "type": "string",
+        "description": "An optional parameter of value 'withAnyTags' or 'withAllTags' to indicate whether to return devices which contain ANY or ALL of the included tags. If no type is included, 'withAnyTags' will be selected."
+      }
+    },
+    "required": [
+      "organizationId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/organizations/{organizationId}/devices/availabilities{?perPage,startingAfter,endingBefore,networkIds,productTypes,serials,tags,tagsFilterType}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**mac**: The device MAC address.",
+            "**name**: The device name.",
+            [
+              "**network**: Network info.",
+              {
+                "$ul": [
+                  "**id**: ID for the network containing the device."
+                ]
+              }
+            ],
+            "**productType**: Device product type.",
+            "**serial**: The device serial number.",
+            "**status**: Status of the device. Possible values are: online, alerting, offline, dormant.",
+            "**tags**: List of custom tags for the device."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

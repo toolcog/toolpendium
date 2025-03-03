@@ -1,0 +1,384 @@
+{
+  "name": "CreatePolicy",
+  "description": "<p>Creates a Cedar policy and saves it in the specified policy store. You can create either a static policy or a policy linked to a policy template.</p> <ul> <li> <p>To create a static policy, provide the Cedar policy text in the <code>StaticPolicy</code> section of the <code>PolicyDefinition</code>.</p> </li> <li> <p>To create a policy that is dynamically linked to a policy template, specify the policy template ID and the principal and resource to associate with this policy in the <code>templateLinked</code> section of the <code>PolicyDefinition</code>. If the policy template is ever updated, any policies linked to the policy template automatically use the updated template.</p> </li> </ul> <note> <p>Creating a policy causes it to be validated against the schema in the policy store. If the policy doesn't pass validation, the operation fails and the policy isn't stored.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "VerifiedPermissions.CreatePolicy"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreatePolicyInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreatePolicyInput": {
+        "type": "object",
+        "required": [
+          "policyStoreId",
+          "definition"
+        ],
+        "title": "CreatePolicyInput",
+        "properties": {
+          "clientToken": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IdempotencyToken"
+              },
+              {
+                "description": "<p>Specifies a unique, case-sensitive ID that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value.</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>"
+              }
+            ]
+          },
+          "policyStoreId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PolicyStoreId"
+              },
+              {
+                "description": "Specifies the <code>PolicyStoreId</code> of the policy store you want to store the policy in."
+              }
+            ]
+          },
+          "definition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PolicyDefinition"
+              },
+              {
+                "description": "A structure that specifies the policy type and content to use for the new policy. You must include either a static or a templateLinked element. The policy content must be written in the Cedar policy language."
+              }
+            ]
+          }
+        }
+      },
+      "IdempotencyToken": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9-]*",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "PolicyStoreId": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9-]*",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "PolicyDefinition": {
+        "type": "object",
+        "properties": {
+          "static": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StaticPolicyDefinition"
+              },
+              {
+                "description": "A structure that describes a static policy. An static policy doesn't use a template or allow placeholders for entities."
+              }
+            ]
+          },
+          "templateLinked": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TemplateLinkedPolicyDefinition"
+              },
+              {
+                "description": "A structure that describes a policy that was instantiated from a template. The template can specify placeholders for <code>principal</code> and <code>resource</code>. When you use <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_CreatePolicy.html\">CreatePolicy</a> to create a policy from a template, you specify the exact principal and resource to use for the instantiated policy."
+              }
+            ]
+          }
+        },
+        "description": "<p>A structure that contains the details for a Cedar policy definition. It includes the policy type, a description, and a policy body. This is a top level data type used to create a policy.</p> <p>This data type is used as a request parameter for the <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_CreatePolicy.html\">CreatePolicy</a> operation. This structure must always have either an <code>static</code> or a <code>templateLinked</code> element.</p>"
+      },
+      "StaticPolicyDefinition": {
+        "type": "object",
+        "required": [
+          "statement"
+        ],
+        "properties": {
+          "description": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StaticPolicyDescription"
+              },
+              {
+                "description": "The description of the static policy."
+              }
+            ]
+          },
+          "statement": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PolicyStatement"
+              },
+              {
+                "description": "The policy content of the static policy, written in the Cedar policy language."
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains information about a static policy.</p> <p>This data type is used as a field that is part of the <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_PolicyDefinitionDetail.html\">PolicyDefinitionDetail</a> type.</p>"
+      },
+      "StaticPolicyDescription": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 150
+      },
+      "PolicyStatement": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10000
+      },
+      "TemplateLinkedPolicyDefinition": {
+        "type": "object",
+        "required": [
+          "policyTemplateId"
+        ],
+        "properties": {
+          "policyTemplateId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PolicyTemplateId"
+              },
+              {
+                "description": "The unique identifier of the policy template used to create this policy."
+              }
+            ]
+          },
+          "principal": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityIdentifier"
+              },
+              {
+                "description": "The principal associated with this template-linked policy. Verified Permissions substitutes this principal for the <code>?principal</code> placeholder in the policy template when it evaluates an authorization request."
+              }
+            ]
+          },
+          "resource": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityIdentifier"
+              },
+              {
+                "description": "The resource associated with this template-linked policy. Verified Permissions substitutes this resource for the <code>?resource</code> placeholder in the policy template when it evaluates an authorization request."
+              }
+            ]
+          }
+        },
+        "description": "Contains information about a policy created by instantiating a policy template."
+      },
+      "PolicyTemplateId": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9-]*",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "EntityIdentifier": {
+        "type": "object",
+        "required": [
+          "entityType",
+          "entityId"
+        ],
+        "properties": {
+          "entityType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityType"
+              },
+              {
+                "description": "<p>The type of an entity.</p> <p>Example: <code>\"entityType\":\"<i>typeName</i>\"</code> </p>"
+              }
+            ]
+          },
+          "entityId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EntityId"
+              },
+              {
+                "description": "<p>The identifier of an entity.</p> <p> <code>\"entityId\":\"<i>identifier</i>\"</code> </p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains the identifier of an entity, including its ID and type.</p> <p>This data type is used as a request parameter for <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_IsAuthorized.html\">IsAuthorized</a> operation, and as a response parameter for the <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_CreatePolicy.html\">CreatePolicy</a>, <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_GetPolicy.html\">GetPolicy</a>, and <a href=\"https://docs.aws.amazon.com/verifiedpermissions/latest/apireference/API_UpdatePolicy.html\">UpdatePolicy</a> operations.</p> <p>Example: <code>{\"entityId\":\"<i>string</i>\",\"entityType\":\"<i>string</i>\"}</code> </p>"
+      },
+      "EntityType": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "EntityId": {
+        "type": "string",
+        "pattern": ".*",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://verifiedpermissions.us-east-1.amazonaws.com/#X-Amz-Target=VerifiedPermissions.CreatePolicy"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**policyStoreId**",
+            "**policyId**",
+            "**policyType**",
+            "**principal**",
+            "**resource**",
+            "**createdDate**",
+            "**lastUpdatedDate**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

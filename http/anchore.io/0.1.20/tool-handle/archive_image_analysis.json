@@ -1,0 +1,101 @@
+{
+  "name": "archive_image_analysis",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/ImageAnalysisReferences"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ImageAnalysisReferences": {
+        "description": "List of image digests to archive",
+        "items": {
+          "description": "Image digest",
+          "type": "string"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//archives/images"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List of analysis archive add results",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: Details on the status, e.g. the error message",
+            "**digest**: The image digest requested to be added",
+            "**status**: The status of the archive add operation. Typically either 'archived' or 'error'"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

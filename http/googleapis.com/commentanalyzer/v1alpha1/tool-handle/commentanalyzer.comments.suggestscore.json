@@ -1,0 +1,248 @@
+{
+  "name": "commentanalyzer_comments_suggestscore",
+  "description": "Suggest comment scores as training data.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/SuggestCommentScoreRequest"
+      }
+    },
+    "$defs": {
+      "SuggestCommentScoreRequest": {
+        "description": "The comment score suggestion request message.",
+        "properties": {
+          "attributeScores": {
+            "additionalProperties": {
+              "$ref": "#/$defs/AttributeScores"
+            },
+            "description": "Attribute scores for the comment. The map keys are attribute names, same as the requested_attribute field in AnalyzeCommentRequest (for example \"ATTACK_ON_AUTHOR\", \"INFLAMMATORY\", etc.). This field has the same type as the `attribute_scores` field in AnalyzeCommentResponse. To specify an overall attribute score for the entire comment as a whole, use the `summary_score` field of the mapped AttributeScores object. To specify scores on specific subparts of the comment, use the `span_scores` field. All SpanScore objects must have begin and end fields set. All Score objects must be explicitly set (for binary classification, use the score values 0 and 1). If Score objects don't include a ScoreType, `PROBABILITY` is assumed. `attribute_scores` must not be empty. The mapped AttributeScores objects also must not be empty. An `INVALID_ARGUMENT` error is returned for all malformed requests.",
+            "type": "object"
+          },
+          "clientToken": {
+            "description": "Opaque token that is echoed from the request to the response.",
+            "type": "string"
+          },
+          "comment": {
+            "$ref": "#/$defs/TextEntry"
+          },
+          "communityId": {
+            "description": "Optional identifier associating this comment score suggestion with a particular sub-community. Different communities may have different norms and rules. Specifying this value enables training community-specific models.",
+            "type": "string"
+          },
+          "context": {
+            "$ref": "#/$defs/Context"
+          },
+          "languages": {
+            "description": "The language(s) of the comment and context. If none are specified, we attempt to automatically detect the language. Both ISO and BCP-47 language codes are accepted.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sessionId": {
+            "description": "Session ID. Used to join related RPCs into a single session. For example, an interactive tool that calls both the AnalyzeComment and SuggestCommentScore RPCs should set all invocations of both RPCs to the same Session ID, typically a random 64-bit integer.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AttributeScores": {
+        "description": "This holds score values for a single attribute. It contains both per-span scores as well as an overall summary score..",
+        "properties": {
+          "spanScores": {
+            "description": "Per-span scores.",
+            "items": {
+              "$ref": "#/$defs/SpanScore"
+            },
+            "type": "array"
+          },
+          "summaryScore": {
+            "$ref": "#/$defs/Score"
+          }
+        },
+        "type": "object"
+      },
+      "SpanScore": {
+        "description": "This is a single score for a given span of text.",
+        "properties": {
+          "begin": {
+            "description": "\"begin\" and \"end\" describe the span of the original text that the attribute score applies to. The values are the UTF-16 codepoint range. \"end\" is exclusive. For example, with the text \"Hi there\", the begin/end pair (0,2) describes the text \"Hi\". If \"begin\" and \"end\" are unset, the score applies to the full text.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "end": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "score": {
+            "$ref": "#/$defs/Score"
+          }
+        },
+        "type": "object"
+      },
+      "Score": {
+        "description": "Analysis scores are described by a value and a ScoreType.",
+        "properties": {
+          "type": {
+            "description": "The type of the above value.",
+            "enum": [
+              "SCORE_TYPE_UNSPECIFIED",
+              "PROBABILITY",
+              "STD_DEV_SCORE",
+              "PERCENTILE",
+              "RAW"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "description": "Score value. Semantics described by type below.",
+            "format": "float",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "TextEntry": {
+        "description": "Represents a body of text.",
+        "properties": {
+          "text": {
+            "description": "UTF-8 encoded text.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of the text field.",
+            "enum": [
+              "TEXT_TYPE_UNSPECIFIED",
+              "PLAIN_TEXT",
+              "HTML"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Context": {
+        "description": "Context is typically something that a Comment is referencing or replying to (such as an article, or previous comment). Note: Populate only ONE OF the following fields. The oneof syntax cannot be used because that would require nesting entries inside another message and breaking backwards compatibility. The server will return an error if more than one of the following fields is present.",
+        "properties": {
+          "articleAndParentComment": {
+            "$ref": "#/$defs/ArticleAndParentComment"
+          },
+          "entries": {
+            "description": "A list of messages. For example, a linear comments section or forum thread.",
+            "items": {
+              "$ref": "#/$defs/TextEntry"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ArticleAndParentComment": {
+        "description": "A type of context specific to a comment left on a single-threaded comment message board, where comments are either a top level comment or the child of a top level comment.",
+        "properties": {
+          "article": {
+            "$ref": "#/$defs/TextEntry"
+          },
+          "parentComment": {
+            "$ref": "#/$defs/TextEntry"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://commentanalyzer.googleapis.com//v1alpha1/comments:suggestscore{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The comment score suggestion response message.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**clientToken**: Same token from the original SuggestCommentScoreRequest.",
+            "**detectedLanguages**: The list of languages detected from the comment text.",
+            "**requestedLanguages**: The list of languages provided in the request."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

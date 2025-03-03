@@ -1,0 +1,114 @@
+{
+  "name": "get_sim_search",
+  "description": "Search for phenotypically similar diseases or model genes",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "is_feature_set": {
+        "default": true,
+        "type": "boolean",
+        "description": "set to true if *all* input ids are phenotypic features, else set to false"
+      },
+      "metric": {
+        "default": "phenodigm",
+        "enum": [
+          "phenodigm",
+          "jaccard",
+          "simGIC",
+          "resnik",
+          "symmetric_resnik"
+        ],
+        "type": "string",
+        "description": "Metric for computing similarity"
+      },
+      "id": {
+        "default": [],
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A phenotype or identifier that is composed of phenotypes (eg disease, gene)"
+      },
+      "limit": {
+        "default": 20,
+        "type": "integer",
+        "description": "number of rows, max 500"
+      },
+      "taxon": {
+        "type": "string",
+        "description": "ncbi taxon id"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/sim/search{?is_feature_set,metric,id,limit,taxon}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**matches**",
+            [
+              "**metadata**",
+              {
+                "$ul": [
+                  "**max_max_ic**: max IC"
+                ]
+              }
+            ],
+            [
+              "**query**",
+              {
+                "$ul": [
+                  "**ids**",
+                  "**negated_ids**",
+                  [
+                    "**reference**",
+                    {
+                      "$ul": [
+                        "**id**: ID or CURIE e.g. MGI:1201606",
+                        "**label**: RDFS Label",
+                        [
+                          "**taxon**",
+                          {
+                            "$ul": [
+                              "**id**: ID or CURIE e.g. MGI:1201606",
+                              "**label**: RDFS Label"
+                            ]
+                          }
+                        ],
+                        "**type**: node type (eg phenotype, disease)"
+                      ]
+                    }
+                  ],
+                  "**target_ids**",
+                  "**unresolved_ids**: list of unresolved ids"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

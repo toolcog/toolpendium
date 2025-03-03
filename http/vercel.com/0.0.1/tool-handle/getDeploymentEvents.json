@@ -1,0 +1,137 @@
+{
+  "name": "getDeploymentEvents",
+  "description": "Get the build logs of a deployment by deployment ID and build ID. It can work as an infinite stream of logs or as a JSON endpoint depending on the input parameters.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "idOrUrl": {
+        "description": "The unique identifier or hostname of the deployment.",
+        "examples": [
+          "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd"
+        ],
+        "type": "string"
+      },
+      "direction": {
+        "default": "forward",
+        "description": "Order of the returned events based on the timestamp.",
+        "enum": [
+          "backward",
+          "forward"
+        ],
+        "examples": [
+          "backward"
+        ],
+        "type": "string"
+      },
+      "follow": {
+        "description": "When enabled, this endpoint will return live events as they happen.",
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          1
+        ],
+        "type": "number"
+      },
+      "limit": {
+        "description": "Maximum number of events to return. Provide `-1` to return all available logs.",
+        "examples": [
+          100
+        ],
+        "type": "number"
+      },
+      "name": {
+        "description": "Deployment build ID.",
+        "examples": [
+          "bld_cotnkcr76"
+        ],
+        "type": "string"
+      },
+      "since": {
+        "description": "Timestamp for when build logs should be pulled from.",
+        "examples": [
+          1540095775941
+        ],
+        "type": "number"
+      },
+      "until": {
+        "description": "Timestamp for when the build logs should be pulled up until.",
+        "examples": [
+          1540106318643
+        ],
+        "type": "number"
+      },
+      "statusCode": {
+        "description": "HTTP status code range to filter events by.",
+        "examples": [
+          "5xx"
+        ],
+        "oneOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "delimiter": {
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          1
+        ],
+        "type": "number"
+      },
+      "builds": {
+        "enum": [
+          0,
+          1
+        ],
+        "examples": [
+          1
+        ],
+        "type": "number"
+      },
+      "teamId": {
+        "type": "string",
+        "description": "The Team identifier or slug to perform the request on behalf of."
+      }
+    },
+    "required": [
+      "idOrUrl"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.vercel.com/v2/deployments/{idOrUrl}/events{?direction,follow,limit,name,since,until,statusCode,delimiter,builds,teamId}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.item"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

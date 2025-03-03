@@ -1,0 +1,577 @@
+{
+  "name": "firestore_projects_databases_documents_listen",
+  "description": "Listens to changes. This method is only available via gRPC or WebChannel (not REST).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "database": {
+        "type": "string",
+        "description": "Required. The database name. In the format: `projects/{project_id}/databases/{database_id}`."
+      },
+      "$.xgafv": {
+        "enum": [
+          "1",
+          "2"
+        ],
+        "type": "string",
+        "description": "V1 error format."
+      },
+      "access_token": {
+        "type": "string",
+        "description": "OAuth access token."
+      },
+      "alt": {
+        "enum": [
+          "json",
+          "media",
+          "proto"
+        ],
+        "type": "string",
+        "description": "Data format for response."
+      },
+      "callback": {
+        "type": "string",
+        "description": "JSONP"
+      },
+      "fields": {
+        "type": "string",
+        "description": "Selector specifying which fields to include in a partial response."
+      },
+      "key": {
+        "type": "string",
+        "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token."
+      },
+      "oauth_token": {
+        "type": "string",
+        "description": "OAuth 2.0 token for the current user."
+      },
+      "prettyPrint": {
+        "type": "boolean",
+        "description": "Returns response with indentations and line breaks."
+      },
+      "quotaUser": {
+        "type": "string",
+        "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters."
+      },
+      "upload_protocol": {
+        "type": "string",
+        "description": "Upload protocol for media (e.g. \"raw\", \"multipart\")."
+      },
+      "uploadType": {
+        "type": "string",
+        "description": "Legacy upload protocol for media (e.g. \"media\", \"multipart\")."
+      },
+      "body": {
+        "$ref": "#/$defs/ListenRequest"
+      }
+    },
+    "required": [
+      "database"
+    ],
+    "$defs": {
+      "ListenRequest": {
+        "description": "A request for Firestore.Listen",
+        "properties": {
+          "addTarget": {
+            "$ref": "#/$defs/Target"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Labels associated with this target change.",
+            "type": "object"
+          },
+          "removeTarget": {
+            "description": "The ID of a target to remove from this stream.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Target": {
+        "description": "A specification of a set of documents to listen to.",
+        "properties": {
+          "documents": {
+            "$ref": "#/$defs/DocumentsTarget"
+          },
+          "expectedCount": {
+            "description": "The number of documents that last matched the query at the resume token or read time. This value is only relevant when a `resume_type` is provided. This value being present and greater than zero signals that the client wants `ExistenceFilter.unchanged_names` to be included in the response.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "once": {
+            "description": "If the target should be removed once it is current and consistent.",
+            "type": "boolean"
+          },
+          "query": {
+            "$ref": "#/$defs/QueryTarget"
+          },
+          "readTime": {
+            "description": "Start listening after a specific `read_time`. The client must know the state of matching documents at this time.",
+            "format": "google-datetime",
+            "type": "string"
+          },
+          "resumeToken": {
+            "description": "A resume token from a prior TargetChange for an identical target. Using a resume token with a different target is unsupported and may fail.",
+            "format": "byte",
+            "type": "string"
+          },
+          "targetId": {
+            "description": "The target ID that identifies the target on the stream. Must be a positive number and non-zero. If `target_id` is 0 (or unspecified), the server will assign an ID for this target and return that in a `TargetChange::ADD` event. Once a target with `target_id=0` is added, all subsequent targets must also have `target_id=0`. If an `AddTarget` request with `target_id != 0` is sent to the server after a target with `target_id=0` is added, the server will immediately send a response with a `TargetChange::Remove` event. Note that if the client sends multiple `AddTarget` requests without an ID, the order of IDs returned in `TargetChage.target_ids` are undefined. Therefore, clients should provide a target ID instead of relying on the server to assign one. If `target_id` is non-zero, there must not be an existing active target on this stream with the same ID.",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DocumentsTarget": {
+        "description": "A target specified by a set of documents names.",
+        "properties": {
+          "documents": {
+            "description": "The names of the documents to retrieve. In the format: `projects/{project_id}/databases/{database_id}/documents/{document_path}`. The request will fail if any of the document is not a child resource of the given `database`. Duplicate names will be elided.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "QueryTarget": {
+        "description": "A target specified by a query.",
+        "properties": {
+          "parent": {
+            "description": "The parent resource name. In the format: `projects/{project_id}/databases/{database_id}/documents` or `projects/{project_id}/databases/{database_id}/documents/{document_path}`. For example: `projects/my-project/databases/my-database/documents` or `projects/my-project/databases/my-database/documents/chatrooms/my-chatroom`",
+            "type": "string"
+          },
+          "structuredQuery": {
+            "$ref": "#/$defs/StructuredQuery"
+          }
+        },
+        "type": "object"
+      },
+      "StructuredQuery": {
+        "description": "A Firestore query. The query stages are executed in the following order: 1. from 2. where 3. select 4. order_by + start_at + end_at 5. offset 6. limit",
+        "properties": {
+          "endAt": {
+            "$ref": "#/$defs/Cursor"
+          },
+          "from": {
+            "description": "The collections to query.",
+            "items": {
+              "$ref": "#/$defs/CollectionSelector"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "description": "The maximum number of results to return. Applies after all other constraints. Requires: * The value must be greater than or equal to zero if specified.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "offset": {
+            "description": "The number of documents to skip before returning the first result. This applies after the constraints specified by the `WHERE`, `START AT`, & `END AT` but before the `LIMIT` clause. Requires: * The value must be greater than or equal to zero if specified.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "orderBy": {
+            "description": "The order to apply to the query results. Firestore allows callers to provide a full ordering, a partial ordering, or no ordering at all. In all cases, Firestore guarantees a stable ordering through the following rules: * The `order_by` is required to reference all fields used with an inequality filter. * All fields that are required to be in the `order_by` but are not already present are appended in lexicographical ordering of the field name. * If an order on `__name__` is not specified, it is appended by default. Fields are appended with the same sort direction as the last order specified, or 'ASCENDING' if no order was specified. For example: * `ORDER BY a` becomes `ORDER BY a ASC, __name__ ASC` * `ORDER BY a DESC` becomes `ORDER BY a DESC, __name__ DESC` * `WHERE a > 1` becomes `WHERE a > 1 ORDER BY a ASC, __name__ ASC` * `WHERE __name__ > ... AND a > 1` becomes `WHERE __name__ > ... AND a > 1 ORDER BY a ASC, __name__ ASC`",
+            "items": {
+              "$ref": "#/$defs/Order"
+            },
+            "type": "array"
+          },
+          "select": {
+            "$ref": "#/$defs/Projection"
+          },
+          "startAt": {
+            "$ref": "#/$defs/Cursor"
+          },
+          "where": {
+            "$ref": "#/$defs/Filter"
+          }
+        },
+        "type": "object"
+      },
+      "Cursor": {
+        "description": "A position in a query result set.",
+        "properties": {
+          "before": {
+            "description": "If the position is just before or just after the given values, relative to the sort order defined by the query.",
+            "type": "boolean"
+          },
+          "values": {
+            "description": "The values that represent a position, in the order they appear in the order by clause of a query. Can contain fewer values than specified in the order by clause.",
+            "items": {
+              "$ref": "#/$defs/Value"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Value": {
+        "description": "A message that can hold any of the supported value types.",
+        "properties": {
+          "arrayValue": {
+            "$ref": "#/$defs/ArrayValue"
+          },
+          "booleanValue": {
+            "description": "A boolean value.",
+            "type": "boolean"
+          },
+          "bytesValue": {
+            "description": "A bytes value. Must not exceed 1 MiB - 89 bytes. Only the first 1,500 bytes are considered by queries.",
+            "format": "byte",
+            "type": "string"
+          },
+          "doubleValue": {
+            "description": "A double value.",
+            "format": "double",
+            "type": "number"
+          },
+          "geoPointValue": {
+            "$ref": "#/$defs/LatLng"
+          },
+          "integerValue": {
+            "description": "An integer value.",
+            "format": "int64",
+            "type": "string"
+          },
+          "mapValue": {
+            "$ref": "#/$defs/MapValue"
+          },
+          "nullValue": {
+            "description": "A null value.",
+            "enum": [
+              "NULL_VALUE"
+            ],
+            "type": "string"
+          },
+          "referenceValue": {
+            "description": "A reference to a document. For example: `projects/{project_id}/databases/{database_id}/documents/{document_path}`.",
+            "type": "string"
+          },
+          "stringValue": {
+            "description": "A string value. The string, represented as UTF-8, must not exceed 1 MiB - 89 bytes. Only the first 1,500 bytes of the UTF-8 representation are considered by queries.",
+            "type": "string"
+          },
+          "timestampValue": {
+            "description": "A timestamp value. Precise only to microseconds. When stored, any additional precision is rounded down.",
+            "format": "google-datetime",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ArrayValue": {
+        "description": "An array value.",
+        "properties": {
+          "values": {
+            "description": "Values in the array.",
+            "items": {
+              "$ref": "#/$defs/Value"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "LatLng": {
+        "description": "An object that represents a latitude/longitude pair. This is expressed as a pair of doubles to represent degrees latitude and degrees longitude. Unless specified otherwise, this object must conform to the WGS84 standard. Values must be within normalized ranges.",
+        "properties": {
+          "latitude": {
+            "description": "The latitude in degrees. It must be in the range [-90.0, +90.0].",
+            "format": "double",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "The longitude in degrees. It must be in the range [-180.0, +180.0].",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "MapValue": {
+        "description": "A map value.",
+        "properties": {
+          "fields": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Value"
+            },
+            "description": "The map's fields. The map keys represent field names. Field names matching the regular expression `__.*__` are reserved. Reserved field names are forbidden except in certain documented contexts. The map keys, represented as UTF-8, must not exceed 1,500 bytes and cannot be empty.",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "CollectionSelector": {
+        "description": "A selection of a collection, such as `messages as m1`.",
+        "properties": {
+          "allDescendants": {
+            "description": "When false, selects only collections that are immediate children of the `parent` specified in the containing `RunQueryRequest`. When true, selects all descendant collections.",
+            "type": "boolean"
+          },
+          "collectionId": {
+            "description": "The collection ID. When set, selects only collections with this ID.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Order": {
+        "description": "An order on a field.",
+        "properties": {
+          "direction": {
+            "description": "The direction to order by. Defaults to `ASCENDING`.",
+            "enum": [
+              "DIRECTION_UNSPECIFIED",
+              "ASCENDING",
+              "DESCENDING"
+            ],
+            "type": "string"
+          },
+          "field": {
+            "$ref": "#/$defs/FieldReference"
+          }
+        },
+        "type": "object"
+      },
+      "FieldReference": {
+        "description": "A reference to a field in a document, ex: `stats.operations`.",
+        "properties": {
+          "fieldPath": {
+            "description": "A reference to a field in a document. Requires: * MUST be a dot-delimited (`.`) string of segments, where each segment conforms to document field name limitations.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Projection": {
+        "description": "The projection of document's fields to return.",
+        "properties": {
+          "fields": {
+            "description": "The fields to return. If empty, all fields are returned. To only return the name of the document, use `['__name__']`.",
+            "items": {
+              "$ref": "#/$defs/FieldReference"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Filter": {
+        "description": "A filter.",
+        "properties": {
+          "compositeFilter": {
+            "$ref": "#/$defs/CompositeFilter"
+          },
+          "fieldFilter": {
+            "$ref": "#/$defs/FieldFilter"
+          },
+          "unaryFilter": {
+            "$ref": "#/$defs/UnaryFilter"
+          }
+        },
+        "type": "object"
+      },
+      "CompositeFilter": {
+        "description": "A filter that merges multiple other filters using the given operator.",
+        "properties": {
+          "filters": {
+            "description": "The list of filters to combine. Requires: * At least one filter is present.",
+            "items": {
+              "$ref": "#/$defs/Filter"
+            },
+            "type": "array"
+          },
+          "op": {
+            "description": "The operator for combining multiple filters.",
+            "enum": [
+              "OPERATOR_UNSPECIFIED",
+              "AND",
+              "OR"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FieldFilter": {
+        "description": "A filter on a specific field.",
+        "properties": {
+          "field": {
+            "$ref": "#/$defs/FieldReference"
+          },
+          "op": {
+            "description": "The operator to filter by.",
+            "enum": [
+              "OPERATOR_UNSPECIFIED",
+              "LESS_THAN",
+              "LESS_THAN_OR_EQUAL",
+              "GREATER_THAN",
+              "GREATER_THAN_OR_EQUAL",
+              "EQUAL",
+              "NOT_EQUAL",
+              "ARRAY_CONTAINS",
+              "IN",
+              "ARRAY_CONTAINS_ANY",
+              "NOT_IN"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/$defs/Value"
+          }
+        },
+        "type": "object"
+      },
+      "UnaryFilter": {
+        "description": "A filter with a single operand.",
+        "properties": {
+          "field": {
+            "$ref": "#/$defs/FieldReference"
+          },
+          "op": {
+            "description": "The unary operator to apply.",
+            "enum": [
+              "OPERATOR_UNSPECIFIED",
+              "IS_NAN",
+              "IS_NULL",
+              "IS_NOT_NAN",
+              "IS_NOT_NULL"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://firestore.googleapis.com//v1beta1/{database}/documents:listen{?$.xgafv,access_token,alt,callback,fields,key,oauth_token,prettyPrint,quotaUser,upload_protocol,uploadType}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The response for Firestore.Listen.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**documentChange**: A Document has changed. May be the result of multiple writes, including deletes, that ultimately resulted in a new value for the Document. Multiple DocumentChange messages may be returned for the same logical change, if multiple targets are affected.",
+              {
+                "$ul": [
+                  [
+                    "**document**: A Firestore document. Must not exceed 1 MiB - 4 bytes.",
+                    {
+                      "$ul": [
+                        "**createTime**: Output only. The time at which the document was created. This value increases monotonically when a document is deleted then recreated. It can also be compared to values from other documents and the `read_time` of a query.",
+                        "**fields**: The document's fields. The map keys represent field names. Field names matching the regular expression `__.*__` are reserved. Reserved field names are forbidden except in certain documented contexts. The field names, represented as UTF-8, must not exceed 1,500 bytes and cannot be empty. Field paths may be used in other contexts to refer to structured fields defined here. For `map_value`, the field path is represented by a dot-delimited (`.`) string of segments. Each segment is either a simple field name (defined below) or a quoted field name. For example, the structured field `\"foo\" : { map_value: { \"x&y\" : { string_value: \"hello\" }}}` would be represented by the field path `` foo.`x&y` ``. A simple field name contains only characters `a` to `z`, `A` to `Z`, `0` to `9`, or `_`, and must not start with `0` to `9`. For example, `foo_bar_17`. A quoted field name starts and ends with `` ` `` and may contain any character. Some characters, including `` ` ``, must be escaped using a `\\`. For example, `` `x&y` `` represents `x&y` and `` `bak\\`tik` `` represents `` bak`tik ``.",
+                        "**name**: The resource name of the document, for example `projects/{project_id}/databases/{database_id}/documents/{document_path}`.",
+                        "**updateTime**: Output only. The time at which the document was last changed. This value is initially set to the `create_time` then increases monotonically with each change to the document. It can also be compared to values from other documents and the `read_time` of a query."
+                      ]
+                    }
+                  ],
+                  "**removedTargetIds**: A set of target IDs for targets that no longer match this document.",
+                  "**targetIds**: A set of target IDs of targets that match this document."
+                ]
+              }
+            ],
+            [
+              "**documentDelete**: A Document has been deleted. May be the result of multiple writes, including updates, the last of which deleted the Document. Multiple DocumentDelete messages may be returned for the same logical delete, if multiple targets are affected.",
+              {
+                "$ul": [
+                  "**document**: The resource name of the Document that was deleted.",
+                  "**readTime**: The read timestamp at which the delete was observed. Greater or equal to the `commit_time` of the delete.",
+                  "**removedTargetIds**: A set of target IDs for targets that previously matched this entity."
+                ]
+              }
+            ],
+            [
+              "**documentRemove**: A Document has been removed from the view of the targets. Sent if the document is no longer relevant to a target and is out of view. Can be sent instead of a DocumentDelete or a DocumentChange if the server can not send the new value of the document. Multiple DocumentRemove messages may be returned for the same logical write or delete, if multiple targets are affected.",
+              {
+                "$ul": [
+                  "**document**: The resource name of the Document that has gone out of view.",
+                  "**readTime**: The read timestamp at which the remove was observed. Greater or equal to the `commit_time` of the change/delete/remove.",
+                  "**removedTargetIds**: A set of target IDs for targets that previously matched this document."
+                ]
+              }
+            ],
+            [
+              "**filter**: A digest of all the documents that match a given target.",
+              {
+                "$ul": [
+                  "**count**: The total count of documents that match target_id. If different from the count of documents in the client that match, the client must manually determine which documents no longer match the target. The client can use the `unchanged_names` bloom filter to assist with this determination by testing ALL the document names against the filter; if the document name is NOT in the filter, it means the document no longer matches the target.",
+                  "**targetId**: The target ID to which this filter applies.",
+                  [
+                    "**unchangedNames**: A bloom filter (https://en.wikipedia.org/wiki/Bloom_filter). The bloom filter hashes the entries with MD5 and treats the resulting 128-bit hash as 2 distinct 64-bit hash values, interpreted as unsigned integers using 2's complement encoding. These two hash values, named `h1` and `h2`, are then used to compute the `hash_count` hash values using the formula, starting at `i=0`: h(i) = h1 + (i * h2) These resulting values are then taken modulo the number of bits in the bloom filter to get the bits of the bloom filter to test for the given entry.",
+                    {
+                      "$ul": [
+                        [
+                          "**bits**: A sequence of bits, encoded in a byte array. Each byte in the `bitmap` byte array stores 8 bits of the sequence. The only exception is the last byte, which may store 8 _or fewer_ bits. The `padding` defines the number of bits of the last byte to be ignored as \"padding\". The values of these \"padding\" bits are unspecified and must be ignored. To retrieve the first bit, bit 0, calculate: `(bitmap[0] & 0x01) != 0`. To retrieve the second bit, bit 1, calculate: `(bitmap[0] & 0x02) != 0`. To retrieve the third bit, bit 2, calculate: `(bitmap[0] & 0x04) != 0`. To retrieve the fourth bit, bit 3, calculate: `(bitmap[0] & 0x08) != 0`. To retrieve bit n, calculate: `(bitmap[n / 8] & (0x01 << (n % 8))) != 0`. The \"size\" of a `BitSequence` (the number of bits it contains) is calculated by this formula: `(bitmap.length * 8) - padding`.",
+                          {
+                            "$ul": [
+                              "**bitmap**: The bytes that encode the bit sequence. May have a length of zero.",
+                              "**padding**: The number of bits of the last byte in `bitmap` to ignore as \"padding\". If the length of `bitmap` is zero, then this value must be `0`. Otherwise, this value must be between 0 and 7, inclusive."
+                            ]
+                          }
+                        ],
+                        "**hashCount**: The number of hashes used by the algorithm."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "**targetChange**: Targets being watched have changed.",
+              {
+                "$ul": [
+                  [
+                    "**cause**: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).",
+                    {
+                      "$ul": [
+                        "**code**: The status code, which should be an enum value of google.rpc.Code.",
+                        "**details**: A list of messages that carry the error details. There is a common set of message types for APIs to use.",
+                        "**message**: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client."
+                      ]
+                    }
+                  ],
+                  "**readTime**: The consistent `read_time` for the given `target_ids` (omitted when the target_ids are not at a consistent snapshot). The stream is guaranteed to send a `read_time` with `target_ids` empty whenever the entire stream reaches a new consistent snapshot. ADD, CURRENT, and RESET messages are guaranteed to (eventually) result in a new consistent snapshot (while NO_CHANGE and REMOVE messages are not). For a given stream, `read_time` is guaranteed to be monotonically increasing.",
+                  "**resumeToken**: A token that can be used to resume the stream for the given `target_ids`, or all targets if `target_ids` is empty. Not set on every target change.",
+                  "**targetChangeType**: The type of change that occurred.",
+                  "**targetIds**: The target IDs of targets that have changed. If empty, the change applies to all targets. The order of the target IDs is not defined."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "name": "CreateService",
+  "description": "<p>Creates an Amazon Web Services Migration Hub Refactor Spaces service. The account owner of the service is always the environment owner, regardless of which account in the environment creates the service. Services have either a URL endpoint in a virtual private cloud (VPC), or a Lambda function endpoint.</p> <important> <p>If an Amazon Web Services resource is launched in a service VPC, and you want it to be accessible to all of an environment’s services with VPCs and routes, apply the <code>RefactorSpacesSecurityGroup</code> to the resource. Alternatively, to add more cross-account constraints, apply your own security group.</p> </important>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ApplicationIdentifier": {
+        "type": "string",
+        "pattern": "^app-[0-9A-Za-z]{10}$",
+        "minLength": 14,
+        "maxLength": 14,
+        "description": "The ID of the application which the service is created."
+      },
+      "EnvironmentIdentifier": {
+        "type": "string",
+        "pattern": "^env-[0-9A-Za-z]{10}$",
+        "minLength": 14,
+        "maxLength": 14,
+        "description": "The ID of the environment in which the service is created."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "EndpointType",
+          "Name"
+        ],
+        "properties": {
+          "ClientToken": {
+            "description": "A unique, case-sensitive identifier that you provide to ensure the idempotency of the request.",
+            "type": "string",
+            "pattern": "^[\\x20-\\x7E]{1,64}$",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "Description": {
+            "description": "The description of the service.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-_\\s\\.\\!\\*\\#\\@\\']+$",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "EndpointType": {
+            "description": "The type of endpoint to use for the service. The type can be a URL in a VPC or an Lambda function.",
+            "type": "string",
+            "enum": [
+              "LAMBDA",
+              "URL"
+            ]
+          },
+          "LambdaEndpoint": {
+            "description": "The input for the Lambda endpoint type. ",
+            "type": "object",
+            "properties": {
+              "Arn": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LambdaArn"
+                  },
+                  {
+                    "description": "The Amazon Resource Name (ARN) of the Lambda function or alias."
+                  }
+                ]
+              }
+            }
+          },
+          "Name": {
+            "description": "The name of the service.",
+            "type": "string",
+            "pattern": "^(?!svc-)[a-zA-Z0-9]+[a-zA-Z0-9-_ ]+$",
+            "minLength": 3,
+            "maxLength": 63
+          },
+          "Tags": {
+            "description": "A collection of up to 50 unique tags",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagMapValueString"
+            }
+          },
+          "UrlEndpoint": {
+            "description": "The configuration for the URL endpoint type. ",
+            "type": "object",
+            "properties": {
+              "HealthUrl": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Uri"
+                  },
+                  {
+                    "description": "The health check URL of the URL endpoint type. If the URL is a public endpoint, the <code>HealthUrl</code> must also be a public endpoint. If the URL is a private endpoint inside a virtual private cloud (VPC), the health URL must also be a private endpoint, and the host must be the same as the URL. "
+                  }
+                ]
+              },
+              "Url": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Uri"
+                  },
+                  {
+                    "description": "The URL to route traffic to. The URL must be an <a href=\"https://datatracker.ietf.org/doc/html/rfc3986\">rfc3986-formatted URL</a>. If the host is a domain name, the name must be resolvable over the public internet. If the scheme is <code>https</code>, the top level domain of the host must be listed in the <a href=\"https://www.iana.org/domains/root/db\">IANA root zone database</a>. "
+                  }
+                ]
+              }
+            }
+          },
+          "VpcId": {
+            "description": "The ID of the VPC.",
+            "type": "string",
+            "pattern": "^vpc-[-a-f0-9]{8}([-a-f0-9]{9})?$",
+            "minLength": 12,
+            "maxLength": 21
+          }
+        }
+      }
+    },
+    "required": [
+      "ApplicationIdentifier",
+      "EnvironmentIdentifier",
+      "body"
+    ],
+    "$defs": {
+      "LambdaArn": {
+        "type": "string",
+        "pattern": "^arn:(aws[a-zA-Z-]*)?:lambda:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9-_]+(:(\\$LATEST|[a-zA-Z0-9-_]+))?$",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "TagMapValueString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "Uri": {
+        "type": "string",
+        "pattern": "^https?://[-a-zA-Z0-9+\\x38@#/%?=~_|!:,.;]*[-a-zA-Z0-9+\\x38@#/%=~_|]$",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://refactor-spaces.us-east-1.amazonaws.com/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/services"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ApplicationId**",
+            "**Arn**",
+            "**CreatedByAccountId**",
+            "**CreatedTime**",
+            "**Description**",
+            "**EndpointType**",
+            "**EnvironmentId**",
+            "**LambdaEndpoint**",
+            "**LastUpdatedTime**",
+            "**Name**",
+            "**OwnerAccountId**",
+            "**ServiceId**",
+            "**State**",
+            "**Tags**",
+            "**UrlEndpoint**",
+            "**VpcId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

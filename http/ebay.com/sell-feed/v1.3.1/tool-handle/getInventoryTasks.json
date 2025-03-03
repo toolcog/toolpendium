@@ -1,0 +1,72 @@
+{
+  "name": "getInventoryTasks",
+  "description": "This method searches for multiple tasks of a specific feed type, and includes date filters and pagination.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "feed_type": {
+        "type": "string",
+        "description": "The feed type associated with the inventory task. Either <strong>feed_type</strong> or <strong>schedule_id</strong> is required. Do not use with the <strong>schedule_id</strong> parameter. Presently, only one feed type is available:<ul><li><code>LMS_ACTIVE_INVENTORY_REPORT</code></li></ul>"
+      },
+      "schedule_id": {
+        "type": "string",
+        "description": "The ID of the schedule for which to retrieve the latest result file. This ID is generated when the schedule was created by the <strong>createSchedule</strong> method. Schedules apply to downloaded reports (<code>LMS_ACTIVE_INVENTORY_REPORT</code>). Either <strong>schedule_id</strong> or <strong>feed_type</strong> is  required. Do not use with the <strong>feed_type</strong> parameter."
+      },
+      "look_back_days": {
+        "type": "string",
+        "description": "The number of previous days in which to search for tasks. Do not use with the <code>date_range</code> parameter. If both <code>date_range</code> and <code>look_back_days</code> are omitted, this parameter's default value is used.  <br /><br /><b>Default: </b> 7 <br /><br /><b>Range: </b> 1-90 (inclusive)"
+      },
+      "date_range": {
+        "type": "string",
+        "description": "Specifies the range of task creation dates used to filter the results. The results are filtered to include only tasks with a creation date that is equal to this date or is within specified range. <p> <span class=\"tablenote\"><strong>Note:</strong> Maximum date range window size is 90 days.</span></p><br /><b>Valid Format (UTC): </b><code>yyyy-MM-ddThh:mm:ss.SSSZ..yyyy-MM-ddThh:mm:ss.SSSZ</code><br /><br />For example: Tasks created on March 31, 2021<br /> <code>2021-03-31T00:00:00.000Z..2021-03-31T00:00:00.000Z</code><br /><br />"
+      },
+      "limit": {
+        "type": "string",
+        "description": "The maximum number of tasks that can be returned on each page of the paginated response. Use this parameter in conjunction with the <strong>offset</strong> parameter to control the pagination of the output. <p> <span class=\"tablenote\"><strong>Note:</strong> This feature employs a zero-based list, where the first item in the list has an offset of <code>0</code>.</span></p><p>For example, if <strong>offset</strong> is set to 10 and <strong>limit</strong> is set to 10, the call retrieves tasks 11 thru 20 from the result set.</p><p>If this parameter is omitted, the default value is used. <br /><br /><b>Default: </b> 10 <br /><br /><b>Maximum: </b>500"
+      },
+      "offset": {
+        "type": "string",
+        "description": "The number of tasks to skip in the result set before returning the first task in the paginated response. <p>Combine <strong>offset</strong> with the <strong>limit</strong> query parameter to control the items returned in the response. For example, if you supply an <strong>offset</strong> of <code>0</code> and a <strong>limit</strong> of <code>10</code>, the first page of the response contains the first 10 items from the complete list of items retrieved by the call. If <strong>offset</strong> is <code>10</code> and <strong>limit</strong> is <code>20</code>, the first page of the response contains items 11-30 from the complete result set. If this query parameter is not set, the default value is used and the first page of records is returned. <br /><br /><b>Default: </b>0"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.ebay.com%2Fsell%2Ffeed%2Fv1/inventory_task{?feed_type,schedule_id,look_back_days,date_range,limit,offset}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**href**: The path to the call URI that produced the current page of results.",
+            "**limit**: The value of the <strong>limit</strong> parameter submitted in the request, which is the maximum number of inventory tasks to return per page, from the result set. A result set is the complete set of tasks returned by the method.<br /><br /><span class=\"tablenote\"><strong>Note:</strong> Though this parameter is not required to be submitted in the request, the parameter defaults to <code>10</code> if omitted. Additionally, if this is the last or only page of the result set, the page may contain fewer tasks than the <strong>limit</strong> value submitted in the request.</span><br /><br />To determine the number of pages in a result set, divide the total value (total number of tasks matching the input criteria) by this limit value, and then round up to the next integer. For example, if the <strong>total</strong> value was <code>120</code> (120 total tasks) and the <strong>limit</strong> value was <code>50</code> (show 50 tasks per page), the total number of pages in the result set is three, so the seller would have to make three separate <strong>getInventoryTasks</strong> calls to view all tasks matching the input criteria.",
+            "**next**: The path to the call URI for the next page of results. This value is returned if there is an additional page of results to return from the result set.",
+            "**offset**: The number of results skipped in the result set before listing the first returned result. This value can be specified in the request with the <strong>offset</strong> query parameter.<br /><br /><span class=\"tablenote\"><strong>Note:</strong> The items in a paginated result set use a zero-based list, where the first item in the list has an offset of <code>0</code>.</span>",
+            "**prev**: The path to the call URI for the previous page of results. This is returned if there is a previous page of results from the result set.",
+            "**tasks**: An array of the inventory tasks on this page. The tasks are sorted by creation date.<br /><br /><span class=\"tablenote\"><strong>Note:</strong> An empty array is returned if the filter criteria excludes all tasks.</span>",
+            "**total**: The total number of inventory tasks that match the input criteria."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

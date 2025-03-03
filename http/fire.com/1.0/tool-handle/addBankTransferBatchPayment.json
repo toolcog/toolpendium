@@ -1,0 +1,158 @@
+{
+  "name": "addBankTransferBatchPayment",
+  "description": "There are two ways to process bank transfers - by Payee ID (**Mode 1**) or by Payee Account Details (**Mode 2**).\n\n**Mode 1:** Use the payee IDs of existing approved payees set up against your account. These batches can be approved in the normal manner.\n\n**Mode 2:** Use the account details of the payee. In the event that these details correspond to an existing approved payee, the batch can be approved as normal. If the account details are new, a batch of New Payees will automatically be created. This batch will need to be approved before the Payment batch can be approved. These payees will then exist as approved payees for future batches.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "batchUuid": {
+        "description": "The uuid of the batch.",
+        "example": "4ADFB67A-0F5B-4A9A-9D74-34437250045C",
+        "type": "string"
+      },
+      "body": {
+        "oneOf": [
+          {
+            "properties": {
+              "amount": {
+                "description": "The value of the transaction",
+                "example": 500,
+                "format": "int64",
+                "type": "integer"
+              },
+              "destAccountHolderName": {
+                "description": "The destination account holder name",
+                "example": "John Smith",
+                "type": "string"
+              },
+              "destAccountNumber": {
+                "description": "The destination Account Number if a GBP bank transfer",
+                "example": "12345678",
+                "type": "string"
+              },
+              "destIban": {
+                "description": "The destination IBAN if a Euro Bank transfer",
+                "example": "IE00AIBK93123412341234",
+                "type": "string"
+              },
+              "destNsc": {
+                "description": "The destination Nsc if a GBP bank transfer",
+                "example": "123456",
+                "type": "string"
+              },
+              "icanFrom": {
+                "description": "The Fire account ID for the fire.com account the funds are taken from.",
+                "example": 2001,
+                "format": "int64",
+                "type": "integer"
+              },
+              "myRef": {
+                "description": "The reference on the transaction for your records - not shown to the beneficiary.",
+                "example": "Payment to John Smith for Consultancy in device.",
+                "type": "string"
+              },
+              "payeeType": {
+                "description": "Use ACCOUNT_DETAILS if you are providing account numbers/sort codes/IBANs (Mode 2). Specify the account details in the destIban, destAccountHolderName, destNsc or destAccountNumber fields as appropriate.",
+                "enum": [
+                  "ACCOUNT_DETAILS"
+                ],
+                "example": "ACCOUNT_DETAILS",
+                "type": "string"
+              },
+              "yourRef": {
+                "description": "The reference on the transaction - displayed on the beneficiary bank statement.",
+                "example": "ACME LTD - INV 23434",
+                "type": "string"
+              }
+            },
+            "title": "batchItemBankTransferMode2",
+            "type": "object"
+          },
+          {
+            "properties": {
+              "amount": {
+                "description": "The value of the transaction",
+                "example": 500,
+                "format": "int64",
+                "type": "integer"
+              },
+              "icanFrom": {
+                "description": "The Fire account ID for the fire.com account the funds are taken from.",
+                "example": 2001,
+                "format": "int64",
+                "type": "integer"
+              },
+              "myRef": {
+                "description": "The reference on the transaction for your records - not shown to the beneficiary.",
+                "example": "Payment to John Smith for Consultancy in device.",
+                "type": "string"
+              },
+              "payeeId": {
+                "description": "The ID of the existing or automatically created payee",
+                "example": 15002,
+                "format": "int64",
+                "type": "integer"
+              },
+              "payeeType": {
+                "description": "Use PAYEE_ID if you are paying existing approved payees (Mode 1).",
+                "enum": [
+                  "PAYEE_ID"
+                ],
+                "example": "PAYEE_ID",
+                "type": "string"
+              },
+              "yourRef": {
+                "description": "The reference on the transaction - displayed on the beneficiary bank statement.",
+                "example": "ACME LTD - INV 23434",
+                "type": "string"
+              }
+            },
+            "title": "batchItemBankTransferMode1",
+            "type": "object"
+          }
+        ],
+        "description": "Details of **Mode 1** & **Mode 2**."
+      }
+    },
+    "required": [
+      "batchUuid",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.fire.com/business/v1/batches/{batchUuid}/banktransfers"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "newBatchItemResponse"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**batchItemUuid**: A Batch Item UUID for this item. Note* Do not confuse this for BatchUuid when submitting a batch."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

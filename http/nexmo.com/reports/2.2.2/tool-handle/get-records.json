@@ -1,0 +1,148 @@
+{
+  "name": "get-records",
+  "description": "Fetch usage data synchronously",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "account_id": {
+        "maxLength": 8,
+        "minLength": 8,
+        "type": "string",
+        "description": "The account for which the list of reports will be queried."
+      },
+      "product": {
+        "enum": [
+          "SMS",
+          "VOICE-CALL",
+          "VOICE-FAILED",
+          "IN-APP-VOICE",
+          "WEBSOCKET-CALL",
+          "VERIFY-API",
+          "NUMBER-INSIGHT",
+          "MESSAGES",
+          "ASR",
+          "CONVERSATIONS",
+          "REPORTS-USAGE"
+        ],
+        "type": "string",
+        "description": "The product to return records for"
+      },
+      "direction": {
+        "enum": [
+          "inbound",
+          "outbound"
+        ],
+        "type": "string",
+        "description": "Direction of the communication, either `inbound` (received by our services), or `outbound` (originated from our services). Required for products `SMS` and `MESSAGES`. Optional for `VOICE-CALL`. Invalid for `IN-APP-VOICE`, `CONVERSATIONS`, `NUMBER-INSIGHT`, `VERIFY-API`."
+      },
+      "id": {
+        "type": "string",
+        "description": "The UUID of the message or call to be searched for. You can specify a comma-separated list of UUIDs. If UUIDs are not found they are listed in the response in the `ids_not_found` field.\n\nIf you specify `id`, you must not specify `status`, `date_start` or `date_end`.\n"
+      },
+      "date_start": {
+        "format": "date",
+        "type": "string",
+        "description": "ISO-8601 extended time zone offset or ISO-8601 UTC zone offset formatted date (format `yyyy-mm-ddThh:mm:ss[.sss]±hh:mm` or `yyyy-mm-ddThh:mm:ss[.sss]Z`) for when reports should begin. \n\nIt filters on the time the API call was received by Vonage and corresponds to the field `date_received` (`date_start` for Voice) in the report file. It is inclusive, i.e. the provided value is less than or equal to the value in the field `date_received` (`date_start` for Voice) in the CDR.\n\nIf you provide this, you must provide `date_end` and must not provide `id`.\n"
+      },
+      "date_end": {
+        "format": "date",
+        "type": "string",
+        "description": "**Must be no more than 24 hours later than `date_start`**\n\nISO-8601 extended time zone offset or ISO-8601 UTC zone offset formatted date (format `yyyy-mm-ddThh:mm:ss[.sss]±hh:mm` or `yyyy-mm-ddThh:mm:ss[.sss]Z`) for when report should end.\n\nIt is exclusive, i.e. the provided value is strictly greater than the value in the field `date_received` in the CDR.\n\nIf you provide this, you must provide `date_start` and must not provide `id`.\n"
+      },
+      "include_message": {
+        "default": false,
+        "enum": [
+          true,
+          false
+        ],
+        "type": "boolean",
+        "description": "Include the message contents in the records. Only applicable for use with products `SMS` and `MESSAGES`, where it is optional."
+      },
+      "show_concatenated": {
+        "default": false,
+        "enum": [
+          true,
+          false
+        ],
+        "type": "boolean",
+        "description": "Indicates whether the SMS was split up into multiple parts (due to its length)."
+      },
+      "status": {
+        "default": "none",
+        "enum": [
+          "delivered",
+          "expired",
+          "failed",
+          "rejected",
+          "accepted",
+          "buffered",
+          "unknown",
+          "deleted"
+        ],
+        "type": "string",
+        "description": "The SMS status to search for. Optional where product is `SMS`."
+      }
+    },
+    "required": [
+      "account_id",
+      "product"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.nexmo.com/v2/reports/records{?account_id,product,direction,id,date_start,date_end,include_message,show_concatenated,status}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**instance**",
+            "**title**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "name": "CreateKxChangeset",
+  "description": " Creates a changeset for a kdb database. A changeset allows you to add and delete existing files by using an ordered list of change requests. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "environmentId": {
+        "type": "string",
+        "pattern": ".*\\S.*",
+        "minLength": 1,
+        "maxLength": 32,
+        "description": "A unique identifier of the kdb environment."
+      },
+      "databaseName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*[a-zA-Z0-9]$",
+        "minLength": 3,
+        "maxLength": 63,
+        "description": "The name of the kdb database."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "changeRequests",
+          "clientToken"
+        ],
+        "properties": {
+          "changeRequests": {
+            "description": "<p>A list of change request objects that are run in order. A change request object consists of changeType , s3Path, and a dbPath. A changeType can has the following values: </p> <ul> <li> <p>PUT – Adds or updates files in a database.</p> </li> <li> <p>DELETE – Deletes files in a database.</p> </li> </ul> <p>All the change requests require a mandatory <i>dbPath</i> attribute that defines the path within the database directory. The <i>s3Path</i> attribute defines the s3 source file path and is required for a PUT change type.</p> <p>Here is an example of how you can use the change request object:</p> <p> <code>[ { \"changeType\": \"PUT\", \"s3Path\":\"s3://bucket/db/2020.01.02/\", \"dbPath\":\"/2020.01.02/\"}, { \"changeType\": \"PUT\", \"s3Path\":\"s3://bucket/db/sym\", \"dbPath\":\"/\"}, { \"changeType\": \"DELETE\", \"dbPath\": \"/2020.01.01/\"} ]</code> </p> <p>In this example, the first request with <i>PUT</i> change type allows you to add files in the given s3Path under the <i>2020.01.02</i> partition of the database. The second request with <i>PUT</i> change type allows you to add a single sym file at database root location. The last request with <i>DELETE</i> change type allows you to delete the files under the <i>2020.01.01</i> partition of the database. </p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ChangeRequest"
+            },
+            "minItems": 1,
+            "maxItems": 32
+          },
+          "clientToken": {
+            "description": "A token that ensures idempotency. This token expires in 10 minutes.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "required": [
+      "environmentId",
+      "databaseName",
+      "body"
+    ],
+    "$defs": {
+      "ChangeRequest": {
+        "type": "object",
+        "required": [
+          "changeType",
+          "dbPath"
+        ],
+        "properties": {
+          "changeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChangeType"
+              },
+              {
+                "description": "<p>Defines the type of change request. A <code>changeType</code> can have the following values:</p> <ul> <li> <p>PUT – Adds or updates files in a database.</p> </li> <li> <p>DELETE – Deletes files in a database.</p> </li> </ul>"
+              }
+            ]
+          },
+          "s3Path": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Path"
+              },
+              {
+                "description": "Defines the S3 path of the source file that is required to add or update files in a database."
+              }
+            ]
+          },
+          "dbPath": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DbPath"
+              },
+              {
+                "description": "Defines the path within the database directory. "
+              }
+            ]
+          }
+        },
+        "description": "A list of change request objects."
+      },
+      "ChangeType": {
+        "type": "string",
+        "enum": [
+          "PUT",
+          "DELETE"
+        ]
+      },
+      "S3Path": {
+        "type": "string",
+        "pattern": "^s3:\\/\\/[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\\/([^\\/]+\\/)*[^\\/]*$",
+        "minLength": 9,
+        "maxLength": 1093
+      },
+      "DbPath": {
+        "type": "string",
+        "pattern": "^\\/([^\\/]+\\/){0,2}[^\\/]*$",
+        "minLength": 1,
+        "maxLength": 1025
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://finspace.us-east-1.amazonaws.com/kx/environments/{environmentId}/databases/{databaseName}/changesets"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**changesetId**",
+            "**databaseName**",
+            "**environmentId**",
+            "**changeRequests**",
+            "**createdTimestamp**",
+            "**lastModifiedTimestamp**",
+            "**status**",
+            "**errorInfo**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

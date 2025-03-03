@@ -1,0 +1,222 @@
+{
+  "name": "updateSourceDefinition",
+  "description": "Update a sourceDefinition",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/SourceDefinitionUpdate"
+      }
+    },
+    "$defs": {
+      "SourceDefinitionUpdate": {
+        "description": "Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.",
+        "properties": {
+          "dockerImageTag": {
+            "type": "string"
+          },
+          "resourceRequirements": {
+            "$ref": "#/$defs/ActorDefinitionResourceRequirements"
+          },
+          "sourceDefinitionId": {
+            "$ref": "#/$defs/SourceDefinitionId"
+          }
+        },
+        "required": [
+          "sourceDefinitionId",
+          "dockerImageTag"
+        ],
+        "type": "object"
+      },
+      "ActorDefinitionResourceRequirements": {
+        "additionalProperties": false,
+        "description": "actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.",
+        "properties": {
+          "default": {
+            "$ref": "#/$defs/ResourceRequirements"
+          },
+          "jobSpecific": {
+            "items": {
+              "$ref": "#/$defs/JobTypeResourceLimit"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ResourceRequirements": {
+        "description": "optional resource requirements to run workers (blank for unbounded allocations)",
+        "properties": {
+          "cpu_limit": {
+            "type": "string"
+          },
+          "cpu_request": {
+            "type": "string"
+          },
+          "memory_limit": {
+            "type": "string"
+          },
+          "memory_request": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "JobTypeResourceLimit": {
+        "additionalProperties": false,
+        "description": "sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.",
+        "properties": {
+          "jobType": {
+            "$ref": "#/$defs/JobType"
+          },
+          "resourceRequirements": {
+            "$ref": "#/$defs/ResourceRequirements"
+          }
+        },
+        "required": [
+          "jobType",
+          "resourceRequirements"
+        ],
+        "type": "object"
+      },
+      "JobType": {
+        "description": "enum that describes the different types of jobs that the platform runs.",
+        "enum": [
+          "get_spec",
+          "check_connection",
+          "discover_schema",
+          "sync",
+          "reset_connection",
+          "connection_updater",
+          "replicate"
+        ],
+        "type": "string"
+      },
+      "SourceDefinitionId": {
+        "format": "uuid",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://airbyte.local/v1/source_definitions/update"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**dockerImageTag**",
+            "**dockerRepository**",
+            "**documentationUrl**",
+            "**icon**",
+            "**name**",
+            "**protocolVersion**: The Airbyte Protocol version supported by the connector",
+            "**releaseDate**: The date when this connector was first released, in yyyy-mm-dd format.",
+            "**releaseStage**",
+            [
+              "**resourceRequirements**: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.",
+              {
+                "$ul": [
+                  [
+                    "**default**: optional resource requirements to run workers (blank for unbounded allocations)",
+                    {
+                      "$ul": [
+                        "**cpu_limit**",
+                        "**cpu_request**",
+                        "**memory_limit**",
+                        "**memory_request**"
+                      ]
+                    }
+                  ],
+                  "**jobSpecific**"
+                ]
+              }
+            ],
+            "**sourceDefinitionId**",
+            "**sourceType**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**exceptionClassName**",
+            "**exceptionStack**",
+            "**id**",
+            "**message**",
+            "**rootCauseExceptionClassName**",
+            "**rootCauseExceptionStack**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**exceptionClassName**",
+            "**exceptionStack**",
+            "**message**",
+            "**validationErrors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

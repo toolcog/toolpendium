@@ -1,0 +1,536 @@
+{
+  "name": "createCustomer",
+  "description": "### Description:\nCreate a new customer.\n\n### Precondition:\nAuthentication with `X-Sds-Service-Token` required.  \n\n### Postcondition:\nA new customer is created.\n\n### Further Information:\nIf no company name is set, first letter of the first name separated by dot followed by last name of the first administrator is used (e.g. `J.Doe`).  \nMax quota has to be at least `1 MB` (= `1.048.576 B`).\n\nIf `basic` authentication is enabled, the first administrator will get `basic` authentication by default.  \nTo create a first administrator without `basic` authentication it **MUST** be disabled explicitly.  \n\nForbidden characters in passwords: [`&`, `'`, `<`, `>`]\n\n### Authentication Method Options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| Authentication Method | Option Key | Option Value |\n| :--- | :--- | :--- |\n| `basic` / `sql` | `username` | Unique user identifier |\n| `active_directory` | `ad_config_id` (optional) | Active Directory configuration ID |\n|  | `username` | Active Directory username according to authentication setting `userFilter` |\n| `radius` | `username` | RADIUS username |\n| `openid` | `openid_config_id` (optional) | OpenID Connect configuration ID |\n|  | `username` | OpenID Connect username according to authentication setting `mappingClaim` |\n\n</details>\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "X-Sds-Service-Token": {
+        "type": "string",
+        "description": "Service Authentication token"
+      },
+      "body": {
+        "$ref": "#/$defs/NewCustomerRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "NewCustomerRequest": {
+        "description": "Request model for creating a customer",
+        "properties": {
+          "activationCode": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.8.0\n\nCustomer activation code string:\n\n* valid only for types `free` and `demo`\n\n* for `pay` customers it is empty",
+            "type": "string"
+          },
+          "companyName": {
+            "description": "Company name",
+            "type": "string"
+          },
+          "customerAttributes": {
+            "$ref": "#/$defs/CustomerAttributes"
+          },
+          "customerContractType": {
+            "description": "Customer type",
+            "enum": [
+              "demo",
+              "free",
+              "pay"
+            ],
+            "type": "string"
+          },
+          "firstAdminUser": {
+            "$ref": "#/$defs/FirstAdminUser"
+          },
+          "isLocked": {
+            "default": false,
+            "description": "Customer is locked:\n\n* `false` - unlocked\n\n* `true` - locked\n\n\n\nAll users of this customer will be blocked and can not login anymore.",
+            "type": "boolean"
+          },
+          "lockStatus": {
+            "default": false,
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.7.0\n\nCustomer lock status:\n\n* `false` - unlocked\n\n* `true` - locked\n\n\n\nPlease use `isLocked` instead.\n\nAll users of this customer will be blocked and can not login anymore.",
+            "type": "boolean"
+          },
+          "providerCustomerId": {
+            "description": "Provider customer ID",
+            "type": "string"
+          },
+          "quotaMax": {
+            "description": "Maximal disc space which can be allocated by customer in bytes. -1 for unlimited",
+            "format": "int64",
+            "type": "integer"
+          },
+          "trialDays": {
+            "description": "Number of days left for trial period (relevant only for type `demo`)\n\n(not used)",
+            "format": "int32",
+            "type": "integer"
+          },
+          "userMax": {
+            "description": "Maximal number of users",
+            "format": "int32",
+            "type": "integer"
+          },
+          "webhooksMax": {
+            "description": "&#128640; Since v4.19.0\n\nMaximal number of webhooks",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "customerContractType",
+          "firstAdminUser",
+          "quotaMax",
+          "userMax"
+        ],
+        "type": "object"
+      },
+      "CustomerAttributes": {
+        "description": "List of customer attributes",
+        "properties": {
+          "items": {
+            "description": "List of customer attributes",
+            "items": {
+              "$ref": "#/$defs/KeyValueEntry"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "KeyValueEntry": {
+        "description": "Key-value pair",
+        "properties": {
+          "key": {
+            "description": "Entry key",
+            "type": "string"
+          },
+          "value": {
+            "description": "Entry value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
+      "FirstAdminUser": {
+        "description": "First administrator user",
+        "properties": {
+          "authData": {
+            "$ref": "#/$defs/UserAuthData"
+          },
+          "authMethods": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nAuthentication methods:\n\n* `sql`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`\n\nuse `authData` instead",
+            "items": {
+              "$ref": "#/$defs/UserAuthMethod"
+            },
+            "type": "array"
+          },
+          "email": {
+            "description": "Email ",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "User first name",
+            "type": "string"
+          },
+          "gender": {
+            "default": "n",
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.12.0\n\nGender",
+            "type": "string"
+          },
+          "language": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.7.0\n\nLanguage ID or ISO 639-1 code",
+            "type": "string"
+          },
+          "lastName": {
+            "description": "User last name",
+            "type": "string"
+          },
+          "login": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nUser login name",
+            "type": "string"
+          },
+          "needsToChangePassword": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nDetermines whether user has to change his / her initial password.\n\nuse `authDate.mustChangePassword` instead",
+            "type": "boolean"
+          },
+          "needsToChangeUserName": {
+            "default": false,
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nIf `true`, the user must change the `userName` at the first login.",
+            "type": "boolean"
+          },
+          "notifyUser": {
+            "description": "Notify user about his new account\n\n* default: `true` for `basic` auth type\n\n* default: `false` for `active_directory`, `openid` and `radius` auth types",
+            "type": "boolean"
+          },
+          "password": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.13.0\n\nAn initial password may be preset\n\nuse `authData` instead",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number",
+            "type": "string"
+          },
+          "receiverLanguage": {
+            "description": "IETF language tag",
+            "type": "string"
+          },
+          "title": {
+            "deprecated": true,
+            "description": "&#128679; Deprecated since v4.18.0\n\nJob title",
+            "type": "string"
+          },
+          "userName": {
+            "description": "&#128640; Since v4.13.0\n\nUsername",
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object"
+      },
+      "UserAuthData": {
+        "description": "User Authentication Data",
+        "properties": {
+          "adConfigId": {
+            "description": "ID of the user's Active Directory.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "login": {
+            "description": "User login name",
+            "type": "string"
+          },
+          "method": {
+            "description": "Authentication method\n\n\n\nAuthentication methods:\n\n* `basic`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`",
+            "type": "string"
+          },
+          "mustChangePassword": {
+            "description": "Determines whether user has to change his / her password\n\n* default: `true` for `basic` auth type\n\n* default: `false` for `active_directory`, `openid` and `radius` auth types",
+            "type": "boolean"
+          },
+          "oidConfigId": {
+            "description": "ID of the user's OIDC provider.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "password": {
+            "description": "Password (only relevant for `basic` authentication type)\n\n*NOT* your Active Directory, OpenID or RADIUS password!",
+            "type": "string"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      },
+      "UserAuthMethod": {
+        "deprecated": true,
+        "description": "Authentication method",
+        "properties": {
+          "authId": {
+            "description": "Authentication method\n\n\n\nAuthentication methods:\n\n* `basic`\n\n* `active_directory`\n\n* `radius`\n\n* `openid`",
+            "type": "string"
+          },
+          "isEnabled": {
+            "description": "Is enabled",
+            "type": "boolean"
+          },
+          "options": {
+            "description": "Authentication method options",
+            "items": {
+              "$ref": "#/$defs/KeyValueEntry"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "authId",
+          "isEnabled"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v4/provisioning/customers"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Service-Token": {
+        "$": "X-Sds-Service-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Customer information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**activationCode**: &#128679; Deprecated since v4.8.0",
+            "**companyName**: Company name",
+            "**createdAt**: Creation date",
+            [
+              "**customerAttributes**: List of customer attributes",
+              {
+                "$ul": [
+                  "**items**: List of customer attributes"
+                ]
+              }
+            ],
+            "**customerContractType**: Customer type",
+            "**customerUuid**: &#128640; Since v4.21.0",
+            [
+              "**firstAdminUser**: First administrator user",
+              {
+                "$ul": [
+                  [
+                    "**authData**: User Authentication Data",
+                    {
+                      "$ul": [
+                        "**adConfigId**: ID of the user's Active Directory.",
+                        "**login**: User login name",
+                        "**method**: Authentication method",
+                        "**mustChangePassword**: Determines whether user has to change his / her password",
+                        "**oidConfigId**: ID of the user's OIDC provider.",
+                        "**password**: Password (only relevant for `basic` authentication type)"
+                      ]
+                    }
+                  ],
+                  "**authMethods**: &#128679; Deprecated since v4.13.0",
+                  "**email**: Email ",
+                  "**firstName**: User first name",
+                  "**gender**: &#128679; Deprecated since v4.12.0 (default: n)",
+                  "**language**: &#128679; Deprecated since v4.7.0",
+                  "**lastName**: User last name",
+                  "**login**: &#128679; Deprecated since v4.13.0",
+                  "**needsToChangePassword**: &#128679; Deprecated since v4.13.0",
+                  "**needsToChangeUserName**: &#128679; Deprecated since v4.13.0 (default: false)",
+                  "**notifyUser**: Notify user about his new account",
+                  "**password**: &#128679; Deprecated since v4.13.0",
+                  "**phone**: Phone number",
+                  "**receiverLanguage**: IETF language tag",
+                  "**title**: &#128679; Deprecated since v4.18.0",
+                  "**userName**: &#128640; Since v4.13.0"
+                ]
+              }
+            ],
+            "**id**: Unique identifier for the customer",
+            "**isLocked**: Customer is locked: (default: false)",
+            "**lockStatus**: &#128679; Deprecated since v4.7.0 (default: false)",
+            "**providerCustomerId**: Provider customer ID",
+            "**quotaMax**: Maximal disc space which can be allocated by customer in bytes. -1 for unlimited",
+            "**trialDays**: Number of days left for trial period (relevant only for type `demo`)",
+            "**userMax**: Maximal number of users",
+            "**webhooksMax**: &#128640; Since v4.19.0"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "name": "PatchPayrollPeriodDataByEmploymentId",
+  "description": "**This endpoint is the REST alternative to the ImporteerGegevens (Variabele Gegevens) SOAP webservice functionality**  <br/> <br/> __Activity name :__ PatchPayrollPeriodDataByEmploymentId <br/> <br/>         This endpoint is typically used by applications that are considered to be leading in regard to the values for the payroll components they manage. For most (external) applications this will the most viable endpoint to achieve that functionality. Loket considers these parties as not interested in the current state of the payroll period data in the Loket.nl database. This endpoint is provided to make these scenarios easier to implement since no GET call is required to determine whether a POST or PUT call is to be performed to either insert or update payroll period data.\nBased on the current state of the database Loket.nl will either insert a new record or update the existing record with the supplied data.\n* A new record is created when the combination of `payrollPeriod`, `shift`, `payslipType`, `distributionUnit`, `costCenter` and `costUnit` is valid and _does not_ exist for the employment. Next to that, the objects consisting of `payrollComponent`, `value` and `attribute` are inserted into the database. <br />\n* An update is performed when the combination of `payrollPeriod`, `shift`, `payslipType`, `distributionUnit`, `costCenter` and `costUnit` _does_ exist for the employment. In that case the specified objects consisting of `payrollComponent`, `value` and `attribute` are inserted into the database, overwriting existing values. Existing records with a `payrollComponent.key` that is not supplied in the request are not modified. <br/> <br/> __Metadata :__ <br/> Possible values for fields of the type 'metadata' can be acquired (GET) by adding `/metadata` to the PATCH URL <br/> Possible values for fields of the type 'metadata' that are PERIOD-specific can be acquired (GET) by adding `/metadata/year/{year}/period/{periodNumber}` to the PATCH URL     <br/> <br/>   __Default values :__ <br/> Default values may be acquired by adding `/defaults` (GET) to the PATCH url . It is very much (!!!) recommended to acquire the defaults-objects first and use that information when inserting data for this employment. I.e. use the default values for costCenter, shift etcetera and the complement the object with the payroll components you want to provide. <br/> <br/>      __Extra background reading :__ <br/> It may be useful to read more about payroll period data (variabele gegevens, mutaties) on the Loket.nl [helpdesk portal](https://helpdesk.loket.nl/hc/nl/articles/115003667669-Variabele-mutaties-Individuele-vastlegging). Please note that this information is in Dutch and access is required. <br/>\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "employmentId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The unique identifier of the employment"
+      },
+      "Authorization": {
+        "example": "Bearer <TOKEN>",
+        "pattern": "^Bearer\\s[\\w-]+$",
+        "type": "string",
+        "description": "A valid Bearer token for authorizing the request."
+      },
+      "Accept": {
+        "example": "application/json;version=2018-01-01",
+        "type": "string",
+        "description": "The accept header is used to influence what type of output is returned and in most cases the version of the output"
+      },
+      "filter": {
+        "example": "cancellationPeriodTimeUnit.key eq 4",
+        "type": "string",
+        "description": "Filter the collection"
+      },
+      "orderBy": {
+        "example": "-companyName,address.houseNumber",
+        "pattern": "^-?\\w+(,-?\\w+)*$",
+        "type": "string",
+        "description": "Order the collection on one or more fields"
+      },
+      "pageNumber": {
+        "default": 1,
+        "example": 2,
+        "format": "int32",
+        "type": "integer",
+        "description": "Specifies which page should be returned"
+      },
+      "pageSize": {
+        "default": 250,
+        "example": 20,
+        "format": "int32",
+        "type": "integer",
+        "description": "Specifies the number of objects per page"
+      }
+    },
+    "required": [
+      "employmentId",
+      "Authorization",
+      "Accept"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://api.loket.nl/v2/providers/employers/employees/employments/{employmentId}/payrollperioddata{?filter,orderBy,pageNumber,pageSize}"
+    },
+    "headers": {
+      "Authorization": {
+        "$": "Authorization"
+      },
+      "Accept": {
+        "$": "Accept"
+      }
+    }
+  },
+  "responses": {
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The version of the resource",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**version**",
+              {
+                "$ul": [
+                  "**obsoleteDate**: The date (can be null) on which the `resourceVersion` is no longer supported/available",
+                  "**resourceVersion**: The resource version of the object in the response"
+                ]
+              }
+            ],
+            "**messages**",
+            "**content**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

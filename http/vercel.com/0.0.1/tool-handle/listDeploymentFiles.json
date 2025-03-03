@@ -1,0 +1,71 @@
+{
+  "name": "listDeploymentFiles",
+  "description": "Allows to retrieve the file structure of a deployment by supplying the deployment unique identifier.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "The unique deployment identifier",
+        "type": "string"
+      },
+      "teamId": {
+        "type": "string",
+        "description": "The Team identifier or slug to perform the request on behalf of."
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.vercel.com/v6/deployments/{id}/files{?teamId}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A deployment file tree entry",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**children**: The list of children files of the directory (only valid for the `directory` type)",
+            "**contentType**: The content-type of the file (only valid for the `file` type)",
+            "**mode**: The file \"mode\" indicating file type and permissions.",
+            "**name**: The name of the file tree entry",
+            "**symlink**: Not currently used. See `file-list-to-tree.ts`.",
+            "**type**: String indicating the type of file tree entry.",
+            "**uid**: The unique identifier of the file (only valid for the `file` type)"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,396 @@
+{
+  "name": "UpdateGameSessionQueue",
+  "description": "<p>Updates the configuration of a game session queue, which determines how the queue processes new game session requests. To update settings, specify the queue name to be updated and provide the new settings. When updating destinations, provide a complete list of destinations. </p> <p> <b>Learn more</b> </p> <p> <a href=\"https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html\"> Using Multi-Region Queues</a> </p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "GameLift.UpdateGameSessionQueue"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/UpdateGameSessionQueueInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "UpdateGameSessionQueueInput": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "title": "UpdateGameSessionQueueInput",
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GameSessionQueueNameOrArn"
+              },
+              {
+                "description": "A descriptive label that is associated with game session queue. Queue names must be unique within each Region. You can use either the queue ID or ARN value. "
+              }
+            ]
+          },
+          "TimeoutInSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WholeNumber"
+              },
+              {
+                "description": "The maximum time, in seconds, that a new game session placement request remains in the queue. When a request exceeds this time, the game session placement changes to a <code>TIMED_OUT</code> status. By default, this property is set to <code>600</code>."
+              }
+            ]
+          },
+          "PlayerLatencyPolicies": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PlayerLatencyPolicyList"
+              },
+              {
+                "description": "A set of policies that act as a sliding cap on player latency. FleetIQ works to deliver low latency for most players in a game session. These policies ensure that no individual player can be placed into a game with unreasonably high latency. Use multiple policies to gradually relax latency requirements a step at a time. Multiple policies are applied based on their maximum allowed latency, starting with the lowest value. When updating policies, provide a complete collection of policies."
+              }
+            ]
+          },
+          "Destinations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/GameSessionQueueDestinationList"
+              },
+              {
+                "description": "A list of fleets and/or fleet aliases that can be used to fulfill game session placement requests in the queue. Destinations are identified by either a fleet ARN or a fleet alias ARN, and are listed in order of placement preference. When updating this list, provide a complete list of destinations."
+              }
+            ]
+          },
+          "FilterConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterConfiguration"
+              },
+              {
+                "description": "A list of locations where a queue is allowed to place new game sessions. Locations are specified in the form of Amazon Web Services Region codes, such as <code>us-west-2</code>. If this parameter is not set, game sessions can be placed in any queue location. To remove an existing filter configuration, pass in an empty set."
+              }
+            ]
+          },
+          "PriorityConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PriorityConfiguration"
+              },
+              {
+                "description": "Custom settings to use when prioritizing destinations and locations for game session placements. This configuration replaces the FleetIQ default prioritization process. Priority types that are not explicitly named will be automatically applied at the end of the prioritization process. To remove an existing priority configuration, pass in an empty set."
+              }
+            ]
+          },
+          "CustomEventData": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueueCustomEventData"
+              },
+              {
+                "description": "Information to be added to all events that are related to this game session queue."
+              }
+            ]
+          },
+          "NotificationTarget": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/QueueSnsArnStringModel"
+              },
+              {
+                "description": "An SNS topic ARN that is set up to receive game session placement notifications. See <a href=\"https://docs.aws.amazon.com/gamelift/latest/developerguide/queue-notification.html\"> Setting up notifications for game session placement</a>."
+              }
+            ]
+          }
+        }
+      },
+      "GameSessionQueueNameOrArn": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9-]+|^arn:.*:gamesessionqueue\\/[a-zA-Z0-9-]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "WholeNumber": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "PlayerLatencyPolicyList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/PlayerLatencyPolicy"
+        }
+      },
+      "PlayerLatencyPolicy": {
+        "type": "object",
+        "properties": {
+          "MaximumIndividualPlayerLatencyMilliseconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WholeNumber"
+              },
+              {
+                "description": "The maximum latency value that is allowed for any player, in milliseconds. All policies must have a value set for this property."
+              }
+            ]
+          },
+          "PolicyDurationSeconds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WholeNumber"
+              },
+              {
+                "description": "The length of time, in seconds, that the policy is enforced while placing a new game session. A null value for this property means that the policy is enforced until the queue times out."
+              }
+            ]
+          }
+        },
+        "description": "Sets a latency cap for individual players when placing a game session. With a latency policy in force, a game session cannot be placed in a fleet location where a player reports latency higher than the cap. Latency policies are used only with placement request that provide player latency information. Player latency policies can be stacked to gradually relax latency requirements over time. "
+      },
+      "GameSessionQueueDestinationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/GameSessionQueueDestination"
+        }
+      },
+      "GameSessionQueueDestination": {
+        "type": "object",
+        "properties": {
+          "DestinationArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ArnStringModel"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) that is assigned to fleet or fleet alias. ARNs, which include a fleet ID or alias ID and a Region name, provide a unique identifier across all Regions."
+              }
+            ]
+          }
+        },
+        "description": "A fleet or alias designated in a game session queue. Queues fulfill requests for new game sessions by placing a new game session on any of the queue's destinations. "
+      },
+      "ArnStringModel": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9:/-]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "FilterConfiguration": {
+        "type": "object",
+        "properties": {
+          "AllowedLocations": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LocationList"
+              },
+              {
+                "description": " A list of locations to allow game session placement in, in the form of Amazon Web Services Region codes such as <code>us-west-2</code>. "
+              }
+            ]
+          }
+        },
+        "description": "A list of fleet locations where a game session queue can place new game sessions. You can use a filter to temporarily turn off placements for specific locations. For queues that have multi-location fleets, you can use a filter configuration allow placement with some, but not all of these locations."
+      },
+      "LocationList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/LocationStringModel"
+        },
+        "minItems": 1,
+        "maxItems": 100
+      },
+      "LocationStringModel": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9\\-]+",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "PriorityConfiguration": {
+        "type": "object",
+        "properties": {
+          "PriorityOrder": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PriorityTypeList"
+              },
+              {
+                "description": "<p>The recommended sequence to use when prioritizing where to place new game sessions. Each type can only be listed once.</p> <ul> <li> <p> <code>LATENCY</code> -- FleetIQ prioritizes locations where the average player latency (provided in each game session request) is lowest. </p> </li> <li> <p> <code>COST</code> -- FleetIQ prioritizes destinations with the lowest current hosting costs. Cost is evaluated based on the location, instance type, and fleet type (Spot or On-Demand) for each destination in the queue.</p> </li> <li> <p> <code>DESTINATION</code> -- FleetIQ prioritizes based on the order that destinations are listed in the queue configuration.</p> </li> <li> <p> <code>LOCATION</code> -- FleetIQ prioritizes based on the provided order of locations, as defined in <code>LocationOrder</code>. </p> </li> </ul>"
+              }
+            ]
+          },
+          "LocationOrder": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LocationList"
+              },
+              {
+                "description": "The prioritization order to use for fleet locations, when the <code>PriorityOrder</code> property includes <code>LOCATION</code>. Locations are identified by Amazon Web Services Region codes such as <code>us-west-2</code>. Each location can only be listed once. "
+              }
+            ]
+          }
+        },
+        "description": "<p>Custom prioritization settings for use by a game session queue when placing new game sessions with available game servers. When defined, this configuration replaces the default FleetIQ prioritization process, which is as follows:</p> <ul> <li> <p>If player latency data is included in a game session request, destinations and locations are prioritized first based on lowest average latency (1), then on lowest hosting cost (2), then on destination list order (3), and finally on location (alphabetical) (4). This approach ensures that the queue's top priority is to place game sessions where average player latency is lowest, and--if latency is the same--where the hosting cost is less, etc.</p> </li> <li> <p>If player latency data is not included, destinations and locations are prioritized first on destination list order (1), and then on location (alphabetical) (2). This approach ensures that the queue's top priority is to place game sessions on the first destination fleet listed. If that fleet has multiple locations, the game session is placed on the first location (when listed alphabetically).</p> </li> </ul> <p>Changing the priority order will affect how game sessions are placed.</p>"
+      },
+      "PriorityTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/PriorityType"
+        },
+        "minItems": 1,
+        "maxItems": 4
+      },
+      "PriorityType": {
+        "type": "string",
+        "enum": [
+          "LATENCY",
+          "COST",
+          "DESTINATION",
+          "LOCATION"
+        ]
+      },
+      "QueueCustomEventData": {
+        "type": "string",
+        "pattern": "[\\s\\S]*",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "QueueSnsArnStringModel": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9:_-]*(\\.fifo)?",
+        "minLength": 0,
+        "maxLength": 300
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://gamelift.us-east-1.amazonaws.com/#X-Amz-Target=GameLift.UpdateGameSessionQueue"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**GameSessionQueue**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "name": "getMatrix",
+  "description": "With this Matrix Endpoint you submit the points and parameters via URL parameters and is the most convenient\nas it works out-of-the-box in the browser. If possible you should\nprefer using the [POST Matrix Endpoint](#operation/postMatrix) that avoids problems with many locations\nand can also gzip the **request**. (Note, that all endpoints return gzipped responses).\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "point": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Specify multiple points in `latitude,longitude` for which the weight-, route-, time- or distance-matrix should be calculated. In this case the starts are identical to the destinations. If there are N points, then NxN entries will be calculated. The order of the point parameter is important. Specify at least three points. Cannot be used together with from_point or to_point."
+      },
+      "from_point": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The starting points for the routes in `latitude,longitude`. E.g. if you want to calculate the three routes A-&gt;1, A-&gt;2, A-&gt;3 then you have one from_point parameter and three to_point parameters."
+      },
+      "to_point": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The destination points for the routes in `latitude,longitude`."
+      },
+      "point_hint": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter. Specifies a hint for each `point` parameter to prefer a certain street for the closest location lookup. E.g. if there is an address or house with two or more neighboring streets you can control for which street the closest location is looked up."
+      },
+      "from_point_hint": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "For the from_point parameter. See point_hint"
+      },
+      "to_point_hint": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "For the to_point parameter. See point_hint"
+      },
+      "snap_prevention": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter to avoid snapping to a certain road class or road environment. Current supported values `motorway`, `trunk`, `ferry`, `tunnel`, `bridge` and `ford`. Multiple values are specified like `snap_prevention=ferry&snap_prevention=motorway`\n"
+      },
+      "curbside": {
+        "items": {
+          "enum": [
+            "any",
+            "right",
+            "left"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Optional parameter. It specifies on which side a point should be relative to the driver when she leaves/arrives at a start/target/via point. You need to specify this parameter for either none or all points. Only supported for motor vehicles and OpenStreetMap."
+      },
+      "from_curbside": {
+        "items": {
+          "enum": [
+            "any",
+            "right",
+            "left"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Curbside setting for the from_point parameter. See curbside."
+      },
+      "to_curbside": {
+        "items": {
+          "enum": [
+            "any",
+            "right",
+            "left"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Curbside setting for the to_point parameter. See curbside."
+      },
+      "out_array": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Specifies which arrays should be included in the response. Specify one or more of the following options 'weights', 'times', 'distances'. To specify more than one array use e.g. out_array=times&out_array=distances. The units of the entries of distances are meters, of times are seconds and of weights is arbitrary and it can differ for different vehicles or versions of this API."
+      },
+      "vehicle": {
+        "$ref": "#/components/schemas/VehicleProfileId",
+        "description": "The vehicle profile for which the matrix should be calculated."
+      },
+      "fail_fast": {
+        "default": true,
+        "type": "boolean",
+        "description": "Specifies whether or not the matrix calculation should return with an error as soon as possible in case some points cannot be found or some points are not connected. If set to `false` the time/weight/distance matrix will be calculated for all valid points and contain the `null` value for all entries that could not be calculated. The `hint` field of the response will also contain additional information about what went wrong (see its documentation)."
+      },
+      "turn_costs": {
+        "default": false,
+        "type": "boolean",
+        "description": "Specifies if turn restrictions should be considered. Enabling this option increases the matrix computation time. Only supported for motor vehicles and OpenStreetMap."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://graphhopper.com/api/1/matrix{?point,from_point,to_point,point_hint,from_point_hint,to_point_hint,snap_prevention,curbside,from_curbside,to_curbside,out_array,vehicle,fail_fast,turn_costs}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**distances**: The distance matrix for the specified points in the same order as the time matrix. The distances are in meters. If `fail_fast=false` the matrix will contain `null` for connections that could not be found.",
+            "**hints**: Optional. Additional response data.",
+            [
+              "**info**: Additional information for your request",
+              {
+                "$ul": [
+                  "**copyrights**: Attribution according to our documentation is necessary if no white-label option included.",
+                  "**took**"
+                ]
+              }
+            ],
+            "**times**: The time matrix for the specified points in the order [[from1->to1, from1->to2, ...], [from2->to1, from2->to2, ...], ...]. The times are in seconds. If `fail_fast=false` the matrix will contain `null` for connections that could not be found.",
+            "**weights**: The weight matrix for the specified points in the same order as the time matrix. The weights for different vehicles can have a different unit but the weights array is perfectly suited as input for Vehicle Routing Problems as it is currently faster to calculate. If `fail_fast=false` the matrix will contain `null` for connections that could not be found."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**hints**: Optional error information.",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,365 @@
+{
+  "name": "createFileUploadChannel",
+  "description": "### Description:\nThis endpoint creates a new upload channel which is the first step in any file upload workflow.\n\n### Precondition:\nUser has <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128275; create</span> permissions in the parent container (room or folder).\n\n### Postcondition:\nA new upload channel for a file is created.  \nIts ID and an upload token are returned.\n\n### Further Information:\nThe upload ID is used for uploads with `X-Sds-Auth-Token` header, the upload token can be used for uploads without authentication header.\n\nPlease provide the size of the intended upload so that the quota can be checked in advanced and no data is transferred unnecessarily.\n\nNotes are limited to **255** characters.\n\n### Node naming convention:\n* Node (room, folder, file) names are limited to **150** characters.\n* Illegal names:  \n`'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9', (and any of those with an extension)`\n* Illegal characters in names:  \n`'\\\\', '<','>', ':', '\\\"', '|', '?', '*', '/', leading '-', trailing '.' `\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateFileUploadRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CreateFileUploadRequest": {
+        "description": "Request model for creating an upload channel",
+        "properties": {
+          "classification": {
+            "description": "Classification ID:\n\n* `1` - public\n\n* `2` - internal\n\n* `3` - confidential\n\n* `4` - strictly confidential\n\n\n\n(default: classification from parent room)",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "format": "int32",
+            "type": "integer"
+          },
+          "directS3Upload": {
+            "default": false,
+            "description": "&#128640; Since v4.15.0\n\nUpload direct to S3",
+            "type": "boolean"
+          },
+          "expiration": {
+            "$ref": "#/$defs/ObjectExpiration"
+          },
+          "name": {
+            "description": "File name",
+            "type": "string"
+          },
+          "notes": {
+            "description": "User notes\n\nUse empty string to remove.",
+            "type": "string"
+          },
+          "parentId": {
+            "description": "Parent node ID (room or folder)",
+            "format": "int64",
+            "type": "integer"
+          },
+          "size": {
+            "description": "File size in byte",
+            "format": "int64",
+            "type": "integer"
+          },
+          "timestampCreation": {
+            "description": "&#128640; Since v4.22.0\n\nTime the node was created on external file system\n\n(default: current server datetime in UTC format)",
+            "format": "date-time",
+            "type": "string"
+          },
+          "timestampModification": {
+            "description": "&#128640; Since v4.22.0\n\nTime the content of a node was last modified on external file system\n\n(default: current server datetime in UTC format)",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "parentId"
+        ],
+        "type": "object"
+      },
+      "ObjectExpiration": {
+        "description": "Expiration information",
+        "properties": {
+          "enableExpiration": {
+            "description": "enabled / disabled",
+            "type": "boolean"
+          },
+          "expireAt": {
+            "description": "Expiration date",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enableExpiration"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v4/nodes/files/uploads"
+    },
+    "headers": {
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Upload channel information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**token**: Upload token",
+            "**uploadId**: Upload (channel) ID",
+            "**uploadUrl**: (public) Upload URL"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "504": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "507": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "name": "requestDownloadShares",
+  "description": "### Description:  \nRetrieve a list of Download Shares.\n\n### Precondition:\nAuthenticated user.\n\n### Postcondition:\nList of available Download Shares is returned.\n\n### Further Information:\n\n### Filtering:\nAll filter fields are connected via logical (**AND**). createdBy and updatedBy searches several user-related attributes.\n\nFilter string syntax: `FIELD_NAME:OPERATOR:VALUE[:VALUE...]`  \n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`name:cn:searchString_1|createdBy:cn:searchString_2`\nFilter by file name contains `searchString_1` **AND** creator info (`firstName` **OR** `lastName` **OR** `email` **OR** `username`) contains `searchString_2`.\n\n</details>\n\n### Filtering options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Filter Description | `OPERATOR` | Operator Description | `VALUE` |\n| :--- | :--- | :--- | :--- | :--- |\n| `name` | Alias or node name filter | `cn` | Alias or node name contains value. | `search String` |\n| `createdAt` | Creation date filter | `ge, le` | Creation date is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `createdAt:ge:2016-12-31`&#124;`createdAt:le:2018-01-01` | `Date (yyyy-MM-dd)` |\n| `createdBy` | Creator info filter | `cn, eq` | Creator info (`firstName` **OR** `lastName` **OR** `email` **OR** `username`) contains value. | `search String` |\n| `createdById` | Creator ID filter | `eq` | Creator ID equals value. | `positive Integer` |\n| `accessKey` | Share access key filter | `cn` | Share access key contains values. | `search String` |\n| `nodeId` | Source node ID | `eq` | Source node (room, folder, file) ID equals value. | `positive Integer` |\n| `updatedBy` | Modifier info filter | `cn, eq` | Modifier info (`firstName` **OR** `lastName` **OR** `email` **OR** `username`) contains value. | `search String` |\n| `updatedById` | Modifier ID filter | `eq` | Modifier ID equals value. | `positive Integer` |\n\n</details>\n\n### Deprecated filtering options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Filter Description | `OPERATOR` | Operator Description | `VALUE` |\n| :--- | :--- | :--- | :--- | :--- |\n| <del>`userId`</del>  | Creator user ID | `eq` | Creator user ID equals value. Use `createdById` instead | `positive Integer` |\n\n</details>\n\n---\n\n### Sorting:\nSort string syntax: `FIELD_NAME:ORDER`  \n`ORDER` can be `asc` or `desc`.  \nMultiple sort fields are supported.  \n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`name:asc|expireAt:desc`  \nSort by `name` ascending **AND** by `expireAt` descending.\n\n</details>\n\n### Sorting options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Description |\n| :--- | :--- |\n| `name` | Alias or node name |\n| `notifyCreator` | Notify creator on every download |\n| `expireAt` | Expiration date |\n| `createdAt` | Creation date |\n| `createdBy` | Creator first name, last name |\n| `classification` | Classification ID:<ul><li>1 - public</li><li>2 - internal</li><li>3 - confidential</li><li>4 - strictly confidential</li></ul> |\n\n</details>\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "filter": {
+        "type": "string",
+        "description": "Filter string"
+      },
+      "sort": {
+        "type": "string",
+        "description": "Sort string"
+      },
+      "offset": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range offset"
+      },
+      "limit": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range limit.\n\nMaximum 500.\n\n For more results please use paging (`offset` + `limit`)."
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v4/shares/downloads{?filter,sort,offset,limit}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "List of Download Shares",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**items**: List of Download Shares",
+            [
+              "**range**: Range information",
+              {
+                "$ul": [
+                  "**limit**: Range limit. Maximum 500.",
+                  "**offset**: Range offset",
+                  "**total**: Total items available"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "name": "get_search_entities",
+  "description": "Returns list of matching concepts or entities using lexical search",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fq": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "fq string passed directly to solr, note that multiple filters will be combined with an AND operator. Combining fq_string with other parameters may result in unexpected behavior."
+      },
+      "category": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "e.g. gene, disease"
+      },
+      "prefix": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "ontology prefix: HP, -MONDO"
+      },
+      "include_eqs": {
+        "default": false,
+        "type": "boolean",
+        "description": "Include equivalent ids in prefix filter"
+      },
+      "boost_fx": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "boost function e.g. pow(edges,0.334)"
+      },
+      "boost_q": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "boost query e.g. category:genotype^-10"
+      },
+      "taxon": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "taxon filter, eg NCBITaxon:9606, includes inferred taxa"
+      },
+      "rows": {
+        "default": 20,
+        "type": "integer",
+        "description": "number of rows"
+      },
+      "start": {
+        "default": "0",
+        "type": "string",
+        "description": "row number to start from"
+      },
+      "highlight_class": {
+        "type": "string",
+        "description": "highlight class"
+      },
+      "min_match": {
+        "type": "string",
+        "description": "minimum should match parameter, see solr docs for details"
+      },
+      "exclude_groups": {
+        "default": false,
+        "type": "boolean",
+        "description": "Exclude grouping classes (classes with subclasses)"
+      },
+      "minimal_tokenizer": {
+        "default": false,
+        "type": "boolean",
+        "description": "set to true to use the minimal tokenizer, good for variants and genotypes"
+      },
+      "term": {
+        "type": "string",
+        "description": "search string, e.g. shh, parkinson, femur"
+      }
+    },
+    "required": [
+      "term"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/search/entity/{term}{?fq,category,prefix,include_eqs,boost_fx,boost_q,taxon,rows,start,highlight_class,min_match,exclude_groups,minimal_tokenizer}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**docs**: solr docs",
+            "**facet_counts**: Mapping between field names and association counts",
+            "**highlighting**: Mapping between id and solr highlight",
+            "**numFound**: total number of associations matching query"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

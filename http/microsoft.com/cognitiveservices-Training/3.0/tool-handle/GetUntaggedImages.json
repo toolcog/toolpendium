@@ -1,0 +1,132 @@
+{
+  "name": "GetUntaggedImages",
+  "description": "This API supports batching and range selection. By default it will only return first 50 images matching images.\r\nUse the {take} and {skip} parameters to control how many images to return in a given batch.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The project id."
+      },
+      "iterationId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The iteration id. Defaults to workspace."
+      },
+      "orderBy": {
+        "enum": [
+          "Newest",
+          "Oldest"
+        ],
+        "type": "string",
+        "description": "The ordering. Defaults to newest."
+      },
+      "take": {
+        "default": 50,
+        "format": "int32",
+        "maximum": 256,
+        "minimum": 0,
+        "type": "integer",
+        "description": "Maximum number of images to return. Defaults to 50, limited to 256."
+      },
+      "skip": {
+        "default": 0,
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of images to skip before beginning the image batch. Defaults to 0."
+      },
+      "Training-Key": {
+        "type": "string",
+        "description": "API key."
+      }
+    },
+    "required": [
+      "projectId",
+      "Training-Key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://southcentralus.api.cognitive.microsoft.com/customvision/v3.0/training/projects/{projectId}/images/untagged{?iterationId,orderBy,take,skip}"
+    },
+    "headers": {
+      "Training-Key": {
+        "$": "Training-Key"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Image model to be sent as JSON.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: Date the image was created.",
+            "**height**: Height of the image.",
+            "**id**: Id of the image.",
+            "**originalImageUri**: The URI to the original uploaded image.",
+            "**regions**: Regions associated with this image.",
+            "**resizedImageUri**: The URI to the (resized) image used for training.",
+            "**tags**: Tags associated with this image.",
+            "**thumbnailUri**: The URI to the thumbnail of the original image.",
+            "**width**: Width of the image."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code.",
+            "**message**: A message explaining the error reported by the service."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

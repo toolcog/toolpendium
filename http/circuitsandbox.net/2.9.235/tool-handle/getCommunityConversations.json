@@ -1,0 +1,106 @@
+{
+  "name": "getCommunityConversations",
+  "description": "Gets a list of communities. This endpoint can be used to explore the communities the authenticated user could join.\nOauthScopes: READ_CONVERSATIONS",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "sort": {
+        "default": "ALPHABETICALLY",
+        "enum": [
+          "ALPHABETICALLY",
+          "RECENT_ACTIVITY",
+          "POPULARITY"
+        ],
+        "maxLength": 2048,
+        "type": "string",
+        "description": "Defines the type of sorting for the community conversations (default is alphabetical)"
+      },
+      "order": {
+        "default": "ASCENDING",
+        "enum": [
+          "ASCENDING",
+          "DESCENDING"
+        ],
+        "maxLength": 2048,
+        "type": "string",
+        "description": "Defines the ordering of the conversations (default is ascending)"
+      },
+      "includeOwn": {
+        "default": false,
+        "type": "boolean",
+        "description": "If set to false only conversations are returned where the user is no member of, otherwise all community conversations are returned"
+      },
+      "startIndex": {
+        "default": 0,
+        "format": "int32",
+        "maximum": 255,
+        "minimum": 0,
+        "type": "number",
+        "description": "The index of the conversation that is the first one that has to be returned. E.g. if a request starts with startIndex 40 and results 20 the conversations 40 to 60 are returned"
+      },
+      "results": {
+        "default": 25,
+        "format": "int32",
+        "maximum": 100,
+        "minimum": 1,
+        "type": "number",
+        "description": "The maximum number of returned results (default 25). The maximum allowed value is 100."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://circuitsandbox.net/rest/v2/conversations/community{?sort,order,includeOwn,startIndex,results}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**avatar**: The URL of the small avatar image of the conversation",
+            "**avatarLarge**: The URL of the large avatar image of the conversation",
+            "**convId**: The ID of the conversation",
+            "**creationTime**: UTC timestamp when the conversation was created",
+            "**creatorId**: The ID of the user who created the conversation",
+            "**creatorTenantId**: The ID of the Circuit domain (tenant) where the creator of the conversation belongs to",
+            "**description**: The description of the conversation. This field is available only for conversations with type COMMUNITY",
+            "**isGuestAccessDisabled**: Indicates whether guest access to the conversation is disabled or not",
+            "**isModerated**: Indicates whether the conversation is moderated or not. In a moderated conversation only participants who have been assigned the role of a moderator are allowed to add or remove participants into the conversation",
+            "**modificationTime**: UTC timestamp when the conversation was modified. A conversation is modified when any of the conversation object fields change but not when conversation items are added or edited",
+            "**participants**: Array of active participants",
+            "**topic**: The title of the conversation. Conversations of type DIRECT cannot have a title",
+            "**topicPlaceholder**: The title of the conversation. Conversations of type DIRECT cannot have a title",
+            "**type**: The type of the conversation. It can be one of the following: DIRECT, GROUP, COMMUNITY or LARGE"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

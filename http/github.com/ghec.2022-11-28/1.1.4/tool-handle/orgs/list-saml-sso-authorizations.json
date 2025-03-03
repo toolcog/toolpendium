@@ -1,0 +1,83 @@
+{
+  "name": "orgs_list-saml-sso-authorizations",
+  "description": "Listing and deleting credential authorizations is available to organizations with GitHub Enterprise Cloud. For more information, see [GitHub's products](https://docs.github.com/enterprise-cloud@latest//github/getting-started-with-github/githubs-products).\n\nAn authenticated organization owner with the `read:org` scope can list all credential authorizations for an organization that uses SAML single sign-on (SSO). The credentials are either personal access tokens or SSH keys that organization members have authorized for the organization. For more information, see [About authentication with SAML single sign-on](https://docs.github.com/enterprise-cloud@latest//articles/about-authentication-with-saml-single-sign-on).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org": {
+        "type": "string",
+        "description": "The organization name. The name is not case sensitive."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "page": {
+        "type": "integer",
+        "description": "Page token"
+      },
+      "login": {
+        "type": "string",
+        "description": "Limits the list of credentials authorizations for an organization to a specific login"
+      }
+    },
+    "required": [
+      "org"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//orgs/{org}/credential-authorizations{?per_page,page,login}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Credential Authorization list"
+        },
+        "Credential Authorization",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authorized_credential_expires_at**: The expiry for the token. This will only be present when the credential is a token.",
+            "**authorized_credential_id**",
+            "**authorized_credential_note**: The note given to the token. This will only be present when the credential is a token.",
+            "**authorized_credential_title**: The title given to the ssh key. This will only be present when the credential is an ssh key.",
+            "**credential_accessed_at**: Date when the credential was last accessed. May be null if it was never accessed",
+            "**credential_authorized_at**: Date when the credential was authorized for use.",
+            "**credential_id**: Unique identifier for the credential.",
+            "**credential_type**: Human-readable description of the credential type.",
+            "**fingerprint**: Unique string to distinguish the credential. Only included in responses with credential_type of SSH Key.",
+            "**login**: User login that owns the underlying credential.",
+            "**scopes**: List of oauth scopes the token has been granted.",
+            "**token_last_eight**: Last eight characters of the credential. Only included in responses with credential_type of personal access token."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

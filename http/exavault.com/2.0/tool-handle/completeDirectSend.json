@@ -1,0 +1,147 @@
+{
+  "name": "completeDirectSend",
+  "description": "After uploading the file(s) to be sent, this method will trigger invitation emails and finish the send files setup. If you are not sending files from your own computer in a send, you will not need this step.\n  \n**How to send files from your computer using the API**:\n\nIn order to use the API to send files which are not already stored in your account, you'll need to follow a three-step process:\n\n1. Use the [POST /shares](#operation/addShare) endpoint to set up your send, including password, recipients, expiration, etc. You must include **upload** among the permissions in the `accessMode` and set the `sendingLocalFiles` paramter to **true**. The response that is returned will include a \"meta\" attribute, which contains an **accessToken** attribute. This new access token is valid only for the send.\n2. Use the [POST /resources/upload](#operation/uploadFile) endpoint to upload your files to the send you've created. The \"/\" path represents the root of the share, not your home directory. **You must send the access token that you received from the first step in the `ev-access-token` header**\n3. Use the [POST /shares/complete-send/{id}](#operation/completeDirectSend) endpoint to indicate that you have finished uploading files to your send. This will trigger the system to remove the **upload** permission from the share and send any invitation emails you set up in the first step of the process. **You must send YOUR access token in the `ev-access-token` header, not the temporary access token**\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "example": "exampleaccount-zwSuWUZ8S38h33qPS8v0s",
+        "type": "string",
+        "description": "API Key"
+      },
+      "ev-access-token": {
+        "example": "19853ef63a0bc348024a9e4cfd4a92520d2dfd04e88d8679fb1ed6bc551593d1",
+        "type": "string",
+        "description": "Access Token"
+      },
+      "id": {
+        "type": "integer",
+        "description": "ID of the share to trigger invitations for."
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token",
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/shares/complete-send/{id}"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ShareResponse"
+        },
+        "Response object for shares.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: Object contains share properties.",
+              {
+                "$ul": [
+                  [
+                    "**attributes**: Attributes of the share including the name, path and share recipients. ",
+                    {
+                      "$ul": [
+                        "**accessDescription**: Description of the share access rights.",
+                        [
+                          "**accessMode**: An object defining what a not-logged-in visitor can do with the share contents",
+                          {
+                            "$ul": [
+                              "**delete**: Whether share allows visitors to delete contents",
+                              "**download**: Whether share allows visitors to download",
+                              "**modify**: Whether share allows visitors to rename or move contents.",
+                              "**upload**: Whether share allows visitors to upload"
+                            ]
+                          }
+                        ],
+                        "**created**: Timestamp of share creation.",
+                        "**embed**: True if share can be embedded.",
+                        "**expiration**: Expiration date of the share.",
+                        "**expired**: True if the share has expired.",
+                        "**fileDropCreateFolders**: Flag to show if separate folders should be created for each file upload to receive folder.",
+                        "**formId**: ID of the form.",
+                        "**hasNotification**: True if share has notification.",
+                        "**hasPassword**: True if the share has password.",
+                        "**hash**: Share hash.",
+                        "**inherited**: True if share inherited from parent folder.",
+                        "**messages**: Array of invitation messages.",
+                        "**modified**: Timestamp of share modification. Can be `null` if it wasn't modified.",
+                        "**name**: Share name.",
+                        "**ownerHash**: Share owner's hash.",
+                        "**paths**: Path to the shared resource in your account.",
+                        "**public**: True if the share has a public url.",
+                        "**recipients**: Array of recipients.",
+                        "**requireEmail**: True if share requires email to access.",
+                        "**resent**: Invitations resent date. Can be `null` if resent never happened.",
+                        "**status**: Share activity status. Can be active (1) or deactivated (0).",
+                        "**trackingStatus**: Checks recipient received status and returns whether it's been received (`complete`,) partial received (`incomplete`,) or not received yet (`pending`.)",
+                        "**type**: Type of share."
+                      ]
+                    }
+                  ],
+                  "**id**: ID of the share.",
+                  [
+                    "**relationships**: Message, owner, resource, and notification relationships of the share. ",
+                    {
+                      "$ul": [
+                        "**messages**",
+                        "**notifications**",
+                        [
+                          "**owner**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**: ID of the owner.",
+                                    "**type**: Type is user."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**resources**"
+                      ]
+                    }
+                  ],
+                  "**type**: Type of the share. "
+                ]
+              }
+            ],
+            "**included**",
+            "**responseStatus**: Http status code of the response."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

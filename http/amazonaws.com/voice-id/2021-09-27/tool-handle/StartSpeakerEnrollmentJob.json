@@ -1,0 +1,446 @@
+{
+  "name": "StartSpeakerEnrollmentJob",
+  "description": "Starts a new batch speaker enrollment job using specified details.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "VoiceID.StartSpeakerEnrollmentJob"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/StartSpeakerEnrollmentJobRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "StartSpeakerEnrollmentJobRequest": {
+        "type": "object",
+        "required": [
+          "DataAccessRoleArn",
+          "DomainId",
+          "InputDataConfig",
+          "OutputDataConfig"
+        ],
+        "title": "StartSpeakerEnrollmentJobRequest",
+        "properties": {
+          "ClientToken": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ClientTokenString"
+              },
+              {
+                "description": "A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>."
+              }
+            ]
+          },
+          "DataAccessRoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IamRoleArn"
+              },
+              {
+                "description": "The IAM role Amazon Resource Name (ARN) that grants Voice ID permissions to access customer's buckets to read the input manifest file and write the job output file. Refer to <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/voiceid-batch-enrollment.html\">Batch enrollment using audio data from prior calls</a> for the permissions needed in this role."
+              }
+            ]
+          },
+          "DomainId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DomainId"
+              },
+              {
+                "description": "The identifier of the domain that contains the speaker enrollment job and in which the speakers are enrolled. "
+              }
+            ]
+          },
+          "EnrollmentConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EnrollmentConfig"
+              },
+              {
+                "description": "The enrollment config that contains details such as the action to take when a speaker is already enrolled in Voice ID or when a speaker is identified as a fraudster."
+              }
+            ]
+          },
+          "InputDataConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/InputDataConfig"
+              },
+              {
+                "description": "The input data config containing the S3 location for the input manifest file that contains the list of speaker enrollment requests."
+              }
+            ]
+          },
+          "JobName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/JobName"
+              },
+              {
+                "description": "A name for your speaker enrollment job."
+              }
+            ]
+          },
+          "OutputDataConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OutputDataConfig"
+              },
+              {
+                "description": "The output data config containing the S3 location where Voice ID writes the job output file; you must also include a KMS key ID to encrypt the file."
+              }
+            ]
+          }
+        }
+      },
+      "ClientTokenString": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9-_]+$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "IamRoleArn": {
+        "type": "string",
+        "pattern": "^arn:aws(-[^:]+)?:iam::[0-9]{12}:role/.+$",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "DomainId": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9]{22}$",
+        "minLength": 22,
+        "maxLength": 22
+      },
+      "EnrollmentConfig": {
+        "type": "object",
+        "properties": {
+          "ExistingEnrollmentAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ExistingEnrollmentAction"
+              },
+              {
+                "description": " The action to take when the specified speaker is already enrolled in the specified domain. The default value is <code>SKIP</code>, which skips the enrollment for the existing speaker. Setting the value to <code>OVERWRITE</code> replaces the existing voice prints and enrollment audio stored for that speaker with new data generated from the latest audio."
+              }
+            ]
+          },
+          "FraudDetectionConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EnrollmentJobFraudDetectionConfig"
+              },
+              {
+                "description": "The fraud detection configuration to use for the speaker enrollment job."
+              }
+            ]
+          }
+        },
+        "description": "Contains configurations defining enrollment behavior for the batch job."
+      },
+      "ExistingEnrollmentAction": {
+        "type": "string",
+        "enum": [
+          "SKIP",
+          "OVERWRITE"
+        ]
+      },
+      "EnrollmentJobFraudDetectionConfig": {
+        "type": "object",
+        "properties": {
+          "FraudDetectionAction": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FraudDetectionAction"
+              },
+              {
+                "description": "The action to take when the given speaker is flagged by the fraud detection system. The default value is <code>FAIL</code>, which fails the speaker enrollment. Changing this value to <code>IGNORE</code> results in the speaker being enrolled even if they are flagged by the fraud detection system."
+              }
+            ]
+          },
+          "RiskThreshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Score"
+              },
+              {
+                "description": "Threshold value for determining whether the speaker is a high risk to be fraudulent. If the detected risk score calculated by Voice ID is greater than or equal to the threshold, the speaker is considered a fraudster."
+              }
+            ]
+          },
+          "WatchlistIds": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EnrollmentJobFraudDetectionConfigWatchlistIds"
+              },
+              {
+                "description": "The identifier of watchlists against which fraud detection is performed. "
+              }
+            ]
+          }
+        },
+        "description": "The fraud detection configuration to be used during the batch speaker enrollment job."
+      },
+      "FraudDetectionAction": {
+        "type": "string",
+        "enum": [
+          "IGNORE",
+          "FAIL"
+        ]
+      },
+      "Score": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "EnrollmentJobFraudDetectionConfigWatchlistIds": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/WatchlistId"
+        },
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "WatchlistId": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9]{22}$",
+        "minLength": 22,
+        "maxLength": 22
+      },
+      "InputDataConfig": {
+        "type": "object",
+        "required": [
+          "S3Uri"
+        ],
+        "properties": {
+          "S3Uri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Uri"
+              },
+              {
+                "description": "The S3 location for the input manifest file that contains the list of individual enrollment or registration job requests."
+              }
+            ]
+          }
+        },
+        "description": "The configuration containing input file information for a batch job."
+      },
+      "S3Uri": {
+        "type": "string",
+        "pattern": "^s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?$",
+        "minLength": 0,
+        "maxLength": 1024
+      },
+      "JobName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "OutputDataConfig": {
+        "type": "object",
+        "required": [
+          "S3Uri"
+        ],
+        "properties": {
+          "KmsKeyId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/KmsKeyId"
+              },
+              {
+                "description": "The identifier of the KMS key you want Voice ID to use to encrypt the output file of a speaker enrollment job/fraudster registration job. "
+              }
+            ]
+          },
+          "S3Uri": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Uri"
+              },
+              {
+                "description": "The S3 path of the folder where Voice ID writes the job output file. It has a <code>*.out</code> extension. For example, if the input file name is <code>input-file.json</code> and the output folder path is <code>s3://output-bucket/output-folder</code>, the full output file path is <code>s3://output-bucket/output-folder/job-Id/input-file.json.out</code>."
+              }
+            ]
+          }
+        },
+        "description": "The configuration containing output file information for a batch job."
+      },
+      "KmsKeyId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://voiceid.us-east-1.amazonaws.com/#X-Amz-Target=VoiceID.StartSpeakerEnrollmentJob"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Job**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

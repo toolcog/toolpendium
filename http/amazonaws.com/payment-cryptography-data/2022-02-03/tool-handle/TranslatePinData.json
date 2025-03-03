@@ -1,0 +1,404 @@
+{
+  "name": "TranslatePinData",
+  "description": "<p>Translates encrypted PIN block from and to ISO 9564 formats 0,1,3,4. For more information, see <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/translate-pin-data.html\">Translate PIN data</a> in the <i>Amazon Web Services Payment Cryptography User Guide</i>.</p> <p>PIN block translation involves changing the encrytion of PIN block from one encryption key to another encryption key and changing PIN block format from one to another without PIN block data leaving Amazon Web Services Payment Cryptography. The encryption key transformation can be from PEK (Pin Encryption Key) to BDK (Base Derivation Key) for DUKPT or from BDK for DUKPT to PEK. Amazon Web Services Payment Cryptography supports <code>TDES</code> and <code>AES</code> key derivation type for DUKPT tranlations. You can use this operation for P2PE (Point to Point Encryption) use cases where the encryption keys should change but the processing system either does not need to, or is not permitted to, decrypt the data.</p> <p>The allowed combinations of PIN block format translations are guided by PCI. It is important to note that not all encrypted PIN block formats (example, format 1) require PAN (Primary Account Number) as input. And as such, PIN block format that requires PAN (example, formats 0,3,4) cannot be translated to a format (format 1) that does not require a PAN for generation. </p> <p>For information about valid keys for this operation, see <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/keys-validattributes.html\">Understanding key attributes</a> and <a href=\"https://docs.aws.amazon.com/payment-cryptography/latest/userguide/crypto-ops-validkeys-ops.html\">Key types for specific data operations</a> in the <i>Amazon Web Services Payment Cryptography User Guide</i>.</p> <note> <p>At this time, Amazon Web Services Payment Cryptography does not support translations to PIN format 4.</p> </note> <p> <b>Cross-account use</b>: This operation can't be used across different Amazon Web Services accounts.</p> <p> <b>Related operations:</b> </p> <ul> <li> <p> <a>GeneratePinData</a> </p> </li> <li> <p> <a>VerifyPinData</a> </p> </li> </ul>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "EncryptedPinBlock",
+          "IncomingKeyIdentifier",
+          "IncomingTranslationAttributes",
+          "OutgoingKeyIdentifier",
+          "OutgoingTranslationAttributes"
+        ],
+        "properties": {
+          "EncryptedPinBlock": {
+            "description": "The encrypted PIN block data that Amazon Web Services Payment Cryptography translates.",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]+$",
+            "minLength": 16,
+            "maxLength": 32
+          },
+          "IncomingDukptAttributes": {
+            "description": "Parameters required for encryption or decryption of data using DUKPT.",
+            "type": "object",
+            "properties": {
+              "DukptKeyDerivationType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DukptDerivationType"
+                  },
+                  {
+                    "description": "The key type derived using DUKPT from a Base Derivation Key (BDK) and Key Serial Number (KSN). This must be less than or equal to the strength of the BDK. For example, you can't use <code>AES_128</code> as a derivation type for a BDK of <code>AES_128</code> or <code>TDES_2KEY</code> "
+                  }
+                ]
+              },
+              "DukptKeyVariant": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DukptKeyVariant"
+                  },
+                  {
+                    "description": "The type of use of DUKPT, which can be for incoming data decryption, outgoing data encryption, or both."
+                  }
+                ]
+              },
+              "KeySerialNumber": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HexLengthBetween10And24"
+                  },
+                  {
+                    "description": "The unique identifier known as Key Serial Number (KSN) that comes from an encrypting device using DUKPT encryption method. The KSN is derived from the encrypting device unique identifier and an internal transaction counter."
+                  }
+                ]
+              }
+            }
+          },
+          "IncomingKeyIdentifier": {
+            "description": "The <code>keyARN</code> of the encryption key under which incoming PIN block data is encrypted. This key type can be PEK or BDK.",
+            "type": "string",
+            "pattern": "^arn:aws:payment-cryptography:[a-z]{2}-[a-z]{1,16}-[0-9]+:[0-9]{12}:(key/[0-9a-zA-Z]{16,64}|alias/[a-zA-Z0-9/_-]+)$|^alias/[a-zA-Z0-9/_-]+$",
+            "minLength": 7,
+            "maxLength": 322
+          },
+          "IncomingTranslationAttributes": {
+            "description": "Parameters that are required for translation between ISO9564 PIN block formats 0,1,3,4.",
+            "type": "object",
+            "properties": {
+              "IsoFormat0": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 0 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat1": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat1"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 1 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat3": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 3 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat4": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 4 tranlation."
+                  }
+                ]
+              }
+            }
+          },
+          "OutgoingDukptAttributes": {
+            "description": "Parameters required for encryption or decryption of data using DUKPT.",
+            "type": "object",
+            "properties": {
+              "DukptKeyDerivationType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DukptDerivationType"
+                  },
+                  {
+                    "description": "The key type derived using DUKPT from a Base Derivation Key (BDK) and Key Serial Number (KSN). This must be less than or equal to the strength of the BDK. For example, you can't use <code>AES_128</code> as a derivation type for a BDK of <code>AES_128</code> or <code>TDES_2KEY</code> "
+                  }
+                ]
+              },
+              "DukptKeyVariant": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DukptKeyVariant"
+                  },
+                  {
+                    "description": "The type of use of DUKPT, which can be for incoming data decryption, outgoing data encryption, or both."
+                  }
+                ]
+              },
+              "KeySerialNumber": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/HexLengthBetween10And24"
+                  },
+                  {
+                    "description": "The unique identifier known as Key Serial Number (KSN) that comes from an encrypting device using DUKPT encryption method. The KSN is derived from the encrypting device unique identifier and an internal transaction counter."
+                  }
+                ]
+              }
+            }
+          },
+          "OutgoingKeyIdentifier": {
+            "description": "The <code>keyARN</code> of the encryption key for encrypting outgoing PIN block data. This key type can be PEK or BDK.",
+            "type": "string",
+            "pattern": "^arn:aws:payment-cryptography:[a-z]{2}-[a-z]{1,16}-[0-9]+:[0-9]{12}:(key/[0-9a-zA-Z]{16,64}|alias/[a-zA-Z0-9/_-]+)$|^alias/[a-zA-Z0-9/_-]+$",
+            "minLength": 7,
+            "maxLength": 322
+          },
+          "OutgoingTranslationAttributes": {
+            "description": "Parameters that are required for translation between ISO9564 PIN block formats 0,1,3,4.",
+            "type": "object",
+            "properties": {
+              "IsoFormat0": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 0 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat1": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat1"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 1 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat3": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 3 tranlation."
+                  }
+                ]
+              },
+              "IsoFormat4": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TranslationPinDataIsoFormat034"
+                  },
+                  {
+                    "description": "Parameters that are required for ISO9564 PIN format 4 tranlation."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "DukptDerivationType": {
+        "type": "string",
+        "enum": [
+          "TDES_2KEY",
+          "TDES_3KEY",
+          "AES_128",
+          "AES_192",
+          "AES_256"
+        ]
+      },
+      "DukptKeyVariant": {
+        "type": "string",
+        "enum": [
+          "BIDIRECTIONAL",
+          "REQUEST",
+          "RESPONSE"
+        ]
+      },
+      "HexLengthBetween10And24": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]+$",
+        "minLength": 10,
+        "maxLength": 24
+      },
+      "TranslationPinDataIsoFormat034": {
+        "type": "object",
+        "required": [
+          "PrimaryAccountNumber"
+        ],
+        "properties": {
+          "PrimaryAccountNumber": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NumberLengthBetween12And19"
+              },
+              {
+                "description": "The Primary Account Number (PAN) of the cardholder. A PAN is a unique identifier for a payment credit or debit card and associates the card to a specific account holder."
+              }
+            ]
+          }
+        },
+        "description": "Parameters that are required for tranlation between ISO9564 PIN format 0,3,4 tranlation."
+      },
+      "NumberLengthBetween12And19": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "minLength": 12,
+        "maxLength": 19,
+        "format": "password"
+      },
+      "TranslationPinDataIsoFormat1": {
+        "type": "object",
+        "properties": {},
+        "description": "Parameters that are required for ISO9564 PIN format 1 tranlation."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://dataplane.payment-cryptography.us-east-1.amazonaws.com/pindata/translate"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**KeyArn**",
+            "**KeyCheckValue**",
+            "**PinBlock**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

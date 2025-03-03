@@ -1,0 +1,230 @@
+{
+  "name": "ExportTemplate",
+  "description": "Export a new Influx Template",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/TemplateExportByID"
+          },
+          {
+            "$ref": "#/$defs/TemplateExportByName"
+          }
+        ],
+        "description": "Export resources as an InfluxDB template."
+      }
+    },
+    "$defs": {
+      "TemplateExportByID": {
+        "properties": {
+          "orgIDs": {
+            "items": {
+              "properties": {
+                "orgID": {
+                  "type": "string"
+                },
+                "resourceFilters": {
+                  "properties": {
+                    "byLabel": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "byResourceKind": {
+                      "items": {
+                        "$ref": "#/$defs/TemplateKind"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "resources": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "$ref": "#/$defs/TemplateKind"
+              },
+              "name": {
+                "description": "if defined with id, name is used for resource exported by id. if defined independently, resources strictly matching name are exported",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "kind"
+            ],
+            "type": "object"
+          },
+          "stackID": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TemplateKind": {
+        "enum": [
+          "Bucket",
+          "Check",
+          "CheckDeadman",
+          "CheckThreshold",
+          "Dashboard",
+          "Label",
+          "NotificationEndpoint",
+          "NotificationEndpointHTTP",
+          "NotificationEndpointPagerDuty",
+          "NotificationEndpointSlack",
+          "NotificationRule",
+          "Task",
+          "Telegraf",
+          "Variable"
+        ],
+        "type": "string"
+      },
+      "TemplateExportByName": {
+        "properties": {
+          "orgIDs": {
+            "items": {
+              "properties": {
+                "orgID": {
+                  "type": "string"
+                },
+                "resourceFilters": {
+                  "properties": {
+                    "byLabel": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "byResourceKind": {
+                      "items": {
+                        "$ref": "#/$defs/TemplateKind"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "resources": {
+            "properties": {
+              "kind": {
+                "$ref": "#/$defs/TemplateKind"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "kind"
+            ],
+            "type": "object"
+          },
+          "stackID": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v2/templates/export"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**apiVersion**",
+            "**kind**",
+            [
+              "**meta**",
+              {
+                "$ul": [
+                  "**name**"
+                ]
+              }
+            ],
+            "**spec**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: code is the machine-readable error code.",
+            "**err**: err is a stack of errors that occurred during processing of the request. Useful for debugging.",
+            "**message**: message is a human-readable message.",
+            "**op**: op describes the logical code operation during error. Useful for debugging."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

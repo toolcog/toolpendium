@@ -1,0 +1,81 @@
+{
+  "name": "GetRequestsFoldersPath",
+  "description": "List Requests",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination."
+      },
+      "per_page": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended)."
+      },
+      "sort_by": {
+        "type": "object",
+        "description": "If set, sort records by the specified field in either `asc` or `desc` direction (e.g. `sort_by[destination]=desc`). Valid fields are `destination`."
+      },
+      "mine": {
+        "type": "boolean",
+        "description": "Only show requests of the current user?  (Defaults to true if current user is not a site admin.)"
+      },
+      "path": {
+        "type": "string",
+        "description": "Path to show requests for.  If omitted, shows all paths. Send `/` to represent the root directory."
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/requests/folders/{path}{?cursor,per_page,sort_by,mine}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List Requests",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**automation_id**: ID of automation that created request",
+            "**destination**: Destination filename",
+            "**id**: Request ID",
+            "**path**: Folder path",
+            "**source**: Source filename, if applicable",
+            "**user_display_name**: User making the request (if applicable)"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

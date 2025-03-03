@@ -1,0 +1,323 @@
+{
+  "name": "PostInvoicesInvoiceMarkUncollectible",
+  "description": "<p>Marking an invoice as uncollectible is useful for keeping track of bad debts that can be written off for accounting purposes.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "invoice": {
+        "maxLength": 5000,
+        "type": "string"
+      },
+      "body": {
+        "additionalProperties": false,
+        "properties": {
+          "expand": {
+            "description": "Specifies which fields in the response should be expanded.",
+            "items": {
+              "maxLength": 5000,
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "invoice"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.stripe.com//v1/invoices/{invoice}/mark_uncollectible"
+    },
+    "body": {
+      "$": "body",
+      "encode": "urlencoded"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Invoice"
+        },
+        "Invoices are statements of amounts owed by a customer, and are either\ngenerated one-off, or generated periodically from a subscription.\n\nThey contain [invoice items](https://stripe.com/docs/api#invoiceitems), and proration adjustments\nthat may be caused by subscription upgrades/downgrades (if necessary).\n\nIf your invoice is configured to be billed through automatic charges,\nStripe automatically finalizes your invoice and attempts payment. Note\nthat finalizing the invoice,\n[when automatic](https://stripe.com/docs/billing/invoices/workflow/#auto_advance), does\nnot happen immediately as the invoice is created. Stripe waits\nuntil one hour after the last webhook was successfully sent (or the last\nwebhook timed out after failing). If you (and the platforms you may have\nconnected to) have no webhooks configured, Stripe waits one hour after\ncreation to finalize the invoice.\n\nIf your invoice is configured to be billed by sending an email, then based on your\n[email settings](https://dashboard.stripe.com/account/billing/automatic),\nStripe will email the invoice to your customer and await payment. These\nemails can contain a link to a hosted page to pay the invoice.\n\nStripe applies any customer credit on the account before determining the\namount due for the invoice (i.e., the amount that will be actually\ncharged). If the amount due for the invoice is less than Stripe's [minimum allowed charge\nper currency](/docs/currencies#minimum-and-maximum-charge-amounts), the\ninvoice is automatically marked paid, and we add the amount due to the\ncustomer's credit balance which is applied to the next invoice.\n\nMore details on the customer's credit balance are\n[here](https://stripe.com/docs/billing/customer/balance).\n\nRelated guide: [Send Invoices to Customers](https://stripe.com/docs/billing/invoices/sending).",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**account_country**: The country of the business associated with this invoice, most often the business creating the invoice.",
+            "**account_name**: The public name of the business associated with this invoice, most often the business creating the invoice.",
+            "**account_tax_ids**: The account tax IDs associated with the invoice. Only editable when the invoice is a draft.",
+            "**amount_due**: Final amount due at this time for this invoice. If the invoice's total is smaller than the minimum charge amount, for example, or if there is account credit that can be applied to the invoice, the `amount_due` may be 0. If there is a positive `starting_balance` for the invoice (the customer owes money), the `amount_due` will also take that into account. The charge that gets generated for the invoice will be for the amount specified in `amount_due`.",
+            "**amount_paid**: The amount, in %s, that was paid.",
+            "**amount_remaining**: The difference between amount_due and amount_paid, in %s.",
+            "**amount_shipping**: This is the sum of all the shipping amounts.",
+            "**application**: ID of the Connect Application that created the invoice.",
+            "**application_fee_amount**: The fee in %s that will be applied to the invoice and transferred to the application owner's Stripe account when the invoice is paid.",
+            "**attempt_count**: Number of payment attempts made for this invoice, from the perspective of the payment retry schedule. Any payment attempt counts as the first attempt, and subsequently only automatic retries increment the attempt count. In other words, manual payment attempts after the first attempt do not affect the retry schedule.",
+            "**attempted**: Whether an attempt has been made to pay the invoice. An invoice is not attempted until 1 hour after the `invoice.created` webhook, for example, so you might not want to display that invoice as unpaid to your users.",
+            "**auto_advance**: Controls whether Stripe will perform [automatic collection](https://stripe.com/docs/billing/invoices/workflow/#auto_advance) of the invoice. When `false`, the invoice's state will not automatically advance without an explicit action.",
+            [
+              "**automatic_tax**: ",
+              {
+                "$ul": [
+                  "**enabled**: Whether Stripe automatically computes tax on this invoice. Note that incompatible invoice items (invoice items with manually specified [tax rates](https://stripe.com/docs/api/tax_rates), negative amounts, or `tax_behavior=unspecified`) cannot be added to automatic tax invoices.",
+                  "**status**: The status of the most recent automated tax calculation for this invoice."
+                ]
+              }
+            ],
+            "**billing_reason**: Indicates the reason why the invoice was created. `subscription_cycle` indicates an invoice created by a subscription advancing into a new period. `subscription_create` indicates an invoice created due to creating a subscription. `subscription_update` indicates an invoice created due to updating a subscription. `subscription` is set for all old invoices to indicate either a change to a subscription or a period advancement. `manual` is set for all invoices unrelated to a subscription (for example: created via the invoice editor). The `upcoming` value is reserved for simulated invoices per the upcoming invoice endpoint. `subscription_threshold` indicates an invoice created due to a billing threshold being reached.",
+            "**charge**: ID of the latest charge generated for this invoice, if any.",
+            "**collection_method**: Either `charge_automatically`, or `send_invoice`. When charging automatically, Stripe will attempt to pay this invoice using the default source attached to the customer. When sending an invoice, Stripe will email this invoice to the customer with payment instructions.",
+            "**created**: Time at which the object was created. Measured in seconds since the Unix epoch.",
+            "**currency**: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+            "**custom_fields**: Custom fields displayed on the invoice.",
+            "**customer**: The ID of the customer who will be billed.",
+            "**customer_address**: The customer's address. Until the invoice is finalized, this field will equal `customer.address`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_email**: The customer's email. Until the invoice is finalized, this field will equal `customer.email`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_name**: The customer's name. Until the invoice is finalized, this field will equal `customer.name`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_phone**: The customer's phone number. Until the invoice is finalized, this field will equal `customer.phone`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_shipping**: The customer's shipping information. Until the invoice is finalized, this field will equal `customer.shipping`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_tax_exempt**: The customer's tax exempt status. Until the invoice is finalized, this field will equal `customer.tax_exempt`. Once the invoice is finalized, this field will no longer be updated.",
+            "**customer_tax_ids**: The customer's tax IDs. Until the invoice is finalized, this field will contain the same tax IDs as `customer.tax_ids`. Once the invoice is finalized, this field will no longer be updated.",
+            "**default_payment_method**: ID of the default payment method for the invoice. It must belong to the customer associated with the invoice. If not set, defaults to the subscription's default payment method, if any, or to the default payment method in the customer's invoice settings.",
+            "**default_source**: ID of the default payment source for the invoice. It must belong to the customer associated with the invoice and be in a chargeable state. If not set, defaults to the subscription's default source, if any, or to the customer's default source.",
+            "**default_tax_rates**: The tax rates applied to this invoice, if any.",
+            "**description**: An arbitrary string attached to the object. Often useful for displaying to users. Referenced as 'memo' in the Dashboard.",
+            "**discount**: Describes the current discount applied to this invoice, if there is one. Not populated if there are multiple discounts.",
+            "**discounts**: The discounts applied to the invoice. Line item discounts are applied before invoice discounts. Use `expand[]=discounts` to expand each discount.",
+            "**due_date**: The date on which payment for this invoice is due. This value will be `null` for invoices where `collection_method=charge_automatically`.",
+            "**ending_balance**: Ending customer balance after the invoice is finalized. Invoices are finalized approximately an hour after successful webhook delivery or when payment collection is attempted for the invoice. If the invoice has not been finalized yet, this will be null.",
+            "**footer**: Footer displayed on the invoice.",
+            "**from_invoice**: Details of the invoice that was cloned. See the [revision documentation](https://stripe.com/docs/invoicing/invoice-revisions) for more details.",
+            "**hosted_invoice_url**: The URL for the hosted invoice page, which allows customers to view and pay an invoice. If the invoice has not been finalized yet, this will be null.",
+            "**id**: Unique identifier for the object. This property is always present unless the invoice is an upcoming invoice. See [Retrieve an upcoming invoice](https://stripe.com/docs/api/invoices/upcoming) for more details.",
+            "**invoice_pdf**: The link to download the PDF for the invoice. If the invoice has not been finalized yet, this will be null.",
+            "**last_finalization_error**: The error encountered during the previous attempt to finalize the invoice. This field is cleared when the invoice is successfully finalized.",
+            "**latest_revision**: The ID of the most recent non-draft revision of this invoice",
+            [
+              "**lines**: The individual line items that make up the invoice. `lines` is sorted as follows: (1) pending invoice items (including prorations) in reverse chronological order, (2) subscription items in reverse chronological order, and (3) invoice items added after invoice creation in chronological order.",
+              {
+                "$ul": [
+                  "**data**: Details about each object.",
+                  "**has_more**: True if this list has another page of items after this one that can be fetched.",
+                  "**object**: String representing the object's type. Objects of the same type share the same value. Always has the value `list`.",
+                  "**url**: The URL where this list can be accessed."
+                ]
+              }
+            ],
+            "**livemode**: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+            "**metadata**: Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+            "**next_payment_attempt**: The time at which payment will next be attempted. This value will be `null` for invoices where `collection_method=send_invoice`.",
+            "**number**: A unique, identifying string that appears on emails sent to the customer for this invoice. This starts with the customer's unique invoice_prefix if it is specified.",
+            "**object**: String representing the object's type. Objects of the same type share the same value.",
+            "**on_behalf_of**: The account (if any) for which the funds of the invoice payment are intended. If set, the invoice will be presented with the branding and support information of the specified account. See the [Invoices with Connect](https://stripe.com/docs/billing/invoices/connect) documentation for details.",
+            "**paid**: Whether payment was successfully collected for this invoice. An invoice can be paid (most commonly) with a charge or with credit from the customer's account balance.",
+            "**paid_out_of_band**: Returns true if the invoice was manually marked paid, returns false if the invoice hasn't been paid yet or was paid on Stripe.",
+            "**payment_intent**: The PaymentIntent associated with this invoice. The PaymentIntent is generated when the invoice is finalized, and can then be used to pay the invoice. Note that voiding an invoice will cancel the PaymentIntent.",
+            [
+              "**payment_settings**: ",
+              {
+                "$ul": [
+                  "**default_mandate**: ID of the mandate to be used for this invoice. It must correspond to the payment method used to pay the invoice, including the invoice's default_payment_method or default_source, if set.",
+                  "**payment_method_options**: Payment-method-specific configuration to provide to the invoice’s PaymentIntent.",
+                  "**payment_method_types**: The list of payment method types (e.g. card) to provide to the invoice’s PaymentIntent. If not set, Stripe attempts to automatically determine the types to use by looking at the invoice’s default payment method, the subscription’s default payment method, the customer’s default payment method, and your [invoice template settings](https://dashboard.stripe.com/settings/billing/invoice)."
+                ]
+              }
+            ],
+            "**period_end**: End of the usage period during which invoice items were added to this invoice.",
+            "**period_start**: Start of the usage period during which invoice items were added to this invoice.",
+            "**post_payment_credit_notes_amount**: Total amount of all post-payment credit notes issued for this invoice.",
+            "**pre_payment_credit_notes_amount**: Total amount of all pre-payment credit notes issued for this invoice.",
+            "**quote**: The quote this invoice was generated from.",
+            "**receipt_number**: This is the transaction number that appears on email receipts sent for this invoice.",
+            "**rendering_options**: Options for invoice PDF rendering.",
+            "**shipping_cost**: The details of the cost of shipping, including the ShippingRate applied on the invoice.",
+            "**shipping_details**: Shipping details for the invoice. The Invoice PDF will use the `shipping_details` value if it is set, otherwise the PDF will render the shipping address from the customer.",
+            "**starting_balance**: Starting customer balance before the invoice is finalized. If the invoice has not been finalized yet, this will be the current customer balance. For revision invoices, this also includes any customer balance that was applied to the original invoice.",
+            "**statement_descriptor**: Extra information about an invoice for the customer's credit card statement.",
+            "**status**: The status of the invoice, one of `draft`, `open`, `paid`, `uncollectible`, or `void`. [Learn more](https://stripe.com/docs/billing/invoices/workflow#workflow-overview)",
+            [
+              "**status_transitions**: ",
+              {
+                "$ul": [
+                  "**finalized_at**: The time that the invoice draft was finalized.",
+                  "**marked_uncollectible_at**: The time that the invoice was marked uncollectible.",
+                  "**paid_at**: The time that the invoice was paid.",
+                  "**voided_at**: The time that the invoice was voided."
+                ]
+              }
+            ],
+            "**subscription**: The subscription that this invoice was prepared for, if any.",
+            "**subscription_proration_date**: Only set for upcoming invoices that preview prorations. The time used to calculate prorations.",
+            "**subtotal**: Total of all subscriptions, invoice items, and prorations on the invoice before any invoice level discount or exclusive tax is applied. Item discounts are already incorporated",
+            "**subtotal_excluding_tax**: The integer amount in %s representing the subtotal of the invoice before any invoice level discount or tax is applied. Item discounts are already incorporated",
+            "**tax**: The amount of tax on this invoice. This is the sum of all the tax amounts on this invoice.",
+            "**test_clock**: ID of the test clock this invoice belongs to.",
+            [
+              "**threshold_reason**: ",
+              {
+                "$ul": [
+                  "**amount_gte**: The total invoice amount threshold boundary if it triggered the threshold invoice.",
+                  "**item_reasons**: Indicates which line items triggered a threshold invoice."
+                ]
+              }
+            ],
+            "**total**: Total after discounts and taxes.",
+            "**total_discount_amounts**: The aggregate amounts calculated per discount across all line items.",
+            "**total_excluding_tax**: The integer amount in %s representing the total amount of the invoice including all discounts but excluding all tax.",
+            "**total_tax_amounts**: The aggregate amounts calculated per tax rate for all line items.",
+            "**transfer_data**: The account (if any) the payment will be attributed to for tax reporting, and where funds from the payment will be transferred to for the invoice.",
+            "**webhooks_delivered_at**: Invoices are automatically paid or sent 1 hour after webhooks are delivered, or until all webhook delivery attempts have [been exhausted](https://stripe.com/docs/billing/webhooks#understand). This field tracks the time when webhooks for this invoice were successfully delivered. If the invoice had no webhooks to deliver, this will be set while the invoice is being created."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "An error response from the Stripe API",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**: ",
+              {
+                "$ul": [
+                  "**charge**: For card errors, the ID of the failed charge.",
+                  "**code**: For some errors that could be handled programmatically, a short string indicating the [error code](https://stripe.com/docs/error-codes) reported.",
+                  "**decline_code**: For card errors resulting from a card issuer decline, a short string indicating the [card issuer's reason for the decline](https://stripe.com/docs/declines#issuer-declines) if they provide one.",
+                  "**doc_url**: A URL to more information about the [error code](https://stripe.com/docs/error-codes) reported.",
+                  "**message**: A human-readable message providing more details about the error. For card errors, these messages can be shown to your users.",
+                  "**param**: If the error is parameter-specific, the parameter related to the error. For example, you can use this to display a message near the correct form field.",
+                  [
+                    "**payment_intent**: A PaymentIntent guides you through the process of collecting a payment from your customer.",
+                    {
+                      "$ul": [
+                        "**amount**: Amount intended to be collected by this PaymentIntent. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).",
+                        "**amount_capturable**: Amount that can be captured from this PaymentIntent.",
+                        [
+                          "**amount_details**: ",
+                          {
+                            "$ul": [
+                              [
+                                "**tip**: ",
+                                {
+                                  "$ul": [
+                                    "**amount**: Portion of the amount that corresponds to a tip."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**amount_received**: Amount that was collected by this PaymentIntent.",
+                        "**application**: ID of the Connect application that created the PaymentIntent.",
+                        "**application_fee_amount**: The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. The amount of the application fee collected will be capped at the total payment amount. For more information, see the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts).",
+                        "**automatic_payment_methods**: Settings to configure compatible payment methods from the [Stripe Dashboard](https://dashboard.stripe.com/settings/payment_methods)",
+                        "**canceled_at**: Populated when `status` is `canceled`, this is the time at which the PaymentIntent was canceled. Measured in seconds since the Unix epoch.",
+                        "**cancellation_reason**: Reason for cancellation of this PaymentIntent, either user-provided (`duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`) or generated by Stripe internally (`failed_invoice`, `void_invoice`, or `automatic`).",
+                        "**capture_method**: Controls when the funds will be captured from the customer's account.",
+                        "**client_secret**: The client secret of this PaymentIntent. Used for client-side retrieval using a publishable key. ",
+                        "**confirmation_method**",
+                        "**created**: Time at which the object was created. Measured in seconds since the Unix epoch.",
+                        "**currency**: Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).",
+                        "**customer**: ID of the Customer this PaymentIntent belongs to, if one exists.",
+                        "**description**: An arbitrary string attached to the object. Often useful for displaying to users.",
+                        "**id**: Unique identifier for the object.",
+                        "**invoice**: ID of the invoice that created this PaymentIntent, if it exists.",
+                        "**last_payment_error**: The payment error encountered in the previous PaymentIntent confirmation. It will be cleared if the PaymentIntent is later updated for any reason.",
+                        "**latest_charge**: The latest charge created by this payment intent.",
+                        "**livemode**: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+                        "**metadata**: Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. For more information, see the [documentation](https://stripe.com/docs/payments/payment-intents/creating-payment-intents#storing-information-in-metadata).",
+                        "**next_action**: If present, this property tells you what actions you need to take in order for your customer to fulfill a payment using the provided source.",
+                        "**object**: String representing the object's type. Objects of the same type share the same value.",
+                        "**on_behalf_of**: The account (if any) for which the funds of the PaymentIntent are intended. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
+                        "**payment_method**: ID of the payment method used in this PaymentIntent.",
+                        "**payment_method_options**: Payment-method-specific configuration for this PaymentIntent.",
+                        "**payment_method_types**: The list of payment method types (e.g. card) that this PaymentIntent is allowed to use.",
+                        "**processing**: If present, this property tells you about the processing state of the payment.",
+                        "**receipt_email**: Email address that the receipt for the resulting payment will be sent to. If `receipt_email` is specified for a payment in live mode, a receipt will be sent regardless of your [email settings](https://dashboard.stripe.com/account/emails).",
+                        "**review**: ID of the review associated with this PaymentIntent, if any.",
+                        "**setup_future_usage**: Indicates that you intend to make future payments with this PaymentIntent's payment method.",
+                        "**shipping**: Shipping information for this PaymentIntent.",
+                        "**statement_descriptor**: For non-card charges, you can use this value as the complete description that appears on your customers’ statements. Must contain at least one letter, maximum 22 characters.",
+                        "**statement_descriptor_suffix**: Provides information about a card payment that customers see on their statements. Concatenated with the prefix (shortened descriptor) or statement descriptor that’s set on the account to form the complete statement descriptor. Maximum 22 characters for the concatenated descriptor.",
+                        "**status**: Status of this PaymentIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `canceled`, or `succeeded`. Read more about each PaymentIntent [status](https://stripe.com/docs/payments/intents#intent-statuses).",
+                        "**transfer_data**: The data with which to automatically create a Transfer when the payment is finalized. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details.",
+                        "**transfer_group**: A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/payments/connected-accounts) for details."
+                      ]
+                    }
+                  ],
+                  "**payment_method**",
+                  "**payment_method_type**: If the error is specific to the type of payment method, the payment method type that had a problem. This field is only populated for invoice-related errors.",
+                  "**request_log_url**: A URL to the request log entry in your dashboard.",
+                  [
+                    "**setup_intent**: A SetupIntent guides you through the process of setting up and saving a customer's payment credentials for future payments.",
+                    {
+                      "$ul": [
+                        "**application**: ID of the Connect application that created the SetupIntent.",
+                        "**attach_to_self**: If present, the SetupIntent's payment method will be attached to the in-context Stripe Account.",
+                        "**automatic_payment_methods**: Settings for automatic payment methods compatible with this Setup Intent",
+                        "**cancellation_reason**: Reason for cancellation of this SetupIntent, one of `abandoned`, `requested_by_customer`, or `duplicate`.",
+                        "**client_secret**: The client secret of this SetupIntent. Used for client-side retrieval using a publishable key.",
+                        "**created**: Time at which the object was created. Measured in seconds since the Unix epoch.",
+                        "**customer**: ID of the Customer this SetupIntent belongs to, if one exists.",
+                        "**description**: An arbitrary string attached to the object. Often useful for displaying to users.",
+                        "**flow_directions**: Indicates the directions of money movement for which this payment method is intended to be used.",
+                        "**id**: Unique identifier for the object.",
+                        "**last_setup_error**: The error encountered in the previous SetupIntent confirmation.",
+                        "**latest_attempt**: The most recent SetupAttempt for this SetupIntent.",
+                        "**livemode**: Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.",
+                        "**mandate**: ID of the multi use Mandate generated by the SetupIntent.",
+                        "**metadata**: Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.",
+                        "**next_action**: If present, this property tells you what actions you need to take in order for your customer to continue payment setup.",
+                        "**object**: String representing the object's type. Objects of the same type share the same value.",
+                        "**on_behalf_of**: The account (if any) for which the setup is intended.",
+                        "**payment_method**: ID of the payment method used with this SetupIntent.",
+                        "**payment_method_options**: Payment-method-specific configuration for this SetupIntent.",
+                        "**payment_method_types**: The list of payment method types (e.g. card) that this SetupIntent is allowed to set up.",
+                        "**single_use_mandate**: ID of the single_use Mandate generated by the SetupIntent.",
+                        "**status**: [Status](https://stripe.com/docs/payments/intents#intent-statuses) of this SetupIntent, one of `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `canceled`, or `succeeded`.",
+                        "**usage**: Indicates how the payment method is intended to be used in the future."
+                      ]
+                    }
+                  ],
+                  "**source**: The source object for errors returned on a request involving a source.",
+                  "**type**: The type of error returned. One of `api_error`, `card_error`, `idempotency_error`, or `invalid_request_error`"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "name": "searchCases",
+  "description": "This endpoint retrieves cases according to keyword expressions you provide.\n<br>\nKeyword expressions are constructed according to the rules described below.\n<br><br>\nThis API supports multiple use cases:\n  - Search for multiple keywords  `Google OR Facebook`.\n  - Search within particular attributes.\n  - Relational search using terms and connectors.\n  - And much more.\n----\n\n## Allowed Connectors in Keyword Expressions\n| Connector | Description  | Example |\n| ------| ------|------|\n| **AND** |Find cases containing each of the terms joined by AND connectors.|**personal AND injury**|\n| **OR**  |Find cases containing any of the terms joined by OR connectors.|**order OR decision**|\n| **NOT** |Find cases that do not contain the specified term.|**personal AND NOT injury**.  Find cases with the word “personal” and not “injury”.|\n| **“[phrase]”** |Find the exact phrase placed between the quotation marks.|**\"personal injury”**|\n| **~**  |Find cases in which the specified words appear near each other. For example, \"personal injury\" ~ 5 targets cases in which the word \"personal\" appears within 5 words of the word \"injury\".|**“personal injury” ~ 5** - Find cases with “personal” within five words of “injury”. |\n| **( … )** |Specifies the order in which connectors are to be appliied in a keyword expression.| **personal AND (injury OR fall)** - Find cases with the word personal injury or personal fall.|\n\n<br><br>\n## Fields and Connectors Searching\n| Filed | Description  | Example |\n| ------| ------|------|\n|**caseNumber** |Find cases with the specified case number (i.e., docket number).| **caseNumber:\"2020-L-007212\"** - Find cases whose case number matches given case number number.|\n|**caseName** |Find cases with the specified case title.| **caseName:\"THOMAS P. CARNEY, INC. VS BEHLER JAMES Et Al\"** - Find cases whose case name matches given terms.|\n|**Court**|Find cases in the specified court.|**(Court:(name:(New York)))** - Find cases in New York state.<br>|\n|**CaseStatus**|Find cases witih the specified case status.|**(CaseStatus:(name:Disposed))** - All disposed cases.<br>|\n|**CaseType**|Find cases of the specified case type. | **(CaseType:(name:Property))** - Cases with case type “property”.|\n|**Party** | Find cases involving the specified party.| **(Party:(name:Apple))** - Find cases involving Apple. |\n|**partyId**|Find cases involving a party with the specified partyId value.|**(Party:(partyId:\"PRTYgu1ffe866484c2\"))**|\n|**PartyRole** | Find cases in which at least one party has the specified party role. | **(Party:((PartyRole:(name:\"plaintiff\"))))** - Find cases with party role “plaintiff”.<br><br> **(Party:((PartyRole:(name:defendant)) AND (AttorneyRepresentationType:(name:(Attorney represented)))))** - Find cases where a party is acting as defendant and represented by an attorney.|\n|**AttorneyRepresentationType**| Find cases in which at least one party has the specified attorney representation type.|**(Party:(AttorneyRepresentationType:(name:\"attorney represented\")))** - Find cases where a party is represented by an attorney. |\n|**Attorney** | Find cases involving the specified attorney. | **(Attorney:(name:\"David Boies\"))** - Find cases involving the attorney David Boies. |\n|**AttorneyType**|Find cases involving at least one attorney of the specified attorney type.|**(Attorney:((AttorneyType:(name:\"Lead Attorney\"))))**|\n|**Judge** |Find cases involving the specified judge. | **(Judge:(name:\"Posner\"))** - Find cases involving Judge Posner.|\n|**JudgeType**|Find cases involving at least one judge of the specified judge type.|**(Judge:((JudgeType:(name:\"Magistrate\"))))**|\n|**CaseStats**|Find cases with the specified case statistics.|**(CaseStats:(partyCount:[10 TO 100]))** - Find cases involving 10 to 100 parties.<br>**(CaseStats:(attorneyCount:[2 TO 40]))** - Find cases involving 2 to 40 attorneys.<br>**(CaseStats:(judgeCount:[\\* TO 2]))** - Find cases involving up to 2 judges. <br>**(CaseStats:(docketEntryCount:[10 TO 100]))** - Find cases having 10 to 100 docket_entries. <br>**(CaseStats:(allCaseDocumentCount:[10 TO 100]))** - Find cases having 10 to 100 documents. |\n|**filedDate** | Find cases that were filed on the specified date or within the specified date range. | **filedDate:[2020-03-15 TO 2021-12-01]** - Find the most recently filed cases between March 15, 2020 and December 1, 2021 (inclusive). |\n|**lastFetchDate**| Find cases in which UniCourt last checked for updates on the specified date or within the specified date range. |**(lastFetchDate:[now-60d TO \\*\\])** - Find cases that were updated by UniCourt in the last 60 days. |\n|**lastFetchDateWithUpdates**|Find cases in which UniCourt last detected an update on the specified date or within the specified date range.|**(lastFetchDateWithUpdates:[now-6d TO \\*\\])** - Find cases for the changes found on court site in last 6 days.|\n|**participantsLastFetchDate**|Find cases in which information cocnerning participants was last updated on the specified date or within the specified date range.|**(participantsLastFetchDate:[now-6d TO \\*\\])** - Find cases where the participant's information was updated in last 6 days.|\n|**DocketEntry**|Find cases in which at least one docket entry contains the specified text.|**(DocketEntry:(text:(Motion to Compel Responses) AND docketEntryDate:[2020-01-01T00:00:00 TO 2020-05-01T00:00:00]))** - Find cases with docket text “Motion to Compel Responses” and action date between 2020-01-01 and 2020-05-01.|\n|**docketEntryDate**|Find cases in which at least one docket entry was made on the specified date or within the specified date range.|**(DocketEntry:(docketEntryDate:[2020-01-01T00:00:00 TO 2020-05-01T00:00:00])) AND (CaseStats:(allCaseDocumentCount:[0 TO 10]))** - Find cases with docket action date between 2020-01-01 and 2020-05-01 having up to 10 documents associated with it.|\n|**HearingDate**| Find cases with at least one hearing scheduled for the specified date or within the specified date range.|**(Hearing:(hearingDate:[now TO now+10d]))** - Find cases where hearing is scheduled in next 10 days.|\n|**HearingDate**| Search for cases where hearing is going to happen in 10 to 20days.|**(Hearing:(hearingDate:[now+10d TO now+20d]))** - Find cases where hearing is scheduled in next 10 to 20 days.|\n|**JurisdictionGeo**|Find cases in which the law of the specified state governs.|**(JurisdictionGeo:(state:\"New York\"))**- Find cases where Jurisdiction is New York state.|\n|**Party Address Exists**|Find cases with Party addresses.|**(Party:(Contact:(Address:(stateName:\\*))))**- Returns only those cases that have addresses for parties.|\n|**Document**|Find cases with specific document name and preview is available for the document.|**(CaseDocument:(name:\"civil case cover sheet\" AND isPreviewAvailable:true))**- Returns cases with document civil case cover sheet and preview is available.|\n\n<br><br>\n---\n## Party Sub Filter Examples\n|Example |Explanation |\n|---|---|\n|**(Party:(name:google AND (PartyRole:(name:\"plaintiff\"))))**|Find cases involving at least one plaintiff whose name contains the term \"Google\".|\n|**(Party:(name:\"OTELIA PEREIDA\" AND (AttorneyRepresentationType:(name:\"Attorney represented\")))) AND (Attorney:(name:\"Law Offices of Todd M Friedman\"))**|Find cases where the Party is *OTELIA PEREIDA* and is represented by the attorney *Law Offices of Todd M Friedman*.|\n\n---\n### All query parameters supported for this API can be found in below schema section. Schema -->  CaseSearchQueryObject\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "q": {
+        "maxLength": 2000,
+        "minLength": 3,
+        "nullable": false,
+        "type": "string",
+        "description": "Query parameter for keyword expressions.</a>\n"
+      },
+      "sort": {
+        "default": "filedDate",
+        "enum": [
+          "filedDate",
+          "relevancy"
+        ],
+        "example": "filedDate",
+        "maxLength": 9,
+        "minLength": 9,
+        "nullable": false,
+        "type": "string",
+        "description": "Query parameter specifying how results are to be sorted. Results can be sorted according to filedDate or relevancy."
+      },
+      "order": {
+        "default": "desc",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "example": "desc",
+        "maxLength": 4,
+        "minLength": 3,
+        "nullable": false,
+        "type": "string",
+        "description": "Query parameter specifying whether search result are sorted in ascending or descending order."
+      },
+      "pageNumber": {
+        "example": 1,
+        "maxLength": 255,
+        "maximum": 1000,
+        "minLength": 1,
+        "minimum": 1,
+        "nullable": false,
+        "type": "integer",
+        "description": "Query parameter specifying the page number of the search results to be retrieved.\n- Minimum: 1\n- Maximum: 1000\n"
+      }
+    },
+    "required": [
+      "q"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://enterpriseapi.unicourt.com//caseSearch{?q,sort,order,pageNumber}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**caseSearchId**: Query been sent by client",
+            "**caseSearchResultArray**",
+            "**nextPageAPI**: Link to next page.",
+            "**object** (default: CaseSearchResponse)",
+            "**pageNumber**",
+            "**previousPageAPI**: Link to previous page.",
+            "**q**: Query been sent by client",
+            "**totalCount**: The number of matches that were found in the index.",
+            "**totalPages**: Total pages for matches that were found in the index."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Exception"
+        },
+        "Exception object contains specific error code and its message related to the API request validation error or error occurred during API request processing.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Indicates the type of error occured.",
+            "**details**: Describes what went wrong.",
+            "**message**: Indicates the error message that describes the error code.",
+            "**object** (default: Exception)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Exception"
+        },
+        "Exception object contains specific error code and its message related to the API request validation error or error occurred during API request processing.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Indicates the type of error occured.",
+            "**details**: Describes what went wrong.",
+            "**message**: Indicates the error message that describes the error code.",
+            "**object** (default: Exception)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

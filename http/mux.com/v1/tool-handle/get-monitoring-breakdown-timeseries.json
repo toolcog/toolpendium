@@ -1,0 +1,114 @@
+{
+  "name": "get-monitoring-breakdown-timeseries",
+  "description": "Gets timeseries of breakdown information for a specific dimension and metric. Each datapoint in the response represents 5 seconds worth of data.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "MONITORING_METRIC_ID": {
+        "enum": [
+          "current-concurrent-viewers",
+          "current-rebuffering-percentage",
+          "exits-before-video-start",
+          "playback-failure-percentage",
+          "current-average-bitrate",
+          "video-startup-failure-percentage"
+        ],
+        "type": "string",
+        "description": "ID of the Monitoring Metric"
+      },
+      "dimension": {
+        "enum": [
+          "asn",
+          "cdn",
+          "country",
+          "operating_system",
+          "player_name",
+          "region",
+          "stream_type",
+          "sub_property_id",
+          "video_series",
+          "video_title",
+          "view_has_ad"
+        ],
+        "type": "string",
+        "description": "Dimension the specified value belongs to"
+      },
+      "timeframe[]": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Timeframe window to limit results by. Must be provided as an array query string parameter (e.g. timeframe[]=).\n\nThe default for this is the last 60 seconds of available data. Timeframes larger than 10 minutes are not allowed, and must be within the last 24 hours.\n"
+      },
+      "filters[]": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Limit the results to rows that match conditions from provided key:value pairs. Must be provided as an array query string parameter.\n\nTo exclude rows that match a certain condition, prepend a `!` character to the dimension.\n\nPossible filter names are the same as returned by the List Monitoring Dimensions endpoint.\n\nExample:\n\n  * `filters[]=operating_system:windows&filters[]=!country:US`\n"
+      },
+      "limit": {
+        "default": 10,
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of items to include in each timestamp's `value` list.\n\nThe default is 10, and the maximum is 100.\n"
+      },
+      "order_by": {
+        "enum": [
+          "negative_impact",
+          "value",
+          "views",
+          "field"
+        ],
+        "type": "string",
+        "description": "Value to order the results by"
+      },
+      "order_direction": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string",
+        "description": "Sort order."
+      }
+    },
+    "required": [
+      "MONITORING_METRIC_ID"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.mux.com/data/v1/monitoring/metrics/{MONITORING_METRIC_ID}/breakdown-timeseries{?dimension,timeframe[],filters[],limit,order_by,order_direction}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**",
+            "**timeframe**",
+            "**total_row_count**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

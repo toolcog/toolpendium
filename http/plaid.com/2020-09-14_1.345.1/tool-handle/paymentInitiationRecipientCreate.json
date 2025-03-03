@@ -1,0 +1,176 @@
+{
+  "name": "paymentInitiationRecipientCreate",
+  "description": "Create a payment recipient for payment initiation.  The recipient must be in Europe, within a country that is a member of the Single Euro Payment Area (SEPA) or a non-Eurozone country [supported](https://plaid.com/global) by Plaid. For a standing order (recurring) payment, the recipient must be in the UK.\n\nIt is recommended to use `bacs` in the UK and `iban` in EU.\n\nThe endpoint is idempotent: if a developer has already made a request with the same payment details, Plaid will return the same `recipient_id`.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/PaymentInitiationRecipientCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PaymentInitiationRecipientCreateRequest": {
+        "description": "PaymentInitiationRecipientCreateRequest defines the request schema for `/payment_initiation/recipient/create`",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/PaymentInitiationAddress"
+          },
+          "bacs": {
+            "$ref": "#/$defs/RecipientBACSNullable"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "iban": {
+            "description": "The International Bank Account Number (IBAN) for the recipient. If BACS data is not provided, an IBAN is required.",
+            "maxLength": 34,
+            "minLength": 15,
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the recipient. We recommend using strings of length 18 or less and avoid special characters to ensure compatibility with all institutions.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "PaymentInitiationAddress": {
+        "additionalProperties": true,
+        "description": "The optional address of the payment recipient. Required by most institutions outside of the UK.",
+        "nullable": true,
+        "properties": {
+          "city": {
+            "description": "The city where the recipient is located. Maximum of 35 characters.",
+            "maxLength": 35,
+            "minLength": 1,
+            "type": "string"
+          },
+          "country": {
+            "description": "The ISO 3166-1 alpha-2 country code where the recipient is located.",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "The postal code where the recipient is located. Maximum of 16 characters.",
+            "maxLength": 16,
+            "minLength": 1,
+            "type": "string"
+          },
+          "street": {
+            "description": "An array of length 1-2 representing the street address where the recipient is located. Maximum of 70 characters.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "street",
+          "city",
+          "postal_code",
+          "country"
+        ],
+        "title": "PaymentInitiationAddress",
+        "type": "object"
+      },
+      "RecipientBACSNullable": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/RecipientBACS"
+          },
+          {
+            "additionalProperties": true,
+            "description": "The account number and sort code of the recipient's account.",
+            "type": "object"
+          }
+        ],
+        "description": "An object containing a BACS account number and sort code. If an IBAN is not provided or if this recipient needs to accept domestic GBP-denominated payments, BACS data is required.",
+        "nullable": true
+      },
+      "RecipientBACS": {
+        "additionalProperties": true,
+        "description": "An object containing a BACS account number and sort code. If an IBAN is not provided or if you need to accept domestic GBP-denominated payments, BACS data is required.",
+        "nullable": true,
+        "properties": {
+          "account": {
+            "description": "The account number of the account. Maximum of 10 characters.",
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sort_code": {
+            "description": "The 6-character sort code of the account.",
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "title": "RecipientBACS",
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/payment_initiation/recipient/create"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "PaymentInitiationRecipientCreateResponse defines the response schema for `/payment_initation/recipient/create`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**recipient_id**: A unique ID identifying the recipient",
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

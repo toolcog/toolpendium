@@ -1,0 +1,287 @@
+{
+  "name": "addShare",
+  "description": "Creates a new share object for the given path in your account. We support three types of shares:\n\n  - A **shared folder** allows you to let outside parties access a folder in your account (including any files and nested subfolders) using just a link. Shared folders can be restricted; e.g. with an expiration date, password, download-only, etc. Shared folders are 'live'; if someone makes a change to a file in your shared folder, it will be immediately reflected in your account, and vice-versa.\n  - A file **send** lets you send one or more files via an easy download link. File sends are different than shared folders because file sends are 'point in time' -- the recipient will get the files as you sent them. If you later make a change to the source file, it will not be updated for the recipient.\n  - A **receive** folder lets you receive files into your account. You can either send users a link, or optionally [embed a customized form](/docs/account/05-file-sharing/05-upload-widget) on your website.\n  \n**How to send files from your computer using the API**:\n\nIn order to use the API to send files which are not already stored in your account, you'll need to follow a three-step process:\n\n1. Use the [POST /shares](#operation/addShare) endpoint to set up your send, including password, recipients, expiration, etc. You must include **upload** among the permissions in the `accessMode` and set the `sendingLocalFiles` parameter to **true**. The response that is returned will include a \"meta\" attribute, which contains an **accessToken** attribute. This new access token is valid only for the send.\n2. Use the [POST /resources/upload](#operation/uploadFile) endpoint to upload your files to the send you've created. The \"/\" path represents the root of the share, not your home directory. **You must send the access token that you received from the first step in the `ev-access-token` header**\n3. Use the [POST /shares/complete-send/{id}](#operation/completeDirectSend) endpoint to indicate that you have finished uploading files to your send. This will trigger the system to remove the **upload** permission from the share and send any invitation emails you set up in the first step of the process. **You must send YOUR access token in the `ev-access-token` header, not the temporary access token**\n\n**Setting the Share Permissions**\n\nOnly 5 different combinations of permissions are valid for the `accessMode` object:\n\n- **Upload Only**: This allows share visitors to upload to a share but do nothing else to the contained files. To use this mode, set `upload` to **true** and all other permissions to **false**\n- **Download Only**: This allows share visitors to download files from a share but do nothing else to the contained files. To use this mode, set `download` to **true** and all other permissions to **false**\n- **Upload and Download**: This allows share visitors to upload new files to the share or download files within the share, but not make any other changes to the share contents. To use this mode, set `upload` and `download` to **true** and set both `modify` and `delete` to **false**\n- **All but Delete**: This allows share visitors to make any changes to the contents of a share except deleting files. To use this mode, set `upload`, `download`, and `modify` to **true** and set `delete` to **false**\n- **Full Access**: This allows share visitors to make any changes to the contents of a share. To use this mode, set all 4 permissions `upload`, `download`, `modify`, and `delete` to **true**\n\nAny other combination of permissions provided as the `accessMode` will be rejected as a bad request.\n\n**Notes:**\n\nAuthenticated user requires [share permission](/docs/account/04-users/00-introduction#managing-user-roles-and-permissions).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ev-api-key": {
+        "type": "string",
+        "description": "API Key required to make the API call."
+      },
+      "ev-access-token": {
+        "type": "string",
+        "description": "Access token required to make the API call."
+      },
+      "body": {
+        "properties": {
+          "accessMode": {
+            "$ref": "#/$defs/AccessMode"
+          },
+          "embed": {
+            "description": "Whether this share can be embedded within a web page.",
+            "example": false,
+            "type": "boolean"
+          },
+          "expiration": {
+            "description": "Expiration date for the share. If someone attempts to use the share after this date, they will receive an error that the share is not available.",
+            "example": "2017-09-25T14:12:10Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileDropCreateFolders": {
+            "description": "Only used for **receive** shares. If true, uploads will be automatically placed into sub-folders of the folder, named after the chosen field on your form. ",
+            "example": false,
+            "type": "boolean"
+          },
+          "hasNotification": {
+            "description": "Whether delivery receipts should be sent.",
+            "example": false,
+            "type": "boolean"
+          },
+          "isPublic": {
+            "description": "Whether someone can visit the share without following a personalized recipient link.",
+            "example": true,
+            "type": "boolean"
+          },
+          "messageBody": {
+            "description": "The message to be included in email invitations for your recipients. Ignored if you have not also provided `recipients` and `messageSubject`",
+            "example": null,
+            "type": "string"
+          },
+          "messageSubject": {
+            "description": "Subject to use on emails inviting recipients to the share. Ignored if you have not also provided `recipients` and a `messageBody`",
+            "example": "Invitation to a shared folder",
+            "type": "string"
+          },
+          "name": {
+            "description": "A name for the share. This will be visible on the page that recipients visit. ",
+            "example": "Shared Folder",
+            "type": "string"
+          },
+          "notificationEmails": {
+            "description": "Emails that will receive delivery receipts for this share. `hasNotification` must be **true** for delivery receipts will be sent.",
+            "example": [
+              "notify@example.com",
+              "notify2@example.com"
+            ],
+            "items": {
+              "format": "email",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "password": {
+            "description": "Set a password for recipients to access the share. All recipients will use the same password.",
+            "example": null,
+            "type": "string"
+          },
+          "recipients": {
+            "description": "People you want to invite to the share. **Note**: unless you also set the `messageSubject` and `messageBody` for the new share, invitation emails will not be sent to these recipients.",
+            "items": {
+              "properties": {
+                "email": {
+                  "description": "Email address of person you are inviting to the share",
+                  "format": "email",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "What kind of email should be sent to this recipient. Valid choices are **direct** and **cc**",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "requireEmail": {
+            "description": "True if recipients must provide their email to view the share.",
+            "example": false,
+            "type": "boolean"
+          },
+          "resources": {
+            "description": "Array of resources for this share. See details on [how to specify resources](#section/Identifying-Resources) above.\n\n**shared_folder** and **receive** shares must have only one `resource`, which is a directory that does not have a current share attached.\n\n**send** shares may have multiple `resource` parameters. You can also leave this parameter null if you are planning to upload files to the send. If you are planning to upload files to the send that are not yet in your account, you will also need to call the [POST /shares/complete-send/{id}](#operation/completeDirectSend) endpoint to finish the send operation.\n",
+            "example": [
+              "/testfolder"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sendingLocalFiles": {
+            "description": "Use this only for **send** shares. Flag to indicate that you are going to upload additional files from your computer to the share. If this is **true**, you will also need to use the [POST /shares/complete-send/{id}](#operation/completeDirectSend) call to finish setting up your share after the files are uploaded.",
+            "type": "boolean"
+          },
+          "type": {
+            "description": "The type of share to create. See above for a description of each.",
+            "enum": [
+              "shared_folder",
+              "receive",
+              "send"
+            ],
+            "example": "shared_folder",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ],
+        "title": "AddShareRequestBody",
+        "type": "object"
+      }
+    },
+    "required": [
+      "ev-api-key",
+      "ev-access-token"
+    ],
+    "$defs": {
+      "AccessMode": {
+        "description": "An object defining what a not-logged-in visitor can do with the share contents",
+        "properties": {
+          "delete": {
+            "description": "Whether share allows visitors to delete contents",
+            "type": "boolean"
+          },
+          "download": {
+            "description": "Whether share allows visitors to download",
+            "type": "boolean"
+          },
+          "modify": {
+            "description": "Whether share allows visitors to rename or move contents.",
+            "type": "boolean"
+          },
+          "upload": {
+            "description": "Whether share allows visitors to upload",
+            "type": "boolean"
+          }
+        },
+        "title": "AccessMode",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://accountname.exavault.com/api/v2/shares"
+    },
+    "headers": {
+      "ev-api-key": {
+        "$": "ev-api-key"
+      },
+      "ev-access-token": {
+        "$": "ev-access-token"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "ShareResponse"
+        },
+        "Response object for shares.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: Object contains share properties.",
+              {
+                "$ul": [
+                  [
+                    "**attributes**: Attributes of the share including the name, path and share recipients. ",
+                    {
+                      "$ul": [
+                        "**accessDescription**: Description of the share access rights.",
+                        [
+                          "**accessMode**: An object defining what a not-logged-in visitor can do with the share contents",
+                          {
+                            "$ul": [
+                              "**delete**: Whether share allows visitors to delete contents",
+                              "**download**: Whether share allows visitors to download",
+                              "**modify**: Whether share allows visitors to rename or move contents.",
+                              "**upload**: Whether share allows visitors to upload"
+                            ]
+                          }
+                        ],
+                        "**created**: Timestamp of share creation.",
+                        "**embed**: True if share can be embedded.",
+                        "**expiration**: Expiration date of the share.",
+                        "**expired**: True if the share has expired.",
+                        "**fileDropCreateFolders**: Flag to show if separate folders should be created for each file upload to receive folder.",
+                        "**formId**: ID of the form.",
+                        "**hasNotification**: True if share has notification.",
+                        "**hasPassword**: True if the share has password.",
+                        "**hash**: Share hash.",
+                        "**inherited**: True if share inherited from parent folder.",
+                        "**messages**: Array of invitation messages.",
+                        "**modified**: Timestamp of share modification. Can be `null` if it wasn't modified.",
+                        "**name**: Share name.",
+                        "**ownerHash**: Share owner's hash.",
+                        "**paths**: Path to the shared resource in your account.",
+                        "**public**: True if the share has a public url.",
+                        "**recipients**: Array of recipients.",
+                        "**requireEmail**: True if share requires email to access.",
+                        "**resent**: Invitations resent date. Can be `null` if resent never happened.",
+                        "**status**: Share activity status. Can be active (1) or deactivated (0).",
+                        "**trackingStatus**: Checks recipient received status and returns whether it's been received (`complete`,) partial received (`incomplete`,) or not received yet (`pending`.)",
+                        "**type**: Type of share."
+                      ]
+                    }
+                  ],
+                  "**id**: ID of the share.",
+                  [
+                    "**relationships**: Message, owner, resource, and notification relationships of the share. ",
+                    {
+                      "$ul": [
+                        "**messages**",
+                        "**notifications**",
+                        [
+                          "**owner**",
+                          {
+                            "$ul": [
+                              [
+                                "**data**",
+                                {
+                                  "$ul": [
+                                    "**id**: ID of the owner.",
+                                    "**type**: Type is user."
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        "**resources**"
+                      ]
+                    }
+                  ],
+                  "**type**: Type of the share. "
+                ]
+              }
+            ],
+            "**included**",
+            "**responseStatus**: Http status code of the response."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

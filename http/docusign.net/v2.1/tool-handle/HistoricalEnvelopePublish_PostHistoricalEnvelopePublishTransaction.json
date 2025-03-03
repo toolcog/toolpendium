@@ -1,0 +1,456 @@
+{
+  "name": "HistoricalEnvelopePublish_PostHistoricalEnvelopePublishTransaction",
+  "description": "This endpoint submits a batch of existing envelopes to a webhook of your choice. Set the webhook address with the `urlToPublishTo` request body parameter.\n\nThis endpoint does not call an existing Connect configuration or create a new Connect listener to monitor new activity. It simply uses an ad hoc configuration to submit existing envelopes. You must include all the configuration data in the request body.\n\nThe envelope data will always be transmitted in JSON format. XML, Salesforce, and eOriginal configuration types are not supported.\n\nYour request should match the following format:\n\n```\n{\n    \"envelopes\": [\"4280f274-xxxx-xxxx-xxxx-b218b7eeda08\", \"8373a938-xxxx-xxxx-xxxx-e992a2abae01\"],\n    \"config\": {\n        \"configurationType\":\"custom\",\n        \"name\": \"Test\",\n        \"urlToPublishTo\":\"YOUR-WEBHOOK-URL\",\n        \"allowEnvelopePublish\": \"true\",\n        \"enableLog\": \"true\",\n        \"requiresAcknowledgement\": \"true\",\n        \"IncludeHMAC\": \"true\",\n        \"SignMessageWithX509Cert\": \"true\",\n        \"deliveryMode\": \"SIM\",\n        \"eventData\": {\n            \"version\": \"restv2.1\",\n            \"format\": \"json\",\n            \"includedata\": [\"tabs\",\"payment_tabs\",\"custom_fields\",\"powerform\",\"recipients\",\"folde rs\",\"extensions\",\"attachments\", \"prefill_tabs\", \"documents\"]\n        }\n    }\n}\n```\n\nIf the request succeeds, it returns a 201 (Created) HTTP response code and the response body property `processingStatus` will be set to `processing`. You can then view the status of each historical republish request in the [Bulk Actions Log](https://support.docusign.com/s/document-item?language=en_US&bundleId=pik1583277475390&topicId=nvf1648497452396.html&_LANG=enus).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "body": {
+        "$ref": "#/$defs/connectHistoricalEnvelopeRepublish"
+      }
+    },
+    "required": [
+      "accountId"
+    ],
+    "$defs": {
+      "connectHistoricalEnvelopeRepublish": {
+        "description": "The request body for the `createHistoricalEnvelopePublishTransaction` endpoint.",
+        "properties": {
+          "config": {
+            "$ref": "#/$defs/connectCustomConfiguration"
+          },
+          "envelopes": {
+            "description": "An array of envelope IDs as comma-separated strings. This property is required.\n\nFor example: `[\"4280f274-xxxx-xxxx-xxxx-b218b7eeda08\",\"9586h293-xxxx-xxxx-xxxx-m923b8opre71\",\"2347w948-xxxx-xxxx-xxxx-t096b8krno89\"]`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "connectHistoricalEnvelopeRepublish",
+        "x-ms-summary": "The request body for the `createHistoricalEnvelopePublishTransaction` endpoint."
+      },
+      "connectCustomConfiguration": {
+        "description": "The `connectCustomConfiguration` object describes a Connect configuration for your account.",
+        "properties": {
+          "allUsers": {
+            "description": "When **true,** the tracked envelope and recipient events for all users, including users that are added a later time, are sent through Connect. The default value is **false.**\n\n**Note:** If this property is **false,** make sure you set the `userIds` property to a non-empty array of user IDs.",
+            "type": "string"
+          },
+          "allUsersExcept": {
+            "description": "This flag allows you to toggle between including and excluding specified users from the configuration. When **false,** the users corresponding to the IDs in `userIds` will be included in the configuration. Conversely, when **true,** the users will be excluded from the configuration. The default value is **false.**",
+            "type": "string"
+          },
+          "allowEnvelopePublish": {
+            "description": "Set this value to **true** to enable the webhook. The default property is **false.**",
+            "type": "string"
+          },
+          "allowSalesforcePublish": {
+            "description": "When **true,** DocuSign sends data to the designated Salesforce account through Connect. The default value is **true.**",
+            "type": "string"
+          },
+          "configurationType": {
+            "description": "The type of the configuration. Valid values:\n\n* `custom`: Creates an account-level configuration\n* `customrecipient`: Creates a Recipient Connect configuration\n* `salesforce`\n* `eOriginal`\n\nThis property is required.",
+            "type": "string"
+          },
+          "connectId": {
+            "description": "The DocuSign-generated ID for the Connect configuration.\n\nThis property is read-only.",
+            "type": "string"
+          },
+          "deliveryMode": {
+            "description": "The delivery mode of the configuration. Valid values:\n\n* `SIM`\n* `Aggregate`",
+            "type": "string"
+          },
+          "disabledBy": {
+            "description": "",
+            "type": "string"
+          },
+          "enableLog": {
+            "description": "When **true,** Connect logging is turned on. DocuSign recommends that you enable this functionality to help troubleshoot any issues. \n\nYou can have a maximum of 100 active logs in your account. You can view the entries in active logs in the **Logs** tab in the Connect console.",
+            "type": "string"
+          },
+          "envelopeEvents": {
+            "description": "A list of envelope-level event statuses that will trigger Connect to send updates to the endpoint specified in the `url` property.\n\nWhen using any of [the legacy event message formats](/platform/webhooks/connect/legacy-message-formats/), you must include either the `envelopeEvents` property or the `recipientEvents` property. If you are instead using the [JSON SIM event model](]/platform/webhooks/connect/improved-json-sim-event-model/), use the `events` property.\n\nThe [possible event statuses](/platform/webhooks/connect/event-triggers/) are:\n\n* `Sent`\n* `Delivered`\n* `Completed`\n* `Declined`\n* `Voided`\n\n**Note:** These values are case-sensitive.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "eventData": {
+            "$ref": "#/$defs/connectEventData"
+          },
+          "events": {
+            "description": "A comma-separated list of envelope-level event statuses that will trigger Connect to send updates to the endpoint specified in the `urlToPublishTo` property.\n\nSet this property when you are using the [JSON SIM event model](/platform/webhooks/connect/improved-json-sim-event-model/). If you are instead using any of [the legacy event message formats](/platform/webhooks/connect/legacy-message-formats/), set either the `envelopeEvents` property or the `recipientEvents` property.\n\nThe [possible event statuses](/platform/webhooks/connect/improved-json-sim-event-model/#eventreference) are:\n\n* `envelope-created`\n* `envelope-sent`\n* `envelope-resent`\n* `envelope-delivered`\n* `envelope-completed`\n* `envelope-declined`\n* `envelope-voided`\n* `recipient-authenticationfailed`\n* `recipient-autoresponded`\n* `recipient-declined`\n* `recipient-delivered`\n* `recipient-completed`\n* `recipient-sent`\n* `recipient-resent`\n* `template-created`\n* `template-modified`\n* `template-deleted`\n* `envelope-corrected`\n* `envelope-purge`\n* `envelope-deleted`\n* `envelope-discard`\n* `recipient-reassign`\n* `recipient-delegate`\n* `recipient-finish-later`\n* `click-agreed`\n* `click-declined`\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "externalFolderId": {
+            "description": "The ID of an external folder.",
+            "type": "string"
+          },
+          "externalFolderLabel": {
+            "description": "The label for an external folder.",
+            "type": "string"
+          },
+          "groupIds": {
+            "description": "",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "includeCertSoapHeader": {
+            "description": "",
+            "type": "string"
+          },
+          "includeCertificateOfCompletion": {
+            "description": "When **true,** the Connect Service includes the Certificate of Completion with completed envelopes. ",
+            "type": "string"
+          },
+          "includeDocumentFields": {
+            "description": "When **true,** the Document Fields associated with the envelope's documents are included in the notification messages. Document Fields are optional custom name-value pairs added to documents using the API. ",
+            "type": "string"
+          },
+          "includeDocuments": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "includeEnvelopeVoidReason": {
+            "description": "When **true,** if the envelope is voided, the Connect Service notification will include the void reason, as entered by the person that voided the envelope. ",
+            "type": "string"
+          },
+          "includeHMAC": {
+            "description": "",
+            "type": "string"
+          },
+          "includeOAuth": {
+            "description": "",
+            "type": "string"
+          },
+          "includeSenderAccountasCustomField": {
+            "description": "When **true,** Connect will include the sender account as Custom Field in the data.",
+            "type": "string"
+          },
+          "includeTimeZoneInformation": {
+            "description": "When **true,** Connect will include the envelope time zone information.",
+            "type": "string"
+          },
+          "integratorManaged": {
+            "description": "",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the Connect configuration.\n\nThis property is required.",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password for the Connect configuration.\n\nThis property is not used for the `createHistoricalEnvelopePublishTransaction` endpoint.\n",
+            "type": "string"
+          },
+          "recipientEvents": {
+            "description": "An array of recipient event statuses that will trigger Connect to send notifications to your webhook listener at the URL endpoint specified in the `url` property. \n\nWhen using any of [the legacy event message formats](/platform/webhooks/connect/legacy-message-formats/), you must include either the `envelopeEvents` property or the `recipientEvents` property. If you are instead using the [JSON SIM event model](/platform/webhooks/connect/improved-json-sim-event-model/), use the `events` property.\n\nThe [possible event statuses](/platform/webhooks/connect/event-triggers/) are:\n\n* `Sent`\n* `AutoResponded`\n* `Delivered`\n* `Completed`\n* `Declined`\n* `AuthenticationFailed`\n\n**Note:** These values are case-sensitive.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requireMutualTls": {
+            "description": "When **true,** [Mutual TLS](/platform/webhooks/mutual-tls/) authentication is enabled.",
+            "type": "string"
+          },
+          "requiresAcknowledgement": {
+            "description": "When **true,** event delivery acknowledgements are enabled for your Connect configuration.\n\nDocuSign Connect awaits a valid 200 response from your application acknowledging that it received a message. If you do not acknowledge receiving an event notification message within 100 seconds, DocuSign treats the message as a failure and places it into a failure queue. It is imperative that you acknowledge successful receipt of Connect events as they occur by sending a 200 event back.\n\n#### When **true** and Send Individual Messages (SIM) mode is activated\n\nIf the HTTP status response to a notification message is not in the range of 200-299,\nthen the message delivery failed, and the configuration is marked as down.\n\nThe message will be queued and retried once per day.\nWhile a Connect configuration is marked down, subsequent notifications will not be tried. Instead they will be immediately queued with the reason `Pending`.\nWhen a message succeeds, all queued messages for the configuration will be tried immediately, in order.\n\nThere is a maximum of ten retries. Alternately, you can use **Republish Connect Information** to manually republish the notification.\n\n#### When **true** and SIM mode is not activated\n\nIf the HTTP Status response to a notification message is not in the range of 200-299,  then the message delivery failed, and the message is queued.\n\nThe message will be retried after at least a day the next time a subsequent message is successfully sent to this configuration (subscription).  Subsequent notifications will be tried when they occur.\nThere is a maximum of ten retries. Alternately, you can use **Republish Connect Information** to manually republish the notification.\n\n#### When **false**\n\nWhen `requiresAcknowledgement` is set to **false** and you do not acknowledge receiving an event notification message within 100 seconds, DocuSign treats the message as a failure and determines that the server is unavailable. It does not retry to send the notification message, and you must handle the failure manually.\n\n",
+            "type": "string"
+          },
+          "salesforceApiVersion": {
+            "description": "The version of the Salesforce API that you are using.",
+            "type": "string"
+          },
+          "salesforceAuthcode": {
+            "description": "",
+            "type": "string"
+          },
+          "salesforceCallBackUrl": {
+            "description": "",
+            "type": "string"
+          },
+          "salesforceDocumentsAsContentFiles": {
+            "description": "When **true,** DocuSign can use documents in your Salesforce account for sending and signing.",
+            "type": "string"
+          },
+          "senderOverride": {
+            "description": "",
+            "type": "string"
+          },
+          "senderSelectableItems": {
+            "description": "This property sets the items that are available for selection when adding or editing Connect objects. ",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sfObjects": {
+            "description": "An array of Salesforce objects.",
+            "items": {
+              "$ref": "#/$defs/connectSalesforceObject"
+            },
+            "type": "array"
+          },
+          "signMessageWithX509Certificate": {
+            "description": "When **true,** Mutual TLS will be enabled for notifications. Mutual TLS must be initiated by the listener (the customer's web server) during the TLS handshake protocol. ",
+            "type": "string"
+          },
+          "soapNamespace": {
+            "description": "The namespace of the SOAP interface.\n\n**Note:** If `useSoapInterface` is set to **true,** you must set this value.",
+            "type": "string"
+          },
+          "urlToPublishTo": {
+            "description": "The web address of the listener or retrieving service endpoint. It must be an HTTPS URL.",
+            "type": "string"
+          },
+          "useSoapInterface": {
+            "description": "When **true,** the notifications are sent to your endpoint as SOAP requests. ",
+            "type": "string"
+          },
+          "userIds": {
+            "description": "A comma-separated list of user IDs. This sets the users associated with the tracked envelope and recipient events. When a tracked event occurs for a set user, the a notification message is sent to your Connect listener.\n\nBy default, the users will be included in the configuration. If you want to exclude the users, set the `allUsersExcept` property to **true.**\n\n**Note:** If `allUsers` is set to `false`, then you must provide a list of user IDs.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "userName": {
+            "description": "The name of the user.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "connectCustomConfiguration",
+        "x-ms-summary": "The `connectCustomConfiguration` object describes a Connect configuration for your account."
+      },
+      "connectEventData": {
+        "description": "This object lets you choose the data format of your Connect response.",
+        "properties": {
+          "format": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "includeData": {
+            "description": "A string array of the data to be included.\nThe default is the empty array `[]`.\n\n- `attachments`: Include attachments associated with the envelope.\n- `custom_fields`: Include the custom fields associated with the envelope.\n- `documents`: Include the documents associated with the envelope.\n- `extensions`: Include information about the email settings associated with the envelope.\n- `folders`: Include the folder where the envelope exists.\n- `payment_tabs`: Include the payment tabs associated with the envelope.\n- `powerform`: Include the PowerForms associated with the envelope.\n- `prefill_tabs`: Include the [pre-filled tabs](/docs/esign-rest-api/esign101/concepts/tabs/prefilled-tabs/) associated with the envelope.\n- `recipients`: Include the recipients associated with the envelope.\n- `tabs`: Include the tabs associated with the envelope.\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "version": {
+            "description": "Set this property to `restv2.1` to return event data in JSON. If the property is not set, the event data will be returned in XML by default.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "connectEventData",
+        "x-ms-summary": "This object lets you choose the data format of your Connect response."
+      },
+      "connectSalesforceObject": {
+        "description": "A `connectSalesforceObject` is an object that updates envelope and document status or recipient status in your Salesforce account.\n\nWhen you install DocuSign Connect for Salesforce, the service automatically sets up two Connect objects: one that updates envelope status and documents and one that updates recipient status. You can also customize DocuSign Connect for Salesforce by associating DocuSign objects with Salesforce objects so that DocuSign Connect for Salesforce updates or inserts the information into the Salesforce object. For more information, see \n[DocuSign for Salesforce - Adding Completed Documents to the Notes and Attachments](https://support.docusign.com/articles/DocuSign-for-Salesforce-Adding-Completed-Documents-to-the-Notes-and-Attachments-New).",
+        "properties": {
+          "active": {
+            "description": "When **true,** the `connectSalesforceObject` is active.",
+            "type": "string"
+          },
+          "description": {
+            "description": "A description of the `connectSalesforceObject`.",
+            "type": "string"
+          },
+          "id": {
+            "description": "The ID of the `connectSalesforceObject`.",
+            "type": "string"
+          },
+          "insert": {
+            "description": "",
+            "type": "string"
+          },
+          "onCompleteOnly": {
+            "description": "When **true,** Salesforce is updated only when the envelope is complete.",
+            "type": "string"
+          },
+          "selectFields": {
+            "description": "The DocuSign and Salesforce fields that you want to use to match a Salesforce object with DocuSign information. This information tells Connect when to send updates to Salesforce.",
+            "items": {
+              "$ref": "#/$defs/connectSalesforceField"
+            },
+            "type": "array"
+          },
+          "sfObject": {
+            "description": "The Salesforce.com object type, such as `case`, `contact`, or `opportunity`.",
+            "type": "string"
+          },
+          "sfObjectName": {
+            "description": "A name for the Salesforce object.\n\n**Note:** You can enter any name for the object. It does not have to match the `sfObject` property.",
+            "type": "string"
+          },
+          "updateFields": {
+            "description": "The DocuSign and Salesforce fields that you want to update. \n\n**Note:** You can choose to update SalesForce (with information from DocuSign) only, update DocuSign only, or both.",
+            "items": {
+              "$ref": "#/$defs/connectSalesforceField"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "connectSalesforceObject",
+        "x-ms-summary": "A `connectSalesforceObject` is an object that updates envelope and document status or recipient status in your Salesforce account.\n\nWhen you install DocuSign Connect for Salesforce, the service automatically sets up two Connect objects: one that updates envelope status and documents and one that updates recipient status. You can also customize DocuSign Connect for Salesforce by associating DocuSign objects with Salesforce objects so that DocuSign Connect for Salesforce updates or inserts the information into the Salesforce object. For more information, see \n[DocuSign for Salesforce - Adding Completed Documents to the Notes and Attachments](https://support.docusign.com/articles/DocuSign-for-Salesforce-Adding-Completed-Documents-to-the-Notes-and-Attachments-New)."
+      },
+      "connectSalesforceField": {
+        "description": "This object is used to match a DocuSign field to a Salesforce field so that DocuSign can send information to your Salesforce account.",
+        "properties": {
+          "dsAttribute": {
+            "description": "",
+            "type": "string"
+          },
+          "dsLink": {
+            "description": "A URL that links to the information in the DocuSign field.",
+            "type": "string"
+          },
+          "dsNode": {
+            "description": "",
+            "type": "string"
+          },
+          "id": {
+            "description": "A unique ID for the Salesforce object.",
+            "type": "string"
+          },
+          "sfField": {
+            "description": "",
+            "type": "string"
+          },
+          "sfFieldName": {
+            "description": "The name of the Salesforce field.",
+            "type": "string"
+          },
+          "sfFolder": {
+            "description": "The name of the Salesforce folder.",
+            "type": "string"
+          },
+          "sfLockedValue": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "connectSalesforceField",
+        "x-ms-summary": "This object is used to match a DocuSign field to a Salesforce field so that DocuSign can send information to your Salesforce account."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/connect/envelopes/publish/historical"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**applyConnectSettings**: ",
+            "**envelopeCount**: ",
+            "**envelopeLevelErrorRollups**: ",
+            "**envelopePublishTransactionId**: The ID of the publish transaction.",
+            "**errorCount**: ",
+            "**fileLevelErrors**: ",
+            "**noActionRequiredEnvelopeCount**: ",
+            "**processedEnvelopeCount**: ",
+            "**processingStatus**: The status of the transaction. Valid values:",
+            "**resultsUri**: ",
+            "**submissionDate**: ",
+            [
+              "**submittedByUserInfo**: ",
+              {
+                "$ul": [
+                  "**accountId**: The account ID associated with the envelope.",
+                  "**accountName**: The name on the account.",
+                  "**activationAccessCode**: Access code provided to the user to activate the account.",
+                  "**email**: The user's email address.",
+                  [
+                    "**errorDetails**: This object describes errors that occur. It is only valid for responses and ignored in requests.",
+                    {
+                      "$ul": [
+                        "**errorCode**: The code associated with the error condition.",
+                        "**message**: A brief message describing the error condition."
+                      ]
+                    }
+                  ],
+                  "**ipAddress**: ",
+                  "**loginStatus**: When **true,** indicates that the user is logged in. This is a read-only property.",
+                  "**membershipId**: The user's membership ID.",
+                  "**sendActivationEmail**: This field is no longer supported for most accounts. To create an eSignature user without sending an activation email, use the Admin API by following [these steps](/docs/admin-api/how-to/create-active-user/).",
+                  "**uri**: A URI containing the user ID.",
+                  "**userId**: The ID of the user to access.",
+                  "**userName**: The name of the user.",
+                  "**userStatus**: Status of the user's account. One of:",
+                  "**userType**: The type of user, for example `CompanyUser`."
+                ]
+              }
+            ],
+            "**submittedForPublishingEnvelopeCount**: "
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

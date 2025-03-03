@@ -1,0 +1,273 @@
+{
+  "name": "bookingBook",
+  "description": "Make a booking\n\nFor more information, see: \n\n  - [Cancellation policy](#section/Key-concepts/Cancellation-policy)\n  - [Booking concepts](#section/Key-concepts/Booking-concepts)\n  - [Booking process flow](#section/Common-workflows-and-data-validation/Booking-process-flow)\n  - [Making a booking](#section/Common-workflows-and-data-validation/Making-a-booking)\n  - [Supplier communications](#section/Key-concepts/Supplier-communications)\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Accept-Language": {
+        "example": "en-US",
+        "type": "string",
+        "description": "Specifies the language into which the natural-language fields in the response from this service will be translated (see [Accept-Language header](#section/Appendices/Accept-Language-header) for available langage codes)\n"
+      },
+      "body": {
+        "properties": {
+          "booker": {
+            "description": "**object** containing details about the primary contact (**note**: this contact needn't be a traveller)",
+            "properties": {
+              "cellPhone": {
+                "description": "**telephone number** of the lead traveler\n\n**Note**:\n\n  * Must be included to enable CLC communications\n  * See [Supplier communications](#section/Merchant-APIs/Supplier-communications) for more information\n",
+                "type": "string"
+              },
+              "cellPhoneCountryCode": {
+                "description": "**country code** for the telephone number of the lead traveler\n\n**Note**: \n\n  * Must be included to enable CLC communications. \n  * See [Supplier communications](#section/Merchant-APIs/Supplier-communications) for more information\n",
+                "type": "string"
+              },
+              "email": {
+                "description": "**email address** of the primary contact",
+                "type": "string"
+              },
+              "firstname": {
+                "description": "**first name** of the primary contact\n",
+                "format": "(.)*[\\\\&lt;\\\\&gt;%;\\\"\\\\(\\\\)+]+(.)*",
+                "type": "string"
+              },
+              "homePhone": {
+                "description": "**phone number** (home) of the primary contact",
+                "type": "string"
+              },
+              "surname": {
+                "description": "**surname** of the primary contact",
+                "format": "(.)*[\\\\&lt;\\\\&gt;%;\\\"\\\\(\\\\)+]+(.)*",
+                "type": "string"
+              },
+              "title": {
+                "description": "**title** of the primary contact",
+                "type": "string"
+              }
+            },
+            "required": [
+              "firstname",
+              "surname"
+            ],
+            "type": "object"
+          },
+          "currencyCode": {
+            "description": "**currency code** for the currency the booking will be submitted in (you will be billed in this currency)",
+            "type": "string"
+          },
+          "demo": {
+            "description": "**specifier**: `true` if this is a *demo* booking only (demos do not send any notifications, are automatically confirmed and OnRequest products become freesale products. Default value is true. Production must have `demo` set to `false`.",
+            "type": "boolean"
+          },
+          "items": {
+            "description": "**array** of items to be booked",
+            "items": {
+              "properties": {
+                "bookingQuestionAnswers": {
+                  "description": "**array** of objects containing booking questions and the answers provided for them for *this* product\n- If a booking question is available in the `bookingQuestions` array in the response from [/product](#operation/product) for *this* product, the matching `bookingQuestionAnswers` must be passed to *this* service. \n- If a product does not have any booking questions, you can omit the `bookingQuestionAnswers` array in your request. \n- Any invalid or unrequired booking-question answers that are passed to *this* service will be ignored (and, no exceptions will be raised) \n- You will need to include this array if [/product](#operation/product) returns any questions in the `bookingQuestions` array.\n",
+                  "items": {
+                    "properties": {
+                      "answer": {
+                        "description": "**answer** to the question for the `questionId` listed (recommended length for the answer is 500 characters)\n\n**Note**: To specify answers for each traveler, separate the values with a comma as in the per_person_booking_questions request example\n",
+                        "type": "string"
+                      },
+                      "questionId": {
+                        "description": "**numeric identifier** for the question (**note**: `questionId` can be retrieved from the [/product](#operation/product) service)",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "hotelId": {
+                  "description": "**specifer** of the hotel\nIf [/product](#operation/product) returns `hotelPickup`: `true` and a list of hotels is available for *this* product in [/booking/hotels](#operation/bookingHotels), a `hotelId` must be captured (as per the hotel service id field); or, use an alternative `hotelId`, such as:\n \n - `\"notBooked\"`: the customer has not yet booked their hotel\n - `\"notListed\"`: the customer's hotel is not listed\n\n If the customer chooses one of these options, the product supplier may need to correspond with the user to find out their pick-up location. The best way to do this is by enabling [Closed-Loop-Communication (CLC)](#section/Merchant-APIs/Supplier-communications).\n",
+                  "type": "string"
+                },
+                "languageOptionCode": {
+                  "description": "**specifier** of language service provided for this product that has been chosen for this booking (usually in the format langcode/Service eg en/SERVICE_GUIDE. If the product details service [/product](#operation/product) for the product returns a langService, this must be provided.)",
+                  "type": "string"
+                },
+                "partnerItemDetail": {
+                  "description": "**object** containing partner details at a per-item level",
+                  "properties": {
+                    "distributorItemRef": {
+                      "description": "**unique alphanumeric code** for the order ('itinerary') (merchant API partners must pass a `distributorItemRef` into the `partnerItemDetails` object for each item in *this* object\n- this code can be any alphanumeric string and is defined by the distributor\n",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "pickupPoint": {
+                  "description": "**details** about the hotel pick-up point (must be provided if the `hotelId` selected by the user is `'notListed'` or if no hotels are returned for *this* product in [/booking/hotels](#operation/bookingHotels) where `hotelPickup` is `true`.",
+                  "type": "string"
+                },
+                "productCode": {
+                  "description": "**unique alphanumeric identifier** of the product to be booked",
+                  "type": "string"
+                },
+                "specialRequirements": {
+                  "description": "**text field** to capture any additional requirements for the booking, such as dietary requirements or if a wheelchair is required",
+                  "type": "string"
+                },
+                "tourGradeCode": {
+                  "description": "**specifier** of the tour grade to be booked (if tour grades are supplied in [/product](#operation/product), you must allow the customer to select a tour grade code. If no tour grades are available for *this* product, set this to `'DEFAULT'`.)",
+                  "type": "string"
+                },
+                "travelDate": {
+                  "description": "**date** of travel for the item in format yyyy-mm-dd",
+                  "type": "string"
+                },
+                "travellers": {
+                  "description": "**array** of traveler names, details and whether they are the lead traveller",
+                  "items": {
+                    "properties": {
+                      "bandId": {
+                        "$ref": "#/$defs/bandId"
+                      },
+                      "firstname": {
+                        "description": "**first name** of *this* traveller",
+                        "type": "string"
+                      },
+                      "leadTraveller": {
+                        "description": "**indicator**: `true` if this traveler is the lead traveler",
+                        "type": "boolean"
+                      },
+                      "surname": {
+                        "description": "**surname** of *this* traveler",
+                        "type": "string"
+                      },
+                      "title": {
+                        "description": "**title** of the traveler (e.g `'Mr'`, `'Mrs'`, `'Ms'`, `'Miss'`, `'Mstr'`, `'Dr'`)",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "partnerDetail": {
+            "description": "Applicable only for extra partner detail for either partner or merchant partner for sending partner specific information\n",
+            "properties": {
+              "distributorRef": {
+                "description": "**unique alphanumeric reference code** for the distributor\n- Merchant API partners must pass a `distributorRef` at the order (A.K.A. 'itinerary') level in the `partnerDetail` object. The `distributorRef` passed must be alphanumeric and unique to bookings made by the merchant.\n- Passing an existing `distributorRef`: If an existing `distributorRef` is passed, the booking with the matching `distributorRef` will be returned in the response and a new booking will not be made. The fields in the response are identical to the response for a new booking.\n",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "Accept-Language"
+    ],
+    "$defs": {
+      "bandId": {
+        "description": "**unique numeric identifier** for the age band\n- See: [Working with age bands](#section/Appendices/Working-with-age-bands)\n",
+        "type": "integer"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://viatorapi.viator.com/service/booking/book"
+    },
+    "headers": {
+      "Accept-Language": {
+        "$": "Accept-Language"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**dateStamp**: **timestamp** of *this* response",
+            "**errorCodes**: **array** of error codes pertaining to *this* error",
+            "**errorMessage**: **array** of error message strings",
+            "**errorMessageText**: **array** of error message strings in plain text",
+            "**errorName**: **name** of *this* type of error",
+            "**errorReference**: **reference number** of *this* error",
+            "**errorType**: **code** specifying the type of error",
+            "**extraInfo**: ignore (Viator only)",
+            "**extraObject**: ignore (Viator only)",
+            "**success**: **boolean indicator** of *this* request's outcome",
+            "**totalCount**: **number** of results available for *this* service",
+            "**vmid**: **unique numeric id** of the server that processed *this* request",
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**bookerEmail**: **email address** of the entity that made *this* booking",
+                  "**bookingDate**: **date** of *this* booking",
+                  [
+                    "**bookingStatus**: **object** containing itinerary booking status information",
+                    {
+                      "$ul": [
+                        "**amended**: **indicator**: `true` if *this* itinerary's booking has been amended",
+                        "**cancelled**: **indicator**: `true` if *this* itinerary's booking has been cancelled",
+                        "**confirmed**: **indicator**: `true` if *this* itinerary's booking is confirmed",
+                        "**failed**: **indicator**: `true` if *this* itinerary's booking has failed",
+                        "**level**: **level** of *this* itinerary's booking status",
+                        "**pending**: **indicator**: `true` if *this* itinerary's booking is pending",
+                        "**status**: **numeric identifier** of *this* itinerary's booking status",
+                        "**text**: **natural-language description** of *this* itinerary's booking status",
+                        "**type**: **specifier** of *this* itinerary's booking status"
+                      ]
+                    }
+                  ],
+                  "**currencyCode**: **currency code** of the currency in which *this* booking was made",
+                  "**distributorRef**: ignore (Viator only)",
+                  "**exchangeRate**: ignore (Viator only)",
+                  "**hasVoucher**: ignore (Viator only)",
+                  "**itemSummaries**: **array** of item summaries",
+                  "**itineraryId**: ignore (Viator only)",
+                  "**omniPreRuleList**: ignore (Viator only)",
+                  "**paypalRedirectURL**: ignore (Viator only)",
+                  "**rulesApplied**: ignore (Viator only)",
+                  "**securityToken**: ignore (Viator only)",
+                  "**sortOrder**: **sort order** for *this* object",
+                  "**totalPrice**: **numeric merchant total price** for *this* booking",
+                  "**totalPriceFormatted**: **currency-formatted merchant total price** for *this* booking",
+                  "**totalPriceUSD**: **numeric merchant total price** of *this* booking in USD",
+                  "**userId**: ignore (Viator only)",
+                  "**voucherKey**: Unique reference for the voucher for this booking that can be used as a request parameter to search for existing bookings using the [/booking/mybookings](#operation/bookingMybookings) and [/booking/pastbooking](#operation/bookingPastbooking) endpoints",
+                  "**voucherURL**: **URL of the voucher** for *this* product (if available). The customer can access this URL to retrieve their voucher."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

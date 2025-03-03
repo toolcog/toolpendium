@@ -1,0 +1,101 @@
+{
+  "name": "postIPv6Range",
+  "description": "Creates an IPv6 Range and assigns it based on the provided Linode or route target IPv6 SLAAC address. See the `ipv6` property when accessing the Linode View ([GET /linode/instances/{linodeId}](/docs/api/linode-instances/#linode-view)) endpoint to view a Linode's IPv6 SLAAC address.\n  * Either `linode_id` or `route_target` is required in a request.\n  * `linode_id` and `route_target` are mutually exclusive. Submitting values for both properties in a request results in an error.\n  * Upon a successful request, an IPv6 range is created in the [Region](/docs/api/regions/#regions-list) that corresponds to the provided `linode_id` or `route_target`.\n  * Your Linode is responsible for routing individual addresses in the range, or handling traffic for all the addresses in the range.\n  * Access the IP Addresses Assign ([POST /networking/ips/assign](/docs/api/networking/#ip-addresses-assign)) endpoint to re-assign IPv6 Ranges to your Linodes.\n\n**Note**: The following restrictions apply:\n  * A Linode can only have one IPv6 range targeting its SLAAC address.\n  * An account can only have one IPv6 range in each [Region](/docs/api/regions/#regions-list).\n  * [Open a Support Ticket](/docs/api/support/#support-ticket-open) to request expansion of these restrictions.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "properties": {
+          "linode_id": {
+            "description": "The ID of the Linode to assign this range to. The SLAAC address for the provided Linode is used as the range's `route_target`.\n\n* **Required** if `route_target` is omitted from the request.\n\n* Mutually exclusive with `route_target`. Submitting values for both properties in a request results in an error.\n",
+            "example": 123,
+            "type": "integer"
+          },
+          "prefix_length": {
+            "description": "The prefix length of the IPv6 range.\n",
+            "enum": [
+              56,
+              64
+            ],
+            "type": "integer"
+          },
+          "route_target": {
+            "description": "The IPv6 SLAAC address to assign this range to.\n\n* **Required** if `linode_id` is omitted from the request.\n\n* Mutually exclusive with `linode_id`. Submitting values for both properties in a request results in an error.\n\n* **Note**: Omit the `/128` prefix length of the SLAAC address when using this property.\n",
+            "example": "2001:0db8::1",
+            "format": "ipv6",
+            "type": "string"
+          }
+        },
+        "required": [
+          "prefix_length"
+        ],
+        "description": "Information about the IPv6 range to create.\n"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/networking/ipv6/ranges"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**range**: The IPv6 network range, including subnet and prefix length.",
+            "**route_target**: The route target IPV6 SLAAC address for this range. Does not include the prefix length."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

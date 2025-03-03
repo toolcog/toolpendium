@@ -1,0 +1,218 @@
+{
+  "name": "updateFirewallRules",
+  "description": "Updates the inbound and outbound Rules for a Firewall.\n\n**Note:** This command replaces all of a Firewall's `inbound` and/or `outbound` rulesets with the values specified in your request.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "firewallId": {
+        "type": "integer",
+        "description": "ID of the Firewall to access.\n"
+      },
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/rules"
+          }
+        ],
+        "properties": {
+          "inbound": {
+            "required": [
+              "action",
+              "addresses",
+              "protocol"
+            ]
+          },
+          "outbound": {
+            "required": [
+              "action",
+              "addresses",
+              "protocol"
+            ]
+          }
+        },
+        "description": "The Firewall Rules information to update."
+      }
+    },
+    "required": [
+      "firewallId"
+    ],
+    "$defs": {
+      "rules": {
+        "description": "The inbound and outbound access rules to apply to the Firewall.\n\nA Firewall may have up to 25 rules across its inbound and outbound rulesets.\n",
+        "properties": {
+          "inbound": {
+            "description": "The inbound rules for the firewall, as a JSON array.\n",
+            "items": {
+              "$ref": "#/$defs/FirewallRuleConfig"
+            },
+            "type": "array",
+            "x-linode-cli-format": "json"
+          },
+          "inbound_policy": {
+            "description": "The default behavior for inbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `inbound.action` property of the Firewall Rule.\n",
+            "enum": [
+              "ACCEPT",
+              "DROP"
+            ],
+            "example": "DROP",
+            "type": "string"
+          },
+          "outbound": {
+            "description": "The outbound rules for the firewall, as a JSON array.\n",
+            "items": {
+              "$ref": "#/$defs/FirewallRuleConfig"
+            },
+            "type": "array",
+            "x-linode-cli-format": "json"
+          },
+          "outbound_policy": {
+            "description": "The default behavior for outbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `outbound.action` property of the Firewall Rule.\n",
+            "enum": [
+              "ACCEPT",
+              "DROP"
+            ],
+            "example": "DROP",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FirewallRuleConfig": {
+        "description": "One of a Firewall's inbound or outbound access rules. The `ports` property can be used to allow traffic on a comma-separated list of different ports.\n",
+        "properties": {
+          "action": {
+            "description": "Controls whether traffic is accepted or dropped by this rule. Overrides the Firewall's `inbound_policy` if this is an inbound rule, or the `outbound_policy` if this is an outbound rule.\n",
+            "enum": [
+              "ACCEPT",
+              "DROP"
+            ],
+            "example": "ACCEPT",
+            "type": "string"
+          },
+          "addresses": {
+            "description": "Allowed IPv4 or IPv6 addresses. A Rule can have up to 255 addresses or networks listed across its IPv4 and IPv6 arrays. A network and a single IP are treated as equivalent when accounting for this limit.\n",
+            "properties": {
+              "ipv4": {
+                "description": "A list of IPv4 addresses or networks. Must be in IP/mask format.",
+                "example": [
+                  "192.0.2.0/24"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "ipv6": {
+                "description": "A list of IPv6 addresses or networks. Must be in IP/mask format.",
+                "example": [
+                  "2001:DB8::/32"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "description": {
+            "description": "Used to describe this rule. For display purposes only.\n",
+            "example": "An example firewall rule description.",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "label": {
+            "description": "Used to identify this rule. For display purposes only.\n",
+            "example": "firewallrule123",
+            "maxLength": 32,
+            "minLength": 3,
+            "type": "string"
+          },
+          "ports": {
+            "description": "A string representing the port or ports on which traffic will be allowed:\n\n- The string may be a single port, a range of ports, or a comma-separated list of single ports and port ranges. A space is permitted following each comma.\n- A range of ports is inclusive of the start and end values for the range. The end value of the range must be greater than the start value.\n- Ports must be within 1 and 65535, and may not contain any leading zeroes. For example, port \"080\" is not allowed.\n- Ports may not be specified if a rule's protocol is `ICMP` or `IPENCAP`.\n- At least one port must be specified if a rule's protocol is `TCP` or `UDP`.\n- The ports string can have up to 15 *pieces*, where a single port is treated as one piece, and a port range is treated as two pieces. For example, the string \"22-24, 80, 443\" has four pieces.\n",
+            "example": "22-24, 80, 443",
+            "type": "string"
+          },
+          "protocol": {
+            "description": "The type of network traffic to allow.\n",
+            "enum": [
+              "TCP",
+              "UDP",
+              "ICMP",
+              "IPENCAP"
+            ],
+            "example": "TCP",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.linode.com/v4/networking/firewalls/{firewallId}/rules"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The inbound and outbound access rules to apply to the Firewall.\n\nA Firewall may have up to 25 rules across its inbound and outbound rulesets.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**inbound**: The inbound rules for the firewall, as a JSON array.",
+            "**inbound_policy**: The default behavior for inbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `inbound.action` property of the Firewall Rule.",
+            "**outbound**: The outbound rules for the firewall, as a JSON array.",
+            "**outbound_policy**: The default behavior for outbound traffic. This setting can be overridden by [updating](/docs/api/networking/#firewall-rules-update) the `outbound.action` property of the Firewall Rule."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "name": "availableVersion",
+  "description": "Retrieve a list of Rubrik CDM versions available to upgrade the Rubrik cluster.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "default": "me",
+        "type": "string",
+        "description": "The ID of the Rubrik cluster. To query the local cluster, use *me*."
+      },
+      "filter_version": {
+        "type": "string",
+        "description": "A string that filters the results based on the prefix. For example, the string \"5.1\" filters all releases in the 5.1 family. If more than one result is desired then this parameter can be used in conjunction with the `show_all` parameter."
+      },
+      "fetch_links": {
+        "default": false,
+        "type": "boolean",
+        "description": "Include a download URL for the single version passed in the 'filter_version' parameter. A link response will not be provided if the chosen version is locally available, or if 'filter_version' is not specified.\n"
+      },
+      "source_version": {
+        "type": "string",
+        "description": "The source version of Rubrik CDM used for the upgradeability check if 'filter_upgradable' if specified. If 'filter_upgradable' is not specified, this parameter is ignored.\n"
+      },
+      "ignore_local": {
+        "default": false,
+        "type": "boolean",
+        "description": "If specified, ignore locally available versions."
+      },
+      "ignore_remote": {
+        "default": false,
+        "type": "boolean",
+        "description": "If specified, ignore versions available in the Rubrik remote central repository.\n"
+      },
+      "ignore_downloading": {
+        "default": true,
+        "type": "boolean",
+        "description": "If specified, ignore versions currently being downloaded."
+      },
+      "download_job_instance_id": {
+        "type": "string",
+        "description": "If specified, filter results for downloading versions to the provided job instance ID.\n"
+      },
+      "filter_upgradable": {
+        "default": true,
+        "type": "boolean",
+        "description": "When this parameter is set, the query only returns versions of the Rubrik CDM that can be upgraded to from the version specified in the 'source_version' parameter. If 'source_version' is not specified, we use the cluster version as the source_version.\n"
+      },
+      "show_all": {
+        "default": false,
+        "type": "boolean",
+        "description": "When this parameter is set, the query shows all patch releases including releases with a newer version released in the same family. When set to false, the query returns only the latest version from each release family.\n"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/cluster/{id}/upgrade/available_version{?filter_version,fetch_links,source_version,ignore_local,ignore_remote,ignore_downloading,download_job_instance_id,filter_upgradable,show_all}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**availability**: Specifies the source from which the CDM software is available.",
+            "**description**: Brief description of the Rubrik CDM version. An example response value is \"Rubrik 5.0 (GA)\".",
+            [
+              "**downloadJobInfo**",
+              {
+                "$ul": [
+                  "**eventId**: Event identifier corresponding to the job instance.",
+                  "**jobInstanceId**: Identifier corresponding to the download job instance.",
+                  "**progress**: Progress, as a percentage, of the job. Only populated if the job is currently running.",
+                  "**remainingTimeEstimateInSeconds**: Remaining time estimate for the job to complete. Only populated if the job is currently running.",
+                  "**status**: Status of the download job instance."
+                ]
+              }
+            ],
+            "**generalAvailabilityReleaseDateForReleaseFamily**: The date the Rubrik CDM family was released. This date is only available for software images stored remotely and not yet downloaded.",
+            "**md5sum**: The MD5 checksum of the software image. This value is used to verify the integrity of the package download.",
+            "**releaseDate**: The date the Rubrik CDM version was released. This is only available for software images stored remotely and not yet downloaded.",
+            "**releaseNotes**: The URL used to access the version Release Notes for the Rubrik CDM software image. The URL is available only for software images stored remotely and not yet downloaded.",
+            "**remoteDownloadUrl**: The remote download URL of the Rubrik CDM software image. This URL is used to download the software to the Rubrik cluster.",
+            "**size**: The size, in bytes, of the downloaded software image.",
+            "**version**: The version of Rubrik CDM available in the Rubrik cluster or in the Rubrik remote central repository."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

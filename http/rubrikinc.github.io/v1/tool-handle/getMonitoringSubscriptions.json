@@ -1,0 +1,76 @@
+{
+  "name": "getMonitoringSubscriptions",
+  "description": "Return all unarchived email subscriptions for monitoring page in a list of summaries sorted by creation time (earliest created first). Each summary contains information for each subscription -- Time attributes - when to send the email -- Email addresses - who to send the email -- Attachments - what attachments should the email include -- Job states - which job states to include in the email (Failure, Scheduled, Success, Active, Canceled). -- Id - the tring that identifies the subscription -- Status - the status of the subscription (Active, Suspended, or Unknown) -- Owner - information about the owner of the subscription -- user id - unique id used to identify the owner -- user name - human-readable name of user the time schedule to send the subscription.",
+  "parameters": {
+    "type": "object"
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/job_monitoring/subscription"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**attachments**: Attachment files to send with the subscription.",
+            "**emailAddresses**: Email addresses to send monitoring subscriptions to.",
+            "**jobStates**: User-selected job states.",
+            [
+              "**timeAttributes**",
+              {
+                "$ul": [
+                  "**dailyScheduleHour**: Hour of the day to send the scheduled email, if the user picks a daily schedule. 0 = 12AM, 23 = 11PM.",
+                  "**dayOfMonth**: Day of the month to send the scheduled email, if the user picks a monthly schedule.",
+                  "**daysOfWeek**: Day of the week, represented by numbers, to send the scheduled email, if the user picks a weekly schedule. 0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday.",
+                  "**monthlyScheduleHour**: Hour of the user-specified day to send the scheduled email, if the user picks a monthly schedule. 0 = 12AM, 23 = 11PM.",
+                  "**weeklyScheduleHour**: Hour of the user-specified day to send the scheduled email, if the user picks a weekly schedule. 0 = 12AM, 23 = 11PM."
+                ]
+              }
+            ],
+            "**id**: ID assigned to an email subscription object.",
+            [
+              "**owner**",
+              {
+                "$ul": [
+                  "**userId**: User ID of the email subscription object owner.",
+                  "**username**: Username of the email subscription object owner."
+                ]
+              }
+            ],
+            "**status**: Status of email subscription."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

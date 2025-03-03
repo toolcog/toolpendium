@@ -1,0 +1,105 @@
+{
+  "name": "getNetworkWirelessFailedConnections",
+  "description": "List of all failed client connection events on this network in a given time range",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "t0": {
+        "type": "string",
+        "description": "The beginning of the timespan for the data. The maximum lookback period is 180 days from today."
+      },
+      "t1": {
+        "type": "string",
+        "description": "The end of the timespan for the data. t1 can be a maximum of 7 days after t0."
+      },
+      "timespan": {
+        "format": "float",
+        "type": "number",
+        "description": "The timespan for which the information will be fetched. If specifying timespan, do not specify parameters t0 and t1. The value must be in seconds and be less than or equal to 7 days."
+      },
+      "band": {
+        "enum": [
+          "2.4",
+          "5",
+          "6"
+        ],
+        "type": "string",
+        "description": "Filter results by band (either '2.4', '5' or '6'). Note that data prior to February 2020 will not have band information."
+      },
+      "ssid": {
+        "type": "integer",
+        "description": "Filter results by SSID"
+      },
+      "vlan": {
+        "type": "integer",
+        "description": "Filter results by VLAN"
+      },
+      "apTag": {
+        "type": "string",
+        "description": "Filter results by AP Tag"
+      },
+      "serial": {
+        "type": "string",
+        "description": "Filter by AP"
+      },
+      "clientId": {
+        "type": "string",
+        "description": "Filter by client MAC"
+      }
+    },
+    "required": [
+      "networkId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/wireless/failedConnections{?t0,t1,timespan,band,ssid,vlan,apTag,serial,clientId}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**clientMac**: Client Mac",
+            "**failureStep**: The failed onboarding step. One of: assoc, auth, dhcp, dns.",
+            "**serial**: Serial Number",
+            "**ssidNumber**: SSID Number",
+            "**ts**: The timestamp when the client mac failed",
+            "**type**: The failure type in the onboarding step",
+            "**vlan**: LAN"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

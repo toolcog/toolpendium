@@ -1,0 +1,96 @@
+{
+  "name": "GET_categories-stats",
+  "description": "**This endpoint allows you to retrieve all of your email statistics for each of your categories.**\n\nIf you do not define any query parameters, this endpoint will return a sum for each category in groups of 10.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "description": "The starting date of the statistics to retrieve. Must follow format YYYY-MM-DD"
+      },
+      "end_date": {
+        "type": "string",
+        "description": "The end date of the statistics to retrieve. Defaults to today. Must follow format YYYY-MM-DD."
+      },
+      "categories": {
+        "type": "string",
+        "description": "The individual categories that you want to retrieve statistics for. You may include up to 10 different categories."
+      },
+      "limit": {
+        "default": 500,
+        "maximum": 500,
+        "type": "integer",
+        "description": "The number of results to include."
+      },
+      "offset": {
+        "type": "integer",
+        "description": "The number of results to skip."
+      },
+      "aggregated_by": {
+        "enum": [
+          "day",
+          "week",
+          "month"
+        ],
+        "type": "string",
+        "description": "How to group the statistics. Must be either \"day\", \"week\", or \"month\"."
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "start_date",
+      "categories"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/categories/stats{?start_date,end_date,categories,limit,offset,aggregated_by}"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Stats: Category Stats list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**date**: The date the statistics were gathered.",
+            "**stats**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

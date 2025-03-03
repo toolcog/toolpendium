@@ -1,0 +1,104 @@
+{
+  "name": "ImageOcr_PhotoRecognizeFormAdvanced",
+  "description": "Analyzes a photograph of a form as input, and outputs key business fields and information.  Customzie data to be extracted by defining fields for the form.  Uses template definitions stored in Cloudmersive Configuration; to configure stored templates in a configuration bucket, log into Cloudmersive Management Portal and navigate to Settings &gt; API Configuration &gt; Create Bucket.  Note: for free tier API keys, it is required to add a credit card to your account for security reasons, to use the free tier key with this API.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "bucketID": {
+        "type": "string",
+        "description": "Bucket ID of the Configuration Bucket storing the form templates"
+      },
+      "bucketSecretKey": {
+        "type": "string",
+        "description": "Bucket Secret Key of the Configuration Bucket storing the form templates"
+      },
+      "recognitionMode": {
+        "type": "string",
+        "description": "Optional, enable advanced recognition mode by specifying 'Advanced', enable handwriting recognition by specifying 'EnableHandwriting'.  Default is disabled."
+      },
+      "preprocessing": {
+        "type": "string",
+        "description": "Optional, preprocessing mode, default is 'Auto'.  Possible values are None (no preprocessing of the image), and Auto (automatic image enhancement of the image - including automatic unrotation of the image - before OCR is applied; this is recommended).  Set this to 'None' if you do not want to use automatic image unrotation and enhancement."
+      },
+      "diagnostics": {
+        "type": "string",
+        "description": "Optional, diagnostics mode, default is 'false'.  Possible values are 'true' (will set DiagnosticImage to a diagnostic PNG image in the result), and 'false' (no diagnostics are enabled; this is recommended for best performance)."
+      },
+      "body": {
+        "properties": {
+          "imageFile": {
+            "description": "Image file to perform OCR on.  Common file formats such as PNG, JPEG are supported.",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "imageFile"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.cloudmersive.com/ocr/photo/recognize/form/advanced"
+    },
+    "headers": {
+      "bucketID": {
+        "$": "bucketID"
+      },
+      "bucketSecretKey": {
+        "$": "bucketSecretKey"
+      },
+      "recognitionMode": {
+        "$": "recognitionMode"
+      },
+      "preprocessing": {
+        "$": "preprocessing"
+      },
+      "diagnostics": {
+        "$": "diagnostics"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The result of extracting form field values",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**BestMatchFormSettingName**: Optional; populated when using photo/recognize/form/advanced with the Setting Name of the best-matching highest-relevance form",
+            "**Diagnostics**: Diagnostic images - default is null, enable diagnostics=true to populate this parameter with one image per field",
+            "**FieldValueExtractionResult**: Result of form field OCR data extraction",
+            "**Successful**: True if the operation was successful, false otherwise",
+            "**TableValueExtractionResults**: Result of form table OCR data extraction"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

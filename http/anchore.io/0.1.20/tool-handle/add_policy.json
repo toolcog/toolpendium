@@ -1,0 +1,390 @@
+{
+  "name": "add_policy",
+  "description": "Adds a new policy bundle to the system",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      },
+      "body": {
+        "$ref": "#/$defs/PolicyBundle"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PolicyBundle": {
+        "description": "A bundle containing a set of policies, whitelists, and rules for mapping them to specific images",
+        "properties": {
+          "blacklisted_images": {
+            "description": "List of mapping rules that define which images should always result in a STOP/FAIL policy result regardless of policy content or presence in whitelisted_images",
+            "items": {
+              "$ref": "#/$defs/ImageSelectionRule"
+            },
+            "type": "array"
+          },
+          "comment": {
+            "description": "Description of the bundle, human readable",
+            "type": "string"
+          },
+          "id": {
+            "description": "Id of the bundle",
+            "type": "string"
+          },
+          "mappings": {
+            "description": "Mapping rules for defining which policy and whitelist(s) to apply to an image based on a match of the image tag or id. Evaluated in order.",
+            "items": {
+              "$ref": "#/$defs/MappingRule"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Human readable name for the bundle",
+            "type": "string"
+          },
+          "policies": {
+            "description": "Policies which define the go/stop/warn status of an image using rule matches on image properties",
+            "items": {
+              "$ref": "#/$defs/Policy"
+            },
+            "type": "array"
+          },
+          "version": {
+            "description": "Version id for this bundle format",
+            "type": "string"
+          },
+          "whitelisted_images": {
+            "description": "List of mapping rules that define which images should always be passed (unless also on the blacklist), regardless of policy result.",
+            "items": {
+              "$ref": "#/$defs/ImageSelectionRule"
+            },
+            "type": "array"
+          },
+          "whitelists": {
+            "description": "Whitelists which define which policy matches to disregard explicitly in the final policy decision",
+            "items": {
+              "$ref": "#/$defs/Whitelist"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "policies",
+          "mappings"
+        ],
+        "type": "object"
+      },
+      "ImageSelectionRule": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "image": {
+            "$ref": "#/$defs/ImageRef"
+          },
+          "name": {
+            "type": "string"
+          },
+          "registry": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "registry",
+          "repository",
+          "image"
+        ],
+        "type": "object"
+      },
+      "ImageRef": {
+        "description": "A reference to an image",
+        "properties": {
+          "type": {
+            "enum": [
+              "tag",
+              "digest",
+              "id"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "value"
+        ],
+        "type": "object"
+      },
+      "MappingRule": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "image": {
+            "$ref": "#/$defs/ImageRef"
+          },
+          "name": {
+            "type": "string"
+          },
+          "policy_id": {
+            "description": "Optional single policy to evalute, if set will override any value in policy_ids, for backwards compatibility. Generally, policy_ids should be used even with a array of length 1.",
+            "type": "string"
+          },
+          "policy_ids": {
+            "description": "List of policyIds to evaluate in order, to completion",
+            "items": {
+              "description": "PolicyId to evaluate",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "registry": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "whitelist_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "registry",
+          "repository",
+          "image"
+        ],
+        "type": "object"
+      },
+      "Policy": {
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/$defs/PolicyRule"
+            },
+            "type": "array"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
+      "PolicyRule": {
+        "description": "A rule that defines and decision value if the match is found true for a given image.",
+        "properties": {
+          "action": {
+            "enum": [
+              "GO",
+              "STOP",
+              "WARN"
+            ]
+          },
+          "gate": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "params": {
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "trigger": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gate",
+          "trigger",
+          "action"
+        ],
+        "type": "object"
+      },
+      "Whitelist": {
+        "description": "A collection of whitelist items to match a policy evaluation against.",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/WhitelistItem"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
+      "WhitelistItem": {
+        "description": "Identifies a specific gate and trigger match from a policy against an image and indicates it should be ignored in final policy decisions",
+        "properties": {
+          "expires_on": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:\\:\\d+)?[A-Z]?$",
+            "type": "string"
+          },
+          "gate": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "trigger_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gate",
+          "trigger_id"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//policies"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A policy bundle plus some metadata",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: True if the bundle is currently defined to be used automatically",
+            "**created_at**",
+            "**last_updated**",
+            "**policyId**: The bundle's identifier",
+            "**policy_source**: Source location of where the policy bundle originated",
+            [
+              "**policybundle**: A bundle containing a set of policies, whitelists, and rules for mapping them to specific images",
+              {
+                "$ul": [
+                  "**blacklisted_images**: List of mapping rules that define which images should always result in a STOP/FAIL policy result regardless of policy content or presence in whitelisted_images",
+                  "**comment**: Description of the bundle, human readable",
+                  "**id**: Id of the bundle",
+                  "**mappings**: Mapping rules for defining which policy and whitelist(s) to apply to an image based on a match of the image tag or id. Evaluated in order.",
+                  "**name**: Human readable name for the bundle",
+                  "**policies**: Policies which define the go/stop/warn status of an image using rule matches on image properties",
+                  "**version**: Version id for this bundle format",
+                  "**whitelisted_images**: List of mapping rules that define which images should always be passed (unless also on the blacklist), regardless of policy result.",
+                  "**whitelists**: Whitelists which define which policy matches to disregard explicitly in the final policy decision"
+                ]
+              }
+            ],
+            "**userId**: UserId of the user that owns the bundle"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

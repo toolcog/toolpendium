@@ -1,0 +1,78 @@
+{
+  "name": "Line_StatusBySeverity",
+  "description": "Gets the line status for all lines with a given severity\r\n            A list of valid severity codes can be obtained from a call to Line/Meta/Severity",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "severity": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The level of severity (eg: a number from 0 to 14)"
+      }
+    },
+    "required": [
+      "severity"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.digital.tfl.gov.uk/Line/Status/{severity}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**",
+            [
+              "**crowding**",
+              {
+                "$ul": [
+                  "**passengerFlows**: Busiest times at a station (static information)",
+                  "**trainLoadings**: Train Loading on a scale 1-6, 1 being \"Very quiet\" and 6 being \"Exceptionally busy\" (static information)"
+                ]
+              }
+            ],
+            "**disruptions**",
+            "**id**",
+            "**lineStatuses**",
+            "**modeName**",
+            "**modified**",
+            "**name**",
+            "**routeSections**",
+            "**serviceTypes**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "name": "list_events",
+  "description": "Returns a paginated list of events in the descending order of their occurrence. Optional query parameters may be used for filtering results",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "source_servicename": {
+        "type": "string",
+        "description": "Filter events by the originating service"
+      },
+      "source_hostid": {
+        "type": "string",
+        "description": "Filter events by the originating host ID"
+      },
+      "event_type": {
+        "pattern": "^[a-z0-9-_.*]+$",
+        "type": "string",
+        "description": "Filter events by a prefix match on the event type (e.g. \"user.image.\")"
+      },
+      "resource_type": {
+        "type": "string",
+        "description": "Filter events by the type of resource - tag, imageDigest, repository etc"
+      },
+      "resource_id": {
+        "type": "string",
+        "description": "Filter events by the id of the resource"
+      },
+      "level": {
+        "type": "string",
+        "description": "Filter events by the level - INFO or ERROR"
+      },
+      "since": {
+        "type": "string",
+        "description": "Return events that occurred after the timestamp"
+      },
+      "before": {
+        "type": "string",
+        "description": "Return events that occurred before the timestamp"
+      },
+      "page": {
+        "default": 1,
+        "type": "integer",
+        "description": "Pagination controls - return the nth page of results. Defaults to first page if left empty"
+      },
+      "limit": {
+        "default": 100,
+        "type": "integer",
+        "description": "Number of events in the result set. Defaults to 100 if left empty"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//events{?source_servicename,source_hostid,event_type,resource_type,resource_id,level,since,before,page,limit}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Response envelope for paginated listing of events",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**item_count**: Number of events in this page",
+            "**next_page**: Boolean flag, True indicates there are more events and False otherwise",
+            "**page**: Page number of this result set",
+            "**results**: List of events"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

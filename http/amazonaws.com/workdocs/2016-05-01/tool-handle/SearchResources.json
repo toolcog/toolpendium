@@ -1,0 +1,611 @@
+{
+  "name": "SearchResources",
+  "description": "Searches metadata and the content of folders, documents, document versions, and comments.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Authentication": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8199,
+        "format": "password",
+        "description": "Amazon WorkDocs authentication token. Not required when using Amazon Web Services administrator credentials to access the API."
+      },
+      "Limit": {
+        "type": "string",
+        "description": "Pagination limit"
+      },
+      "Marker": {
+        "type": "string",
+        "description": "Pagination token"
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "QueryText": {
+            "description": "The String to search for. Searches across different text fields based on request parameters. Use double quotes around the query string for exact phrase matches.",
+            "type": "string",
+            "pattern": "[\\u0020-\\uFFFF]+",
+            "minLength": 1,
+            "maxLength": 512,
+            "format": "password"
+          },
+          "QueryScopes": {
+            "description": "Filter based on the text field type. A Folder has only a name and no content. A Comment has only content and no name. A Document or Document Version has a name and content",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SearchQueryScopeType"
+            },
+            "maxItems": 2
+          },
+          "OrganizationId": {
+            "description": "Filters based on the resource owner OrgId. This is a mandatory parameter when using Admin SigV4 credentials.",
+            "type": "string",
+            "pattern": "[&\\w+-.@]+",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "AdditionalResponseFields": {
+            "description": "A list of attributes to include in the response. Used to request fields that are not normally returned in a standard response.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/AdditionalResponseFieldType"
+            }
+          },
+          "Filters": {
+            "description": "Filters results based on entity metadata.",
+            "type": "object",
+            "properties": {
+              "TextLocales": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/TextLocaleTypeList"
+                  },
+                  {
+                    "description": "Filters by the locale of the content or comment."
+                  }
+                ]
+              },
+              "ContentCategories": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchContentCategoryTypeList"
+                  },
+                  {
+                    "description": "Filters by content category."
+                  }
+                ]
+              },
+              "ResourceTypes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchResourceTypeList"
+                  },
+                  {
+                    "description": "Filters based on entity type."
+                  }
+                ]
+              },
+              "Labels": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchLabelList"
+                  },
+                  {
+                    "description": "Filter by labels using exact match."
+                  }
+                ]
+              },
+              "Principals": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchPrincipalTypeList"
+                  },
+                  {
+                    "description": "Filter based on UserIds or GroupIds."
+                  }
+                ]
+              },
+              "AncestorIds": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchAncestorIdList"
+                  },
+                  {
+                    "description": "Filter based on resource’s path."
+                  }
+                ]
+              },
+              "SearchCollectionTypes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SearchCollectionTypeList"
+                  },
+                  {
+                    "description": "Filter based on file groupings."
+                  }
+                ]
+              },
+              "SizeRange": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LongRangeType"
+                  },
+                  {
+                    "description": "Filter based on size (in bytes)."
+                  }
+                ]
+              },
+              "CreatedRange": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DateRangeType"
+                  },
+                  {
+                    "description": "Filter based on resource’s creation timestamp."
+                  }
+                ]
+              },
+              "ModifiedRange": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DateRangeType"
+                  },
+                  {
+                    "description": "Filter based on resource’s modified timestamp."
+                  }
+                ]
+              }
+            }
+          },
+          "OrderBy": {
+            "description": "Order by results in one or more categories.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SearchSortResult"
+            },
+            "maxItems": 1
+          },
+          "Limit": {
+            "description": "Max results count per page.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "Marker": {
+            "description": "The marker for the next set of results.",
+            "type": "string",
+            "pattern": "[\\d]+",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "SearchQueryScopeType": {
+        "type": "string",
+        "enum": [
+          "NAME",
+          "CONTENT"
+        ]
+      },
+      "AdditionalResponseFieldType": {
+        "type": "string",
+        "enum": [
+          "WEBURL"
+        ]
+      },
+      "TextLocaleTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/LanguageCodeType"
+        },
+        "maxItems": 1
+      },
+      "LanguageCodeType": {
+        "type": "string",
+        "enum": [
+          "AR",
+          "BG",
+          "BN",
+          "DA",
+          "DE",
+          "CS",
+          "EL",
+          "EN",
+          "ES",
+          "FA",
+          "FI",
+          "FR",
+          "HI",
+          "HU",
+          "ID",
+          "IT",
+          "JA",
+          "KO",
+          "LT",
+          "LV",
+          "NL",
+          "NO",
+          "PT",
+          "RO",
+          "RU",
+          "SV",
+          "SW",
+          "TH",
+          "TR",
+          "ZH",
+          "DEFAULT"
+        ]
+      },
+      "SearchContentCategoryTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ContentCategoryType"
+        },
+        "maxItems": 9
+      },
+      "ContentCategoryType": {
+        "type": "string",
+        "enum": [
+          "IMAGE",
+          "DOCUMENT",
+          "PDF",
+          "SPREADSHEET",
+          "PRESENTATION",
+          "AUDIO",
+          "VIDEO",
+          "SOURCE_CODE",
+          "OTHER"
+        ]
+      },
+      "SearchResourceTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SearchResourceType"
+        },
+        "maxItems": 4
+      },
+      "SearchResourceType": {
+        "type": "string",
+        "enum": [
+          "FOLDER",
+          "DOCUMENT",
+          "COMMENT",
+          "DOCUMENT_VERSION"
+        ]
+      },
+      "SearchLabelList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SearchLabel"
+        },
+        "maxItems": 10
+      },
+      "SearchLabel": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "SearchPrincipalTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SearchPrincipalType"
+        },
+        "maxItems": 10
+      },
+      "SearchPrincipalType": {
+        "type": "object",
+        "required": [
+          "Id"
+        ],
+        "properties": {
+          "Id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IdType"
+              },
+              {
+                "description": "UserIds or GroupIds."
+              }
+            ]
+          },
+          "Roles": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SearchPrincipalRoleList"
+              },
+              {
+                "description": "The Role of a User or Group."
+              }
+            ]
+          }
+        },
+        "description": "Filter based on UserIds or GroupIds."
+      },
+      "IdType": {
+        "type": "string",
+        "pattern": "[&\\w+-.@]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "SearchPrincipalRoleList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/PrincipalRoleType"
+        },
+        "maxItems": 4
+      },
+      "PrincipalRoleType": {
+        "type": "string",
+        "enum": [
+          "VIEWER",
+          "CONTRIBUTOR",
+          "OWNER",
+          "COOWNER"
+        ]
+      },
+      "SearchAncestorIdList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SearchAncestorId"
+        },
+        "maxItems": 10
+      },
+      "SearchAncestorId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "SearchCollectionTypeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SearchCollectionType"
+        },
+        "maxItems": 2
+      },
+      "SearchCollectionType": {
+        "type": "string",
+        "enum": [
+          "OWNED",
+          "SHARED_WITH_ME"
+        ]
+      },
+      "LongRangeType": {
+        "type": "object",
+        "properties": {
+          "StartValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LongType"
+              },
+              {
+                "description": "The size start range (in bytes)."
+              }
+            ]
+          },
+          "EndValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LongType"
+              },
+              {
+                "description": "The size end range (in bytes)."
+              }
+            ]
+          }
+        },
+        "description": "Filter based on size (in bytes)."
+      },
+      "LongType": {
+        "type": "integer"
+      },
+      "DateRangeType": {
+        "type": "object",
+        "properties": {
+          "StartValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimestampType"
+              },
+              {
+                "description": "Timestamp range start value (in epochs)"
+              }
+            ]
+          },
+          "EndValue": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TimestampType"
+              },
+              {
+                "description": "Timestamp range end value (in epochs)."
+              }
+            ]
+          }
+        },
+        "description": "Filters results based on timestamp range (in epochs)."
+      },
+      "TimestampType": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "SearchSortResult": {
+        "type": "object",
+        "properties": {
+          "Field": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OrderByFieldType"
+              },
+              {
+                "description": "Sort search results based on this field name."
+              }
+            ]
+          },
+          "Order": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SortOrder"
+              },
+              {
+                "description": "Sort direction."
+              }
+            ]
+          }
+        },
+        "description": "The result of the sort operation."
+      },
+      "OrderByFieldType": {
+        "type": "string",
+        "enum": [
+          "RELEVANCE",
+          "NAME",
+          "SIZE",
+          "CREATED_TIMESTAMP",
+          "MODIFIED_TIMESTAMP"
+        ]
+      },
+      "SortOrder": {
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://workdocs.us-east-1.amazonaws.com/api/v1/search{?Limit,Marker}"
+    },
+    "headers": {
+      "Authentication": {
+        "$": "Authentication"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Items**",
+            "**Marker**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

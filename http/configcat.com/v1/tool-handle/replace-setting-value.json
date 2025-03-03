@@ -1,0 +1,377 @@
+{
+  "name": "replace-setting-value",
+  "description": "This endpoint replaces the whole value of a Feature Flag or Setting in a specified Environment.\n\nOnly the `value`, `rolloutRules` and `percentageRules` attributes are modifiable by this endpoint.\n\n**Important:** As this endpoint is doing a complete replace, it's important to set every other attribute that you don't \nwant to change in its original state. Not listing one means that it will reset.\n\nFor example: We have the following resource.\n```\n{\n\t\"rolloutPercentageItems\": [\n\t\t{\n\t\t\t\"percentage\": 30,\n\t\t\t\"value\": true\n\t\t},\n\t\t{\n\t\t\t\"percentage\": 70,\n\t\t\t\"value\": false\n\t\t}\n\t],\n\t\"rolloutRules\": [],\n\t\"value\": false\n}\n```\nIf we send a replace request body as below:\n```\n{\n\t\"value\": true\n}\n```\nThen besides that the default value is set to `true`, all the Percentage Rules are deleted. \nSo we get a response like this:\n```\n{\n\t\"rolloutPercentageItems\": [],\n\t\"rolloutRules\": [],\n\t\"value\": true\n}\n```\n\nThe `rolloutRules` property describes two types of rules:\n\n- **Targeting rules**: When you want to add or update a targenting rule, the `comparator`, `comparisonAttribute`, and `comparisonValue` members are required.\n- **Segment rules**: When you want to add add or update a segment rule, the `segmentId` which identifies the desired segment and the `segmentComparator` members are required.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "environmentId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The identifier of the Environment."
+      },
+      "settingId": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The id of the Setting."
+      },
+      "reason": {
+        "type": "string",
+        "description": "The reason note for the Audit Log if the Product's \"Config changes require a reason\" preference is turned on."
+      },
+      "body": {
+        "$ref": "#/$defs/UpdateSettingValueModel"
+      }
+    },
+    "required": [
+      "environmentId",
+      "settingId",
+      "body"
+    ],
+    "$defs": {
+      "UpdateSettingValueModel": {
+        "additionalProperties": false,
+        "properties": {
+          "rolloutPercentageItems": {
+            "description": "The percentage rule collection.",
+            "items": {
+              "$ref": "#/$defs/RolloutPercentageItemModel"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "rolloutRules": {
+            "description": "The targeting rule collection.",
+            "items": {
+              "$ref": "#/$defs/RolloutRuleModel"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "value": {
+            "description": "The value to serve. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "RolloutPercentageItemModel": {
+        "additionalProperties": false,
+        "properties": {
+          "percentage": {
+            "description": "The percentage value for the rule.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "value": {
+            "description": "The value to serve when the user falls in the percentage rule. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "percentage"
+        ],
+        "type": "object"
+      },
+      "RolloutRuleModel": {
+        "additionalProperties": false,
+        "properties": {
+          "comparator": {
+            "$ref": "#/$defs/RolloutRuleComparator"
+          },
+          "comparisonAttribute": {
+            "description": "The user attribute to compare.",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "comparisonValue": {
+            "description": "The value to compare against.",
+            "maxLength": 65535,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "segmentComparator": {
+            "$ref": "#/$defs/SegmentComparator"
+          },
+          "segmentId": {
+            "description": "The segment to compare against.",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "value": {
+            "description": "The value to serve when the comparison matches. It must respect the setting type.",
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "RolloutRuleComparator": {
+        "enum": [
+          "isOneOf",
+          "isNotOneOf",
+          "contains",
+          "doesNotContain",
+          "semVerIsOneOf",
+          "semVerIsNotOneOf",
+          "semVerLess",
+          "semVerLessOrEquals",
+          "semVerGreater",
+          "semVerGreaterOrEquals",
+          "numberEquals",
+          "numberDoesNotEqual",
+          "numberLess",
+          "numberLessOrEquals",
+          "numberGreater",
+          "numberGreaterOrEquals",
+          "sensitiveIsOneOf",
+          "sensitiveIsNotOneOf"
+        ],
+        "type": "string"
+      },
+      "SegmentComparator": {
+        "enum": [
+          "isIn",
+          "isNotIn"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.configcat.com/v1/environments/{environmentId}/settings/{settingId}/value{?reason}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_embedded**",
+              {
+                "$ul": [
+                  [
+                    "**config**",
+                    {
+                      "$ul": [
+                        [
+                          "**_embedded**",
+                          {
+                            "$ul": [
+                              [
+                                "**product**",
+                                {
+                                  "$ul": [
+                                    [
+                                      "**_embedded**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**organization**",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**_links**",
+                                                  {
+                                                    "$ul": [
+                                                      "**members**",
+                                                      "**products**"
+                                                    ]
+                                                  }
+                                                ],
+                                                "**name**",
+                                                "**organizationId**"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**_links**",
+                                      {
+                                        "$ul": [
+                                          "**configs**",
+                                          "**environments**",
+                                          "**members**",
+                                          "**permission-groups**",
+                                          "**segments**",
+                                          "**self**",
+                                          "**tags**"
+                                        ]
+                                      }
+                                    ],
+                                    "**description**",
+                                    "**name**",
+                                    "**order**",
+                                    "**productId**",
+                                    "**reasonRequired**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**_links**",
+                          {
+                            "$ul": [
+                              "**self**",
+                              "**settings**"
+                            ]
+                          }
+                        ],
+                        "**configId**",
+                        "**description**",
+                        "**name**",
+                        "**order**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**environment**",
+                    {
+                      "$ul": [
+                        [
+                          "**_embedded**",
+                          {
+                            "$ul": [
+                              [
+                                "**product**",
+                                {
+                                  "$ul": [
+                                    [
+                                      "**_embedded**",
+                                      {
+                                        "$ul": [
+                                          [
+                                            "**organization**",
+                                            {
+                                              "$ul": [
+                                                [
+                                                  "**_links**",
+                                                  {
+                                                    "$ul": [
+                                                      "**members**",
+                                                      "**products**"
+                                                    ]
+                                                  }
+                                                ],
+                                                "**name**",
+                                                "**organizationId**"
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "**_links**",
+                                      {
+                                        "$ul": [
+                                          "**configs**",
+                                          "**environments**",
+                                          "**members**",
+                                          "**permission-groups**",
+                                          "**segments**",
+                                          "**self**",
+                                          "**tags**"
+                                        ]
+                                      }
+                                    ],
+                                    "**description**",
+                                    "**name**",
+                                    "**order**",
+                                    "**productId**",
+                                    "**reasonRequired**"
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ],
+                        [
+                          "**_links**",
+                          {
+                            "$ul": [
+                              "**self**"
+                            ]
+                          }
+                        ],
+                        "**color**",
+                        "**description**",
+                        "**environmentId**",
+                        "**name**",
+                        "**order**",
+                        "**reasonRequired**"
+                      ]
+                    }
+                  ],
+                  "**integrationLinks**",
+                  [
+                    "**setting**",
+                    {
+                      "$ul": [
+                        "**createdAt**",
+                        "**creatorEmail**",
+                        "**creatorFullName**",
+                        "**hint**",
+                        "**isWatching**",
+                        "**key**",
+                        "**name**",
+                        "**order**",
+                        "**settingId**",
+                        "**settingType**"
+                      ]
+                    }
+                  ],
+                  "**settingTags**"
+                ]
+              }
+            ],
+            [
+              "**_links**",
+              {
+                "$ul": [
+                  "**self**"
+                ]
+              }
+            ],
+            "**lastUpdaterUserEmail**",
+            "**lastUpdaterUserFullName**",
+            "**readOnly**",
+            "**rolloutPercentageItems**: The percentage rule collection.",
+            "**rolloutRules**: The targeting rule collection.",
+            "**updatedAt**",
+            "**value**: The value to serve. It must respect the setting type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

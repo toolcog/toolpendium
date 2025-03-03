@@ -1,0 +1,787 @@
+{
+  "name": "RunPipelineActivity",
+  "description": "Simulates the results of running a pipeline activity on a message payload.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "pipelineActivity",
+          "payloads"
+        ],
+        "properties": {
+          "pipelineActivity": {
+            "description": "An activity that performs a transformation on a message.",
+            "type": "object",
+            "properties": {
+              "channel": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ChannelActivity"
+                  },
+                  {
+                    "description": "Determines the source of the messages to be processed."
+                  }
+                ]
+              },
+              "lambda": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LambdaActivity"
+                  },
+                  {
+                    "description": "Runs a Lambda function to modify the message."
+                  }
+                ]
+              },
+              "datastore": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DatastoreActivity"
+                  },
+                  {
+                    "description": "Specifies where to store the processed message data."
+                  }
+                ]
+              },
+              "addAttributes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AddAttributesActivity"
+                  },
+                  {
+                    "description": "Adds other attributes based on existing attributes in the message."
+                  }
+                ]
+              },
+              "removeAttributes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RemoveAttributesActivity"
+                  },
+                  {
+                    "description": "Removes attributes from a message."
+                  }
+                ]
+              },
+              "selectAttributes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SelectAttributesActivity"
+                  },
+                  {
+                    "description": "Used to create a new message using only the specified attributes from the original message. "
+                  }
+                ]
+              },
+              "filter": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/FilterActivity"
+                  },
+                  {
+                    "description": "Filters a message based on its attributes."
+                  }
+                ]
+              },
+              "math": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MathActivity"
+                  },
+                  {
+                    "description": "Computes an arithmetic expression using the message's attributes and adds it to the message."
+                  }
+                ]
+              },
+              "deviceRegistryEnrich": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeviceRegistryEnrichActivity"
+                  },
+                  {
+                    "description": "Adds data from the IoT device registry to your message."
+                  }
+                ]
+              },
+              "deviceShadowEnrich": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeviceShadowEnrichActivity"
+                  },
+                  {
+                    "description": "Adds information from the IoT Device Shadow service to a message."
+                  }
+                ]
+              }
+            }
+          },
+          "payloads": {
+            "description": "The sample message payloads on which the pipeline activity is run.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MessagePayload"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ChannelActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "channelName"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the channel activity."
+              }
+            ]
+          },
+          "channelName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ChannelName"
+              },
+              {
+                "description": "The name of the channel from which the messages are processed."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "The activity that determines the source of the messages to be processed."
+      },
+      "ActivityName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "ChannelName": {
+        "type": "string",
+        "pattern": "(^(?!_{2}))(^[a-zA-Z0-9_]+$)",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "LambdaActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "lambdaName",
+          "batchSize"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the lambda activity."
+              }
+            ]
+          },
+          "lambdaName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LambdaName"
+              },
+              {
+                "description": "The name of the Lambda function that is run on the message."
+              }
+            ]
+          },
+          "batchSize": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityBatchSize"
+              },
+              {
+                "description": "<p>The number of messages passed to the Lambda function for processing.</p> <p>The Lambda function must be able to process all of these messages within five minutes, which is the maximum timeout duration for Lambda functions.</p>"
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that runs a Lambda function to modify the message."
+      },
+      "LambdaName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "ActivityBatchSize": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "DatastoreActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "datastoreName"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the datastore activity."
+              }
+            ]
+          },
+          "datastoreName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DatastoreName"
+              },
+              {
+                "description": "The name of the data store where processed messages are stored."
+              }
+            ]
+          }
+        },
+        "description": "The datastore activity that specifies where to store the processed data."
+      },
+      "DatastoreName": {
+        "type": "string",
+        "pattern": "(^(?!_{2}))(^[a-zA-Z0-9_]+$)",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "AddAttributesActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attributes"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the addAttributes activity."
+              }
+            ]
+          },
+          "attributes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeNameMapping"
+              },
+              {
+                "description": "<p>A list of 1-50 <code>AttributeNameMapping</code> objects that map an existing attribute to a new attribute.</p> <note> <p>The existing attributes remain in the message, so if you want to remove the originals, use <code>RemoveAttributeActivity</code>.</p> </note>"
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that adds other attributes based on existing attributes in the message."
+      },
+      "AttributeNameMapping": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 50,
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeName"
+        }
+      },
+      "AttributeName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "RemoveAttributesActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attributes"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the <code>removeAttributes</code> activity."
+              }
+            ]
+          },
+          "attributes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeNames"
+              },
+              {
+                "description": "A list of 1-50 attributes to remove from the message."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that removes attributes from a message."
+      },
+      "AttributeNames": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeName"
+        },
+        "minItems": 1,
+        "maxItems": 50
+      },
+      "SelectAttributesActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attributes"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the <code>selectAttributes</code> activity."
+              }
+            ]
+          },
+          "attributes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeNames"
+              },
+              {
+                "description": "A list of the attributes to select from the message."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "Used to create a new message using only the specified attributes from the original message."
+      },
+      "FilterActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "filter"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the filter activity."
+              }
+            ]
+          },
+          "filter": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FilterExpression"
+              },
+              {
+                "description": "An expression that looks like a SQL WHERE clause that must return a Boolean value. Messages that satisfy the condition are passed to the next activity. "
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that filters a message based on its attributes."
+      },
+      "FilterExpression": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "MathActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attribute",
+          "math"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the math activity."
+              }
+            ]
+          },
+          "attribute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the attribute that contains the result of the math operation."
+              }
+            ]
+          },
+          "math": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MathExpression"
+              },
+              {
+                "description": "An expression that uses one or more existing attributes and must return an integer value."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that computes an arithmetic expression using the message's attributes."
+      },
+      "MathExpression": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "DeviceRegistryEnrichActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attribute",
+          "thingName",
+          "roleArn"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the <code>deviceRegistryEnrich</code> activity."
+              }
+            ]
+          },
+          "attribute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the attribute that is added to the message."
+              }
+            ]
+          },
+          "thingName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the IoT device whose registry information is added to the message."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that allows access to the device's registry information."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that adds data from the IoT device registry to your message."
+      },
+      "RoleArn": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "DeviceShadowEnrichActivity": {
+        "type": "object",
+        "required": [
+          "name",
+          "attribute",
+          "thingName",
+          "roleArn"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The name of the <code>deviceShadowEnrich</code> activity."
+              }
+            ]
+          },
+          "attribute": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the attribute that is added to the message."
+              }
+            ]
+          },
+          "thingName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AttributeName"
+              },
+              {
+                "description": "The name of the IoT device whose shadow information is added to the message."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The ARN of the role that allows access to the device's shadow."
+              }
+            ]
+          },
+          "next": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ActivityName"
+              },
+              {
+                "description": "The next activity in the pipeline."
+              }
+            ]
+          }
+        },
+        "description": "An activity that adds information from the IoT Device Shadow service to a message."
+      },
+      "MessagePayload": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://iotanalytics.us-east-1.amazonaws.com/pipelineactivities/run"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**payloads**",
+            "**logResult**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

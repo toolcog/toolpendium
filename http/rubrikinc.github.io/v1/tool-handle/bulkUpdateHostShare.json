@@ -1,0 +1,142 @@
+{
+  "name": "bulkUpdateHostShare",
+  "description": "Update the properties of the objects that represent the specified network share.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "items": {
+          "$ref": "#/$defs/HostShareUpdate"
+        },
+        "type": "array",
+        "description": "Properties to use for the update of network share objects."
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "HostShareUpdate": {
+        "properties": {
+          "shareId": {
+            "description": "ID of the network share.",
+            "type": "string"
+          },
+          "updateProperties": {
+            "$ref": "#/$defs/HostSharePatch"
+          }
+        },
+        "required": [
+          "shareId",
+          "updateProperties"
+        ],
+        "type": "object"
+      },
+      "HostSharePatch": {
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "exportPoint": {
+            "type": "string"
+          },
+          "hostShareParameters": {
+            "$ref": "#/$defs/HostShareParameters"
+          },
+          "password": {
+            "type": "string",
+            "x-secret": true
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "HostShareParameters": {
+        "properties": {
+          "isIsilonChangelistEnabled": {
+            "description": "Indicates if Changelist is enabled on Isilon NAS share. When this value is 'true', metadata fetches during backup operations use the Isilon Changelist feature. The Changelist feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+            "type": "boolean"
+          },
+          "isNetAppSnapDiffEnabled": {
+            "description": "Indicates if SnapDiff is enabled on NetApp NAS share. When this value is 'true', metadata fetches during backup operations use the NetApp SnapDiff feature. The SnapDiff feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+            "type": "boolean"
+          },
+          "isOnNetAppSnapMirrorDestVolume": {
+            "description": "Indicates whether the share is on a SnapMirror destination volume on a NetApp NAS share. When this value is 'true', fileset backup operations pick the latest Netapp snapshot on the volume, subject to the configured label matching. During share registration, Rubrik checks with NetApp NAS to find out whether the share is on SnapMirror destination and sets this parameter.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "/api/v1/host/share/bulk"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**domain**: The domain of the SMB share.",
+            "**exportPoint**: The NFS export point or SMB share name for the NAS share.",
+            "**hostId**: The host ID of the NAS Share host.",
+            [
+              "**hostShareParameters**",
+              {
+                "$ul": [
+                  "**isIsilonChangelistEnabled**: Indicates if Changelist is enabled on Isilon NAS share. When this value is 'true', metadata fetches during backup operations use the Isilon Changelist feature. The Changelist feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+                  "**isNetAppSnapDiffEnabled**: Indicates if SnapDiff is enabled on NetApp NAS share. When this value is 'true', metadata fetches during backup operations use the NetApp SnapDiff feature. The SnapDiff feature improves incremental backup performance by tracking the difference between two snapshots, reducing the metadata scanning time during a backup job.",
+                  "**isOnNetAppSnapMirrorDestVolume**: Indicates whether the share is on a SnapMirror destination volume on a NetApp NAS share. When this value is 'true', fileset backup operations pick the latest Netapp snapshot on the volume, subject to the configured label matching. During share registration, Rubrik checks with NetApp NAS to find out whether the share is on SnapMirror destination and sets this parameter."
+                ]
+              }
+            ],
+            "**hostname**: The hostname of the NAS host.",
+            "**id**: The unique ID of the NAS Share.",
+            "**primaryClusterId**: The ID of the primary Rubrik cluster.",
+            "**shareType**: The type of NAS share.",
+            "**status**: The status of connection between the Rubrik cluster and the NAS Share. Possible responses are Connected and Disconnected.",
+            "**username**: The username to access the NAS share.",
+            "**vendorType**: NAS Vendor Type."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

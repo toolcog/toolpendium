@@ -1,0 +1,160 @@
+{
+  "name": "POST_whitelabel-domains",
+  "description": "**This endpoint allows you to authenticate a domain.**\n\nIf you are authenticating a domain for a subuser, you have two options:\n1. Use the \"username\" parameter. This allows you to authenticate a domain on behalf of your subuser. This means the subuser is able to see and modify the authenticated domain.\n2. Use the Association workflow (see Associate Domain section). This allows you to authenticate a domain created by the parent to a subuser. This means the subuser will default to the assigned domain, but will not be able to see or modify that authenticated domain. However, if the subuser authenticates their own domain it will overwrite the assigned domain.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      },
+      "body": {
+        "example": {
+          "automatic_security": false,
+          "custom_spf": true,
+          "default": true,
+          "domain": "example.com",
+          "ips": [
+            "192.168.1.1",
+            "192.168.1.2"
+          ],
+          "subdomain": "news",
+          "username": "john@example.com"
+        },
+        "properties": {
+          "automatic_security": {
+            "description": "Whether to allow SendGrid to manage your SPF records, DKIM keys, and DKIM key rotation.",
+            "type": "boolean"
+          },
+          "custom_dkim_selector": {
+            "description": "Add a custom DKIM selector. Accepts three letters or numbers.",
+            "type": "string"
+          },
+          "custom_spf": {
+            "description": "Specify whether to use a custom SPF or allow SendGrid to manage your SPF. This option is only available to authenticated domains set up for manual security.",
+            "type": "boolean"
+          },
+          "default": {
+            "description": "Whether to use this authenticated domain as the fallback if no authenticated domains match the sender's domain.",
+            "type": "boolean"
+          },
+          "domain": {
+            "description": "Domain being authenticated.",
+            "type": "string"
+          },
+          "ips": {
+            "description": "The IP addresses that will be included in the custom SPF record for this authenticated domain.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "subdomain": {
+            "description": "The subdomain to use for this authenticated domain.",
+            "type": "string"
+          },
+          "username": {
+            "description": "The username associated with this domain.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/whitelabel/domains"
+    },
+    "headers": {
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Domain Authentication - Mandatory Subdomain"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**automatic_security**: Indicates if this authenticated domain uses automated security.",
+            "**custom_spf**: Indicates whether this authenticated domain uses custom SPF.",
+            "**default**: Indicates if this is the default authenticated domain.",
+            [
+              "**dns**: The DNS records used to authenticate the sending domain.",
+              {
+                "$ul": [
+                  [
+                    "**dkim1**: A DNS record.",
+                    {
+                      "$ul": [
+                        "**data**: The DNS record.",
+                        "**host**: The domain that this DNS record was created for.",
+                        "**type**: The type of DNS record.",
+                        "**valid**: Indicates if this is a valid DNS record."
+                      ]
+                    }
+                  ],
+                  [
+                    "**dkim2**: A DNS record.",
+                    {
+                      "$ul": [
+                        "**data**: The DNS record.",
+                        "**host**: The domain that this DNS record was created for.",
+                        "**type**: The type of DNS record.",
+                        "**valid**: Indicates if this is a valid DNS record."
+                      ]
+                    }
+                  ],
+                  [
+                    "**mail_cname**: The CNAME for your sending domain that points to sendgrid.net.",
+                    {
+                      "$ul": [
+                        "**data**: The CNAME record.",
+                        "**host**: The domain that this CNAME is created for.",
+                        "**type**: The type of DNS record.",
+                        "**valid**: Indicates if this is a valid CNAME."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**domain**: The domain to be authenticated.",
+            "**id**: The ID of the authenticated domain.",
+            "**ips**: The IPs to be included in the custom SPF record for this authenticated domain.",
+            "**legacy**: Indicates if this authenticated domain was created using the legacy whitelabel tool. If it is a legacy whitelabel, it will still function, but you'll need to create a new authenticated domain if you need to update it.",
+            "**subdomain**: The subdomain to use for this authenticated domain.",
+            "**user_id**: The ID of the user that this domain is associated with.",
+            "**username**: The username that this domain will be associated with.",
+            "**valid**: Indicates if this is a valid authenticated domain."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "name": "getReferences",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "agencyId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A szolgáltató ID-je."
+      },
+      "alertId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A zavar ID-je."
+      },
+      "routeId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A járat ID-ja."
+      },
+      "stopId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A megálló ID-ja."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/references{?agencyId,alertId,routeId,stopId,appVersion,version,includeReferences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+            [
+              "**entry**: A lekért adat.",
+              {
+                "$ul": [
+                  [
+                    "**errors**",
+                    {
+                      "$ul": [
+                        "**agencyIds**: A szolgáltató ID-k, amelyek feloldása sikertelen volt.",
+                        "**alertIds**: A zavar ID-k, amelyek feloldása sikertelen volt.",
+                        "**routeIds**: A járat ID-k, amelyek feloldása sikertelen volt.",
+                        "**stopIds**: A megálló ID-k, amelyek feloldása sikertelen volt."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+            "**references**: A válaszhoz tartozó referenciák."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

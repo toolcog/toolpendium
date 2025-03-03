@@ -1,0 +1,1107 @@
+{
+  "name": "post-updateAccountHolder",
+  "description": "Updates the `accountHolderDetails` and `processingTier` of an account holder, and adds bank accounts and shareholders.\n\nWhen updating `accountHolderDetails`, parameters that are not included in the request are left unchanged except for the following object:\n\n* `metadata`: Updating the metadata replaces the entire object. This means that to update an existing key-value pair, you must provide the changes, as well as other existing key-value pairs.\n\nWhen updating any field in the following objects, you must submit all the fields required for validation:\n\n * `address`\n\n* `fullPhoneNumber`\n\n* `bankAccountDetails.BankAccountDetail`\n\n* `businessDetails.shareholders.ShareholderContact`\n\n For example, to update the `address.postalCode`, you must also submit the `address.country`, `.city`, `.street`, `.postalCode`, and possibly `.stateOrProvince` so that the address can be validated.\n\nTo add a bank account or shareholder, provide the bank account or shareholder details without a `bankAccountUUID` or a `shareholderCode`.\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/UpdateAccountHolderRequest"
+      }
+    },
+    "$defs": {
+      "UpdateAccountHolderRequest": {
+        "properties": {
+          "accountHolderCode": {
+            "description": "The code of the Account Holder to be updated.",
+            "type": "string"
+          },
+          "accountHolderDetails": {
+            "$ref": "#/$defs/AccountHolderDetails"
+          },
+          "description": {
+            "description": "A description of the account holder, maximum 256 characters. You can use alphanumeric characters (A-Z, a-z, 0-9), white spaces, and underscores `_`.",
+            "type": "string",
+            "x-addedInVersion": "4"
+          },
+          "primaryCurrency": {
+            "deprecated": true,
+            "description": "The primary three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes), to which the account holder should be updated.",
+            "type": "string",
+            "x-addedInVersion": "4"
+          },
+          "processingTier": {
+            "description": "The processing tier to which the Account Holder should be updated.\n>The processing tier can not be lowered through this request.\n\n>Required if accountHolderDetails are not provided.",
+            "format": "int32",
+            "type": "integer",
+            "x-addedInVersion": "3"
+          }
+        },
+        "required": [
+          "accountHolderCode"
+        ],
+        "type": "object"
+      },
+      "AccountHolderDetails": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/ViasAddress"
+          },
+          "bankAccountDetails": {
+            "description": "Array of bank accounts associated with the account holder. For details about the required `bankAccountDetail` fields, see [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information).",
+            "items": {
+              "$ref": "#/$defs/BankAccountDetailWrapper"
+            },
+            "type": "array"
+          },
+          "businessDetails": {
+            "$ref": "#/$defs/BusinessDetails"
+          },
+          "email": {
+            "description": "The email address of the account holder.",
+            "type": "string"
+          },
+          "fullPhoneNumber": {
+            "description": "The phone number of the account holder provided as a single string. It will be handled as a landline phone.\n**Examples:** \"0031 6 11 22 33 44\", \"+316/1122-3344\", \"(0031) 611223344\"",
+            "type": "string"
+          },
+          "individualDetails": {
+            "$ref": "#/$defs/IndividualDetails"
+          },
+          "lastReviewDate": {
+            "description": "Date when you last reviewed the account holder's information, in ISO-8601 YYYY-MM-DD format. For example, **2020-01-31**.",
+            "type": "string"
+          },
+          "merchantCategoryCode": {
+            "description": "The Merchant Category Code of the account holder.\n> If not specified in the request, this will be derived from the platform account (which is configured by Adyen).",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A set of key and value pairs for general use by the account holder or merchant.\nThe keys do not have specific names and may be used for storing miscellaneous data as desired.\n> The values being stored have a maximum length of eighty (80) characters and will be truncated if necessary.\n> Note that during an update of metadata, the omission of existing key-value pairs will result in the deletion of those key-value pairs.",
+            "type": "object"
+          },
+          "principalBusinessAddress": {
+            "$ref": "#/$defs/ViasAddress"
+          },
+          "webAddress": {
+            "description": "The URL of the website of the account holder.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "address"
+        ],
+        "type": "object"
+      },
+      "ViasAddress": {
+        "properties": {
+          "city": {
+            "description": "The name of the city. Required if the `houseNumberOrName`, `street`, `postalCode`, or `stateOrProvince` are provided.",
+            "type": "string"
+          },
+          "country": {
+            "description": "The two-character country code of the address in ISO-3166-1 alpha-2 format. For example, **NL**.",
+            "type": "string"
+          },
+          "houseNumberOrName": {
+            "description": "The number or name of the house.",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The postal code. Required if the `houseNumberOrName`, `street`, `city`, or `stateOrProvince` are provided.\n\nMaximum length:\n\n* 5 digits for addresses in the US.\n\n* 10 characters for all other countries.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The abbreviation of the state or province. Required if the `houseNumberOrName`, `street`, `city`, or `postalCode` are provided. \n\nMaximum length:\n\n* 2 characters for addresses in the US or Canada.\n\n* 3 characters for all other countries.\n",
+            "type": "string"
+          },
+          "street": {
+            "description": "The name of the street. Required if the `houseNumberOrName`, `city`, `postalCode`, or `stateOrProvince` are provided.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "type": "object"
+      },
+      "BankAccountDetailWrapper": {
+        "properties": {
+          "BankAccountDetail": {
+            "$ref": "#/$defs/BankAccountDetail"
+          }
+        }
+      },
+      "BankAccountDetail": {
+        "properties": {
+          "accountNumber": {
+            "description": "The bank account number (without separators).\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "accountType": {
+            "description": "The type of bank account.\nOnly applicable to bank accounts held in the USA.\nThe permitted values are: `checking`, `savings`.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "bankAccountName": {
+            "description": "The name of the bank account.",
+            "type": "string"
+          },
+          "bankAccountUUID": {
+            "description": "The unique identifier (UUID) of the Bank Account.\n>If, during an account holder create or update request, this field is left blank (but other fields provided), a new Bank Account will be created with a procedurally-generated UUID.\n\n>If, during an account holder create request, a UUID is provided, the creation of the Bank Account will fail while the creation of the account holder will continue.\n\n>If, during an account holder update request, a UUID that is not correlated with an existing Bank Account is provided, the update of the account holder will fail.\n\n>If, during an account holder update request, a UUID that is correlated with an existing Bank Account is provided, the existing Bank Account will be updated.\n",
+            "type": "string"
+          },
+          "bankBicSwift": {
+            "description": "The bank identifier code.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "bankCity": {
+            "description": "The city in which the bank branch is located.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "bankCode": {
+            "description": "The bank code of the banking institution with which the bank account is registered.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "bankName": {
+            "description": "The name of the banking institution with which the bank account is held.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "branchCode": {
+            "description": "The branch code of the branch under which the bank account is registered. The value to be specified in this parameter depends on the country of the bank account:\n* United States - Routing number\n* United Kingdom - Sort code\n* Germany - Bankleitzahl\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "checkCode": {
+            "description": "The check code of the bank account.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "countryCode": {
+            "description": "The two-letter country code in which the bank account is registered.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "currencyCode": {
+            "description": "The currency in which the bank account deals.\n>The permitted currency codes are defined in ISO-4217 (e.g. 'EUR').\n",
+            "type": "string"
+          },
+          "iban": {
+            "description": "The international bank account number.\n>The IBAN standard is defined in ISO-13616.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerCity": {
+            "description": "The city of residence of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerCountryCode": {
+            "description": "The country code of the country of residence of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerDateOfBirth": {
+            "deprecated": true,
+            "description": "The date of birth of the bank account owner.\nThe date should be in ISO-8601 format yyyy-mm-dd (e.g. 2000-01-31).",
+            "type": "string"
+          },
+          "ownerHouseNumberOrName": {
+            "description": "The house name or number of the residence of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerName": {
+            "description": "The name of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerNationality": {
+            "description": "The country code of the country of nationality of the bank account owner.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerPostalCode": {
+            "description": "The postal code of the residence of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerState": {
+            "description": "The state of residence of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "ownerStreet": {
+            "description": "The street name of the residence of the bank account owner.\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "primaryAccount": {
+            "description": "If set to true, the bank account is a primary account.",
+            "type": "boolean"
+          },
+          "taxId": {
+            "description": "The tax ID number.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          },
+          "urlForVerification": {
+            "description": "The URL to be used for bank account verification.\nThis may be generated on bank account creation.\n\n>Refer to [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information) for details on field requirements.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BusinessDetails": {
+        "properties": {
+          "doingBusinessAs": {
+            "description": "The registered name of the company (if it differs from the legal name of the company).",
+            "type": "string"
+          },
+          "legalBusinessName": {
+            "description": "The legal name of the company.",
+            "type": "string"
+          },
+          "listedUltimateParentCompany": {
+            "description": "Information about the parent public company. Required if the account holder is 100% owned by a publicly listed company.",
+            "items": {
+              "$ref": "#/$defs/UltimateParentCompanyWrapper"
+            },
+            "type": "array"
+          },
+          "registrationNumber": {
+            "description": "The registration number of the company.",
+            "type": "string",
+            "x-addedInVersion": "4"
+          },
+          "shareholders": {
+            "description": "Array containing information about individuals associated with the account holder either through ownership or control. For details about how you can identify them, refer to [our verification guide](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process#identify-ubos).",
+            "items": {
+              "$ref": "#/$defs/ShareholderContactWrapper"
+            },
+            "type": "array"
+          },
+          "signatories": {
+            "description": "Signatories associated with the company.\nEach array entry should represent one signatory.",
+            "items": {
+              "$ref": "#/$defs/SignatoryContactWrapper"
+            },
+            "type": "array"
+          },
+          "taxId": {
+            "description": "The tax ID of the company.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UltimateParentCompanyWrapper": {
+        "properties": {
+          "UltimateParentCompany": {
+            "$ref": "#/$defs/UltimateParentCompany"
+          }
+        }
+      },
+      "UltimateParentCompany": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/ViasAddress"
+          },
+          "businessDetails": {
+            "$ref": "#/$defs/UltimateParentCompanyBusinessDetails"
+          },
+          "ultimateParentCompanyCode": {
+            "description": "Adyen-generated unique alphanumeric identifier (UUID) for the entry, returned in the response when you create an ultimate parent company. Required when updating an existing entry in an `/updateAccountHolder` request.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UltimateParentCompanyBusinessDetails": {
+        "properties": {
+          "legalBusinessName": {
+            "description": "The legal name of the company.",
+            "type": "string"
+          },
+          "registrationNumber": {
+            "description": "The registration number of the company.",
+            "type": "string"
+          },
+          "stockExchange": {
+            "description": "Market Identifier Code (MIC).",
+            "type": "string"
+          },
+          "stockNumber": {
+            "description": "International Securities Identification Number (ISIN).",
+            "type": "string"
+          },
+          "stockTicker": {
+            "description": "Stock Ticker symbol.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ShareholderContactWrapper": {
+        "properties": {
+          "ShareholderContact": {
+            "$ref": "#/$defs/ShareholderContact"
+          }
+        }
+      },
+      "ShareholderContact": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/ViasAddress"
+          },
+          "email": {
+            "description": "The e-mail address of the person.",
+            "type": "string"
+          },
+          "fullPhoneNumber": {
+            "description": "The phone number of the person provided as a single string.  It will be handled as a landline phone.\nExamples: \"0031 6 11 22 33 44\", \"+316/1122-3344\", \"(0031) 611223344\"",
+            "type": "string"
+          },
+          "jobTitle": {
+            "description": "Job title of the person. Required when the `shareholderType` is **Controller**.\n\nExample values: **Chief Executive Officer**, **Chief Financial Officer**, **Chief Operating Officer**, **President**, **Vice President**, **Executive President**, **Managing Member**, **Partner**, **Treasurer**, **Director**, or **Other**.",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/$defs/ViasName"
+          },
+          "personalData": {
+            "$ref": "#/$defs/ViasPersonalData"
+          },
+          "phoneNumber": {
+            "$ref": "#/$defs/ViasPhoneNumber"
+          },
+          "shareholderCode": {
+            "description": "The unique identifier (UUID) of the shareholder entry.\n>**If, during an Account Holder create or update request, this field is left blank (but other fields provided), a new Shareholder will be created with a procedurally-generated UUID.**\n\n>**If, during an Account Holder create request, a UUID is provided, the creation of Account Holder will fail with a validation Error..**\n\n>**If, during an Account Holder update request, a UUID that is not correlated with an existing Shareholder is provided, the update of the Shareholder will fail.**\n\n>**If, during an Account Holder update request, a UUID that is correlated with an existing Shareholder is provided, the existing Shareholder will be updated.**\n",
+            "type": "string"
+          },
+          "shareholderType": {
+            "description": "Specifies how the person is associated with the account holder. \n\nPossible values: \n\n* **Owner**: Individuals who directly or indirectly own 25% or more of a company.\n\n* **Controller**: Individuals who are members of senior management staff responsible for managing a company or organization.",
+            "enum": [
+              "Controller",
+              "Owner",
+              "Signatory"
+            ],
+            "type": "string"
+          },
+          "webAddress": {
+            "description": "The URL of the person's website.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ViasName": {
+        "properties": {
+          "firstName": {
+            "description": "The first name.",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "gender": {
+            "description": "The gender.\n>The following values are permitted: `MALE`, `FEMALE`, `UNKNOWN`.",
+            "enum": [
+              "MALE",
+              "FEMALE",
+              "UNKNOWN"
+            ],
+            "maxLength": 1,
+            "type": "string"
+          },
+          "infix": {
+            "description": "The name's infix, if applicable.\n>A maximum length of twenty (20) characters is imposed.",
+            "maxLength": 20,
+            "type": "string"
+          },
+          "lastName": {
+            "description": "The last name.",
+            "maxLength": 80,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ViasPersonalData": {
+        "properties": {
+          "dateOfBirth": {
+            "description": "The person's date of birth, in ISO-8601 YYYY-MM-DD format. For example, **2000-01-31**.",
+            "type": "string"
+          },
+          "documentData": {
+            "description": "Array that contains information about the person's identification document. You can submit only one entry per document type.",
+            "items": {
+              "$ref": "#/$defs/PersonalDocumentDataWrapper"
+            },
+            "type": "array",
+            "x-addedInVersion": "3"
+          },
+          "idNumber": {
+            "deprecated": true,
+            "description": "An ID number of the person.",
+            "type": "string",
+            "x-deprecatedInVersion": "3",
+            "x-deprecatedMessage": "Use `individualDetails.personalData.documentData.number` instead."
+          },
+          "nationality": {
+            "description": "The nationality of the person represented by a two-character country code,  in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format. For example, **NL**.\n",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PersonalDocumentDataWrapper": {
+        "properties": {
+          "PersonalDocumentData": {
+            "$ref": "#/$defs/PersonalDocumentData"
+          }
+        }
+      },
+      "PersonalDocumentData": {
+        "properties": {
+          "expirationDate": {
+            "description": "The expiry date of the document, \n in ISO-8601 YYYY-MM-DD format. For example, **2000-01-31**.",
+            "type": "string"
+          },
+          "issuerCountry": {
+            "description": "The country where the document was issued, in the two-character \n[ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format. For example, **NL**.",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "issuerState": {
+            "description": "The state where the document was issued (if applicable).",
+            "type": "string"
+          },
+          "number": {
+            "description": "The number in the document.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of the document. Possible values: **ID**, **DRIVINGLICENSE**, **PASSPORT**, **SOCIALSECURITY**, **VISA**.\n\nTo delete an existing entry for a document `type`, send only the `type` field in your request. ",
+            "enum": [
+              "DRIVINGLICENSE",
+              "ID",
+              "PASSPORT",
+              "SOCIALSECURITY",
+              "VISA"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "ViasPhoneNumber": {
+        "properties": {
+          "phoneCountryCode": {
+            "description": "The two-character country code of the phone number.\n>The permitted country codes are defined in ISO-3166-1 alpha-2 (e.g. 'NL').",
+            "type": "string"
+          },
+          "phoneNumber": {
+            "description": "The phone number.\n>The inclusion of the phone number country code is not necessary.",
+            "type": "string"
+          },
+          "phoneType": {
+            "description": "The type of the phone number.\n>The following values are permitted: `Landline`, `Mobile`, `SIP`, `Fax`.",
+            "enum": [
+              "Fax",
+              "Landline",
+              "Mobile",
+              "SIP"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SignatoryContactWrapper": {
+        "properties": {
+          "SignatoryContact": {
+            "$ref": "#/$defs/SignatoryContact"
+          }
+        }
+      },
+      "SignatoryContact": {
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/ViasAddress"
+          },
+          "email": {
+            "description": "The e-mail address of the person.",
+            "type": "string"
+          },
+          "fullPhoneNumber": {
+            "description": "The phone number of the person provided as a single string.  It will be handled as a landline phone.\nExamples: \"0031 6 11 22 33 44\", \"+316/1122-3344\", \"(0031) 611223344\"",
+            "type": "string"
+          },
+          "jobTitle": {
+            "description": "Job title of the signatory.\n\nExample values: **Chief Executive Officer**, **Chief Financial Officer**, **Chief Operating Officer**, **President**, **Vice President**, **Executive President**, **Managing Member**, **Partner**, **Treasurer**, **Director**, or **Other**.",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/$defs/ViasName"
+          },
+          "personalData": {
+            "$ref": "#/$defs/ViasPersonalData"
+          },
+          "phoneNumber": {
+            "$ref": "#/$defs/ViasPhoneNumber"
+          },
+          "signatoryCode": {
+            "description": "The unique identifier (UUID) of the signatory.\n>**If, during an Account Holder create or update request, this field is left blank (but other fields provided), a new Signatory will be created with a procedurally-generated UUID.**\n\n>**If, during an Account Holder create request, a UUID is provided, the creation of the Signatory will fail while the creation of the Account Holder will continue.**\n\n>**If, during an Account Holder update request, a UUID that is not correlated with an existing Signatory is provided, the update of the Signatory will fail.**\n\n>**If, during an Account Holder update request, a UUID that is correlated with an existing Signatory is provided, the existing Signatory will be updated.**\n",
+            "type": "string"
+          },
+          "signatoryReference": {
+            "description": "Your reference for the signatory.",
+            "type": "string"
+          },
+          "webAddress": {
+            "description": "The URL of the person's website.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IndividualDetails": {
+        "properties": {
+          "name": {
+            "$ref": "#/$defs/ViasName"
+          },
+          "personalData": {
+            "$ref": "#/$defs/ViasPersonalData"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://cal-test.adyen.com/cal/services/Account/v4/updateAccountHolder"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountHolderCode**: The code of the account holder.",
+            [
+              "**accountHolderDetails**",
+              {
+                "$ul": [
+                  [
+                    "**address**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if the `houseNumberOrName`, `street`, `postalCode`, or `stateOrProvince` are provided.",
+                        "**country**: The two-character country code of the address in ISO-3166-1 alpha-2 format. For example, **NL**.",
+                        "**houseNumberOrName**: The number or name of the house.",
+                        "**postalCode**: The postal code. Required if the `houseNumberOrName`, `street`, `city`, or `stateOrProvince` are provided.",
+                        "**stateOrProvince**: The abbreviation of the state or province. Required if the `houseNumberOrName`, `street`, `city`, or `postalCode` are provided. ",
+                        "**street**: The name of the street. Required if the `houseNumberOrName`, `city`, `postalCode`, or `stateOrProvince` are provided."
+                      ]
+                    }
+                  ],
+                  "**bankAccountDetails**: Array of bank accounts associated with the account holder. For details about the required `bankAccountDetail` fields, see [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information).",
+                  [
+                    "**businessDetails**",
+                    {
+                      "$ul": [
+                        "**doingBusinessAs**: The registered name of the company (if it differs from the legal name of the company).",
+                        "**legalBusinessName**: The legal name of the company.",
+                        "**listedUltimateParentCompany**: Information about the parent public company. Required if the account holder is 100% owned by a publicly listed company.",
+                        "**registrationNumber**: The registration number of the company.",
+                        "**shareholders**: Array containing information about individuals associated with the account holder either through ownership or control. For details about how you can identify them, refer to [our verification guide](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process#identify-ubos).",
+                        "**signatories**: Signatories associated with the company.",
+                        "**taxId**: The tax ID of the company."
+                      ]
+                    }
+                  ],
+                  "**email**: The email address of the account holder.",
+                  "**fullPhoneNumber**: The phone number of the account holder provided as a single string. It will be handled as a landline phone.",
+                  [
+                    "**individualDetails**",
+                    {
+                      "$ul": [
+                        [
+                          "**name**",
+                          {
+                            "$ul": [
+                              "**firstName**: The first name.",
+                              "**gender**: The gender.",
+                              "**infix**: The name's infix, if applicable.",
+                              "**lastName**: The last name."
+                            ]
+                          }
+                        ],
+                        [
+                          "**personalData**",
+                          {
+                            "$ul": [
+                              "**dateOfBirth**: The person's date of birth, in ISO-8601 YYYY-MM-DD format. For example, **2000-01-31**.",
+                              "**documentData**: Array that contains information about the person's identification document. You can submit only one entry per document type.",
+                              "**idNumber**: An ID number of the person.",
+                              "**nationality**: The nationality of the person represented by a two-character country code,  in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format. For example, **NL**."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**lastReviewDate**: Date when you last reviewed the account holder's information, in ISO-8601 YYYY-MM-DD format. For example, **2020-01-31**.",
+                  "**merchantCategoryCode**: The Merchant Category Code of the account holder.",
+                  "**metadata**: A set of key and value pairs for general use by the account holder or merchant.",
+                  [
+                    "**principalBusinessAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if the `houseNumberOrName`, `street`, `postalCode`, or `stateOrProvince` are provided.",
+                        "**country**: The two-character country code of the address in ISO-3166-1 alpha-2 format. For example, **NL**.",
+                        "**houseNumberOrName**: The number or name of the house.",
+                        "**postalCode**: The postal code. Required if the `houseNumberOrName`, `street`, `city`, or `stateOrProvince` are provided.",
+                        "**stateOrProvince**: The abbreviation of the state or province. Required if the `houseNumberOrName`, `street`, `city`, or `postalCode` are provided. ",
+                        "**street**: The name of the street. Required if the `houseNumberOrName`, `city`, `postalCode`, or `stateOrProvince` are provided."
+                      ]
+                    }
+                  ],
+                  "**webAddress**: The URL of the website of the account holder."
+                ]
+              }
+            ],
+            [
+              "**accountHolderStatus**",
+              {
+                "$ul": [
+                  "**events**: A list of events scheduled for the account holder.",
+                  [
+                    "**payoutState**",
+                    {
+                      "$ul": [
+                        "**allowPayout**: Indicates whether payouts are allowed. This field is the overarching payout status, and is the aggregate of multiple conditions (e.g., KYC status, disabled flag, etc). If this field is false, no payouts will be permitted for any of the account holder's accounts. If this field is true, payouts will be permitted for any of the account holder's accounts.",
+                        "**disableReason**: The reason why payouts (to all of the account holder's accounts) have been disabled (by the platform). If the `disabled` field is true, this field can be used to explain why.",
+                        "**disabled**: Indicates whether payouts have been disabled (by the platform) for all of the account holder's accounts. A platform may enable and disable this field at their discretion. If this field is true, `allowPayout` will be false and no payouts will be permitted for any of the account holder's accounts. If this field is false, `allowPayout` may or may not be enabled, depending on other factors.",
+                        [
+                          "**payoutLimit**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        "**tierNumber**: The payout tier that the account holder occupies."
+                      ]
+                    }
+                  ],
+                  [
+                    "**processingState**",
+                    {
+                      "$ul": [
+                        "**disableReason**: The reason why processing has been disabled.",
+                        "**disabled**: Indicates whether the processing of payments is allowed.",
+                        [
+                          "**processedFrom**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        [
+                          "**processedTo**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        "**tierNumber**: The processing tier that the account holder occupies."
+                      ]
+                    }
+                  ],
+                  "**status**: The status of the account holder.",
+                  "**statusReason**: The reason why the status was assigned to the account holder."
+                ]
+              }
+            ],
+            "**description**: The description of the account holder.",
+            "**invalidFields**: in case the account holder has not been updated, contains account holder fields, that did not pass the validation.",
+            "**legalEntity**: The legal entity of the account holder.",
+            "**pspReference**: The reference of a request. Can be used to uniquely identify the request.",
+            "**resultCode**: The result code.",
+            "**submittedAsync**: Indicates whether the request is processed asynchronously. Depending on the request's platform settings, the following scenarios may be applied:",
+            "**updatedFields**: A list of the fields updated through the request.",
+            [
+              "**verification**",
+              {
+                "$ul": [
+                  [
+                    "**accountHolder**",
+                    {
+                      "$ul": [
+                        "**checks**: A list of the checks and their statuses."
+                      ]
+                    }
+                  ],
+                  "**bankAccounts**: The results of the checks on the bank accounts.",
+                  "**shareholders**: The results of the checks on the shareholders.",
+                  "**signatories**: The results of the checks on the signatories."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountHolderCode**: The code of the account holder.",
+            [
+              "**accountHolderDetails**",
+              {
+                "$ul": [
+                  [
+                    "**address**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if the `houseNumberOrName`, `street`, `postalCode`, or `stateOrProvince` are provided.",
+                        "**country**: The two-character country code of the address in ISO-3166-1 alpha-2 format. For example, **NL**.",
+                        "**houseNumberOrName**: The number or name of the house.",
+                        "**postalCode**: The postal code. Required if the `houseNumberOrName`, `street`, `city`, or `stateOrProvince` are provided.",
+                        "**stateOrProvince**: The abbreviation of the state or province. Required if the `houseNumberOrName`, `street`, `city`, or `postalCode` are provided. ",
+                        "**street**: The name of the street. Required if the `houseNumberOrName`, `city`, `postalCode`, or `stateOrProvince` are provided."
+                      ]
+                    }
+                  ],
+                  "**bankAccountDetails**: Array of bank accounts associated with the account holder. For details about the required `bankAccountDetail` fields, see [Required information](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process/required-information).",
+                  [
+                    "**businessDetails**",
+                    {
+                      "$ul": [
+                        "**doingBusinessAs**: The registered name of the company (if it differs from the legal name of the company).",
+                        "**legalBusinessName**: The legal name of the company.",
+                        "**listedUltimateParentCompany**: Information about the parent public company. Required if the account holder is 100% owned by a publicly listed company.",
+                        "**registrationNumber**: The registration number of the company.",
+                        "**shareholders**: Array containing information about individuals associated with the account holder either through ownership or control. For details about how you can identify them, refer to [our verification guide](https://docs.adyen.com/marketplaces-and-platforms/classic/verification-process#identify-ubos).",
+                        "**signatories**: Signatories associated with the company.",
+                        "**taxId**: The tax ID of the company."
+                      ]
+                    }
+                  ],
+                  "**email**: The email address of the account holder.",
+                  "**fullPhoneNumber**: The phone number of the account holder provided as a single string. It will be handled as a landline phone.",
+                  [
+                    "**individualDetails**",
+                    {
+                      "$ul": [
+                        [
+                          "**name**",
+                          {
+                            "$ul": [
+                              "**firstName**: The first name.",
+                              "**gender**: The gender.",
+                              "**infix**: The name's infix, if applicable.",
+                              "**lastName**: The last name."
+                            ]
+                          }
+                        ],
+                        [
+                          "**personalData**",
+                          {
+                            "$ul": [
+                              "**dateOfBirth**: The person's date of birth, in ISO-8601 YYYY-MM-DD format. For example, **2000-01-31**.",
+                              "**documentData**: Array that contains information about the person's identification document. You can submit only one entry per document type.",
+                              "**idNumber**: An ID number of the person.",
+                              "**nationality**: The nationality of the person represented by a two-character country code,  in [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format. For example, **NL**."
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ],
+                  "**lastReviewDate**: Date when you last reviewed the account holder's information, in ISO-8601 YYYY-MM-DD format. For example, **2020-01-31**.",
+                  "**merchantCategoryCode**: The Merchant Category Code of the account holder.",
+                  "**metadata**: A set of key and value pairs for general use by the account holder or merchant.",
+                  [
+                    "**principalBusinessAddress**",
+                    {
+                      "$ul": [
+                        "**city**: The name of the city. Required if the `houseNumberOrName`, `street`, `postalCode`, or `stateOrProvince` are provided.",
+                        "**country**: The two-character country code of the address in ISO-3166-1 alpha-2 format. For example, **NL**.",
+                        "**houseNumberOrName**: The number or name of the house.",
+                        "**postalCode**: The postal code. Required if the `houseNumberOrName`, `street`, `city`, or `stateOrProvince` are provided.",
+                        "**stateOrProvince**: The abbreviation of the state or province. Required if the `houseNumberOrName`, `street`, `city`, or `postalCode` are provided. ",
+                        "**street**: The name of the street. Required if the `houseNumberOrName`, `city`, `postalCode`, or `stateOrProvince` are provided."
+                      ]
+                    }
+                  ],
+                  "**webAddress**: The URL of the website of the account holder."
+                ]
+              }
+            ],
+            [
+              "**accountHolderStatus**",
+              {
+                "$ul": [
+                  "**events**: A list of events scheduled for the account holder.",
+                  [
+                    "**payoutState**",
+                    {
+                      "$ul": [
+                        "**allowPayout**: Indicates whether payouts are allowed. This field is the overarching payout status, and is the aggregate of multiple conditions (e.g., KYC status, disabled flag, etc). If this field is false, no payouts will be permitted for any of the account holder's accounts. If this field is true, payouts will be permitted for any of the account holder's accounts.",
+                        "**disableReason**: The reason why payouts (to all of the account holder's accounts) have been disabled (by the platform). If the `disabled` field is true, this field can be used to explain why.",
+                        "**disabled**: Indicates whether payouts have been disabled (by the platform) for all of the account holder's accounts. A platform may enable and disable this field at their discretion. If this field is true, `allowPayout` will be false and no payouts will be permitted for any of the account holder's accounts. If this field is false, `allowPayout` may or may not be enabled, depending on other factors.",
+                        [
+                          "**payoutLimit**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        "**tierNumber**: The payout tier that the account holder occupies."
+                      ]
+                    }
+                  ],
+                  [
+                    "**processingState**",
+                    {
+                      "$ul": [
+                        "**disableReason**: The reason why processing has been disabled.",
+                        "**disabled**: Indicates whether the processing of payments is allowed.",
+                        [
+                          "**processedFrom**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        [
+                          "**processedTo**",
+                          {
+                            "$ul": [
+                              "**currency**: The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+                              "**value**: The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes)."
+                            ]
+                          }
+                        ],
+                        "**tierNumber**: The processing tier that the account holder occupies."
+                      ]
+                    }
+                  ],
+                  "**status**: The status of the account holder.",
+                  "**statusReason**: The reason why the status was assigned to the account holder."
+                ]
+              }
+            ],
+            "**description**: The description of the account holder.",
+            "**invalidFields**: in case the account holder has not been updated, contains account holder fields, that did not pass the validation.",
+            "**legalEntity**: The legal entity of the account holder.",
+            "**pspReference**: The reference of a request. Can be used to uniquely identify the request.",
+            "**resultCode**: The result code.",
+            "**submittedAsync**: Indicates whether the request is processed asynchronously. Depending on the request's platform settings, the following scenarios may be applied:",
+            "**updatedFields**: A list of the fields updated through the request.",
+            [
+              "**verification**",
+              {
+                "$ul": [
+                  [
+                    "**accountHolder**",
+                    {
+                      "$ul": [
+                        "**checks**: A list of the checks and their statuses."
+                      ]
+                    }
+                  ],
+                  "**bankAccounts**: The results of the checks on the bank accounts.",
+                  "**shareholders**: The results of the checks on the shareholders.",
+                  "**signatories**: The results of the checks on the signatories."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The error code mapped to the error message.",
+            "**errorType**: The category of the error.",
+            "**message**: A short explanation of the issue.",
+            "**pspReference**: The PSP reference of the payment.",
+            "**status**: The HTTP response status."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

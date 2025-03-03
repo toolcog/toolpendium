@@ -1,0 +1,906 @@
+{
+  "name": "PostQuery",
+  "description": "Query InfluxDB",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "Zap-Trace-Span": {
+        "type": "string",
+        "description": "OpenTracing span context"
+      },
+      "Accept-Encoding": {
+        "default": "identity",
+        "description": "The Accept-Encoding request HTTP header advertises which content encoding, usually a compression algorithm, the client is able to understand.",
+        "enum": [
+          "gzip",
+          "identity"
+        ],
+        "type": "string"
+      },
+      "Content-Type": {
+        "enum": [
+          "application/json",
+          "application/vnd.flux"
+        ],
+        "type": "string"
+      },
+      "org": {
+        "type": "string",
+        "description": "Specifies the name of the organization executing the query. Takes either the ID or Name interchangeably. If both `orgID` and `org` are specified, `org` takes precedence."
+      },
+      "orgID": {
+        "type": "string",
+        "description": "Specifies the ID of the organization executing the query. If both `orgID` and `org` are specified, `org` takes precedence."
+      },
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Query"
+          },
+          {
+            "$ref": "#/$defs/InfluxQLQuery"
+          }
+        ],
+        "description": "Flux query or specification to execute"
+      }
+    },
+    "$defs": {
+      "Query": {
+        "description": "Query influx using the Flux language",
+        "properties": {
+          "dialect": {
+            "$ref": "#/$defs/Dialect"
+          },
+          "extern": {
+            "$ref": "#/$defs/File"
+          },
+          "now": {
+            "description": "Specifies the time that should be reported as \"now\" in the query. Default is the server's now time.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Enumeration of key/value pairs that respresent parameters to be injected into query (can only specify either this field or extern and not both)\n",
+            "type": "object"
+          },
+          "query": {
+            "description": "Query script to execute.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of query. Must be \"flux\".",
+            "enum": [
+              "flux"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "Dialect": {
+        "description": "Dialect are options to change the default CSV output format; https://www.w3.org/TR/2015/REC-tabular-metadata-20151217/#dialect-descriptions",
+        "properties": {
+          "annotations": {
+            "description": "https://www.w3.org/TR/2015/REC-tabular-data-model-20151217/#columns",
+            "items": {
+              "enum": [
+                "group",
+                "datatype",
+                "default"
+              ],
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "commentPrefix": {
+            "default": "#",
+            "description": "Character prefixed to comment strings",
+            "maxLength": 1,
+            "minLength": 0,
+            "type": "string"
+          },
+          "dateTimeFormat": {
+            "default": "RFC3339",
+            "description": "Format of timestamps",
+            "enum": [
+              "RFC3339",
+              "RFC3339Nano"
+            ],
+            "type": "string"
+          },
+          "delimiter": {
+            "default": ",",
+            "description": "Separator between cells; the default is ,",
+            "maxLength": 1,
+            "minLength": 1,
+            "type": "string"
+          },
+          "header": {
+            "default": true,
+            "description": "If true, the results will contain a header row",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "File": {
+        "description": "Represents a source from a single file",
+        "properties": {
+          "body": {
+            "description": "List of Flux statements",
+            "items": {
+              "$ref": "#/$defs/Statement"
+            },
+            "type": "array"
+          },
+          "imports": {
+            "description": "A list of package imports",
+            "items": {
+              "$ref": "#/$defs/ImportDeclaration"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "The name of the file.",
+            "type": "string"
+          },
+          "package": {
+            "$ref": "#/$defs/PackageClause"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "Statement": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/BadStatement"
+          },
+          {
+            "$ref": "#/$defs/VariableAssignment"
+          },
+          {
+            "$ref": "#/$defs/MemberAssignment"
+          },
+          {
+            "$ref": "#/$defs/ExpressionStatement"
+          },
+          {
+            "$ref": "#/$defs/ReturnStatement"
+          },
+          {
+            "$ref": "#/$defs/OptionStatement"
+          },
+          {
+            "$ref": "#/$defs/BuiltinStatement"
+          },
+          {
+            "$ref": "#/$defs/TestStatement"
+          }
+        ]
+      },
+      "BadStatement": {
+        "description": "A placeholder for statements for which no correct statement nodes can be created",
+        "properties": {
+          "text": {
+            "description": "Raw source text",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "NodeType": {
+        "description": "Type of AST node",
+        "type": "string"
+      },
+      "VariableAssignment": {
+        "description": "Represents the declaration of a variable",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "init": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "Identifier": {
+        "description": "A valid Flux identifier",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "Expression": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ArrayExpression"
+          },
+          {
+            "$ref": "#/$defs/DictExpression"
+          },
+          {
+            "$ref": "#/$defs/FunctionExpression"
+          },
+          {
+            "$ref": "#/$defs/BinaryExpression"
+          },
+          {
+            "$ref": "#/$defs/CallExpression"
+          },
+          {
+            "$ref": "#/$defs/ConditionalExpression"
+          },
+          {
+            "$ref": "#/$defs/LogicalExpression"
+          },
+          {
+            "$ref": "#/$defs/MemberExpression"
+          },
+          {
+            "$ref": "#/$defs/IndexExpression"
+          },
+          {
+            "$ref": "#/$defs/ObjectExpression"
+          },
+          {
+            "$ref": "#/$defs/ParenExpression"
+          },
+          {
+            "$ref": "#/$defs/PipeExpression"
+          },
+          {
+            "$ref": "#/$defs/UnaryExpression"
+          },
+          {
+            "$ref": "#/$defs/BooleanLiteral"
+          },
+          {
+            "$ref": "#/$defs/DateTimeLiteral"
+          },
+          {
+            "$ref": "#/$defs/DurationLiteral"
+          },
+          {
+            "$ref": "#/$defs/FloatLiteral"
+          },
+          {
+            "$ref": "#/$defs/IntegerLiteral"
+          },
+          {
+            "$ref": "#/$defs/PipeLiteral"
+          },
+          {
+            "$ref": "#/$defs/RegexpLiteral"
+          },
+          {
+            "$ref": "#/$defs/StringLiteral"
+          },
+          {
+            "$ref": "#/$defs/UnsignedIntegerLiteral"
+          },
+          {
+            "$ref": "#/$defs/Identifier"
+          }
+        ]
+      },
+      "ArrayExpression": {
+        "description": "Used to create and directly specify the elements of an array object",
+        "properties": {
+          "elements": {
+            "description": "Elements of the array",
+            "items": {
+              "$ref": "#/$defs/Expression"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "DictExpression": {
+        "description": "Used to create and directly specify the elements of a dictionary",
+        "properties": {
+          "elements": {
+            "description": "Elements of the dictionary",
+            "items": {
+              "$ref": "#/$defs/DictItem"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "DictItem": {
+        "description": "A key/value pair in a dictionary",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "val": {
+            "$ref": "#/$defs/Expression"
+          }
+        },
+        "type": "object"
+      },
+      "FunctionExpression": {
+        "description": "Function expression",
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/Node"
+          },
+          "params": {
+            "description": "Function parameters",
+            "items": {
+              "$ref": "#/$defs/Property"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "Node": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Expression"
+          },
+          {
+            "$ref": "#/$defs/Block"
+          }
+        ]
+      },
+      "Block": {
+        "description": "A set of statements",
+        "properties": {
+          "body": {
+            "description": "Block body",
+            "items": {
+              "$ref": "#/$defs/Statement"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "Property": {
+        "description": "The value associated with a key",
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/PropertyKey"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "$ref": "#/$defs/Expression"
+          }
+        },
+        "type": "object"
+      },
+      "PropertyKey": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Identifier"
+          },
+          {
+            "$ref": "#/$defs/StringLiteral"
+          }
+        ]
+      },
+      "StringLiteral": {
+        "description": "Expressions begin and end with double quote marks",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BinaryExpression": {
+        "description": "uses binary operators to act on two operands in an expression",
+        "properties": {
+          "left": {
+            "$ref": "#/$defs/Expression"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "right": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "CallExpression": {
+        "description": "Represents a function call",
+        "properties": {
+          "arguments": {
+            "description": "Function arguments",
+            "items": {
+              "$ref": "#/$defs/Expression"
+            },
+            "type": "array"
+          },
+          "callee": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ConditionalExpression": {
+        "description": "Selects one of two expressions, `Alternate` or `Consequent`, depending on a third boolean expression, `Test`",
+        "properties": {
+          "alternate": {
+            "$ref": "#/$defs/Expression"
+          },
+          "consequent": {
+            "$ref": "#/$defs/Expression"
+          },
+          "test": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "LogicalExpression": {
+        "description": "Represents the rule conditions that collectively evaluate to either true or false",
+        "properties": {
+          "left": {
+            "$ref": "#/$defs/Expression"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "right": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "MemberExpression": {
+        "description": "Represents accessing a property of an object",
+        "properties": {
+          "object": {
+            "$ref": "#/$defs/Expression"
+          },
+          "property": {
+            "$ref": "#/$defs/PropertyKey"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "IndexExpression": {
+        "description": "Represents indexing into an array",
+        "properties": {
+          "array": {
+            "$ref": "#/$defs/Expression"
+          },
+          "index": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ObjectExpression": {
+        "description": "Allows the declaration of an anonymous object within a declaration",
+        "properties": {
+          "properties": {
+            "description": "Object properties",
+            "items": {
+              "$ref": "#/$defs/Property"
+            },
+            "type": "array"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ParenExpression": {
+        "description": "Represents an expression wrapped in parenthesis",
+        "properties": {
+          "expression": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "PipeExpression": {
+        "description": "Call expression with pipe argument",
+        "properties": {
+          "argument": {
+            "$ref": "#/$defs/Expression"
+          },
+          "call": {
+            "$ref": "#/$defs/CallExpression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "UnaryExpression": {
+        "description": "Uses operators to act on a single operand in an expression",
+        "properties": {
+          "argument": {
+            "$ref": "#/$defs/Expression"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "BooleanLiteral": {
+        "description": "Represents boolean values",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "DateTimeLiteral": {
+        "description": "Represents an instant in time with nanosecond precision using the syntax of golang's RFC3339 Nanosecond variant",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DurationLiteral": {
+        "description": "Represents the elapsed time between two instants as an int64 nanosecond count with syntax of golang's time.Duration",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "values": {
+            "description": "Duration values",
+            "items": {
+              "$ref": "#/$defs/Duration"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Duration": {
+        "description": "A pair consisting of length of time and the unit of time measured. It is the atomic unit from which all duration literals are composed.",
+        "properties": {
+          "magnitude": {
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FloatLiteral": {
+        "description": "Represents floating point numbers according to the double representations defined by the IEEE-754-1985",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "IntegerLiteral": {
+        "description": "Represents integer numbers",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PipeLiteral": {
+        "description": "Represents a specialized literal value, indicating the left hand value of a pipe expression",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "RegexpLiteral": {
+        "description": "Expressions begin and end with `/` and are regular expressions with syntax accepted by RE2",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UnsignedIntegerLiteral": {
+        "description": "Represents integer numbers",
+        "properties": {
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MemberAssignment": {
+        "description": "Object property assignment",
+        "properties": {
+          "init": {
+            "$ref": "#/$defs/Expression"
+          },
+          "member": {
+            "$ref": "#/$defs/MemberExpression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ExpressionStatement": {
+        "description": "May consist of an expression that does not return a value and is executed solely for its side-effects",
+        "properties": {
+          "expression": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ReturnStatement": {
+        "description": "Defines an expression to return",
+        "properties": {
+          "argument": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "OptionStatement": {
+        "description": "A single variable declaration",
+        "properties": {
+          "assignment": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/VariableAssignment"
+              },
+              {
+                "$ref": "#/$defs/MemberAssignment"
+              }
+            ]
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "BuiltinStatement": {
+        "description": "Declares a builtin identifier and its type",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "TestStatement": {
+        "description": "Declares a Flux test case",
+        "properties": {
+          "assignment": {
+            "$ref": "#/$defs/VariableAssignment"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "ImportDeclaration": {
+        "description": "Declares a package import",
+        "properties": {
+          "as": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "path": {
+            "$ref": "#/$defs/StringLiteral"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "PackageClause": {
+        "description": "Defines a package identifier",
+        "properties": {
+          "name": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "type": {
+            "$ref": "#/$defs/NodeType"
+          }
+        },
+        "type": "object"
+      },
+      "InfluxQLQuery": {
+        "description": "Query influx using the InfluxQL language",
+        "properties": {
+          "bucket": {
+            "description": "Bucket is to be used instead of the database and retention policy specified in the InfluxQL query.",
+            "type": "string"
+          },
+          "query": {
+            "description": "InfluxQL query execute.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The type of query. Must be \"influxql\".",
+            "enum": [
+              "influxql"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "/api/v2/query{?org,orgID}"
+    },
+    "headers": {
+      "Zap-Trace-Span": {
+        "$": "Zap-Trace-Span"
+      },
+      "Accept-Encoding": {
+        "$": "Accept-Encoding"
+      },
+      "Content-Type": {
+        "$": "Content-Type"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: code is the machine-readable error code.",
+            "**err**: err is a stack of errors that occurred during processing of the request. Useful for debugging.",
+            "**message**: message is a human-readable message.",
+            "**op**: op describes the logical code operation during error. Useful for debugging."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

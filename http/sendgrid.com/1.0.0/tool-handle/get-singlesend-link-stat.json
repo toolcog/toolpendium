@@ -1,0 +1,136 @@
+{
+  "name": "get-singlesend-link-stat",
+  "description": "**This endpoint lets you retrieve click-tracking stats for one Single Send**.\n\nThe stats returned list the URLs embedded in the specified Single Send and the number of clicks each one received.\n\nResponses are paginated. You can limit the number of responses returned per batch using the `page_size` query string parameter. The default is 50, but you specify a value between 1 and 100.\n\nYou can retrieve a specific page of responses with the `page_token` query string parameter.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "page_size": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of elements you want returned on each page."
+      },
+      "page_token": {
+        "type": "string",
+        "description": "The stats endpoints are paginated. To get the next page, call the passed `_metadata.next` URL. If `_metadata.prev` doesn't exist, you're at the first page. Similarly, if `_metadata.next` is not present, you're at the last page."
+      },
+      "group_by": {
+        "items": {
+          "enum": [
+            "ab_variation",
+            "ab_phase"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A/B Single Sends have multiple variation IDs and phase IDs. Including these additional fields allows further granularity of stats by these fields."
+      },
+      "ab_variation_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "ab_phase_id": {
+        "enum": [
+          "test",
+          "send"
+        ],
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/stats/singlesends/{id}/links{?page_size,page_token,group_by,ab_variation_id,ab_phase_id}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "singlesends-link-stats-response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_metadata**",
+              {
+                "$ul": [
+                  "**count**: The number of items in the entire list, i.e., across all pages.",
+                  "**next**: The URL of the next page of results. If this field isn't present, you're at the end of the list.",
+                  "**prev**: The URL of the previous page of results. If this field isn't present, you're at the start of the list.",
+                  "**self**: The URL of the current page of results."
+                ]
+              }
+            ],
+            "**results**: This is the index of the link's location in the email contents.",
+            "**total_clicks**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

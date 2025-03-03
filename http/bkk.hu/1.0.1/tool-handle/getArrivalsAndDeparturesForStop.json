@@ -1,0 +1,185 @@
+{
+  "name": "getArrivalsAndDeparturesForStop",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "minutesBefore": {
+        "default": 2,
+        "format": "int32",
+        "type": "integer",
+        "description": "A lekérdezési időablak a `time` paraméter előtt ennyi perccel indul."
+      },
+      "minutesAfter": {
+        "default": 30,
+        "format": "int32",
+        "type": "integer",
+        "description": "A lekérdezési időablak a `time` paraméter után ennyi perccel ér véget."
+      },
+      "stopId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A megállók azonosítóinak listája, amelyekhez a lekérést végezzük."
+      },
+      "includeRouteId": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "A válasz szűrésére használt járatok azonosítóinak listája."
+      },
+      "time": {
+        "format": "int64",
+        "type": "integer",
+        "description": "A lekérdezés kiértékeléséhez használt időpont. Alapértelmezetten az aktuális szerveridő."
+      },
+      "onlyDepartures": {
+        "default": true,
+        "type": "boolean",
+        "description": "Ha igaz akkor csak az érkezési (és előrejelzett érkezési) idők nem szerepelnek a válaszban."
+      },
+      "limit": {
+        "default": 60,
+        "format": "int32",
+        "type": "integer",
+        "description": "A visszaadott indulási és érkezési idők listájának maximális hossza."
+      },
+      "lat": {
+        "format": "float",
+        "type": "number",
+        "description": "A helyszín középpontjának szélessgéi koordinátája."
+      },
+      "lon": {
+        "format": "float",
+        "type": "number",
+        "description": "A helyszín középpontjának hosszúsági koordinátája."
+      },
+      "latSpan": {
+        "format": "float",
+        "type": "number",
+        "description": "A lekérési terület szélességi íve. (Terület szélessége: `lat +/- latspan`)."
+      },
+      "lonSpan": {
+        "format": "float",
+        "type": "number",
+        "description": "A lekérési terület hosszúsági íve. (Terület hosszúsága: `lon +/- lonSpan`)."
+      },
+      "radius": {
+        "default": 100,
+        "format": "int32",
+        "type": "integer",
+        "description": "Ha a `latSpan` vagy a `longSpan` nincs kitöltve, a keresési terület a középpontól számított `radius` méter távolság mind a négy irányban."
+      },
+      "query": {
+        "type": "string",
+        "description": "A válasz szűrésére használt keresési kifejezés."
+      },
+      "minResult": {
+        "default": 5,
+        "format": "int32",
+        "type": "integer",
+        "description": "A visszaadott elemek minimális száma."
+      },
+      "appVersion": {
+        "type": "string",
+        "description": "A kliensalkalmazás verziója."
+      },
+      "version": {
+        "$ref": "#/components/schemas/ApiVersion",
+        "description": "Az API verziója."
+      },
+      "dialect": {
+        "$ref": "#/components/schemas/Dialect",
+        "description": "Az API referenciáinak dialektusa."
+      },
+      "includeReferences": {
+        "default": "true",
+        "items": {
+          "$ref": "#/$defs/ReferencesSchema"
+        },
+        "type": "array",
+        "description": "A referenciák típusát határozza meg. `true` vagy `COMPACT` esetén minden referencia szerepel, `false` esetén üres. `COMPACT` módban a route referenciák `description` mezője kihagyásra kerül."
+      }
+    },
+    "required": [
+      "dialect"
+    ],
+    "$defs": {
+      "ReferencesSchema": {
+        "default": "true",
+        "enum": [
+          "true",
+          "false",
+          "compact",
+          "agencies",
+          "routes",
+          "trips",
+          "stops",
+          "alerts",
+          "stations"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://futar.bkk.hu/api/query/v1/ws/{dialect}/api/where/arrivals-and-departures-for-stop{?minutesBefore,minutesAfter,stopId,includeRouteId,time,onlyDepartures,limit,lat,lon,latSpan,lonSpan,radius,query,minResult,appVersion,version,includeReferences}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A válasz státusz kódja.",
+            "**currentTime**: Az aktuális szerveridő ezredmásodpercben.",
+            [
+              "**data**: A válasz adat.",
+              {
+                "$ul": [
+                  "**class**: Az adat típusa. Egy entitás esetén \"entryWithReferences\".",
+                  [
+                    "**entry**: A lekért adat.",
+                    {
+                      "$ul": [
+                        "**alertIds**: A megállóhoz tartozó aktív zavarok.",
+                        "**nearbyStopIds**: A közeli megállók azonosítói.",
+                        "**routeIds**: A megállóhoz tartozó járatok azonosítói.",
+                        "**stopId**: A megálló azonosítója.",
+                        "**stopTimes**: A megállóhoz tartozó menetrendi bejegyzések."
+                      ]
+                    }
+                  ],
+                  "**limitExceeded**: Igaz, ha a lista több elemet tartalmaz, mint a limit paraméter. Indulási és érkezési idő típusú lekéréseknél használjuk.",
+                  "**references**: A válaszhoz tartozó referenciák."
+                ]
+              }
+            ],
+            "**status**: A válasz státusza.",
+            "**text**: A válasz szövege.",
+            "**version**: A válasz API verziója."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

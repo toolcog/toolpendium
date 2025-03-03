@@ -1,0 +1,126 @@
+{
+  "name": "createOrUpdateAnnotation",
+  "description": "Creates or updates an individual annotation for the specified report.\nAnnotations are individual findings that have been identified as part of a report, for example, a line of code that represents a vulnerability. These annotations can be attached to a specific file and even a specific line in that file, however, that is optional. Annotations are not mandatory and a report can contain up to 1000 annotations.\n\nJust as reports, annotation needs to be uploaded with a unique ID that can later be used to identify the report as an alternative to the generated [UUID](https://developer.atlassian.com/bitbucket/api/2/reference/meta/uri-uuid#uuid). If you want to use an existing id from your own system, we recommend prefixing it with your system's name to avoid collisions, for example, mySystem-annotation001.\n\n### Sample cURL request:\n```\ncurl --request PUT 'https://api.bitbucket.org/2.0/repositories/<username>/<reposity-name>/commit/<commit-hash>/reports/mySystem-001/annotations/mysystem-annotation001' \\\n--header 'Content-Type: application/json' \\\n--data-raw '{\n    \"title\": \"Security scan report\",\n    \"annotation_type\": \"VULNERABILITY\",\n    \"summary\": \"This line represents a security thread.\",\n    \"severity\": \"HIGH\",\n    \"path\": \"my-service/src/main/java/com/myCompany/mysystem/logic/Main.java\",\n    \"line\": 42\n}'\n```\n\n### Possible field values:\nannotation_type: VULNERABILITY, CODE_SMELL, BUG\nresult: PASSED, FAILED, IGNORED, SKIPPED\nseverity: HIGH, MEDIUM, LOW, CRITICAL\n\nPlease refer to the [Code Insights documentation](https://confluence.atlassian.com/bitbucket/code-insights-994316785.html) for more information.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workspace": {
+        "type": "string",
+        "description": "This can either be the workspace ID (slug) or the workspace UUID surrounded by curly-braces, for example `{workspace UUID}`."
+      },
+      "repo_slug": {
+        "type": "string",
+        "description": "The repository."
+      },
+      "commit": {
+        "type": "string",
+        "description": "The commit the report belongs to."
+      },
+      "reportId": {
+        "type": "string",
+        "description": "Either the uuid or external-id of the report."
+      },
+      "annotationId": {
+        "type": "string",
+        "description": "Either the uuid or external-id of the annotation."
+      },
+      "body": {
+        "$ref": "#/components/schemas/report_annotation",
+        "description": "The annotation to create or update"
+      }
+    },
+    "required": [
+      "workspace",
+      "repo_slug",
+      "commit",
+      "reportId",
+      "annotationId",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/commit/{commit}/reports/{reportId}/annotations/{annotationId}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Report Annotation"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**",
+            "**annotation_type**: The type of the report.",
+            "**created_on**: The timestamp when the report was created.",
+            "**details**: The details to show to users when clicking on the annotation.",
+            "**external_id**: ID of the annotation provided by the annotation creator. It can be used to identify the annotation as an alternative to it's generated uuid. It is not used by Bitbucket, but only by the annotation creator for updating or deleting this specific annotation. Needs to be unique.",
+            "**line**: The line number that the annotation should belong to. If no line number is provided, then it will default to 0 and in a pull request it will appear at the top of the file specified by the path field.",
+            "**link**: A URL linking to the annotation in an external tool.",
+            "**path**: The path of the file on which this annotation should be placed. This is the path of the file relative to the git repository. If no path is provided, then it will appear in the overview modal on all pull requests where the tip of the branch is the given commit, regardless of which files were modified.",
+            "**result**: The state of the report. May be set to PENDING and later updated.",
+            "**severity**: The severity of the annotation.",
+            "**summary**: The message to display to users.",
+            "**updated_on**: The timestamp when the report was updated.",
+            "**uuid**: The UUID that can be used to identify the annotation."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**data**: Optional structured data that is endpoint-specific.",
+                  "**detail**",
+                  "**message**"
+                ]
+              }
+            ],
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

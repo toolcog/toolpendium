@@ -1,0 +1,91 @@
+{
+  "name": "updateCustomFieldValue",
+  "description": "Updates the value of a custom field on one or more issues. Custom fields can only be updated by the Forge app that created them.\n\n**[Permissions](#permissions) required:** Only the app that created the custom field can update its values with this operation.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "fieldIdOrKey": {
+        "type": "string",
+        "description": "The ID or key of the custom field. For example, `customfield_10010`."
+      },
+      "generateChangelog": {
+        "default": true,
+        "type": "boolean",
+        "description": "Whether to generate a changelog for this update."
+      },
+      "body": {
+        "$ref": "#/$defs/CustomFieldValueUpdateDetails"
+      }
+    },
+    "required": [
+      "fieldIdOrKey",
+      "body"
+    ],
+    "$defs": {
+      "CustomFieldValueUpdateDetails": {
+        "additionalProperties": false,
+        "description": "Details of updates for a custom field.",
+        "properties": {
+          "updates": {
+            "description": "The list of custom field update details.",
+            "items": {
+              "$ref": "#/$defs/CustomFieldValueUpdate"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "writeOnly": true
+      },
+      "CustomFieldValueUpdate": {
+        "additionalProperties": false,
+        "description": "A list of issue IDs and the value to update a custom field to.",
+        "properties": {
+          "issueIds": {
+            "description": "The list of issue IDs.",
+            "items": {
+              "format": "int64",
+              "type": "integer",
+              "writeOnly": true
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "value": {
+            "description": "The value for the custom field. The value must be compatible with the [custom field type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#data-types) as follows:\n\n *  `string` the value must be a string.\n *  `number` the value must be a number.\n *  `datetime` the value must be a string that represents a date in the ISO format or the simplified extended ISO format. For example, `\"2023-01-18T12:00:00-03:00\"` or `\"2023-01-18T12:00:00.000Z\"`. However, the milliseconds part is ignored.\n *  `user` the value must be an object that contains the `accountId` field.\n *  `group` the value must be an object that contains the group `name` or `groupId` field. Because group names can change, we recommend using `groupId`.\n\nA list of appropriate values must be provided if the field is of the `list` [collection type](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-custom-field/#collection-types)."
+          }
+        },
+        "required": [
+          "issueIds",
+          "value"
+        ],
+        "type": "object",
+        "writeOnly": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://your-domain.atlassian.net/rest/api/3/app/field/{fieldIdOrKey}/value{?generateChangelog}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

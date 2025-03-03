@@ -1,0 +1,423 @@
+{
+  "name": "postLocate",
+  "description": "Request WGS-84 compliant geocoordinates for a location based on 2G/3G/4G cell and/or WLAN measurements.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "confidence": {
+        "default": 68,
+        "maximum": 99,
+        "minimum": 50,
+        "type": "integer",
+        "description": "Confidence level in percent for the accuracy/uncertainty in the location estimate response. If not specified, the default is 68 (this corresponds to a 68% probability that the true position is within the accuracy/uncertainty radius of the location estimate: the higher the number, the greater the confidence level).\n"
+      },
+      "Content-Encoding": {
+        "enum": [
+          "gzip"
+        ],
+        "type": "string",
+        "description": "Indicates that the data in the body is gzip-encoded."
+      },
+      "fallback": {
+        "items": {
+          "enum": [
+            "any",
+            "area",
+            "singleWifi"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Acceptable fallback options for cell and WLAN positioning. Values `area` and `any` apply to cell based positioning, and value `singleWifi` applies to WLAN based positioning. Both cell and WLAN options may be specified in the same request. If both `area` and `any` are specified, then `area` is ignored.\n\nBy default, cell based positioning returns cell tower level location estimates only. If you allow a WGS-84 compliant geocoordinate location estimate based on LAC, RNC, TAC, NID, or RZ areas, use the `fallback=area` setting. If you use the `fallback=any` setting, the service uses all available cell fallback methods and therefore the location estimate in the response may be at the MNC, SID, or MCC level.\n\nFor privacy reasons, the precise positioning based on a single WLAN AP is not possible. You can use the `fallback=singleWifi` setting to allow less accurate positioning based on a single WLAN AP. In that case, the center location of the position estimate will be deviated and the reported accuracy radius will be larger.\n"
+      },
+      "desired": {
+        "items": {
+          "enum": [
+            "altitude"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Comma-separated list of additional data fields that the service should include in the response if data is available. The query parameter supports the value `altitude`.\n"
+      },
+      "X-Request-ID": {
+        "type": "string",
+        "description": "ID used for correlating customer requests within HERE services. Used for logging and error reporting. Can be any string, but UUID is recommended. It will be echoed in the response.\n"
+      },
+      "required": {
+        "items": {
+          "enum": [
+            "altitude"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Comma-separated list of additional data fields that the service should include in the response. If the data is not available, the response contains an error message. The query parameter supports the value `altitude`.\n"
+      },
+      "body": {
+        "$ref": "#/components/schemas/Locate",
+        "description": "Request body containing cell and/or WLAN measurement data. Cellular measurements are given in terms defined in 3GPP and 3GGP2 specifications, see the corresponsing documentation at http://www.3gpp.org.\n"
+      }
+    },
+    "required": [
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://positioning.hereapi.com/v2/locate{?confidence,fallback,desired,required}"
+    },
+    "headers": {
+      "Content-Encoding": {
+        "$": "Content-Encoding"
+      },
+      "X-Request-ID": {
+        "$": "X-Request-ID"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the response to a location request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**location**: Object containing information on a location where a measurement was taken.",
+              {
+                "$ul": [
+                  "**accuracy**: Uncertainty circle radius in meters (degree of confidence according to the `confidence` parameter).",
+                  "**alt**: Altitude in meters (referenced to the WGS-84 ellipsoid) negative or positive.",
+                  "**altAccuracy**: Uncertainty of the altitude estimate in meters (degree of confidence according to the `confidence` parameter). This field superceeds old `altaccuracy`.",
+                  "**lat**: Latitude in WGS-84 format, decimal representation ranging from -90 to 90.",
+                  "**lng**: Longitude in WGS-84 format, decimal representation ranging from -180 to 180."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error object reported in case of authentication or authorization errors.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: Error message",
+            "**error_description**: Detailed information about the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error object reported in case of authentication or authorization errors.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: Error message",
+            "**error_description**: Detailed information about the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "405": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "413": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "414": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "503": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Object wrapper for the error response to a request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: Actionable instructions for the user",
+            "**cause**: Reason for the error",
+            "**code**: Error code",
+            "**correlationId**: Copy from X-Correlation-ID header for logging",
+            "**details**",
+            "**status**: Equals HTTP status code",
+            "**title**: Localized error string"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

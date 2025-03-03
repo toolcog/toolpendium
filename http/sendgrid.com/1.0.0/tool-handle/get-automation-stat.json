@@ -1,0 +1,140 @@
+{
+  "name": "get-automation-stat",
+  "description": "**This endpoint allows you to retrieve stats for a single Automation using its ID.**\n\nMultiple Automation IDs can be retrieved using the \"Get All Automation Stats\" endpoint. Once you have an ID, this endpoint will return detailed stats for the single automation specified.\n\nYou may constrain the stats returned using the `start_date` and `end_date` query string parameters. You can also use the `group_by` and `aggregated_by` query string parameters to further refine the stats returned.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "group_by": {
+        "items": {
+          "enum": [
+            "step_id"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Automations can have multiple steps. Including `step_id` as a `group_by` metric allows further granularity of stats."
+      },
+      "step_ids": {
+        "items": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "description": "Comma-separated list of `step_ids` that you want the link stats for."
+      },
+      "aggregated_by": {
+        "default": "total",
+        "enum": [
+          "day",
+          "total"
+        ],
+        "type": "string",
+        "description": "Dictates how the stats are time-sliced. Currently, `\"total\"` and `\"day\"` are supported."
+      },
+      "start_date": {
+        "default": "",
+        "format": "date",
+        "type": "string",
+        "description": "Format: `YYYY-MM-DD`. If this parameter is included, the stats' start date is included in the search."
+      },
+      "end_date": {
+        "default": "",
+        "format": "date",
+        "type": "string",
+        "description": "Format: `YYYY-MM-DD`.If this parameter is included, the stats' end date is included in the search."
+      },
+      "timezone": {
+        "default": "UTC",
+        "type": "string",
+        "description": "[IANA Area/Region](https://en.wikipedia.org/wiki/Tz_database#Names_of_time_zones) string representing the timezone in which the stats are to be presented, e.g., \"America/Chicago\"."
+      },
+      "page_size": {
+        "default": 50,
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer",
+        "description": "The number of elements you want returned on each page."
+      },
+      "page_token": {
+        "type": "string",
+        "description": "The stats endpoints are paginated. To get the next page, call the passed `_metadata.next` URL. If `_metadata.prev` doesn't exist, you're at the first page. Similarly, if `_metadata.next` is not present, you're at the last page."
+      },
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/marketing/stats/automations/{id}{?group_by,step_ids,aggregated_by,start_date,end_date,timezone,page_size,page_token}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "automations-response"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_metadata**",
+              {
+                "$ul": [
+                  "**count**: The number of items in the entire list, i.e., across all pages.",
+                  "**next**: The URL of the next page of results. If this field isn't present, you're at the end of the list.",
+                  "**prev**: The URL of the previous page of results. If this field isn't present, you're at the start of the list.",
+                  "**self**: The URL of the current page of results."
+                ]
+              }
+            ],
+            "**results**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

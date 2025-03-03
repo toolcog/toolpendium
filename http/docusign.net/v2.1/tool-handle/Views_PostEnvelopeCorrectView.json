@@ -1,0 +1,114 @@
+{
+  "name": "Views_PostEnvelopeCorrectView",
+  "description": "Returns a URL that allows you to embed the envelope correction view of the DocuSign UI. To customize the appearance of the correction view, you can add special query parameters to the returned URL when you use it in your application.\n\nYou can revoke this URL by calling the [deleteEnvelopeCorrectView](/docs/esign-rest-api/reference/envelopes/envelopeviews/deleteenvelopecorrectview/) endpoint.\n\n## Best practices\n\nThe returned URL expires after 10 minutes and can only be used once. Therefore, request the URL immediately before you redirect your user to it.\n\nDue to screen space issues, do not use an `<iframe>` for embedded operations on mobile devices. For iOS devices, DocuSign recommends using a WebView.\n\n## Customizing the correction view\n\nTo customize the appearance of the correction view, you can add query parameters **to the URL that is returned by this endpoint and used in your application.** Do not add these query parameters to the URL of the endpoint itself.\n\nFor example, adding the following query parameters to the URL returned by this method causes the sending view to:\n\n- start in the tagging screen\n- hide the Edit Pages command\n- hide all of the options under the Actions dropdown except Save, Close, and Discard\n\n```\nhttps://demo.docusign.net/Member/StartInSession.aspx?StartConsole=1&t=dd3b7c4c-xxxx-xxxx-xxxx-50cd195a3401&DocuEnvelope=f37489d3-xxxx-xxxx-xxxx-4de057063d0e&\\\n        advcorrect=1&\\\n        showEditPages=false&\\\n        showHeaderActions=false\n```\n\n\nThe default value reflects what happens\nif you omit the customization query parameter.\n<!--\nYou can use the interactive\n[Embedded Sending Demo tool](https://dsdemos.esigndemos.com/embeddedsending/v3/embeddedsending.aspx)\nto see the effect of using different query parameters.\n -->\n\n\n\n| Query Parameter             | Default Value                                                                                                    | Alternate Value                                                                                                                                                                                                                                   |\n| :-------------------------- | :--------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |\n| sendButtonAction            | `send`<br><br>The Send button operates normally.                                                                 | `redirect`<br><br>The text of the button changes to Continue. Clicking it redirects to the `returnUrl` in the request object. If you intend to modify the envelope after redirection, see [this note](#modifying-the-envelope-after-redirection). |\n| backButtonAction            | `previousPage`<br><br>The back arrow and back button operate normally.                                           | `redirect`<br><br>Clicking the back arrow and back button redirects to the `returnUrl` in the request object. If you intend to modify the envelope after redirection, see [this note](#modifying-the-envelope-after-redirection).                 |\n| showBackButton              | `true` <br><br> Shows the back arrow and the back button.                                                        | `false`<br><br>Hides the back arrow and the back button.                                                                                                                                                                                          |\n| showEditRecipients          | `true` <br><br> Shows the Edit Recipients command in the action menu and in the Conditional Recipients settings. | `false`<br><br>Hides the Edit Recipients command.                                                                                                                                                                                                 |\n| showEditDocuments           | `true` <br><br> Shows the Edit Documents command in the action menu and removes the Documents Gear icon.         | `false`<br><br>Hides the Edit Documents command.                                                                                                                                                                                                  |\n| showEditDocumentVisibility  | `true` <br><br> Shows the Documents Gear icon where the sender can edit document visibility.                     | `false`<br><br>Hides the Documents Gear icon.                                                                                                                                                                                                     |\n| showEditPages               | `true` <br><br> Shows the Edit Pages command under the document thumbnail.                                       | `false`<br><br>Hides the Edit Pages command.                                                                                                                                                                                                      |\n| showMatchingTemplatesPrompt | `true` <br><br> Shows the matching template prompt.                                                              | `false`<br><br>Hides the matching template prompt.                                                                                                                                                                                                |\n| showHeaderActions           | `true` <br><br> Shows all options under the Actions dropdown.                                                    | `false`<br><br>Hides all options under the Actions dropdown except Save, Close, and Discard.                                                                                                                                                      |\n| showDiscardAction           | `true` <br><br> Shows the Discard command under the Actions dropdown.                                            | `false`<br><br>Hides the Discard command.                                                                                                                                                                                                         |\n| advcorrect                  | `1`    <br><br> Starts the signer in the tagging screen.                                                         | `0`<br><br>Starts the signer in the prepare screen.                                                                                                                                                                                               |\n| tabPaletteType              | `standard` <br><br> Displays the standard tab palette.                                                           | `custom`<br>`merge`<br>`notary`<br>`seals`<br>`smartcontracts`<br>`annotations`<br>`smartSections`<br><br>Displays the specified tab palette before the standard palette.                                                                         |\n\n\n##  Modifying the envelope after redirection\n\nIf you use `sendButtonAction=redirect` or `backButtonAction=redirect`, and you intend to modify the envelope after redirection, you will need to lock the envelope and add an extra query parameter:\n\n1.  [Create a lock token][createLock] for the envelope.\n2.  Add the new lock token to the URL with the `lockToken` query parameter.<br>\n    `...&sendButtonAction=redirect&lockToken=MDgxZxabUVBiMWUzZWYz`<br>\n    **Note:** The `lockToken` query parameter is case-sensitive.\n\n\nAfter clicking Continue,\nyour user is redirected back to your integration.\nYou can then [delete the lock token][deleteLock].\n\n[createLock]: /docs/esign-rest-api/reference/envelopes/envelopelocks/create/\n[deleteLock]: /docs/esign-rest-api/reference/envelopes/envelopelocks/delete/\n\n\n## Information security notice\n\nThis method provides full access to the sending account. When you\nuse this view, the current user has full access to the account.\nIf the account has administrative privileges, then this method\nalso provides administrator access.\n\nIf your use case needs to enable a sender to update a draft\nenvelope before it is sent or make other changes, take one of the\nfollowing steps:\n\n- Configure each sender to have their own individual user account\n  to use this API method.\n- Enhance your API integration so that this method is not needed.\n  Your integration can create the tabs, recipients,\n  and other envelope settings as needed.\n\n\n### Related topics\n\n- [Embedded signing and sending](/docs/esign-rest-api/esign101/concepts/embedding/)\n- [How to send an envelope via your app](/docs/esign-rest-api/how-to/embedded-sending/)\n- [How to embed the DocuSign UI in your app](/docs/esign-rest-api/how-to/embed-ui/)\n- [Introducing customizable embedded sending](https://www.docusign.com/blog/developers/introducing-customizable-embedded-sending)\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The external account number (int) or account ID GUID."
+      },
+      "envelopeId": {
+        "type": "string",
+        "description": "The envelope's GUID. \n\nExample: `93be49ab-xxxx-xxxx-xxxx-f752070d71ec`\n"
+      },
+      "body": {
+        "$ref": "#/$defs/correctViewRequest"
+      }
+    },
+    "required": [
+      "accountId",
+      "envelopeId"
+    ],
+    "$defs": {
+      "correctViewRequest": {
+        "description": "The request body for the [EnvelopeViews: createCorrect](/docs/esign-rest-api/reference/envelopes/envelopeviews/createcorrect/) method.",
+        "properties": {
+          "beginOnTagger": {
+            "description": "",
+            "type": "string"
+          },
+          "returnUrl": {
+            "description": "(Required) The URL to which the user should be redirected after\nthe view session has ended.\n\nMaximum Length: 470 characters. If the `returnUrl` exceeds this\nlimit, the user is redirected to a truncated URL\nBe sure to include `https://` in the URL\nor redirecting might fail on some browsers.\n\nWhen DocuSign redirects to\nthis URL, it will include an `event` query parameter that your app can use:\n\n* `send`: User corrected and sent the envelope.\n* `save`: User saved the envelope.\n* `cancel`: User canceled the transaction.\n* `error`: There was an error when performing the correct or send.\n* `sessionEnd`: The session ended before the user completed a different action.\n",
+            "type": "string"
+          },
+          "suppressNavigation": {
+            "description": "Specifies whether the window is displayed with or without dressing.",
+            "type": "string"
+          },
+          "viewUrl": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "correctViewRequest",
+        "x-ms-summary": "The request body for the [EnvelopeViews: createCorrect](/docs/esign-rest-api/reference/envelopes/envelopeviews/createcorrect/) method."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/correct"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Provides a URL that you can embed in your application\nto provide access to the DocuSign UI.\n\n### Related topics\n\n- [Embedded signing and sending](/docs/esign-rest-api/esign101/concepts/embedding/)\n- [Send an envelope via your app](/docs/esign-rest-api/how-to/embedded-sending/)\n- [Introducing customizable embedded sending](https://www.docusign.com/blog/developers/introducing-customizable-embedded-sending)\n\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**url**: The view URL to be navigated to."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "name": "repos_list-webhook-deliveries",
+  "description": "Returns a list of webhook deliveries for a webhook configured in a repository.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "hook_id": {
+        "type": "integer",
+        "description": "The unique identifier of the hook."
+      },
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination: the starting delivery from which the page of deliveries is fetched. Refer to the `link` header for the next and previous page cursors."
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "hook_id"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/hooks/{hook_id}/deliveries{?per_page,cursor}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Simple webhook delivery list"
+        },
+        "Delivery made by a webhook, without request and response information.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: The type of activity for the event that triggered the delivery.",
+            "**delivered_at**: Time when the webhook delivery occurred.",
+            "**duration**: Time spent delivering.",
+            "**event**: The event that triggered the delivery.",
+            "**guid**: Unique identifier for the event (shared with all deliveries for all webhooks that subscribe to this event).",
+            "**id**: Unique identifier of the webhook delivery.",
+            "**installation_id**: The id of the GitHub App installation associated with this event.",
+            "**redelivery**: Whether the webhook delivery is a redelivery.",
+            "**repository_id**: The id of the repository associated with this event.",
+            "**status**: Describes the response returned after attempting the delivery.",
+            "**status_code**: Status code received when delivery was made."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "name": "GET_DetectStackSetDrift",
+  "description": "<p>Detect drift on a stack set. When CloudFormation performs drift detection on a stack set, it performs drift detection on the stack associated with each stack instance in the stack set. For more information, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-drift.html\">How CloudFormation performs drift detection on a stack set</a>.</p> <p> <code>DetectStackSetDrift</code> returns the <code>OperationId</code> of the stack set drift detection operation. Use this operation id with <a>DescribeStackSetOperation</a> to monitor the progress of the drift detection operation. The drift detection operation may take some time, depending on the number of stack instances included in the stack set, in addition to the number of resources included in each stack.</p> <p>Once the operation has completed, use the following actions to return drift information:</p> <ul> <li> <p>Use <a>DescribeStackSet</a> to return detailed information about the stack set, including detailed information about the last <i>completed</i> drift operation performed on the stack set. (Information about drift operations that are in progress isn't included.)</p> </li> <li> <p>Use <a>ListStackInstances</a> to return a list of stack instances belonging to the stack set, including the drift status and last drift time checked of each instance.</p> </li> <li> <p>Use <a>DescribeStackInstance</a> to return detailed information about a specific stack instance, including its drift status and last drift time checked.</p> </li> </ul> <p>For more information about performing a drift detection operation on a stack set, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-drift.html\">Detecting unmanaged changes in stack sets</a>.</p> <p>You can only run a single drift detection operation on a given stack set at one time.</p> <p>To stop a drift detection stack set operation, use <a>StopStackSetOperation</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "StackSetName": {
+        "type": "string",
+        "pattern": "[a-zA-Z][-a-zA-Z0-9]*(?::[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12})?",
+        "description": "The name of the stack set on which to perform the drift detection operation."
+      },
+      "OperationPreferences": {
+        "type": "object",
+        "properties": {
+          "RegionConcurrencyType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RegionConcurrencyType"
+              },
+              {
+                "description": "The concurrency type of deploying StackSets operations in Regions, could be in parallel or one Region at a time."
+              }
+            ]
+          },
+          "RegionOrder": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RegionList"
+              },
+              {
+                "description": "The order of the Regions where you want to perform the stack operation."
+              }
+            ]
+          },
+          "FailureToleranceCount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FailureToleranceCount"
+              },
+              {
+                "description": "<p>The number of accounts, per Region, for which this operation can fail before CloudFormation stops the operation in that Region. If the operation is stopped in a Region, CloudFormation doesn't attempt the operation in any subsequent Regions.</p> <p>Conditional: You must specify either <code>FailureToleranceCount</code> or <code>FailureTolerancePercentage</code> (but not both).</p> <p>By default, <code>0</code> is specified.</p>"
+              }
+            ]
+          },
+          "FailureTolerancePercentage": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FailureTolerancePercentage"
+              },
+              {
+                "description": "<p>The percentage of accounts, per Region, for which this stack operation can fail before CloudFormation stops the operation in that Region. If the operation is stopped in a Region, CloudFormation doesn't attempt the operation in any subsequent Regions.</p> <p>When calculating the number of accounts based on the specified percentage, CloudFormation rounds <i>down</i> to the next whole number.</p> <p>Conditional: You must specify either <code>FailureToleranceCount</code> or <code>FailureTolerancePercentage</code>, but not both.</p> <p>By default, <code>0</code> is specified.</p>"
+              }
+            ]
+          },
+          "MaxConcurrentCount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxConcurrentCount"
+              },
+              {
+                "description": "<p>The maximum number of accounts in which to perform this operation at one time. This is dependent on the value of <code>FailureToleranceCount</code>.<code>MaxConcurrentCount</code> is at most one more than the <code>FailureToleranceCount</code>.</p> <p>Note that this setting lets you specify the <i>maximum</i> for operations. For large deployments, under certain circumstances the actual number of accounts acted upon concurrently may be lower due to service throttling.</p> <p>Conditional: You must specify either <code>MaxConcurrentCount</code> or <code>MaxConcurrentPercentage</code>, but not both.</p> <p>By default, <code>1</code> is specified.</p>"
+              }
+            ]
+          },
+          "MaxConcurrentPercentage": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/MaxConcurrentPercentage"
+              },
+              {
+                "description": "<p>The maximum percentage of accounts in which to perform this operation at one time.</p> <p>When calculating the number of accounts based on the specified percentage, CloudFormation rounds down to the next whole number. This is true except in cases where rounding down would result is zero. In this case, CloudFormation sets the number as one instead.</p> <p>Note that this setting lets you specify the <i>maximum</i> for operations. For large deployments, under certain circumstances the actual number of accounts acted upon concurrently may be lower due to service throttling.</p> <p>Conditional: You must specify either <code>MaxConcurrentCount</code> or <code>MaxConcurrentPercentage</code>, but not both.</p> <p>By default, <code>1</code> is specified.</p>"
+              }
+            ]
+          }
+        },
+        "description": "<p>The user-specified preferences for how CloudFormation performs a stack set operation.</p> <p>For more information about maximum concurrent accounts and failure tolerance, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options\">Stack set operation options</a>.</p>"
+      },
+      "OperationId": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9][-a-zA-Z0-9]*",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": " <i>The ID of the stack set operation.</i> "
+      },
+      "CallAs": {
+        "type": "string",
+        "enum": [
+          "SELF",
+          "DELEGATED_ADMIN"
+        ],
+        "description": "<p>[Service-managed permissions] Specifies whether you are acting as an account administrator in the organization's management account or as a delegated administrator in a member account.</p> <p>By default, <code>SELF</code> is specified. Use <code>SELF</code> for stack sets with self-managed permissions.</p> <ul> <li> <p>If you are signed in to the management account, specify <code>SELF</code>.</p> </li> <li> <p>If you are signed in to a delegated administrator account, specify <code>DELEGATED_ADMIN</code>.</p> <p>Your Amazon Web Services account must be registered as a delegated administrator in the management account. For more information, see <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-delegated-admin.html\">Register a delegated administrator</a> in the <i>CloudFormation User Guide</i>.</p> </li> </ul>"
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "DetectStackSetDrift"
+        ]
+      },
+      "Version": {
+        "type": "string",
+        "enum": [
+          "2010-05-15"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "StackSetName",
+      "Action",
+      "Version"
+    ],
+    "$defs": {
+      "RegionConcurrencyType": {
+        "type": "string",
+        "enum": [
+          "SEQUENTIAL",
+          "PARALLEL"
+        ]
+      },
+      "RegionList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/Region"
+        }
+      },
+      "Region": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9-]{1,128}$"
+      },
+      "FailureToleranceCount": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "FailureTolerancePercentage": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "MaxConcurrentCount": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "MaxConcurrentPercentage": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://cloudformation.us-east-1.amazonaws.com/#Action=DetectStackSetDrift{?StackSetName,OperationPreferences,OperationId,CallAs,Action,Version}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**OperationId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

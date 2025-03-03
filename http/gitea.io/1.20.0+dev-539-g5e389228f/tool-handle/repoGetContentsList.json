@@ -1,0 +1,93 @@
+{
+  "name": "repoGetContentsList",
+  "description": "Gets the metadata of all the entries of the root dir",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "owner of the repo"
+      },
+      "repo": {
+        "type": "string",
+        "description": "name of the repo"
+      },
+      "ref": {
+        "type": "string",
+        "description": "The name of the commit/branch/tag. Default the repository’s default branch (usually master)"
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/repos/{owner}/{repo}/contents{?ref}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "ContentsResponse contains information about a repo's entry's (dir, file, symlink, submodule) metadata and content",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**_links**: FileLinksResponse contains the links for a repo's file",
+              {
+                "$ul": [
+                  "**git**",
+                  "**html**",
+                  "**self**"
+                ]
+              }
+            ],
+            "**content**: `content` is populated when `type` is `file`, otherwise null",
+            "**download_url**",
+            "**encoding**: `encoding` is populated when `type` is `file`, otherwise null",
+            "**git_url**",
+            "**html_url**",
+            "**last_commit_sha**",
+            "**name**",
+            "**path**",
+            "**sha**",
+            "**size**",
+            "**submodule_git_url**: `submodule_git_url` is populated when `type` is `submodule`, otherwise null",
+            "**target**: `target` is populated when `type` is `symlink`, otherwise null",
+            "**type**: `type` will be `file`, `dir`, `symlink`, or `submodule`",
+            "**url**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

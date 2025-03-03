@@ -1,0 +1,184 @@
+{
+  "name": "createNodeBalancerNode",
+  "description": "Creates a NodeBalancer Node, a backend that can accept traffic for this NodeBalancer Config. Nodes are routed requests on the configured port based on their status.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "nodeBalancerId": {
+        "type": "integer",
+        "description": "The ID of the NodeBalancer to access."
+      },
+      "configId": {
+        "type": "integer",
+        "description": "The ID of the NodeBalancer config to access."
+      },
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/NodeBalancerNode"
+          }
+        ],
+        "required": [
+          "label",
+          "address"
+        ],
+        "description": "Information about the Node to create."
+      }
+    },
+    "required": [
+      "nodeBalancerId",
+      "configId",
+      "body"
+    ],
+    "$defs": {
+      "NodeBalancerNode": {
+        "description": "A NodeBalancerNode represents a single backend serving requests for a single port of a NodeBalancer.  Nodes are specific to NodeBalancer Configs, and serve traffic over their private IP.  If the same Linode is serving traffic for more than one port on the same NodeBalancer, one NodeBalancer Node is required for each config (port) it should serve requests on.  For example, if you have four backends, and each should response to both HTTP and HTTPS requests, you will need two NodeBalancerConfigs (port 80 and port 443) and four backends each - one for each of the Linodes serving requests for that port.\n",
+        "properties": {
+          "address": {
+            "description": "The private IP Address where this backend can be reached. This _must_ be a private IP address.\n",
+            "example": "192.168.210.120:80",
+            "format": "ip",
+            "type": "string",
+            "x-linode-cli-display": 3
+          },
+          "config_id": {
+            "description": "The NodeBalancer Config ID that this Node belongs to.\n",
+            "example": 4567,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "id": {
+            "description": "This node's unique ID.",
+            "example": 54321,
+            "readOnly": true,
+            "type": "integer",
+            "x-linode-cli-display": 1
+          },
+          "label": {
+            "description": "The label for this node.  This is for display purposes only.\n",
+            "example": "node54321",
+            "maxLength": 32,
+            "minLength": 3,
+            "pattern": "[a-zA-Z0-9-_.]{3,32}",
+            "type": "string",
+            "x-linode-cli-display": 2
+          },
+          "mode": {
+            "description": "The mode this NodeBalancer should use when sending traffic to this backend.\n* If set to `accept` this backend is accepting traffic.\n* If set to `reject` this backend will not receive traffic.\n* If set to `drain` this backend will not receive _new_ traffic, but connections already\n  pinned to it will continue to be routed to it.\n\n* If set to `backup`, this backend will only receive traffic if all `accept` nodes\n  are down.\n",
+            "enum": [
+              "accept",
+              "reject",
+              "drain",
+              "backup"
+            ],
+            "example": "accept",
+            "type": "string",
+            "x-linode-cli-display": 6
+          },
+          "nodebalancer_id": {
+            "description": "The NodeBalancer ID that this Node belongs to.\n",
+            "example": 12345,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "status": {
+            "description": "The current status of this node, based on the configured checks of its NodeBalancer Config.\n",
+            "enum": [
+              "unknown",
+              "UP",
+              "DOWN"
+            ],
+            "example": "UP",
+            "readOnly": true,
+            "type": "string",
+            "x-linode-cli-color": {
+              "DOWN": "red",
+              "UP": "green",
+              "default_": "white",
+              "unknown": "yellow"
+            },
+            "x-linode-cli-display": 4
+          },
+          "weight": {
+            "description": "Used when picking a backend to serve a request and is not pinned to a single backend yet.  Nodes with a higher weight will receive more traffic.\n",
+            "example": 50,
+            "maximum": 255,
+            "minimum": 1,
+            "type": "integer",
+            "x-linode-cli-display": 5
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A NodeBalancerNode represents a single backend serving requests for a single port of a NodeBalancer.  Nodes are specific to NodeBalancer Configs, and serve traffic over their private IP.  If the same Linode is serving traffic for more than one port on the same NodeBalancer, one NodeBalancer Node is required for each config (port) it should serve requests on.  For example, if you have four backends, and each should response to both HTTP and HTTPS requests, you will need two NodeBalancerConfigs (port 80 and port 443) and four backends each - one for each of the Linodes serving requests for that port.\n",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**address**: The private IP Address where this backend can be reached. This _must_ be a private IP address.",
+            "**config_id**: The NodeBalancer Config ID that this Node belongs to.",
+            "**id**: This node's unique ID.",
+            "**label**: The label for this node.  This is for display purposes only.",
+            "**mode**: The mode this NodeBalancer should use when sending traffic to this backend.",
+            "**nodebalancer_id**: The NodeBalancer ID that this Node belongs to.",
+            "**status**: The current status of this node, based on the configured checks of its NodeBalancer Config.",
+            "**weight**: Used when picking a backend to serve a request and is not pinned to a single backend yet.  Nodes with a higher weight will receive more traffic."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

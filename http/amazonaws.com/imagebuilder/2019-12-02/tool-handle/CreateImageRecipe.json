@@ -1,0 +1,599 @@
+{
+  "name": "CreateImageRecipe",
+  "description": "Creates a new image recipe. Image recipes define how images are configured, tested, and assessed.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "name",
+          "semanticVersion",
+          "components",
+          "parentImage",
+          "clientToken"
+        ],
+        "properties": {
+          "name": {
+            "description": "The name of the image recipe.",
+            "type": "string",
+            "pattern": "^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$"
+          },
+          "description": {
+            "description": "The description of the image recipe.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "semanticVersion": {
+            "description": "<p>The semantic version of the image recipe. This version follows the semantic version syntax.</p> <note> <p>The semantic version has four nodes: &lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;/&lt;build&gt;. You can assign values for the first three, and can filter on all of them.</p> <p> <b>Assignment:</b> For the first three nodes you can assign any positive integer value, including zero, with an upper limit of 2^30-1, or 1073741823 for each node. Image Builder automatically assigns the build number to the fourth node.</p> <p> <b>Patterns:</b> You can use any numeric pattern that adheres to the assignment requirements for the nodes that you can assign. For example, you might choose a software version pattern, such as 1.0.0, or a date, such as 2021.01.01.</p> </note>",
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "components": {
+            "description": "The components included in the image recipe.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ComponentConfiguration"
+            },
+            "minItems": 1
+          },
+          "parentImage": {
+            "description": "The base image of the image recipe. The value of the string can be the ARN of the base image or an AMI ID. The format for the ARN follows this example: <code>arn:aws:imagebuilder:us-west-2:aws:image/windows-server-2016-english-full-base-x86/x.x.x</code>. You can provide the specific version that you want to use, or you can use a wildcard in all of the fields. If you enter an AMI ID for the string value, you must have access to the AMI, and the AMI must be in the same Region in which you are using Image Builder.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "blockDeviceMappings": {
+            "description": "The block device mappings of the image recipe.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/InstanceBlockDeviceMapping"
+            }
+          },
+          "tags": {
+            "description": "The tags of the image recipe.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "workingDirectory": {
+            "description": "The working directory used during build and test workflows.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "additionalInstanceConfiguration": {
+            "description": "<p>In addition to your infrastructure configuration, these settings provide an extra layer of control over your build instances. You can also specify commands to run on launch for all of your build instances.</p> <p>Image Builder does not automatically install the Systems Manager agent on Windows instances. If your base image includes the Systems Manager agent, then the AMI that you create will also include the agent. For Linux instances, if the base image does not already include the Systems Manager agent, Image Builder installs it. For Linux instances where Image Builder installs the Systems Manager agent, you can choose whether to keep it for the AMI that you create.</p>",
+            "type": "object",
+            "properties": {
+              "systemsManagerAgent": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SystemsManagerAgent"
+                  },
+                  {
+                    "description": "Contains settings for the Systems Manager agent on your build instance."
+                  }
+                ]
+              },
+              "userDataOverride": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/UserDataOverride"
+                  },
+                  {
+                    "description": "<p>Use this property to provide commands or a command script to run when you launch your build instance.</p> <p>The userDataOverride property replaces any commands that Image Builder might have added to ensure that Systems Manager is installed on your Linux build instance. If you override the user data, make sure that you add commands to install Systems Manager, if it is not pre-installed on your base image.</p> <note> <p>The user data is always base 64 encoded. For example, the following commands are encoded as <code>IyEvYmluL2Jhc2gKbWtkaXIgLXAgL3Zhci9iYi8KdG91Y2ggL3Zhci$</code>:</p> <p> <i>#!/bin/bash</i> </p> <p>mkdir -p /var/bb/</p> <p>touch /var</p> </note>"
+                  }
+                ]
+              }
+            }
+          },
+          "clientToken": {
+            "description": "The idempotency token used to make this request idempotent.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ComponentConfiguration": {
+        "type": "object",
+        "required": [
+          "componentArn"
+        ],
+        "properties": {
+          "componentArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentVersionArnOrBuildVersionArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the component."
+              }
+            ]
+          },
+          "parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterList"
+              },
+              {
+                "description": "A group of parameter settings that Image Builder uses to configure the component for a specific recipe."
+              }
+            ]
+          }
+        },
+        "description": "Configuration details of the component."
+      },
+      "ComponentVersionArnOrBuildVersionArn": {
+        "type": "string",
+        "pattern": "^arn:aws[^:]*:imagebuilder:[^:]+:(?:[0-9]{12}|aws):component/[a-z0-9-_]+/(?:(?:([0-9]+|x)\\.([0-9]+|x)\\.([0-9]+|x))|(?:[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+))$"
+      },
+      "ComponentParameterList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ComponentParameter"
+        },
+        "minItems": 1
+      },
+      "ComponentParameter": {
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterName"
+              },
+              {
+                "description": "The name of the component parameter to set."
+              }
+            ]
+          },
+          "value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ComponentParameterValueList"
+              },
+              {
+                "description": "Sets the value for the named component parameter."
+              }
+            ]
+          }
+        },
+        "description": "Contains a key/value pair that sets the named component parameter."
+      },
+      "ComponentParameterName": {
+        "type": "string",
+        "pattern": "[^\\x00]+",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "ComponentParameterValueList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/ComponentParameterValue"
+        }
+      },
+      "ComponentParameterValue": {
+        "type": "string",
+        "pattern": "[^\\x00]*",
+        "minLength": 0
+      },
+      "InstanceBlockDeviceMapping": {
+        "type": "object",
+        "properties": {
+          "deviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The device to which these mappings apply."
+              }
+            ]
+          },
+          "ebs": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsInstanceBlockDeviceSpecification"
+              },
+              {
+                "description": "Use to manage Amazon EBS-specific configuration for this mapping."
+              }
+            ]
+          },
+          "virtualName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "Use to manage instance ephemeral devices."
+              }
+            ]
+          },
+          "noDevice": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EmptyString"
+              },
+              {
+                "description": "Use to remove a mapping from the base image."
+              }
+            ]
+          }
+        },
+        "description": "Defines block device mappings for the instance used to configure your image."
+      },
+      "NonEmptyString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "EbsInstanceBlockDeviceSpecification": {
+        "type": "object",
+        "properties": {
+          "encrypted": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullableBoolean"
+              },
+              {
+                "description": "Use to configure device encryption."
+              }
+            ]
+          },
+          "deleteOnTermination": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullableBoolean"
+              },
+              {
+                "description": "Use to configure delete on termination of the associated device."
+              }
+            ]
+          },
+          "iops": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsIopsInteger"
+              },
+              {
+                "description": "Use to configure device IOPS."
+              }
+            ]
+          },
+          "kmsKeyId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "Use to configure the KMS key to use when encrypting the device."
+              }
+            ]
+          },
+          "snapshotId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonEmptyString"
+              },
+              {
+                "description": "The snapshot that defines the device contents."
+              }
+            ]
+          },
+          "volumeSize": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeSizeInteger"
+              },
+              {
+                "description": "Use to override the device's volume size."
+              }
+            ]
+          },
+          "volumeType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeType"
+              },
+              {
+                "description": "Use to override the device's volume type."
+              }
+            ]
+          },
+          "throughput": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EbsVolumeThroughput"
+              },
+              {
+                "description": " <b>For GP3 volumes only</b> – The throughput in MiB/s that the volume supports."
+              }
+            ]
+          }
+        },
+        "description": "Amazon EBS-specific block device mapping specifications."
+      },
+      "NullableBoolean": {
+        "type": "boolean"
+      },
+      "EbsIopsInteger": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 64000
+      },
+      "EbsVolumeSizeInteger": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 16000
+      },
+      "EbsVolumeType": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "io1",
+          "io2",
+          "gp2",
+          "gp3",
+          "sc1",
+          "st1"
+        ]
+      },
+      "EbsVolumeThroughput": {
+        "type": "integer",
+        "minimum": 125,
+        "maximum": 1000
+      },
+      "EmptyString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 0
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      },
+      "SystemsManagerAgent": {
+        "type": "object",
+        "properties": {
+          "uninstallAfterBuild": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NullableBoolean"
+              },
+              {
+                "description": "Controls whether the Systems Manager agent is removed from your final build image, prior to creating the new AMI. If this is set to true, then the agent is removed from the final image. If it's set to false, then the agent is left in, so that it is included in the new AMI. The default value is false."
+              }
+            ]
+          }
+        },
+        "description": "Contains settings for the Systems Manager agent on your build instance."
+      },
+      "UserDataOverride": {
+        "type": "string",
+        "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+        "minLength": 1,
+        "maxLength": 21847
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://imagebuilder.us-east-1.amazonaws.com/CreateImageRecipe"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**requestId**",
+            "**clientToken**",
+            "**imageRecipeArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "488": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "489": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "490": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

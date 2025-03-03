@@ -1,0 +1,299 @@
+{
+  "name": "trackCase",
+  "description": "Track the specified case.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/CaseTrackRequest"
+      }
+    },
+    "$defs": {
+      "CaseTrackRequest": {
+        "properties": {
+          "caseTrackParams": {
+            "$ref": "#/$defs/CaseUpdateRequest"
+          },
+          "schedule": {
+            "$ref": "#/$defs/CaseTrackSchedule"
+          }
+        },
+        "required": [
+          "caseTrackParams",
+          "schedule"
+        ],
+        "type": "object",
+        "x-unicourt-container": false
+      },
+      "CaseUpdateRequest": {
+        "properties": {
+          "caseId": {
+            "description": "UniCourt's Case Id for update.",
+            "example": "CASEhq9d8b72d0800c",
+            "maxLength": 18,
+            "minLength": 18,
+            "nullable": false,
+            "type": "string"
+          },
+          "pacerOptions": {
+            "$ref": "#/$defs/CaseUpdatePacerOptions"
+          }
+        },
+        "required": [
+          "caseId"
+        ],
+        "type": "object",
+        "x-unicourt-container": false
+      },
+      "CaseUpdatePacerOptions": {
+        "description": "Applicable for PACER cases.",
+        "properties": {
+          "additionalPageArray": {
+            "description": "Currently this option is only applicable for Federal PACER cases. The default behavior of the Case Update is to fetch the Docket Report from PACER which includes the parties and attorneys too.\n\nHowever if you need to fetch information for other pages in PACER you will need to specify it here.\n- associatedCases:\n> This will fetch the Associated Cases page in PACER if available. This page consists of related cases especially applicable for Multi-District Litigation cases and Member Cases. Including this option will internally link all related cases in our system. Data from this page will be available via the Related Cases API.\n- caseSummary:\n> This will fetch the Case Summary page in PACER if available. This page consists of additional case info which is not present in the Docket Report page. Data from this page will be structured and available as response in the Case API’s ```additional_info``` field.\n- listOfCreditors:\n> This page will fetch the “List Of Creditors” page for PACER Bankruptcy cases of case type \"bk\". Note that this page cannot be extracted for Bankruptcy cases of case type \"ap\" (Adversary Proceedings). This page consists of the Creditor information like the name and address of the Creditors. Data from this page will be structured and available as response in the Case API.\n",
+            "example": [
+              {
+                "fetchIfOlderThanDays": 30,
+                "page": "associatedCases"
+              },
+              {
+                "fetchIfOlderThanDays": 15,
+                "page": "caseSummary"
+              },
+              {
+                "fetchIfOlderThanDays": 15,
+                "page": "listOfCreditors"
+              }
+            ],
+            "items": {
+              "properties": {
+                "fetchIfOlderThanDays": {
+                  "default": 0,
+                  "description": "You can limit how often this page information is fetched to reduce your PACER fees.\n\nMin days is 0 and Max days is 100.\n\nExample:\n1.  Specifying a value of 0 ensures that this page is fetched from PACER for this case update irrespective of when the page was last fetched.\n2.  Specifying a value of 30 ensures that this page is fetched from PACER for this case update only if the last fetch was older than 30 days.\n",
+                  "example": 30,
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "page": {
+                  "enum": [
+                    "associatedCases",
+                    "caseSummary",
+                    "listOfCreditors"
+                  ],
+                  "example": "caseSummary",
+                  "maxLength": 15,
+                  "minLength": 11,
+                  "nullable": false,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "fetchParticipantsIfOlderThanDays": {
+            "default": 0,
+            "description": "**Currently this option is only applicable for Federal PACER cases. You can limit how often parties and attorneys for a PACER case are fetched to reduce your PACER fees. If you are tracking cases daily or hourly you could easily end up with a large PACER bill.**\n\n**Use Case: Cases are typically updated to check for new docket entry filings. However every update to PACER case costs money. Participants for a case change less often than docket entry filings. So fetching participants for every update might result in unnecessary PACER costs; especially on cases which have a lot of parties and attorneys. So instead of getting charged the minimum cost of $0.10 for an update which might have had few docket entries, you could end up spending $3 for every update because there were a lot of parties for that case that were also fetched.**\n\n**With this option you can choose when to fetch parties for case based on when was it last fetched.**\nYou can limit how often this participants are fetched in a PACER case to keep your PACER costs under control.\n\nMin days is 0 and Max days is 100.\n\nExample:\n1.  Specifying a value of 0 ensures that participants are fetched from PACER for this case update irrespective of when the participants were last fetched.\n2.  Specifying a value of 30 ensures that participants are fetched from PACER for this case update only if the last fetch was older than 30 days.\n",
+            "example": 30,
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "pacerClientCode": {
+            "description": "PACER Client Code. This is mandatory if your setting in PACER website is set to True for required client code.",
+            "example": "Test UniCourt API",
+            "maxLength": 32,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "pacerUserId": {
+            "description": "**Your PACER credentials username. This is mandatory when a PACER Case is being requested in the API. For Non PACER cases this is not mandatory. Suppose your request consists of Non PACER and PACER Cases then this needs to be passed becuase you are requesting a PACER case too.**",
+            "example": "URKYwer3tyh5r56gq2",
+            "maxLength": 40,
+            "minLength": 6,
+            "nullable": false,
+            "type": "string"
+          },
+          "refreshType": {
+            "default": "fetchNewDocketEntries",
+            "description": "This flag determines whether to pull only new or pull all the docket entries for a PACER case being requested.\n\nOnly one of the two values is allowed:\n-   fetchNewDocketEntries:\n    >   Updates the PACER case with only new docket entries that have been added after the previous update of the case being requested.\n-   fetchAllDocketEntries:\n    >   Updates the PACER case by re-parsing all dockets from #1 till latest docket entry available.\n",
+            "enum": [
+              "fetchNewDocketEntries",
+              "fetchAllDocketEntries"
+            ],
+            "example": "fetchNewDocketEntries",
+            "maxLength": 21,
+            "minLength": 21,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "pacerUserId"
+        ],
+        "type": "object",
+        "x-unicourt-container": false
+      },
+      "CaseTrackSchedule": {
+        "properties": {
+          "days": {
+            "description": "[] -> if schedule type is daily <br>\n1-7 -> if schedule type is weekly <br>\n1-31 -> if schedule type is monthly\n",
+            "example": [
+              1,
+              3,
+              5
+            ],
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "type": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly"
+            ],
+            "example": "weekly",
+            "maxLength": 7,
+            "minLength": 5,
+            "nullable": false,
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "days"
+        ],
+        "title": "Schedule",
+        "type": "object",
+        "x-unicourt-container": false
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "https://enterpriseapi.unicourt.com//caseTrack"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Success"
+        },
+        "Success object contains its message related to the API request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message indicating that the request was successful.",
+            "**object** (default: Success)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Exception"
+        },
+        "Exception object contains specific error code and its message related to the API request validation error or error occurred during API request processing.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Indicates the type of error occured.",
+            "**details**: Describes what went wrong.",
+            "**message**: Indicates the error message that describes the error code.",
+            "**object** (default: Exception)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Exception"
+        },
+        "Exception object contains specific error code and its message related to the API request validation error or error occurred during API request processing.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Indicates the type of error occured.",
+            "**details**: Describes what went wrong.",
+            "**message**: Indicates the error message that describes the error code.",
+            "**object** (default: Exception)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Exception"
+        },
+        "Exception object contains specific error code and its message related to the API request validation error or error occurred during API request processing.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Indicates the type of error occured.",
+            "**details**: Describes what went wrong.",
+            "**message**: Indicates the error message that describes the error code.",
+            "**object** (default: Exception)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

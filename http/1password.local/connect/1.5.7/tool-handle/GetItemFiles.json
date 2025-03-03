@@ -1,0 +1,159 @@
+{
+  "name": "GetItemFiles",
+  "description": "Get all the files inside an Item",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "vaultUuid": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The UUID of the Vault to fetch Items from"
+      },
+      "itemUuid": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The UUID of the Item to fetch files from"
+      },
+      "inline_files": {
+        "example": true,
+        "type": "boolean",
+        "description": "Tells server to return the base64-encoded file contents in the response."
+      }
+    },
+    "required": [
+      "vaultUuid",
+      "itemUuid"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://1password.local/vaults/{vaultUuid}/items/{itemUuid}/files{?inline_files}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**content**: Base64-encoded contents of the file. Only set if size <= OP_MAX_INLINE_FILE_SIZE_KB kb and `inline_files` is set to `true`.",
+            "**content_path**: Path of the Connect API that can be used to download the contents of this file.",
+            "**id**: ID of the file",
+            "**name**: Name of the file",
+            [
+              "**section**: For files that are in a section, this field describes the section.",
+              {
+                "$ul": [
+                  "**id**"
+                ]
+              }
+            ],
+            "**size**: Size in bytes of the file"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "413": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

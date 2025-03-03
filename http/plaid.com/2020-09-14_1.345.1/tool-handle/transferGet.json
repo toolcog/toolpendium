@@ -1,0 +1,198 @@
+{
+  "name": "transferGet",
+  "description": "The `/transfer/get` endpoint fetches information about the transfer corresponding to the given `transfer_id`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferGetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransferGetRequest": {
+        "description": "Defines the request schema for `/transfer/get`",
+        "properties": {
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "originator_client_id": {
+            "description": "The Plaid client ID of the transfer originator. Should only be present if `client_id` is a third-party sender (TPS).",
+            "nullable": true,
+            "type": "string"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "transfer_id": {
+            "$ref": "#/$defs/TransferID"
+          }
+        },
+        "required": [
+          "transfer_id"
+        ],
+        "title": "TransferGetRequest",
+        "type": "object"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "TransferID": {
+        "description": "Plaid’s unique identifier for a transfer.",
+        "title": "TransferID",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transfer/get"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TransferGetResponse"
+        },
+        "Defines the response schema for `/transfer/get`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            [
+              "**transfer**: Represents a transfer within the Transfers API.",
+              {
+                "$ul": [
+                  "**account_id**: The Plaid `account_id` corresponding to the end-user account that will be debited or credited.",
+                  "**ach_class**: Specifies the use case of the transfer. Required for transfers on an ACH network.",
+                  "**amount**: The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+                  "**cancellable**: When `true`, you can still cancel this transfer.",
+                  "**created**: The datetime when this transfer was created. This will be of the form `2006-01-02T15:04:05Z`",
+                  "**description**: The description of the transfer.",
+                  "**expected_settlement_date**: The expected date when the full amount of the transfer settles at the consumers’ account, if the transfer is credit; or at the customer's business checking account, if the transfer is debit. Only set for ACH transfers and is null for non-ACH transfers. Only set for ACH transfers. This will be of the form YYYY-MM-DD.",
+                  "**expected_settlement_schedule**: The expected settlement schedule of this transfer, if posted. Only applies to ACH debit transfers.",
+                  [
+                    "**failure_reason**: The failure reason if the event type for a transfer is `\"failed\"` or `\"returned\"`. Null value otherwise.",
+                    {
+                      "$ul": [
+                        "**ach_return_code**: The ACH return code, e.g. `R01`.  A return code will be provided if and only if the transfer status is `returned`. For a full listing of ACH return codes, see [Transfer errors](https://plaid.com/docs/errors/transfer/#ach-return-codes).",
+                        "**description**: A human-readable description of the reason for the failure or reversal."
+                      ]
+                    }
+                  ],
+                  "**funding_account_id**: The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited.",
+                  "**guarantee_decision**: Indicates whether the transfer is guaranteed by Plaid (Guarantee customers only). This field will contain either `GUARANTEED` or `NOT_GUARANTEED` indicating whether Plaid will guarantee the transfer. If the transfer is not guaranteed, additional information will be provided in the `guarantee_decision_rationale` field. Refer to the `code` field in `guarantee_decision_rationale` for details.",
+                  [
+                    "**guarantee_decision_rationale**: The rationale for Plaid's decision to not guarantee a transfer. Will be `null` unless `guarantee_decision` is `NOT_GUARANTEED`.",
+                    {
+                      "$ul": [
+                        "**code**: A code representing the reason Plaid declined to guarantee this transfer:",
+                        "**description**: A human-readable description of why the transfer cannot be guaranteed."
+                      ]
+                    }
+                  ],
+                  "**id**: Plaid’s unique identifier for a transfer.",
+                  "**iso_currency_code**: The currency of the transfer amount, e.g. \"USD\"",
+                  "**metadata**: The Metadata object is a mapping of client-provided string fields to any string value. The following limitations apply:",
+                  "**network**: The network or rails used for the transfer.",
+                  "**origination_account_id**: Plaid’s unique identifier for the origination account that was used for this transfer.",
+                  "**originator_client_id**: The Plaid client ID that is the originator of this transfer. Only present if created on behalf of another client as a third-party sender (TPS).",
+                  "**recurring_transfer_id**: The id of the recurring transfer if this transfer belongs to a recurring transfer.",
+                  "**refunds**: A list of refunds associated with this transfer.",
+                  "**settled_amount**: The accumulated amount that have been swept to date. This number does not reflect `return_swept` amount if the transfer is returned. Only applies to ACH debit transfers.",
+                  "**standard_return_window**: The date 3 business days from settlement date indicating the following ACH returns can no longer happen: R01, R02, R03, R29. This will be of the form YYYY-MM-DD.",
+                  "**status**: The status of the transfer.",
+                  "**sweep_status**: The status of the sweep for the transfer.",
+                  "**type**: The type of transfer. This will be either `debit` or `credit`.  A `debit` indicates a transfer of money into the origination account; a `credit` indicates a transfer of money out of the origination account.",
+                  "**unauthorized_return_window**: The date 61 business days from settlement date indicating the following ACH returns can no longer happen: R05, R07, R10, R11, R51, R33, R37, R38, R51, R52, R53. This will be of the form YYYY-MM-DD.",
+                  [
+                    "**user**: The legal name and other information for the account holder.",
+                    {
+                      "$ul": [
+                        [
+                          "**address**: The address associated with the account holder.",
+                          {
+                            "$ul": [
+                              "**city**: Ex. \"San Francisco\"",
+                              "**country**: A two-letter country code (e.g., \"US\").",
+                              "**postal_code**: The postal code (e.g., \"94103\").",
+                              "**region**: The state or province (e.g., \"CA\").",
+                              "**street**: The street number and name (i.e., \"100 Market St.\")."
+                            ]
+                          }
+                        ],
+                        "**email_address**: The user's email address.",
+                        "**legal_name**: The user's legal name.",
+                        "**phone_number**: The user's phone number."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

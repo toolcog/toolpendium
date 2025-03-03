@@ -1,0 +1,80 @@
+{
+  "name": "getTeamsByYearSimple",
+  "description": "Gets a list of short form `Team_Simple` objects that competed in the given year, paginated in groups of 500.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "year": {
+        "type": "integer",
+        "description": "Competition Year (or Season). Must be 4 digits."
+      },
+      "page_num": {
+        "type": "integer",
+        "description": "Page number of results to return, zero-indexed"
+      }
+    },
+    "required": [
+      "year",
+      "page_num"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/teams/{year}/{page_num}/simple"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**city**: City of team derived from parsing the address registered with FIRST.",
+            "**country**: Country of team derived from parsing the address registered with FIRST.",
+            "**key**: TBA team key with the format `frcXXXX` with `XXXX` representing the team number.",
+            "**name**: Official long name registered with FIRST.",
+            "**nickname**: Team nickname provided by FIRST.",
+            "**state_prov**: State of team derived from parsing the address registered with FIRST.",
+            "**team_number**: Official team number issued by FIRST."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

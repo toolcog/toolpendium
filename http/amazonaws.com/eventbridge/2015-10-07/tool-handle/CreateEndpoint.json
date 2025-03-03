@@ -1,0 +1,390 @@
+{
+  "name": "CreateEndpoint",
+  "description": "Creates a global endpoint. Global endpoints improve your application's availability by making it regional-fault tolerant. To do this, you define a primary and secondary Region with event buses in each Region. You also create a Amazon Route 53 health check that will tell EventBridge to route events to the secondary Region when an \"unhealthy\" state is encountered and events will be routed back to the primary Region when the health check reports a \"healthy\" state.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "AWSEvents.CreateEndpoint"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/CreateEndpointRequest"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "CreateEndpointRequest": {
+        "type": "object",
+        "required": [
+          "Name",
+          "RoutingConfig",
+          "EventBuses"
+        ],
+        "title": "CreateEndpointRequest",
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EndpointName"
+              },
+              {
+                "description": "The name of the global endpoint. For example, <code>\"Name\":\"us-east-2-custom_bus_A-endpoint\"</code>."
+              }
+            ]
+          },
+          "Description": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EndpointDescription"
+              },
+              {
+                "description": "A description of the global endpoint."
+              }
+            ]
+          },
+          "RoutingConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoutingConfig"
+              },
+              {
+                "description": "Configure the routing policy, including the health check and secondary Region.."
+              }
+            ]
+          },
+          "ReplicationConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReplicationConfig"
+              },
+              {
+                "description": "Enable or disable event replication. The default state is <code>ENABLED</code> which means you must supply a <code>RoleArn</code>. If you don't have a <code>RoleArn</code> or you don't want event replication enabled, set the state to <code>DISABLED</code>."
+              }
+            ]
+          },
+          "EventBuses": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EndpointEventBusList"
+              },
+              {
+                "description": "<p>Define the event buses used. </p> <important> <p>The names of the event buses must be identical in each Region.</p> </important>"
+              }
+            ]
+          },
+          "RoleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IamRoleArn"
+              },
+              {
+                "description": "The ARN of the role used for replication."
+              }
+            ]
+          }
+        }
+      },
+      "EndpointName": {
+        "type": "string",
+        "pattern": "[\\.\\-_A-Za-z0-9]+",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "EndpointDescription": {
+        "type": "string",
+        "pattern": ".*",
+        "maxLength": 512
+      },
+      "RoutingConfig": {
+        "type": "object",
+        "required": [
+          "FailoverConfig"
+        ],
+        "properties": {
+          "FailoverConfig": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/FailoverConfig"
+              },
+              {
+                "description": "The failover configuration for an endpoint. This includes what triggers failover and what happens when it's triggered."
+              }
+            ]
+          }
+        },
+        "description": "The routing configuration of the endpoint."
+      },
+      "FailoverConfig": {
+        "type": "object",
+        "required": [
+          "Primary",
+          "Secondary"
+        ],
+        "properties": {
+          "Primary": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Primary"
+              },
+              {
+                "description": "The main Region of the endpoint."
+              }
+            ]
+          },
+          "Secondary": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Secondary"
+              },
+              {
+                "description": "The Region that events are routed to when failover is triggered or event replication is enabled."
+              }
+            ]
+          }
+        },
+        "description": "The failover configuration for an endpoint. This includes what triggers failover and what happens when it's triggered."
+      },
+      "Primary": {
+        "type": "object",
+        "required": [
+          "HealthCheck"
+        ],
+        "properties": {
+          "HealthCheck": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/HealthCheck"
+              },
+              {
+                "description": "The ARN of the health check used by the endpoint to determine whether failover is triggered."
+              }
+            ]
+          }
+        },
+        "description": "The primary Region of the endpoint."
+      },
+      "HealthCheck": {
+        "type": "string",
+        "pattern": "^arn:aws([a-z]|\\-)*:route53:::healthcheck/[\\-a-z0-9]+$",
+        "minLength": 1,
+        "maxLength": 1600
+      },
+      "Secondary": {
+        "type": "object",
+        "required": [
+          "Route"
+        ],
+        "properties": {
+          "Route": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Route"
+              },
+              {
+                "description": "Defines the secondary Region."
+              }
+            ]
+          }
+        },
+        "description": "The secondary Region that processes events when failover is triggered or replication is enabled."
+      },
+      "Route": {
+        "type": "string",
+        "pattern": "^[\\-a-z0-9]+$",
+        "minLength": 9,
+        "maxLength": 20
+      },
+      "ReplicationConfig": {
+        "type": "object",
+        "properties": {
+          "State": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReplicationState"
+              },
+              {
+                "description": "The state of event replication."
+              }
+            ]
+          }
+        },
+        "description": "Endpoints can replicate all events to the secondary Region."
+      },
+      "ReplicationState": {
+        "type": "string",
+        "enum": [
+          "ENABLED",
+          "DISABLED"
+        ]
+      },
+      "EndpointEventBusList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EndpointEventBus"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "EndpointEventBus": {
+        "type": "object",
+        "required": [
+          "EventBusArn"
+        ],
+        "properties": {
+          "EventBusArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/NonPartnerEventBusArn"
+              },
+              {
+                "description": "The ARN of the event bus the endpoint is associated with."
+              }
+            ]
+          }
+        },
+        "description": "The event buses the endpoint is associated with."
+      },
+      "NonPartnerEventBusArn": {
+        "type": "string",
+        "pattern": "^arn:aws[a-z-]*:events:[a-z]{2}-[a-z-]+-\\d+:\\d{12}:event-bus/[\\w.-]+$",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "IamRoleArn": {
+        "type": "string",
+        "pattern": "^arn:aws[a-z-]*:iam::\\d{12}:role\\/[\\w+=,.@/-]+$",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://events.us-east-1.amazonaws.com/#X-Amz-Target=AWSEvents.CreateEndpoint"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**Name**",
+            "**Arn**",
+            "**RoutingConfig**",
+            "**ReplicationConfig**",
+            "**EventBuses**",
+            "**RoleArn**",
+            "**State**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

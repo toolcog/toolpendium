@@ -1,0 +1,129 @@
+{
+  "name": "apps_list-webhook-deliveries",
+  "description": "Returns a list of webhook deliveries for the webhook configured for a GitHub App.\n\nYou must use a [JWT](https://docs.github.com/enterprise-server@3.8/apps/building-github-apps/authenticating-with-github-apps/#authenticating-as-a-github-app) to access this endpoint.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "per_page": {
+        "default": 30,
+        "type": "integer",
+        "description": "The number of results per page (max 100)."
+      },
+      "cursor": {
+        "type": "string",
+        "description": "Used for pagination: the starting delivery from which the page of deliveries is fetched. Refer to the `link` header for the next and previous page cursors."
+      },
+      "redelivery": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://github.com//app/hook/deliveries{?per_page,cursor,redelivery}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Simple webhook delivery list"
+        },
+        "Delivery made by a webhook, without request and response information.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**action**: The type of activity for the event that triggered the delivery.",
+            "**delivered_at**: Time when the webhook delivery occurred.",
+            "**duration**: Time spent delivering.",
+            "**event**: The event that triggered the delivery.",
+            "**guid**: Unique identifier for the event (shared with all deliveries for all webhooks that subscribe to this event).",
+            "**id**: Unique identifier of the webhook delivery.",
+            "**installation_id**: The id of the GitHub App installation associated with this event.",
+            "**redelivery**: Whether the webhook delivery is a redelivery.",
+            "**repository_id**: The id of the repository associated with this event.",
+            "**status**: Describes the response returned after attempting the delivery.",
+            "**status_code**: Status code received when delivery was made."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

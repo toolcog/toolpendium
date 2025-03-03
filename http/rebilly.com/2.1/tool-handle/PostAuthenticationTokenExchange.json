@@ -1,0 +1,398 @@
+{
+  "name": "PostAuthenticationTokenExchange",
+  "description": "Exchange Authentication Token for JWT.\n\nIt will also invalidate an Authentication Token by default (so it can only be exchanged once).\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "token": {
+        "type": "string",
+        "description": "The token identifier string."
+      },
+      "Organization-Id": {
+        "$ref": "#/components/schemas/ResourceId",
+        "description": "Organization identifier in scope of which need to perform request (if not specified, the default organization will be used)."
+      },
+      "body": {
+        "$ref": "#/$defs/CustomerJWT"
+      }
+    },
+    "required": [
+      "token",
+      "body"
+    ],
+    "$defs": {
+      "CustomerJWT": {
+        "properties": {
+          "_links": {
+            "description": "The links related to resource.",
+            "items": {
+              "$ref": "#/$defs/CustomerLink"
+            },
+            "minItems": 1,
+            "readOnly": true,
+            "type": "array"
+          },
+          "acl": {
+            "$ref": "#/$defs/Acl"
+          },
+          "createdTime": {
+            "description": "Session created time.",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "customClaims": {
+            "additionalProperties": true,
+            "example": {
+              "documents": [
+                "identity-proof",
+                "address-proof"
+              ],
+              "redirectUrl": "https://mywebsite.com"
+            },
+            "type": "object"
+          },
+          "customerId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The customer's ID.",
+            "readOnly": true
+          },
+          "expiredTime": {
+            "description": "Session expired time. Defaults to one hour.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceId"
+              }
+            ],
+            "description": "The session identifier string.",
+            "readOnly": true
+          },
+          "invalidate": {
+            "default": true,
+            "description": "Whether to invalidate token after exchange or not.",
+            "example": true,
+            "type": "boolean",
+            "writeOnly": true
+          },
+          "oneTimePassword": {
+            "description": "The one time password sent via an email. Should contain digits only.",
+            "example": "123456",
+            "pattern": "^[0-9]{6}$",
+            "type": "string",
+            "writeOnly": true
+          },
+          "token": {
+            "description": "The session's token used for authentication.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "Session type.",
+            "enum": [
+              "customer"
+            ],
+            "readOnly": true,
+            "type": "string"
+          },
+          "updatedTime": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ServerTimestamp"
+              }
+            ],
+            "description": "Session updated time."
+          }
+        },
+        "type": "object"
+      },
+      "CustomerLink": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Link"
+          }
+        ],
+        "properties": {
+          "rel": {
+            "description": "The link type.",
+            "enum": [
+              "customer",
+              "targetCustomer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "rel"
+        ],
+        "type": "object"
+      },
+      "Link": {
+        "properties": {
+          "href": {
+            "description": "The link URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "href"
+        ],
+        "type": "object"
+      },
+      "Acl": {
+        "items": {
+          "properties": {
+            "permissions": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/AclPermissions"
+                }
+              ],
+              "description": "Specify individual permission here if creating a restricted API key. Use wildcard `*` for full access."
+            },
+            "scope": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ApiKeyScope"
+                }
+              ],
+              "description": "Api Key scope."
+            }
+          },
+          "required": [
+            "scope",
+            "permissions"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "AclPermissions": {
+        "example": [
+          "PostFile",
+          "StorefrontGetAccount",
+          "StorefrontGetWebsite",
+          "StorefrontGetKycDocumentCollection",
+          "StorefrontGetKycDocument",
+          "StorefrontPostKycDocument"
+        ],
+        "items": {
+          "format": "operationId",
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "ApiKeyScope": {
+        "example": {
+          "organizationId": [
+            "organizationId-id-1"
+          ]
+        },
+        "properties": {
+          "customFieldName": {
+            "description": "The array of custom field names.",
+            "items": {
+              "maxLength": 60,
+              "pattern": "^[\\w-]+$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "organizationId": {
+            "description": "The array of account identifier strings.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ResourceId"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "planId": {
+            "description": "The array of plan identifier strings.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ResourceId"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "productId": {
+            "description": "The array of product identifier strings.",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ResourceId"
+                }
+              ]
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ResourceId": {
+        "description": "The resource ID. Defaults to UUID v4.",
+        "example": "4f6cf35x-2c4y-483z-a0a9-158621f77a21",
+        "maxLength": 50,
+        "type": "string"
+      },
+      "ServerTimestamp": {
+        "description": "Read-only timestamp, automatically assigned on back-end.",
+        "format": "date-time",
+        "readOnly": true,
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api-sandbox.rebilly.com/authentication-tokens/{token}/exchange"
+    },
+    "headers": {
+      "Organization-Id": {
+        "$": "Organization-Id"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**_links**: The links related to resource.",
+            "**acl**",
+            "**createdTime**: Session created time.",
+            "**customClaims**",
+            "**customerId**: The customer's ID.",
+            "**expiredTime**: Session expired time. Defaults to one hour.",
+            "**id**: The session identifier string.",
+            "**invalidate**: Whether to invalidate token after exchange or not. (default: true)",
+            "**oneTimePassword**: The one time password sent via an email. Should contain digits only.",
+            "**token**: The session's token used for authentication.",
+            "**type**: Session type.",
+            "**updatedTime**: Session updated time."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The Problem Details JSON Object [[RFC7807](https://tools.ietf.org/html/rfc7807)].",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**type**: A URI reference [[RFC3986](https://tools.ietf.org/html/rfc3986)] that identifies the problem type. It should provide human-readable documentation for the problem type. When this member is not present, its value is assumed to be \"about:blank\".",
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type. It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization.",
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**error**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

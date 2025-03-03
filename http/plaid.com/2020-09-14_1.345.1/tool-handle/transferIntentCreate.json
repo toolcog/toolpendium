@@ -1,0 +1,313 @@
+{
+  "name": "transferIntentCreate",
+  "description": "Use the `/transfer/intent/create` endpoint to generate a transfer intent object and invoke the Transfer UI.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/TransferIntentCreateRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TransferIntentCreateRequest": {
+        "description": "Defines the request schema for `/transfer/intent/create`",
+        "properties": {
+          "account_id": {
+            "description": "The Plaid `account_id` corresponding to the end-user account that will be debited or credited.",
+            "nullable": true,
+            "type": "string"
+          },
+          "ach_class": {
+            "$ref": "#/$defs/ACHClass"
+          },
+          "amount": {
+            "$ref": "#/$defs/TransferAmount"
+          },
+          "client_id": {
+            "$ref": "#/$defs/APIClientID"
+          },
+          "description": {
+            "description": "A description for the underlying transfer. Maximum of 8 characters.",
+            "maxLength": 8,
+            "minLength": 1,
+            "type": "string"
+          },
+          "funding_account_id": {
+            "$ref": "#/$defs/TransferFundingAccountIDRequest"
+          },
+          "iso_currency_code": {
+            "description": "The currency of the transfer amount, e.g. \"USD\"",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/$defs/TransferMetadata"
+          },
+          "mode": {
+            "$ref": "#/$defs/TransferIntentCreateMode"
+          },
+          "network": {
+            "$ref": "#/$defs/TransferIntentCreateNetwork"
+          },
+          "origination_account_id": {
+            "deprecated": true,
+            "description": "Plaid’s unique identifier for the origination account for the intent. If not provided, the default account will be used.",
+            "nullable": true,
+            "type": "string",
+            "x-hidden-from-docs": true
+          },
+          "require_guarantee": {
+            "default": false,
+            "description": "When `true`, the transfer requires a `GUARANTEED` decision by Plaid to proceed (Guarantee customers only).",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "secret": {
+            "$ref": "#/$defs/APISecret"
+          },
+          "user": {
+            "$ref": "#/$defs/TransferUserInRequest"
+          }
+        },
+        "required": [
+          "mode",
+          "amount",
+          "description",
+          "user"
+        ],
+        "title": "TransferIntentCreateRequest",
+        "type": "object"
+      },
+      "ACHClass": {
+        "description": "Specifies the use case of the transfer. Required for transfers on an ACH network.\n\n`\"ccd\"` - Corporate Credit or Debit - fund transfer between two corporate bank accounts\n\n`\"ppd\"` - Prearranged Payment or Deposit - the transfer is part of a pre-existing relationship with a consumer, eg. bill payment\n\n`\"tel\"` - Telephone-Initiated Entry\n\n`\"web\"` - Internet-Initiated Entry - debits from a consumer’s account where their authorization is obtained over the Internet",
+        "enum": [
+          "ccd",
+          "ppd",
+          "tel",
+          "web"
+        ],
+        "title": "ACHClass",
+        "type": "string"
+      },
+      "TransferAmount": {
+        "description": "The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+        "title": "TransferAmount",
+        "type": "string"
+      },
+      "APIClientID": {
+        "description": "Your Plaid API `client_id`. The `client_id` is required and may be provided either in the `PLAID-CLIENT-ID` header or as part of a request body.",
+        "title": "ClientID",
+        "type": "string"
+      },
+      "TransferFundingAccountIDRequest": {
+        "description": "The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited. Defaults to the account configured during onboarding.",
+        "nullable": true,
+        "type": "string"
+      },
+      "TransferMetadata": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "The Metadata object is a mapping of client-provided string fields to any string value. The following limitations apply:\nThe JSON values must be Strings (no nested JSON objects allowed)\nOnly ASCII characters may be used\nMaximum of 50 key/value pairs\nMaximum key length of 40 characters\nMaximum value length of 500 characters\n",
+        "maxProperties": 50,
+        "nullable": true,
+        "title": "TransferMetadata",
+        "type": "object"
+      },
+      "TransferIntentCreateMode": {
+        "description": "The direction of the flow of transfer funds.\n\n`PAYMENT`: Transfers funds from an end user's account to your business account.\n\n`DISBURSEMENT`: Transfers funds from your business account to an end user's account.",
+        "enum": [
+          "PAYMENT",
+          "DISBURSEMENT"
+        ],
+        "title": "TransferIntentCreateMode",
+        "type": "string"
+      },
+      "TransferIntentCreateNetwork": {
+        "default": "same-day-ach",
+        "description": "The network or rails used for the transfer. Defaults to `same-day-ach`.\n\nFor transfers submitted as either `ach` or `same-day-ach` the cutoff for same-day is 9:30 AM Pacific Time and the cutoff for next-day transfers is 5:30 PM Pacific Time. It is recommended to submit a transfer at least 15 minutes before the cutoff time in order to ensure that it will be processed before the cutoff. Any transfer that is indicated as `same-day-ach` and that misses the same-day cutoff, but is submitted in time for the next-day cutoff, will be sent over next-day rails and will not incur same-day charges. Note that both legs of the transfer will be downgraded if applicable.",
+        "enum": [
+          "ach",
+          "same-day-ach"
+        ],
+        "title": "TransferIntentCreateNetwork",
+        "type": "string"
+      },
+      "APISecret": {
+        "description": "Your Plaid API `secret`. The `secret` is required and may be provided either in the `PLAID-SECRET` header or as part of a request body.",
+        "title": "APISecret",
+        "type": "string"
+      },
+      "TransferUserInRequest": {
+        "additionalProperties": true,
+        "description": "The legal name and other information for the account holder.",
+        "properties": {
+          "address": {
+            "$ref": "#/$defs/TransferUserAddressInRequest"
+          },
+          "email_address": {
+            "description": "The user's email address.",
+            "type": "string"
+          },
+          "legal_name": {
+            "description": "The user's legal name.",
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The user's phone number.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "legal_name"
+        ],
+        "title": "TransferUserInRequest",
+        "type": "object"
+      },
+      "TransferUserAddressInRequest": {
+        "additionalProperties": true,
+        "description": "The address associated with the account holder. Providing this data will improve the likelihood that Plaid will be able to guarantee the transfer, if applicable.",
+        "properties": {
+          "city": {
+            "description": "Ex. \"San Francisco\"",
+            "type": "string"
+          },
+          "country": {
+            "description": "A two-letter country code (e.g., \"US\").",
+            "type": "string"
+          },
+          "postal_code": {
+            "description": "The postal code (e.g., \"94103\").",
+            "type": "string"
+          },
+          "region": {
+            "description": "The state or province (e.g., \"CA\").",
+            "type": "string"
+          },
+          "street": {
+            "description": "The street number and name (i.e., \"100 Market St.\").",
+            "type": "string"
+          }
+        },
+        "title": "TransferUserAddressInRequest",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://production.plaid.com/transfer/intent/create"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "TransferIntentCreateResponse"
+        },
+        "Defines the response schema for `/transfer/intent/create`",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**request_id**: A unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            [
+              "**transfer_intent**: Represents a transfer intent within Transfer UI.",
+              {
+                "$ul": [
+                  "**account_id**: The Plaid `account_id` corresponding to the end-user account that will be debited or credited. Returned only if `account_id` was set on intent creation.",
+                  "**ach_class**: Specifies the use case of the transfer. Required for transfers on an ACH network.",
+                  "**amount**: The amount of the transfer (decimal string with two digits of precision e.g. \"10.00\").",
+                  "**created**: The datetime the transfer was created. This will be of the form `2006-01-02T15:04:05Z`.",
+                  "**description**: A description for the underlying transfer. Maximum of 8 characters.",
+                  "**funding_account_id**: The id of the funding account to use, available in the Plaid Dashboard. This determines which of your business checking accounts will be credited or debited.",
+                  "**id**: Plaid's unique identifier for the transfer intent object.",
+                  "**iso_currency_code**: The currency of the transfer amount, e.g. \"USD\"",
+                  "**metadata**: The Metadata object is a mapping of client-provided string fields to any string value. The following limitations apply:",
+                  "**mode**: The direction of the flow of transfer funds.",
+                  "**network**: The network or rails used for the transfer. Defaults to `same-day-ach`. (default: same-day-ach)",
+                  "**origination_account_id**: Plaid’s unique identifier for the origination account for the intent. If not provided, the default account will be used.",
+                  "**require_guarantee**: When `true`, the transfer requires a `GUARANTEED` decision by Plaid to proceed (Guarantee customers only).",
+                  "**status**: The status of the transfer intent.",
+                  [
+                    "**user**: The legal name and other information for the account holder.",
+                    {
+                      "$ul": [
+                        [
+                          "**address**: The address associated with the account holder.",
+                          {
+                            "$ul": [
+                              "**city**: Ex. \"San Francisco\"",
+                              "**country**: A two-letter country code (e.g., \"US\").",
+                              "**postal_code**: The postal code (e.g., \"94103\").",
+                              "**region**: The state or province (e.g., \"CA\").",
+                              "**street**: The street number and name (i.e., \"100 Market St.\")."
+                            ]
+                          }
+                        ],
+                        "**email_address**: The user's email address.",
+                        "**legal_name**: The user's legal name.",
+                        "**phone_number**: The user's phone number."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "We use standard HTTP response codes for success and failure notifications, and our errors are further classified by `error_type`. In general, 200 HTTP codes correspond to success, 40X codes are for developer- or user-related failures, and 50X codes are for Plaid-related issues. An Item with a non-`null` error object will only be part of an API response when calling `/item/get` to view Item status. Otherwise, error fields will be `null` if no error has occurred; if an error has occurred, an error code will be returned instead.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**causes**: In the Assets product, a request can pertain to more than one Item. If an error is returned for such a request, `causes` will return an array of errors containing a breakdown of these errors on the individual Item level, if any can be identified.",
+            "**display_message**: A user-friendly representation of the error code. `null` if the error is not related to user action.",
+            "**documentation_url**: The URL of a Plaid documentation page with more information about the error",
+            "**error_code**: The particular error code. Safe for programmatic use.",
+            "**error_message**: A developer-friendly representation of the error code. This may change over time and is not safe for programmatic use.",
+            "**error_type**: A broad categorization of the error. Safe for programmatic use.",
+            "**request_id**: A unique ID identifying the request, to be used for troubleshooting purposes. This field will be omitted in errors provided by webhooks.",
+            "**status**: The HTTP status code associated with the error. This will only be returned in the response body when the error information is provided via a webhook.",
+            "**suggested_action**: Suggested steps for resolving the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

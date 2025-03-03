@@ -1,0 +1,302 @@
+{
+  "name": "add_image",
+  "description": "Creates a new analysis task that is executed asynchronously",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "force": {
+        "type": "boolean",
+        "description": "Override any existing entry in the system"
+      },
+      "autosubscribe": {
+        "type": "boolean",
+        "description": "Instruct engine to automatically begin watching the added tag for updates from registry"
+      },
+      "x-anchore-account": {
+        "type": "string",
+        "description": "An account name to change the resource scope of the request to that account, if permissions allow (admin only)"
+      },
+      "body": {
+        "$ref": "#/$defs/ImageAnalysisRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ImageAnalysisRequest": {
+        "description": "A request to add an image to be watched and analyzed by the engine. Optionally include the dockerfile content. Either source, digest or tag must be present.",
+        "properties": {
+          "annotations": {
+            "description": "Annotations to be associated with the added image in key/value form",
+            "type": "object"
+          },
+          "created_at": {
+            "description": "Optional override of the image creation time, only honored when both tag and digest are also supplied  e.g. 2018-10-17T18:14:00Z. Deprecated in favor of the 'source' field",
+            "format": "date-time",
+            "type": "string"
+          },
+          "digest": {
+            "description": "A digest string for an image, maybe a pull string or just a digest. e.g. nginx@sha256:123 or sha256:abc123. If a pull string, it must have same regisry/repo as the tag field. Deprecated in favor of the 'source' field",
+            "type": "string"
+          },
+          "dockerfile": {
+            "description": "Base64 encoded content of the dockerfile for the image, if available. Deprecated in favor of the 'source' field.",
+            "pattern": "^[a-zA-Z0-9+/=]+$",
+            "type": "string"
+          },
+          "image_type": {
+            "description": "Optional. The type of image this is adding, defaults to \"docker\". This can be ommitted until multiple image types are supported.",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ImageSource"
+          },
+          "tag": {
+            "description": "Full pullable tag reference for image. e.g. docker.io/nginx:latest. Deprecated in favor of the 'source' field",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ImageSource": {
+        "description": "A set of analysis source types. Only one may be set in any given request.",
+        "properties": {
+          "archive": {
+            "$ref": "#/$defs/AnalysisArchiveSource"
+          },
+          "digest": {
+            "$ref": "#/$defs/RegistryDigestSource"
+          },
+          "import": {
+            "$ref": "#/$defs/ImageImportManifest"
+          },
+          "tag": {
+            "$ref": "#/$defs/RegistryTagSource"
+          }
+        },
+        "type": "object"
+      },
+      "AnalysisArchiveSource": {
+        "description": "An image reference in the analysis archive for the purposes of loading analysis from the archive into th working set",
+        "nullable": true,
+        "properties": {
+          "digest": {
+            "description": "The image digest identify the analysis. Archived analyses are based on digest, tag records are restored as analysis is restored.",
+            "pattern": "^sha256:[a-fA-F0-9]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "digest"
+        ],
+        "type": "object"
+      },
+      "RegistryDigestSource": {
+        "description": "An image reference using a digest in a registry, includes some extra tag and timestamp info in addition to the pull string to allow proper tag history reconstruction.",
+        "nullable": true,
+        "properties": {
+          "creation_timestamp_override": {
+            "description": "Optional override of the image creation time to support proper tag history construction in cases of out-of-order analysis compared to registry history for the tag",
+            "format": "date-time",
+            "type": "string"
+          },
+          "dockerfile": {
+            "description": "Base64 encoded content of the dockerfile used to build the image, if available.",
+            "pattern": "^[a-zA-Z0-9+/=]+$",
+            "type": "string"
+          },
+          "pullstring": {
+            "description": "A digest-based pullstring (e.g. docker.io/nginx@sha256:123abc)",
+            "type": "string"
+          },
+          "tag": {
+            "description": "A valid docker tag reference (e.g. docker.io/nginx:latest) that will be associated with the image but not used to pull the image.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pullstring",
+          "tag"
+        ],
+        "type": "object"
+      },
+      "ImageImportManifest": {
+        "nullable": true,
+        "properties": {
+          "contents": {
+            "$ref": "#/$defs/ImportContentDigests"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "local_image_id": {
+            "description": "An \"imageId\" as used by Docker if available",
+            "type": "string"
+          },
+          "operation_uuid": {
+            "type": "string"
+          },
+          "parent_digest": {
+            "description": "The digest of the images's manifest-list parent if it was accessed from a multi-arch tag where the tag pointed to a manifest-list. This allows preservation of that relationship in the data",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "description": "Full docker reference tags",
+              "example": "docker.io/library/nginx:latest",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags",
+          "contents",
+          "digest",
+          "operation_uuid"
+        ],
+        "type": "object"
+      },
+      "ImportContentDigests": {
+        "description": "Digest of content to use in the final import",
+        "properties": {
+          "dockerfile": {
+            "description": "Digest for reference content for dockerfile",
+            "type": "string"
+          },
+          "image_config": {
+            "description": "Digest for reference content for image config",
+            "type": "string"
+          },
+          "manifest": {
+            "description": "Digest to reference content for the image manifest",
+            "type": "string"
+          },
+          "packages": {
+            "description": "Digest to use for the packages content",
+            "type": "string"
+          },
+          "parent_manifest": {
+            "description": "Digest for reference content for parent manifest",
+            "type": "string"
+          }
+        },
+        "required": [
+          "packages",
+          "manifest",
+          "image_config"
+        ],
+        "type": "object"
+      },
+      "RegistryTagSource": {
+        "description": "An image reference using a tag in a registry, this is the most common source type.",
+        "nullable": true,
+        "properties": {
+          "dockerfile": {
+            "description": "Base64 encoded content of the dockerfile used to build the image, if available.",
+            "pattern": "^[a-zA-Z0-9+/=]+$",
+            "type": "string"
+          },
+          "pullstring": {
+            "description": "A docker pull string (e.g. docker.io/nginx:latest, or docker.io/nginx@sha256:abd) to retrieve the image",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pullstring"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//images{?force,autosubscribe}"
+    },
+    "headers": {
+      "x-anchore-account": {
+        "$": "x-anchore-account"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A list of Anchore Images",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**analysis_status**: A state value for the current status of the analysis progress of the image",
+            "**annotations**",
+            "**created_at**",
+            "**imageDigest**",
+            "**image_content**: A metadata content record for a specific image, containing different content type entries",
+            "**image_detail**: Details specific to an image reference and type such as tag and image source",
+            "**image_status**: State of the image",
+            "**last_updated**",
+            "**record_version**: The version of the record, used for internal schema updates and data migrations.",
+            "**userId**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Generic HTTP API error response",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**detail**: Details structure for additional information about the error if available. Content and structure will be error specific.",
+            "**error_type**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

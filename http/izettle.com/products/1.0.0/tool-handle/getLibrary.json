@@ -1,0 +1,71 @@
+{
+  "name": "getLibrary",
+  "description": "Will return the entire library for the authenticated user. If size of the library exceeds server preferences (normally 500) or the value of the optional limit parameter, the result will be paginated. Paginated responses return a Link header, indicating the next URI to fetch. The resulting header value will look something like:\n\n<https://products.izettle.com/organizations/self/library?limit=X&offset=Y>; rel=\"next\"\n\nwhere limit is number of items in response, and offset is the current position in pagination. The rel-part in the header is the links relation to the data previously recieved. The idea is that as long as this header is present there are still items remaining to be fetched. When either the header is not present or it's value doesn't contain any \"next\" value, all items have been sent to the client.\n\nNote: The client should NOT try to extract query parameters from the URI, but rather use it as-is for the next request. Also, clients should be perpared that one Link header might contain multiple other IRIs that are not \"next\" (there will never be more than one \"next\" though). See more at:\n\n    IETF: https://tools.ietf.org/html/rfc5988\n    GitHub: https://developer.github.com/guides/traversing-with-pagination/\n\nIf eventLogUuid is provided, the response will only include events affecting the library since that event. Such responses are normally quite small and would be a preferred method for most fat clients after retrieving the initial full library.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "organizationUuid": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "eventLogUuid": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "limit": {
+        "default": 500,
+        "format": "int32",
+        "maximum": 500,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "offset": {
+        "type": "string"
+      },
+      "all": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "organizationUuid"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://products.izettle.com/organizations/{organizationUuid}/library{?eventLogUuid,limit,offset,all}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**deletedDiscounts**",
+            "**deletedProducts**",
+            "**discounts**",
+            "**fromEventLogUuid**",
+            "**products**",
+            "**untilEventLogUuid**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

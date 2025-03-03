@@ -1,0 +1,433 @@
+{
+  "name": "UpdateBackupPlan",
+  "description": "Updates an existing backup plan identified by its <code>backupPlanId</code> with the input document in JSON format. The new version is uniquely identified by a <code>VersionId</code>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "backupPlanId": {
+        "type": "string",
+        "description": "Uniquely identifies a backup plan."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "BackupPlan"
+        ],
+        "properties": {
+          "BackupPlan": {
+            "description": "Contains an optional backup plan display name and an array of <code>BackupRule</code> objects, each of which specifies a backup rule. Each rule in a backup plan is a separate scheduled task. ",
+            "type": "object",
+            "properties": {
+              "BackupPlanName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/BackupPlanName"
+                  },
+                  {
+                    "description": "The display name of a backup plan. Must contain 1 to 50 alphanumeric or '-_.' characters."
+                  }
+                ]
+              },
+              "Rules": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/BackupRulesInput"
+                  },
+                  {
+                    "description": "An array of <code>BackupRule</code> objects, each of which specifies a scheduled task that is used to back up a selection of resources."
+                  }
+                ]
+              },
+              "AdvancedBackupSettings": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AdvancedBackupSettings"
+                  },
+                  {
+                    "description": "Specifies a list of <code>BackupOptions</code> for each resource type. These settings are only available for Windows Volume Shadow Copy Service (VSS) backup jobs."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "backupPlanId",
+      "body"
+    ],
+    "$defs": {
+      "BackupPlanName": {
+        "type": "string"
+      },
+      "BackupRulesInput": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BackupRuleInput"
+        }
+      },
+      "BackupRuleInput": {
+        "type": "object",
+        "required": [
+          "RuleName",
+          "TargetBackupVaultName"
+        ],
+        "properties": {
+          "RuleName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BackupRuleName"
+              },
+              {
+                "description": "A display name for a backup rule. Must contain 1 to 50 alphanumeric or '-_.' characters."
+              }
+            ]
+          },
+          "TargetBackupVaultName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BackupVaultName"
+              },
+              {
+                "description": "The name of a logical container where backups are stored. Backup vaults are identified by names that are unique to the account used to create them and the Amazon Web Services Region where they are created. They consist of lowercase letters, numbers, and hyphens."
+              }
+            ]
+          },
+          "ScheduleExpression": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CronExpression"
+              },
+              {
+                "description": "A CRON expression in UTC specifying when Backup initiates a backup job."
+              }
+            ]
+          },
+          "StartWindowMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WindowMinutes"
+              },
+              {
+                "description": "<p>A value in minutes after a backup is scheduled before a job will be canceled if it doesn't start successfully. This value is optional. If this value is included, it must be at least 60 minutes to avoid errors.</p> <p>During the start window, the backup job status remains in <code>CREATED</code> status until it has successfully begun or until the start window time has run out. If within the start window time Backup receives an error that allows the job to be retried, Backup will automatically retry to begin the job at least every 10 minutes until the backup successfully begins (the job status changes to <code>RUNNING</code>) or until the job status changes to <code>EXPIRED</code> (which is expected to occur when the start window time is over).</p>"
+              }
+            ]
+          },
+          "CompletionWindowMinutes": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/WindowMinutes"
+              },
+              {
+                "description": "A value in minutes after a backup job is successfully started before it must be completed or it will be canceled by Backup. This value is optional."
+              }
+            ]
+          },
+          "Lifecycle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Lifecycle"
+              },
+              {
+                "description": "<p>The lifecycle defines when a protected resource is transitioned to cold storage and when it expires. Backup will transition and expire backups automatically according to the lifecycle that you define. </p> <p>Backups transitioned to cold storage must be stored in cold storage for a minimum of 90 days. Therefore, the “retention” setting must be 90 days greater than the “transition to cold after days” setting. The “transition to cold after days” setting cannot be changed after a backup has been transitioned to cold.</p> <p>Resource types that are able to be transitioned to cold storage are listed in the \"Lifecycle to cold storage\" section of the <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html#features-by-resource\"> Feature availability by resource</a> table. Backup ignores this expression for other resource types.</p>"
+              }
+            ]
+          },
+          "RecoveryPointTags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Tags"
+              },
+              {
+                "description": "To help organize your resources, you can assign your own metadata to the resources that you create. Each tag is a key-value pair."
+              }
+            ]
+          },
+          "CopyActions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/CopyActions"
+              },
+              {
+                "description": "An array of <code>CopyAction</code> objects, which contains the details of the copy operation."
+              }
+            ]
+          },
+          "EnableContinuousBackup": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Specifies whether Backup creates continuous backups. True causes Backup to create continuous backups capable of point-in-time restore (PITR). False (or not specified) causes Backup to create snapshot backups."
+              }
+            ]
+          }
+        },
+        "description": "Specifies a scheduled task used to back up a selection of resources."
+      },
+      "BackupRuleName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_\\.]{1,50}$"
+      },
+      "BackupVaultName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_]{2,50}$"
+      },
+      "CronExpression": {
+        "type": "string"
+      },
+      "WindowMinutes": {
+        "type": "integer"
+      },
+      "Lifecycle": {
+        "type": "object",
+        "properties": {
+          "MoveToColdStorageAfterDays": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Specifies the number of days after creation that a recovery point is moved to cold storage."
+              }
+            ]
+          },
+          "DeleteAfterDays": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Long"
+              },
+              {
+                "description": "Specifies the number of days after creation that a recovery point is deleted. Must be greater than 90 days plus <code>MoveToColdStorageAfterDays</code>."
+              }
+            ]
+          }
+        },
+        "description": "<p>Contains an array of <code>Transition</code> objects specifying how long in days before a recovery point transitions to cold storage or is deleted.</p> <p>Backups transitioned to cold storage must be stored in cold storage for a minimum of 90 days. Therefore, on the console, the “retention” setting must be 90 days greater than the “transition to cold after days” setting. The “transition to cold after days” setting cannot be changed after a backup has been transitioned to cold.</p> <p>Resource types that are able to be transitioned to cold storage are listed in the \"Lifecycle to cold storage\" section of the <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html#features-by-resource\"> Feature availability by resource</a> table. Backup ignores this expression for other resource types.</p>"
+      },
+      "Long": {
+        "type": "integer"
+      },
+      "Tags": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/TagValue"
+        }
+      },
+      "TagValue": {
+        "type": "string"
+      },
+      "CopyActions": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CopyAction"
+        }
+      },
+      "CopyAction": {
+        "type": "object",
+        "required": [
+          "DestinationBackupVaultArn"
+        ],
+        "properties": {
+          "Lifecycle": {
+            "$ref": "#/$defs/Lifecycle"
+          },
+          "DestinationBackupVaultArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ARN"
+              },
+              {
+                "description": "An Amazon Resource Name (ARN) that uniquely identifies the destination backup vault for the copied backup. For example, <code>arn:aws:backup:us-east-1:123456789012:vault:aBackupVault</code>."
+              }
+            ]
+          }
+        },
+        "description": "The details of the copy operation."
+      },
+      "ARN": {
+        "type": "string"
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "AdvancedBackupSettings": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AdvancedBackupSetting"
+        }
+      },
+      "AdvancedBackupSetting": {
+        "type": "object",
+        "properties": {
+          "ResourceType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceType"
+              },
+              {
+                "description": "<p>Specifies an object containing resource type and backup options. The only supported resource type is Amazon EC2 instances with Windows Volume Shadow Copy Service (VSS). For a CloudFormation example, see the <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/integrate-cloudformation-with-aws-backup.html\">sample CloudFormation template to enable Windows VSS</a> in the <i>Backup User Guide</i>.</p> <p>Valid values: <code>EC2</code>.</p>"
+              }
+            ]
+          },
+          "BackupOptions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BackupOptions"
+              },
+              {
+                "description": "<p>Specifies the backup option for a selected resource. This option is only available for Windows VSS backup jobs.</p> <p>Valid values: </p> <p>Set to <code>\"WindowsVSS\":\"enabled\"</code> to enable the <code>WindowsVSS</code> backup option and create a Windows VSS backup. </p> <p>Set to <code>\"WindowsVSS\":\"disabled\"</code> to create a regular backup. The <code>WindowsVSS</code> option is not enabled by default.</p> <p>If you specify an invalid option, you get an <code>InvalidParameterValueException</code> exception.</p> <p>For more information about Windows VSS backups, see <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/windows-backups.html\">Creating a VSS-Enabled Windows Backup</a>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "A list of backup options for each resource type."
+      },
+      "ResourceType": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_\\.]{1,50}$"
+      },
+      "BackupOptions": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/BackupOptionValue"
+        }
+      },
+      "BackupOptionValue": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9\\-\\_\\.]{1,50}$"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://backup.us-east-1.amazonaws.com/backup/plans/{backupPlanId}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**BackupPlanId**",
+            "**BackupPlanArn**",
+            "**CreationDate**",
+            "**VersionId**",
+            "**AdvancedBackupSettings**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

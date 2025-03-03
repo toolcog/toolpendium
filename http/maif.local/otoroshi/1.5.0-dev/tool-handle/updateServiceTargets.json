@@ -1,0 +1,97 @@
+{
+  "name": "updateServiceTargets",
+  "description": "Update a service descriptor targets",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "serviceId": {
+        "type": "string",
+        "description": "The service id"
+      },
+      "body": {
+        "$ref": "#/$defs/Patch"
+      }
+    },
+    "required": [
+      "serviceId"
+    ],
+    "$defs": {
+      "Patch": {
+        "description": "A set of changes described in JSON Patch format: http://jsonpatch.com/ (RFC 6902)",
+        "items": {
+          "properties": {
+            "op": {
+              "enum": [
+                "add",
+                "replace",
+                "remove",
+                "copy",
+                "test"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "example": "a string value",
+              "type": "string"
+            },
+            "value": {}
+          },
+          "required": [
+            "op",
+            "path"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://otoroshi-api.oto.tools//api/services/{serviceId}/targets"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A Target is where an HTTP call will be forwarded in the end from a service domain",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**host**: The host on which the HTTP call will be forwarded. Can be a domain name, or an IP address. Can also have a port",
+            "**scheme**: The protocol used for communication. Can be http or https"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

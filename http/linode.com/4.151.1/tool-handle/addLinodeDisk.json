@@ -1,0 +1,187 @@
+{
+  "name": "addLinodeDisk",
+  "description": "Adds a new Disk to a Linode.\n\n* You can optionally create a Disk from an Image or an Empty Disk if no Image is provided with a request.\n\n* When creating an Empty Disk, providing a `label` is required.\n\n* If no `label` is provided, an `image` is required instead.\n\n* When creating a Disk from an Image, `root_pass` is required.\n\n* The default filesystem for new Disks is `ext4`. If creating a Disk from an Image, the filesystem\nof the Image is used unless otherwise specified.\n\n* When deploying a StackScript on a Disk:\n  * See StackScripts List ([GET /linode/stackscripts](/docs/api/stackscripts/#stackscripts-list)) for\n    a list of available StackScripts.\n  * Requires a compatible Image to be supplied.\n    * See StackScript View ([GET /linode/stackscript/{stackscriptId}](/docs/api/stackscripts/#stackscript-view)) for compatible Images.\n  * It is recommended to supply SSH keys for the root User using the `authorized_keys` field.\n  * You may also supply a list of usernames via the `authorized_users` field.\n    * These users must have an SSH Key associated with their Profiles first. See SSH Key Add ([POST /profile/sshkeys](/docs/api/profile/#ssh-key-add)) for more information.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "linodeId": {
+        "type": "integer",
+        "description": "ID of the Linode to look up."
+      },
+      "body": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/DiskRequest"
+          }
+        ],
+        "required": [
+          "size"
+        ],
+        "description": "The parameters to set when creating the Disk.\n"
+      }
+    },
+    "required": [
+      "linodeId",
+      "body"
+    ],
+    "$defs": {
+      "DiskRequest": {
+        "description": "Disk object request.",
+        "properties": {
+          "authorized_keys": {
+            "description": "A list of public SSH keys that will be automatically appended\nto the root user's `~/.ssh/authorized_keys` file when deploying from an Image.\n",
+            "example": [
+              "ssh-rsa AAAA_valid_public_ssh_key_123456785== user@their-computer"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "authorized_users": {
+            "description": "A list of usernames. If the usernames have associated SSH keys, the keys will be appended to the root users `~/.ssh/authorized_keys` file automatically when deploying from an Image.\n",
+            "example": [
+              "myUser",
+              "secondaryUser"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "filesystem": {
+            "$ref": "#/$defs/filesystem"
+          },
+          "image": {
+            "description": "An Image ID to deploy the Linode Disk from.\n\nAccess the Images List ([GET /images](/docs/api/images/#images-list)) endpoint with authentication to view\nall available Images. Official Linode Images start with `linode/`, while your Account's Images start with `private/`. Creating\na disk from a Private Image requires `read_only` or `read_write` permissions for that Image. Access the User's\nGrant Update ([PUT /account/users/{username}/grants](/docs/api/account/#users-grants-update)) endpoint to\nadjust permissions for an Account Image.\n",
+            "example": "linode/debian9",
+            "type": "string"
+          },
+          "label": {
+            "$ref": "#/$defs/label"
+          },
+          "root_pass": {
+            "description": "This sets the root user's password on a newly-created Linode Disk when deploying from an Image.\n\n* **Required** when creating a Linode Disk from an Image, including when using a StackScript.\n\n* Must meet a password strength score requirement that is calculated internally by the API.\nIf the strength requirement is not met, you will receive a `Password does not meet strength requirement` error.\n",
+            "example": "aComplexP@ssword",
+            "format": "password",
+            "maxLength": 128,
+            "minLength": 7,
+            "type": "string",
+            "writeOnly": true
+          },
+          "size": {
+            "description": "The size of the Disk in MB.\n\nImages require a minimum size. Access the Image View ([GET /images/{imageID}](/docs/api/images/#image-view)) endpoint to view its size.\n",
+            "example": 48640,
+            "type": "integer",
+            "x-linode-filterable": true
+          },
+          "stackscript_data": {
+            "description": "This field is required only if the StackScript being deployed requires input data from the User for successful completion. See [User Defined Fields (UDFs)](/docs/guides/writing-scripts-for-use-with-linode-stackscripts-a-tutorial/#user-defined-fields-udfs) for more details.\n\nThis field is required to be valid JSON.\n\nTotal length cannot exceed 65,535 characters.\n",
+            "example": {
+              "gh_username": "linode"
+            },
+            "maxLength": 65535,
+            "type": "object"
+          },
+          "stackscript_id": {
+            "description": "A StackScript ID that will cause the referenced StackScript to be run during\ndeployment of this Linode. A compatible `image` is required to use a\nStackScript. To get a list of available StackScript and their permitted Images\nsee [/stackscripts](/docs/api/stackscripts/#stackscripts-list).\nThis field cannot be used when deploying from a Backup or a Private Image.\n",
+            "example": 10079,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "filesystem": {
+        "description": "The Disk filesystem can be one of:\n\n  * raw - No filesystem, just a raw binary stream.\n  * swap - Linux swap area.\n  * ext3 - The ext3 journaling filesystem for Linux.\n  * ext4 - The ext4 journaling filesystem for Linux.\n  * initrd - initrd (uncompressed initrd, ext2, max 32 MB).\n",
+        "enum": [
+          "raw",
+          "swap",
+          "ext3",
+          "ext4",
+          "initrd"
+        ],
+        "example": "ext4",
+        "type": "string",
+        "x-linode-cli-display": 5
+      },
+      "label": {
+        "description": "The Disk's label is for display purposes only.\n",
+        "example": "Debian 9 Disk",
+        "maxLength": 48,
+        "minLength": 1,
+        "type": "string",
+        "x-linode-cli-display": 2,
+        "x-linode-filterable": true
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.linode.com/v4/linode/instances/{linodeId}/disks"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: When this Disk was created.",
+            "**filesystem**: The Disk filesystem can be one of:",
+            "**id**: This Disk's ID which must be provided for all operations impacting this Disk.",
+            "**label**: The Disk's label is for display purposes only.",
+            "**size**: The size of the Disk in MB.",
+            "**status**: A brief description of this Disk's current state. This field may change without direct action from you, as a result of operations performed to the Disk or the Linode containing the Disk.",
+            "**updated**: When this Disk was last updated."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

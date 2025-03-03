@@ -1,0 +1,518 @@
+{
+  "name": "updateConnection",
+  "description": "Apply a patch-style update to a connection. Only fields present on the update request body will be updated.\nNote that if a catalog is present in the request body, the connection's entire catalog will be replaced\nwith the catalog from the request. This means that to modify a single stream, the entire new catalog\ncontaining the updated stream needs to be sent.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/ConnectionUpdate"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "ConnectionUpdate": {
+        "description": "Used to apply a patch-style update to a connection, which means that null properties remain unchanged",
+        "properties": {
+          "breakingChange": {
+            "type": "boolean"
+          },
+          "connectionId": {
+            "$ref": "#/$defs/ConnectionId"
+          },
+          "geography": {
+            "$ref": "#/$defs/Geography"
+          },
+          "name": {
+            "description": "Name that will be set to this connection",
+            "type": "string"
+          },
+          "namespaceDefinition": {
+            "$ref": "#/$defs/NamespaceDefinitionType"
+          },
+          "namespaceFormat": {
+            "default": null,
+            "description": "Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'.",
+            "example": "${SOURCE_NAMESPACE}",
+            "type": "string"
+          },
+          "nonBreakingChangesPreference": {
+            "$ref": "#/$defs/NonBreakingChangesPreference"
+          },
+          "notifySchemaChanges": {
+            "type": "boolean"
+          },
+          "operationIds": {
+            "items": {
+              "$ref": "#/$defs/OperationId"
+            },
+            "type": "array"
+          },
+          "prefix": {
+            "description": "Prefix that will be prepended to the name of each stream when it is written to the destination.",
+            "type": "string"
+          },
+          "resourceRequirements": {
+            "$ref": "#/$defs/ResourceRequirements"
+          },
+          "schedule": {
+            "$ref": "#/$defs/ConnectionSchedule"
+          },
+          "scheduleData": {
+            "$ref": "#/$defs/ConnectionScheduleData"
+          },
+          "scheduleType": {
+            "$ref": "#/$defs/ConnectionScheduleType"
+          },
+          "sourceCatalogId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/$defs/ConnectionStatus"
+          },
+          "syncCatalog": {
+            "$ref": "#/$defs/AirbyteCatalog"
+          }
+        },
+        "required": [
+          "connectionId"
+        ],
+        "type": "object"
+      },
+      "ConnectionId": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "Geography": {
+        "enum": [
+          "auto",
+          "us",
+          "eu"
+        ],
+        "type": "string"
+      },
+      "NamespaceDefinitionType": {
+        "description": "Method used for computing final namespace in destination",
+        "enum": [
+          "source",
+          "destination",
+          "customformat"
+        ],
+        "type": "string"
+      },
+      "NonBreakingChangesPreference": {
+        "enum": [
+          "ignore",
+          "disable"
+        ],
+        "type": "string"
+      },
+      "OperationId": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "ResourceRequirements": {
+        "description": "optional resource requirements to run workers (blank for unbounded allocations)",
+        "properties": {
+          "cpu_limit": {
+            "type": "string"
+          },
+          "cpu_request": {
+            "type": "string"
+          },
+          "memory_limit": {
+            "type": "string"
+          },
+          "memory_request": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ConnectionSchedule": {
+        "description": "if null, then no schedule is set.",
+        "properties": {
+          "timeUnit": {
+            "enum": [
+              "minutes",
+              "hours",
+              "days",
+              "weeks",
+              "months"
+            ],
+            "type": "string"
+          },
+          "units": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "units",
+          "timeUnit"
+        ],
+        "type": "object"
+      },
+      "ConnectionScheduleData": {
+        "description": "schedule for when the the connection should run, per the schedule type",
+        "properties": {
+          "basicSchedule": {
+            "properties": {
+              "timeUnit": {
+                "enum": [
+                  "minutes",
+                  "hours",
+                  "days",
+                  "weeks",
+                  "months"
+                ],
+                "type": "string"
+              },
+              "units": {
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "timeUnit",
+              "units"
+            ],
+            "type": "object"
+          },
+          "cron": {
+            "properties": {
+              "cronExpression": {
+                "type": "string"
+              },
+              "cronTimeZone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "cronExpression",
+              "cronTimeZone"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ConnectionScheduleType": {
+        "description": "determine how the schedule data should be interpreted",
+        "enum": [
+          "manual",
+          "basic",
+          "cron"
+        ],
+        "type": "string"
+      },
+      "ConnectionStatus": {
+        "description": "Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.",
+        "enum": [
+          "active",
+          "inactive",
+          "deprecated"
+        ],
+        "type": "string"
+      },
+      "AirbyteCatalog": {
+        "description": "describes the available schema (catalog).",
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/$defs/AirbyteStreamAndConfiguration"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "streams"
+        ],
+        "type": "object"
+      },
+      "AirbyteStreamAndConfiguration": {
+        "additionalProperties": false,
+        "description": "each stream is split in two parts; the immutable schema from source and mutable configuration for destination",
+        "properties": {
+          "config": {
+            "$ref": "#/$defs/AirbyteStreamConfiguration"
+          },
+          "stream": {
+            "$ref": "#/$defs/AirbyteStream"
+          }
+        },
+        "type": "object"
+      },
+      "AirbyteStreamConfiguration": {
+        "additionalProperties": false,
+        "description": "the mutable part of the stream to configure the destination",
+        "properties": {
+          "aliasName": {
+            "description": "Alias name to the stream to be used in the destination",
+            "type": "string"
+          },
+          "cursorField": {
+            "description": "Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "destinationSyncMode": {
+            "$ref": "#/$defs/DestinationSyncMode"
+          },
+          "fieldSelectionEnabled": {
+            "description": "Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.",
+            "type": "boolean"
+          },
+          "primaryKey": {
+            "description": "Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "selected": {
+            "description": "If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not",
+            "type": "boolean"
+          },
+          "selectedFields": {
+            "description": "Paths to the fields that will be included in the configured catalog. This must be set if `fieldSelectedEnabled` is set. An empty list indicates that no properties will be included.",
+            "items": {
+              "$ref": "#/$defs/SelectedFieldInfo"
+            },
+            "type": "array"
+          },
+          "suggested": {
+            "description": "Does the connector suggest that this stream be enabled by default?",
+            "type": "boolean"
+          },
+          "syncMode": {
+            "$ref": "#/$defs/SyncMode"
+          }
+        },
+        "required": [
+          "syncMode",
+          "destinationSyncMode"
+        ],
+        "type": "object"
+      },
+      "DestinationSyncMode": {
+        "enum": [
+          "append",
+          "overwrite",
+          "append_dedup"
+        ],
+        "type": "string"
+      },
+      "SelectedFieldInfo": {
+        "description": "Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called \"foo\", this will be [\"foo\"]. Use multiple path elements for nested schemas.",
+        "properties": {
+          "fieldPath": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SyncMode": {
+        "enum": [
+          "full_refresh",
+          "incremental"
+        ],
+        "type": "string"
+      },
+      "AirbyteStream": {
+        "additionalProperties": false,
+        "description": "the immutable schema defined by the source",
+        "properties": {
+          "defaultCursorField": {
+            "description": "Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "jsonSchema": {
+            "$ref": "#/$defs/StreamJsonSchema"
+          },
+          "name": {
+            "description": "Stream's name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.",
+            "type": "string"
+          },
+          "sourceDefinedCursor": {
+            "description": "If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
+            "type": "boolean"
+          },
+          "sourceDefinedPrimaryKey": {
+            "description": "If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "supportedSyncModes": {
+            "items": {
+              "$ref": "#/$defs/SyncMode"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "json_schema"
+        ],
+        "type": "object"
+      },
+      "StreamJsonSchema": {
+        "description": "Stream schema using Json Schema specs.",
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://airbyte.local/v1/connections/update"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**breakingChange**",
+            "**connectionId**",
+            "**destinationId**",
+            "**geography**",
+            "**name**",
+            "**namespaceDefinition**: Method used for computing final namespace in destination",
+            "**namespaceFormat**: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'. (default: null)",
+            "**nonBreakingChangesPreference**",
+            "**notifySchemaChanges**",
+            "**operationIds**",
+            "**prefix**: Prefix that will be prepended to the name of each stream when it is written to the destination.",
+            [
+              "**resourceRequirements**: optional resource requirements to run workers (blank for unbounded allocations)",
+              {
+                "$ul": [
+                  "**cpu_limit**",
+                  "**cpu_request**",
+                  "**memory_limit**",
+                  "**memory_request**"
+                ]
+              }
+            ],
+            [
+              "**schedule**: if null, then no schedule is set.",
+              {
+                "$ul": [
+                  "**timeUnit**",
+                  "**units**"
+                ]
+              }
+            ],
+            [
+              "**scheduleData**: schedule for when the the connection should run, per the schedule type",
+              {
+                "$ul": [
+                  [
+                    "**basicSchedule**",
+                    {
+                      "$ul": [
+                        "**timeUnit**",
+                        "**units**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**cron**",
+                    {
+                      "$ul": [
+                        "**cronExpression**",
+                        "**cronTimeZone**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**scheduleType**: determine how the schedule data should be interpreted",
+            "**sourceCatalogId**",
+            "**sourceId**",
+            "**status**: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.",
+            [
+              "**syncCatalog**: describes the available schema (catalog).",
+              {
+                "$ul": [
+                  "**streams**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**exceptionClassName**",
+            "**exceptionStack**",
+            "**message**",
+            "**validationErrors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

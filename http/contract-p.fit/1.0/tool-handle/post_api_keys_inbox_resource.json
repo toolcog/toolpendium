@@ -1,0 +1,128 @@
+{
+  "name": "post_api_keys_inbox_resource",
+  "description": "The requesting user needs to have inbox level permissions\n\nAPI Keys are simple randomly generated strings bound to roles that grant access to resources.\n\nEvery API Key maps to attributes defining its validity and can be revoked at any time.\n\nAPI Key can be passed in the **X-API-Key** HTTP Header and in the querystring **&api_key=**\n\n\n**Permission required:** edit_backend_settings",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Fields": {
+        "format": "mask",
+        "type": "string",
+        "description": "An optional fields mask"
+      },
+      "inbox_id": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/APIKeyRequest"
+      }
+    },
+    "required": [
+      "inbox_id",
+      "body"
+    ],
+    "$defs": {
+      "APIKeyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "description": "Is the API Key active or not",
+            "type": "boolean"
+          },
+          "expire_at": {
+            "description": "Expiration date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "roles": {
+            "description": "Roles to grant to this token bearer",
+            "items": {
+              "$ref": "#/$defs/TokenRoleModel"
+            },
+            "type": "array"
+          },
+          "user": {
+            "description": "User to give to the bearer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "roles",
+          "user"
+        ],
+        "type": "object"
+      },
+      "TokenRoleModel": {
+        "properties": {
+          "document_id": {
+            "description": "limited to a document",
+            "type": "string"
+          },
+          "inbox": {
+            "example": "abcdef123456789abcdef123",
+            "maxLength": 24,
+            "minLength": 24,
+            "pattern": "[A-z0-9]",
+            "type": "string"
+          },
+          "role": {
+            "example": "abcdef123456789abcdef123",
+            "maxLength": 24,
+            "minLength": 24,
+            "pattern": "[A-z0-9]",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//cfportal.contract-p.fit/api/auth/api-key/inbox/{inbox_id}"
+    },
+    "headers": {
+      "X-Fields": {
+        "$": "X-Fields"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: Is the API Key active or not",
+            "**expire_at**: The date at which the API Key will expire",
+            "**roles**: the user roles",
+            "**token**: Token value",
+            "**user**: Bearer user"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

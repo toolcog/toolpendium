@@ -1,0 +1,177 @@
+{
+  "name": "searchWorkspace",
+  "description": "Search for code in the repositories of the specified workspace.\n\nSearching across all repositories:\n\n```\ncurl 'https://api.bitbucket.org/2.0/workspaces/workspace_slug_or_uuid/search/code?search_query=foo'\n{\n  \"size\": 1,\n  \"page\": 1,\n  \"pagelen\": 10,\n  \"query_substituted\": false,\n  \"values\": [\n    {\n      \"type\": \"code_search_result\",\n      \"content_match_count\": 2,\n      \"content_matches\": [\n        {\n          \"lines\": [\n            {\n              \"line\": 2,\n              \"segments\": []\n            },\n            {\n              \"line\": 3,\n              \"segments\": [\n                {\n                  \"text\": \"def \"\n                },\n                {\n                  \"text\": \"foo\",\n                  \"match\": true\n                },\n                {\n                  \"text\": \"():\"\n                }\n              ]\n            },\n            {\n              \"line\": 4,\n              \"segments\": [\n                {\n                  \"text\": \"    print(\\\"snek\\\")\"\n                }\n              ]\n            },\n            {\n              \"line\": 5,\n              \"segments\": []\n            }\n          ]\n        }\n      ],\n      \"path_matches\": [\n        {\n          \"text\": \"src/\"\n        },\n        {\n          \"text\": \"foo\",\n          \"match\": true\n        },\n        {\n          \"text\": \".py\"\n        }\n      ],\n      \"file\": {\n        \"path\": \"src/foo.py\",\n        \"type\": \"commit_file\",\n        \"links\": {\n          \"self\": {\n            \"href\": \"https://api.bitbucket.org/2.0/repositories/my-workspace/demo/src/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b/src/foo.py\"\n          }\n        }\n      }\n    }\n  ]\n}\n```\n\nNote that searches can match in the file's text (`content_matches`),\nthe path (`path_matches`), or both as in the example above.\n\nYou can use the same syntax for the search query as in the UI, e.g.\nto only search within a specific repository:\n\n```\ncurl 'https://api.bitbucket.org/2.0/workspaces/my-workspace/search/code?search_query=foo+repo:demo'\n# results from the \"demo\" repository\n```\n\nSimilar to other APIs, you can request more fields using a\n`fields` query parameter. E.g. to get some more information about\nthe repository of matched files (the `%2B` is a URL-encoded `+`):\n\n```\ncurl 'https://api.bitbucket.org/2.0/workspaces/my-workspace/search/code'\\\n     '?search_query=foo&fields=%2Bvalues.file.commit.repository'\n{\n  \"size\": 1,\n  \"page\": 1,\n  \"pagelen\": 10,\n  \"query_substituted\": false,\n  \"values\": [\n    {\n      \"type\": \"code_search_result\",\n      \"content_match_count\": 1,\n      \"content_matches\": [...],\n      \"path_matches\": [...],\n      \"file\": {\n        \"commit\": {\n          \"type\": \"commit\",\n          \"hash\": \"ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b\",\n          \"links\": {\n            \"self\": {\n              \"href\": \"https://api.bitbucket.org/2.0/repositories/my-workspace/demo/commit/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b\"\n            },\n            \"html\": {\n              \"href\": \"https://bitbucket.org/my-workspace/demo/commits/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b\"\n            }\n          },\n          \"repository\": {\n            \"name\": \"demo\",\n            \"type\": \"repository\",\n            \"full_name\": \"my-workspace/demo\",\n            \"links\": {\n              \"self\": {\n                \"href\": \"https://api.bitbucket.org/2.0/repositories/my-workspace/demo\"\n              },\n              \"html\": {\n                \"href\": \"https://bitbucket.org/my-workspace/demo\"\n              },\n              \"avatar\": {\n                \"href\": \"https://bytebucket.org/ravatar/%7B850e1749-781a-4115-9316-df39d0600e7a%7D?ts=default\"\n              }\n            },\n            \"uuid\": \"{850e1749-781a-4115-9316-df39d0600e7a}\"\n          }\n        },\n        \"type\": \"commit_file\",\n        \"links\": {\n          \"self\": {\n            \"href\": \"https://api.bitbucket.org/2.0/repositories/my-workspace/demo/src/ad6964b5fe2880dbd9ddcad1c89000f1dbcbc24b/src/foo.py\"\n          }\n        },\n        \"path\": \"src/foo.py\"\n      }\n    }\n  ]\n}\n```\n\nTry `fields=%2Bvalues.*.*.*.*` to get an idea what's possible.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workspace": {
+        "type": "string",
+        "description": "The workspace to search in; either the slug or the UUID in curly braces"
+      },
+      "search_query": {
+        "type": "string",
+        "description": "The search query"
+      },
+      "page": {
+        "default": 1,
+        "format": "int32",
+        "type": "integer",
+        "description": "Which page of the search results to retrieve"
+      },
+      "pagelen": {
+        "default": 10,
+        "format": "int32",
+        "type": "integer",
+        "description": "How many search results to retrieve per page"
+      }
+    },
+    "required": [
+      "workspace",
+      "search_query"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.bitbucket.org/2.0/workspaces/{workspace}/search/code{?search_query,page,pagelen}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**next**",
+            "**page**",
+            "**pagelen**",
+            "**previous**",
+            "**query_substituted**",
+            "**size**",
+            "**values**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**data**: Optional structured data that is endpoint-specific.",
+                  "**detail**",
+                  "**message**"
+                ]
+              }
+            ],
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**data**: Optional structured data that is endpoint-specific.",
+                  "**detail**",
+                  "**message**"
+                ]
+              }
+            ],
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Error"
+        },
+        "Base type for most resource objects. It defines the common `type` element that identifies an object's type. It also identifies the element as Swagger's `discriminator`.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**data**: Optional structured data that is endpoint-specific.",
+                  "**detail**",
+                  "**message**"
+                ]
+              }
+            ],
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

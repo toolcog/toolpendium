@@ -1,0 +1,382 @@
+{
+  "name": "UpdateMonitor",
+  "description": "<p>Updates a monitor. You can update a monitor to change the percentage of traffic to monitor or the maximum number of city-networks (locations and ASNs), to add or remove resources, or to change the status of the monitor. Note that you can't change the name of a monitor.</p> <p>The city-network maximum that you choose is the limit, but you only pay for the number of city-networks that are actually monitored. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/IMCityNetworksMaximum.html\">Choosing a city-network maximum value</a> in the <i>Amazon CloudWatch User Guide</i>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "MonitorName": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9_.-]+",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The name of the monitor. "
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "ResourcesToAdd": {
+            "description": "<p>The resources to include in a monitor, which you provide as a set of Amazon Resource Names (ARNs). Resources can be VPCs, NLBs, Amazon CloudFront distributions, or Amazon WorkSpaces directories.</p> <p>You can add a combination of VPCs and CloudFront distributions, or you can add WorkSpaces directories, or you can add NLBs. You can't add NLBs or WorkSpaces directories together with any other resources.</p> <note> <p>If you add only Amazon Virtual Private Clouds resources, at least one VPC must have an Internet Gateway attached to it, to make sure that it has internet connectivity.</p> </note>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Arn"
+            }
+          },
+          "ResourcesToRemove": {
+            "description": "The resources to remove from a monitor, which you provide as a set of Amazon Resource Names (ARNs).",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Arn"
+            }
+          },
+          "Status": {
+            "description": "The status for a monitor. The accepted values for <code>Status</code> with the <code>UpdateMonitor</code> API call are the following: <code>ACTIVE</code> and <code>INACTIVE</code>. The following values are <i>not</i> accepted: <code>PENDING</code>, and <code>ERROR</code>.",
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACTIVE",
+              "INACTIVE",
+              "ERROR"
+            ]
+          },
+          "ClientToken": {
+            "description": "A unique, case-sensitive string of up to 64 ASCII characters that you specify to make an idempotent API request. You should not reuse the same client token for other API requests.",
+            "type": "string"
+          },
+          "MaxCityNetworksToMonitor": {
+            "description": "The maximum number of city-networks to monitor for your application. A city-network is the location (city) where clients access your application resources from and the ASN or network provider, such as an internet service provider (ISP), that clients access the resources through. Setting this limit can help control billing costs.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500000
+          },
+          "InternetMeasurementsLogDelivery": {
+            "description": "Publish internet measurements to an Amazon S3 bucket in addition to CloudWatch Logs.",
+            "type": "object",
+            "properties": {
+              "S3Config": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Config"
+                  },
+                  {
+                    "description": "The configuration information for publishing Internet Monitor internet measurements to Amazon S3. The configuration includes the bucket name and (optionally) prefix for the S3 bucket to store the measurements, and the delivery status. The delivery status is <code>ENABLED</code> or <code>DISABLED</code>, depending on whether you choose to deliver internet measurements to S3 logs."
+                  }
+                ]
+              }
+            }
+          },
+          "TrafficPercentageToMonitor": {
+            "description": "<p>The percentage of the internet-facing traffic for your application that you want to monitor with this monitor. If you set a city-networks maximum, that limit overrides the traffic percentage that you set.</p> <p>To learn more, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/IMTrafficPercentage.html\">Choosing an application traffic percentage to monitor </a> in the Amazon CloudWatch Internet Monitor section of the <i>CloudWatch User Guide</i>.</p>",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "HealthEventsConfig": {
+            "description": "<p>A complex type with the configuration information that determines the threshold and other conditions for when Internet Monitor creates a health event for an overall performance or availability issue, across an application's geographies.</p> <p>Defines the percentages, for overall performance scores and availability scores for an application, that are the thresholds for when Amazon CloudWatch Internet Monitor creates a health event. You can override the defaults to set a custom threshold for overall performance or availability scores, or both.</p> <p>You can also set thresholds for local health scores,, where Internet Monitor creates a health event when scores cross a threshold for one or more city-networks, in addition to creating an event when an overall score crosses a threshold.</p> <p>If you don't set a health event threshold, the default value is 95%.</p> <p>For local thresholds, you also set a minimum percentage of overall traffic that is impacted by an issue before Internet Monitor creates an event. In addition, you can disable local thresholds, for performance scores, availability scores, or both.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-IM-overview.html#IMUpdateThresholdFromOverview\"> Change health event thresholds</a> in the Internet Monitor section of the <i>CloudWatch User Guide</i>.</p>",
+            "type": "object",
+            "properties": {
+              "AvailabilityScoreThreshold": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Percentage"
+                  },
+                  {
+                    "description": "The health event threshold percentage set for availability scores."
+                  }
+                ]
+              },
+              "PerformanceScoreThreshold": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Percentage"
+                  },
+                  {
+                    "description": "The health event threshold percentage set for performance scores."
+                  }
+                ]
+              },
+              "AvailabilityLocalHealthEventsConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LocalHealthEventsConfig"
+                  },
+                  {
+                    "description": "The configuration that determines the threshold and other conditions for when Internet Monitor creates a health event for a local availability issue."
+                  }
+                ]
+              },
+              "PerformanceLocalHealthEventsConfig": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LocalHealthEventsConfig"
+                  },
+                  {
+                    "description": "The configuration that determines the threshold and other conditions for when Internet Monitor creates a health event for a local performance issue."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "MonitorName",
+      "body"
+    ],
+    "$defs": {
+      "Arn": {
+        "type": "string",
+        "pattern": "arn:.*",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "S3Config": {
+        "type": "object",
+        "properties": {
+          "BucketName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3ConfigBucketNameString"
+              },
+              {
+                "description": "The Amazon S3 bucket name."
+              }
+            ]
+          },
+          "BucketPrefix": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The Amazon S3 bucket prefix."
+              }
+            ]
+          },
+          "LogDeliveryStatus": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LogDeliveryStatus"
+              },
+              {
+                "description": "The status of publishing Internet Monitor internet measurements to an Amazon S3 bucket."
+              }
+            ]
+          }
+        },
+        "description": "The configuration for publishing Amazon CloudWatch Internet Monitor internet measurements to Amazon S3. The configuration includes the bucket name and (optionally) prefix for the S3 bucket to store the measurements, and the delivery status. The delivery status is <code>ENABLED</code> or <code>DISABLED</code>, depending on whether you choose to deliver internet measurements to S3 logs."
+      },
+      "S3ConfigBucketNameString": {
+        "type": "string",
+        "minLength": 3
+      },
+      "String": {
+        "type": "string"
+      },
+      "LogDeliveryStatus": {
+        "type": "string",
+        "enum": [
+          "ENABLED",
+          "DISABLED"
+        ]
+      },
+      "Percentage": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "LocalHealthEventsConfig": {
+        "type": "object",
+        "properties": {
+          "Status": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/LocalHealthEventsConfigStatus"
+              },
+              {
+                "description": "The status of whether Internet Monitor creates a health event based on a threshold percentage set for a local health score. The status can be <code>ENABLED</code> or <code>DISABLED</code>."
+              }
+            ]
+          },
+          "HealthScoreThreshold": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Percentage"
+              },
+              {
+                "description": "The health event threshold percentage set for a local health score."
+              }
+            ]
+          },
+          "MinTrafficImpact": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Percentage"
+              },
+              {
+                "description": "The minimum percentage of overall traffic for an application that must be impacted by an issue before Internet Monitor creates an event when a threshold is crossed for a local health score."
+              }
+            ]
+          }
+        },
+        "description": "<p>A complex type with the configuration information that determines the threshold and other conditions for when Internet Monitor creates a health event for a local performance or availability issue, when scores cross a threshold for one or more city-networks.</p> <p>Defines the percentages, for performance scores or availability scores, that are the local thresholds for when Amazon CloudWatch Internet Monitor creates a health event. Also defines whether a local threshold is enabled or disabled, and the minimum percentage of overall traffic that must be impacted by an issue before Internet Monitor creates an event when a threshold is crossed for a local health score.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-IM-overview.html#IMUpdateThresholdFromOverview\"> Change health event thresholds</a> in the Internet Monitor section of the <i>CloudWatch User Guide</i>.</p>"
+      },
+      "LocalHealthEventsConfigStatus": {
+        "type": "string",
+        "enum": [
+          "ENABLED",
+          "DISABLED"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "http://internetmonitor.us-east-1.api.aws/v20210603/Monitors/{MonitorName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**MonitorArn**",
+            "**Status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

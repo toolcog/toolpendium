@@ -1,0 +1,92 @@
+{
+  "name": "GetImagesByIds",
+  "description": "This API will return a set of Images for the specified tags and optionally iteration. If no iteration is specified the\r\ncurrent workspace is used.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The project id."
+      },
+      "imageIds": {
+        "items": {
+          "nullable": false,
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of image ids to retrieve. Limited to 256."
+      },
+      "iterationId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The iteration id. Defaults to workspace."
+      },
+      "Training-Key": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "projectId",
+      "Training-Key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.2/Training/projects/{projectId}/images/id{?imageIds,iterationId}"
+    },
+    "headers": {
+      "Training-Key": {
+        "$": "Training-Key"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Image model to be sent as JSON.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: Date the image was created.",
+            "**height**: Height of the image.",
+            "**id**: Id of the image.",
+            "**originalImageUri**: The URI to the original uploaded image.",
+            "**regions**: Regions associated with this image.",
+            "**resizedImageUri**: The URI to the (resized) image used for training.",
+            "**tags**: Tags associated with this image.",
+            "**thumbnailUri**: The URI to the thumbnail of the original image.",
+            "**width**: Width of the image."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

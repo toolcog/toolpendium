@@ -1,0 +1,152 @@
+{
+  "name": "Verify_Account_id",
+  "description": "This API can be used to verify whether a mobile number or Aadhaar number is already registered with DigiLocker.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/VerifyAccount"
+      }
+    },
+    "$defs": {
+      "VerifyAccount": {
+        "properties": {
+          "clientid": {
+            "description": "Provide the client id that was created during the application registration process on Partners Portal.",
+            "type": "string"
+          },
+          "hmac": {
+            "description": "Provide SHA-256 encrypted value of the client secret, clientid and ts parameters above concatenated in this sequence (client secret, clientid, ts). The hmac parameter is used by DigiLocker to ensure the data integrity and authentication of the request. Use the Client Secret Key generated during the application registration process on Partners Portal as the client secret.",
+            "format": "binary",
+            "type": "string"
+          },
+          "mobile": {
+            "description": "This is the mobile number of the user. DigiLocker will check whether an account exists for this mobile number. Either uid or mobile is required to verify whether an account exists.",
+            "type": "integer"
+          },
+          "ts": {
+            "description": "Provide a timestamp value in UNIX (or POSIX) format in IST time zone in seconds. This timestamp value must not be older than 30 minutes.",
+            "type": "string"
+          },
+          "uid": {
+            "description": "This is the Aadhaar number of the user. DigiLocker will check whether an account exists for this Aadhaar number. Either uid or mobile is required to verify whether an account exists.",
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://betaapi.digitallocker.gov.in/public/account/2/verify"
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**digilockerid**: A unique 36 character DigiLocker Id of the user account.",
+            "**registered**: true indicates that the provided Aadhaar/mobile number is already registered and false indicates otherwise."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: invalid_parameter",
+            "**error_description**: One or more of the mandatory parameters is missing or invalid. The error description text will contain one or more of the following error texts:|-  Either one of uid or mobile number is mandatory  Timestamp parameter is missing or invalid  HMAC parameter is missing or invalid"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: invalid_client_id",
+            "**error_description**: The client_id parameter is invalid"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**error**: unexpected_error",
+            "**error_description**: Internal server error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

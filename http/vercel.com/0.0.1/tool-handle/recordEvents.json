@@ -1,0 +1,99 @@
+{
+  "name": "recordEvents",
+  "description": "Records an artifacts cache usage event. The body of this request is an array of cache usage events. The supported event types are `HIT` and `MISS`. The source is either `LOCAL` the cache event was on the users filesystem cache or `REMOTE` if the cache event is for a remote cache. When the event is a `HIT` the request also accepts a number `duration` which is the time taken to generate the artifact in the cache.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "x-artifact-client-ci": {
+        "description": "The continuous integration or delivery environment where this artifact is downloaded.",
+        "examples": [
+          "VERCEL"
+        ],
+        "maxLength": 50,
+        "type": "string"
+      },
+      "x-artifact-client-interactive": {
+        "description": "1 if the client is an interactive shell. Otherwise 0",
+        "examples": [
+          0
+        ],
+        "maximum": 1,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "teamId": {
+        "type": "string",
+        "description": "The Team identifier or slug to perform the request on behalf of."
+      },
+      "body": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "duration": {
+              "description": "The time taken to generate the artifact. This should be sent as a body parameter on `HIT` events.",
+              "examples": [
+                400
+              ],
+              "type": "number"
+            },
+            "event": {
+              "description": "One of `HIT` or `MISS`. `HIT` specifies that a cached artifact for `hash` was found in the cache. `MISS` specifies that a cached artifact with `hash` was not found.",
+              "enum": [
+                "HIT",
+                "MISS"
+              ],
+              "type": "string"
+            },
+            "hash": {
+              "description": "The artifact hash",
+              "examples": [
+                "12HKQaOmR5t5Uy6vdcQsNIiZgHGB"
+              ],
+              "type": "string"
+            },
+            "sessionId": {
+              "description": "A UUID (universally unique identifer) for the session that generated this event.",
+              "type": "string"
+            },
+            "source": {
+              "description": "One of `LOCAL` or `REMOTE`. `LOCAL` specifies that the cache event was from the user's filesystem cache. `REMOTE` specifies that the cache event is from a remote cache.",
+              "enum": [
+                "LOCAL",
+                "REMOTE"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "sessionId",
+            "source",
+            "hash",
+            "event"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.vercel.com/v8/artifacts/events{?teamId}"
+    },
+    "headers": {
+      "x-artifact-client-ci": {
+        "$": "x-artifact-client-ci"
+      },
+      "x-artifact-client-interactive": {
+        "$": "x-artifact-client-interactive"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {}
+}

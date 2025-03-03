@@ -1,0 +1,299 @@
+{
+  "name": "instantiateProject",
+  "description": "Creates and returns a job that will asynchronously handle the project instantiation.\n\nTo form this request, it is recommended to first make a request to [get a project template](/docs/get-a-project-template). Then, from the response, copy the `gid` from the object in the `requested_dates` array. This `gid` should be used in `requested_dates` to instantiate a project.\n\n_Note: The body of this request will differ if your workspace is an organization. To determine if your workspace is an organization, use the [is_organization](/docs/workspace) parameter._",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "project_template_gid": {
+        "type": "string",
+        "description": "Globally unique identifier for the project template."
+      },
+      "opt_pretty": {
+        "type": "boolean",
+        "description": "Provides “pretty” output.\nProvides the response in a “pretty” format. In the case of JSON this means doing proper line breaking and indentation to make it readable. This will take extra time and increase the response size so it is advisable only to use this during debugging."
+      },
+      "opt_fields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "Defines fields to return.\nSome requests return *compact* representations of objects in order to conserve resources and complete the request more efficiently. Other times requests return more information than you may need. This option allows you to list the exact set of fields that the API should be sure to return for the objects. The field names should be provided as paths, described below.\nThe id of included objects will always be returned, regardless of the field options."
+      },
+      "body": {
+        "properties": {
+          "data": {
+            "$ref": "#/$defs/ProjectTemplateInstantiateProjectRequest"
+          }
+        },
+        "type": "object",
+        "description": "Describes the inputs used for instantiating a project, such as the resulting project's name, which team it should be created in, and values for date variables."
+      }
+    },
+    "required": [
+      "project_template_gid"
+    ],
+    "$defs": {
+      "ProjectTemplateInstantiateProjectRequest": {
+        "properties": {
+          "is_strict": {
+            "description": "*Optional*. If set to `true`, the endpoint returns an \"Unprocessable Entity\" error if you fail to provide a calendar date value for any date variable. If set to `false`, a default date is used for each unfulfilled date variable (e.g., the current date is used as the Start Date of a project).",
+            "example": true,
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The name of the new project.",
+            "example": "New Project Name",
+            "type": "string"
+          },
+          "public": {
+            "description": "Sets the project to public to its team.",
+            "example": true,
+            "type": "boolean"
+          },
+          "requested_dates": {
+            "description": "Array of mappings of date variables to calendar dates.",
+            "items": {
+              "$ref": "#/$defs/DateVariableRequest"
+            },
+            "type": "array"
+          },
+          "team": {
+            "description": "*Conditional*. Sets the team of the new project. If the project template exists in an _organization_, you must specify a value for `team` and not `workspace`.",
+            "example": "12345",
+            "type": "string"
+          },
+          "workspace": {
+            "description": "*Conditional*. Sets the workspace of the new project. If the project template exists in a _workspace_, you must specify a value for `workspace` and not `team`.",
+            "example": "12345",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "public"
+        ],
+        "type": "object"
+      },
+      "DateVariableRequest": {
+        "properties": {
+          "gid": {
+            "description": "Globally unique identifier of the date field in the project template. A value of `1` refers to the project start date, while `2` refers to the project due date.",
+            "example": "1",
+            "type": "string"
+          },
+          "value": {
+            "description": "The date with which the date variable should be replaced when instantiating a project. This takes a date with `YYYY-MM-DD` format.",
+            "example": "2022-01-01",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://app.asana.com/api/1.0/project_templates/{project_template_gid}/instantiateProject{?opt_pretty,opt_fields}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**: A generic Asana Resource, containing a globally unique identifier.",
+              {
+                "$ul": [
+                  "**gid**: Globally unique identifier of the resource, as a string.",
+                  "**resource_type**: The base type of this resource.",
+                  [
+                    "**new_project**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: Name of the project. This is generally a short sentence fragment that fits on a line in the UI for maximum readability. However, it can be longer."
+                      ]
+                    }
+                  ],
+                  [
+                    "**new_project_template**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: Name of the project template."
+                      ]
+                    }
+                  ],
+                  [
+                    "**new_task**: A generic Asana Resource, containing a globally unique identifier.",
+                    {
+                      "$ul": [
+                        "**gid**: Globally unique identifier of the resource, as a string.",
+                        "**resource_type**: The base type of this resource.",
+                        "**name**: The name of the task.",
+                        "**resource_subtype**: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning."
+                      ]
+                    }
+                  ],
+                  "**resource_subtype**: The subtype of this resource. Different subtypes retain many of the same fields and behavior, but may render differently in Asana or represent resources with different semantic meaning.",
+                  "**status**: The current status of this job. The value is one of: `not_started`, `in_progress`, `succeeded`, or `failed`."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Sadly, sometimes requests to the API are not successful. Failures can\noccur for a wide range of reasons. In all cases, the API should return\nan HTTP Status Code that indicates the nature of the failure,\nwith a response body in JSON format containing additional information.\n\n\nIn the event of a server error the response body will contain an error\nphrase. These phrases are automatically generated using the\n[node-asana-phrase\nlibrary](https://github.com/Asana/node-asana-phrase) and can be used by\nAsana support to quickly look up the incident that caused the server\nerror.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

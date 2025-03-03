@@ -1,0 +1,401 @@
+{
+  "name": "UpdateWorkspaceAuthentication",
+  "description": "<p>Use this operation to define the identity provider (IdP) that this workspace authenticates users from, using SAML. You can also map SAML assertion attributes to workspace user information and define which groups in the assertion attribute are to have the <code>Admin</code> and <code>Editor</code> roles in the workspace.</p> <note> <p>Changes to the authentication method for a workspace may take a few minutes to take effect.</p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "workspaceId": {
+        "type": "string",
+        "pattern": "^g-[0-9a-f]{10}$",
+        "description": "The ID of the workspace to update the authentication for."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "authenticationProviders"
+        ],
+        "properties": {
+          "authenticationProviders": {
+            "description": "Specifies whether this workspace uses SAML 2.0, IAM Identity Center (successor to Single Sign-On), or both to authenticate users for using the Grafana console within a workspace. For more information, see <a href=\"https://docs.aws.amazon.com/grafana/latest/userguide/authentication-in-AMG.html\">User authentication in Amazon Managed Grafana</a>.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/AuthenticationProviderTypes"
+            }
+          },
+          "samlConfiguration": {
+            "description": "A structure containing information about how this workspace works with SAML. ",
+            "type": "object",
+            "properties": {
+              "allowedOrganizations": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AllowedOrganizations"
+                  },
+                  {
+                    "description": "Lists which organizations defined in the SAML assertion are allowed to use the Amazon Managed Grafana workspace. If this is empty, all organizations in the assertion attribute have access."
+                  }
+                ]
+              },
+              "assertionAttributes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AssertionAttributes"
+                  },
+                  {
+                    "description": "A structure that defines which attributes in the SAML assertion are to be used to define information about the users authenticated by that IdP to use the workspace."
+                  }
+                ]
+              },
+              "idpMetadata": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/IdpMetadata"
+                  },
+                  {
+                    "description": "A structure containing the identity provider (IdP) metadata used to integrate the identity provider with this workspace."
+                  }
+                ]
+              },
+              "loginValidityDuration": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/LoginValidityDuration"
+                  },
+                  {
+                    "description": "How long a sign-on session by a SAML user is valid, before the user has to sign on again."
+                  }
+                ]
+              },
+              "roleValues": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/RoleValues"
+                  },
+                  {
+                    "description": "A structure containing arrays that map group names in the SAML assertion to the Grafana <code>Admin</code> and <code>Editor</code> roles in the workspace."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "workspaceId",
+      "body"
+    ],
+    "$defs": {
+      "AuthenticationProviderTypes": {
+        "type": "string",
+        "enum": [
+          "AWS_SSO",
+          "SAML"
+        ]
+      },
+      "AllowedOrganizations": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AllowedOrganization"
+        }
+      },
+      "AllowedOrganization": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "AssertionAttributes": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the email names for SAML users."
+              }
+            ]
+          },
+          "groups": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the user full \"friendly\" names for user groups."
+              }
+            ]
+          },
+          "login": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the login names for SAML users."
+              }
+            ]
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the user full \"friendly\" names for SAML users."
+              }
+            ]
+          },
+          "org": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the user full \"friendly\" names for the users' organizations."
+              }
+            ]
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/AssertionAttribute"
+              },
+              {
+                "description": "The name of the attribute within the SAML assertion to use as the user roles."
+              }
+            ]
+          }
+        },
+        "description": "A structure that defines which attributes in the IdP assertion are to be used to define information about the users authenticated by the IdP to use the workspace."
+      },
+      "AssertionAttribute": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "IdpMetadata": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IdpMetadataUrl"
+              },
+              {
+                "description": "The URL of the location containing the IdP metadata."
+              }
+            ]
+          },
+          "xml": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "description": "The full IdP metadata, in XML format."
+              }
+            ]
+          }
+        },
+        "description": "A structure containing the identity provider (IdP) metadata used to integrate the identity provider with this workspace. You can specify the metadata either by providing a URL to its location in the <code>url</code> parameter, or by specifying the full metadata in XML format in the <code>xml</code> parameter. Specifying both will cause an error."
+      },
+      "IdpMetadataUrl": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "String": {
+        "type": "string"
+      },
+      "LoginValidityDuration": {
+        "type": "integer"
+      },
+      "RoleValues": {
+        "type": "object",
+        "properties": {
+          "admin": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleValueList"
+              },
+              {
+                "description": "A list of groups from the SAML assertion attribute to grant the Grafana <code>Admin</code> role to."
+              }
+            ]
+          },
+          "editor": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleValueList"
+              },
+              {
+                "description": "A list of groups from the SAML assertion attribute to grant the Grafana <code>Editor</code> role to."
+              }
+            ]
+          }
+        },
+        "description": "This structure defines which groups defined in the SAML assertion attribute are to be mapped to the Grafana <code>Admin</code> and <code>Editor</code> roles in the workspace. SAML authenticated users not part of <code>Admin</code> or <code>Editor</code> role groups have <code>Viewer</code> permission over the workspace."
+      },
+      "RoleValueList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/RoleValue"
+        }
+      },
+      "RoleValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://grafana.us-east-1.amazonaws.com/workspaces/{workspaceId}/authentication"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authentication**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

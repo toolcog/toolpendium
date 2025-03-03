@@ -1,0 +1,251 @@
+{
+  "name": "searchNodes",
+  "description": "### Description:  \nProvides a flat list of file system nodes (rooms, folders or files) of a given parent that are accessible by the current user.\n\n### Precondition:\nAuthenticated user is allowed to <span style='padding: 3px; background-color: #F6F7F8; border: 1px solid #000; border-radius: 5px; display: inline;'>&#128065; see</span> nodes (i.e. `isBrowsable = true`).\n\n### Postcondition:\nList of nodes is returned.\n\n### Further Information:  \nOutput is limited to **500** entries.  \nFor more results please use filter criteria and paging (`offset` + `limit`).  \n`EncryptionInfo` is **NOT** provided.  \nWildcard character is the asterisk character: `*`\n\n### Filtering:\nAll filter fields are connected via logical conjunction (**AND**)  \nFilter string syntax: `FIELD_NAME:OPERATOR:VALUE[:VALUE...]`  \n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`type:eq:file|createdAt:ge:2015-01-01`  \nGet nodes where type equals `file` **AND** file creation date is **>=** `2015-01-01`.\n\n</details>\n\n### Filtering options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME`            | Filter Description                | `OPERATOR` | Operator Description                                                                                                                                                                                                                                                                | `VALUE` |\n|:------------------------|:----------------------------------| :--- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| :--- |\n| `type`                  | Node type filter                  | `eq` | Node type equals value.<br>Multiple values are allowed and will be connected via logical disjunction (**OR**).<br>e.g. `type:eq:room:folder`                                                                                                                                        | <ul><li>`room`</li><li>`folder`</li><li>`file`</li></ul> |\n| `fileType`              | File type filter (file extension) | `cn, eq` | File type contains / equals value.                                                                                                                                                                                                                                                  | `search String` |\n| `classification`        | Classification filter             | `eq` | Classification equals value.                                                                                                                                                                                                                                                        | <ul><li>`1` - public</li><li>`2` - internal</li><li>`3` - confidential</li><li>`4` - strictly confidential</li></ul> |\n| `createdBy`             | Creator login filter              | `cn, eq` | Creator login contains / equals value (`firstName` **OR** `lastName` **OR** `email` **OR** `username`).                                                                                                                                                                             | `search String` |\n| `createdById`           | Creator ID filter                 | `eq` | Creator ID equals value.                                                                                                                                                                                                                                                            | `positive Integer  or -1 for external user` |\n| `createdAt`             | Creation date filter              | `ge, le` | Creation date is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `createdAt:ge:2016-12-31`&#124;`createdAt:le:2018-01-01`                                                                | `Date (yyyy-MM-dd)` |\n| `updatedBy`             | Last modifier login filter        | `cn, eq` | Last modifier login contains / equals value (`firstName` **OR** `lastName` **OR** `email` **OR** `username`).                                                                                                                                                                       | `search String` |\n| `updatedById`           | Last modifier ID filter           | `eq` | Modifier ID equals value.                                                                                                                                                                                                                                                           | `positive Integer or -1 for external user` |\n| `updatedAt`             | Last modification date filter     | `ge, le` | Last modification date is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `updatedAt:ge:2016-12-31`&#124;`updatedAt:le:2018-01-01`                                                       | `Date (yyyy-MM-dd)` |\n| `expireAt`              | Expiration date filter            | `ge, le` | Expiration date is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `expireAt:ge:2016-12-31`&#124;`expireAt:le:2018-01-01`                                                                | `Date (yyyy-MM-dd)` |\n| `size`                  | Node size filter                  | `ge, le` | Node size is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `size:ge:5`&#124;`size:le:10`                                                                                               | `size in bytes` |\n| `isFavorite`            | Favorite filter                   | `eq` |                                                                                                                                                                                                                                                                                     | `true or false` |\n| `branchVersion`         | Node branch version filter        | `ge, le` | Branch version is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `branchVersion:ge:1423280937404`&#124;`branchVersion:le:1523280937404`                                                 | `version number` |\n| `parentPath`            | Parent path                       | `cn, eq` | Parent path contains / equals  value.                                                                                                                                                                                                                                               | `search String` |\n| `timestampCreation`     | Creation timestamp filter         | `ge, le` | Creation timestamp is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `timestampCreation:ge:2016-12-31T23:00:00.123`&#124;<br>`timestampCreation:le:2018-01-01T11:00:00.540`             | `Date (yyyy-MM-dd)` |\n| `timestampModification` | Modification timestamp filter     | `ge, le` | Modification timestamp is greater / less equals than value.<br>Multiple operator values are allowed and will be connected via logical conjunction (**AND**).<br>e.g. `timestampModification:ge:2016-12-31T23:00:00.123`&#124;<br>`timestampModification:le:2018-01-01T11:00:00.540` | `Date (yyyy-MM-dd)` |\n| `referenceId`           | Reference ID filter               | `eq` | Reference ID equals value.                                                                                                                                                                                                                                                          | `Integer ` |\n</details>\n\n---\n\n### Sorting:\nSort string syntax: `FIELD_NAME:ORDER`  \n`ORDER` can be `asc` or `desc`.  \nMultiple sort criteria are possible.  \nFields are connected via logical conjunction **AND**.\n\n<details style=\"padding-left: 10px\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Example</strong></summary>\n\n`name:desc|size:asc`  \nSort by `name` descending **AND** `size` ascending.\n\n</details>\n\n### Sorting options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Description |\n| :--- | :--- |\n| `name` | Node name |\n| `createdAt` | Creation date |\n| `createdBy` | Creator first name, last name |\n| `updatedAt` | Last modification date |\n| `updatedBy` | Last modifier first name, last name |\n| `fileType` | File type (extension) |\n| `classification` | Classification ID:<ul><li>1 - public</li><li>2 - internal</li><li>3 - confidential</li><li>4 - strictly confidential</li></ul> |\n| `size` | Node size |\n| `cntDeletedVersions` | Number of deleted versions of this file / folder (**NOT** recursive; for files and folders only) |\n| `type` | Node type (room, folder, file) |\n| `parentPath` | Parent path |\n| `timestampCreation` | Creation timestamp |\n| `timestampModification` | Modification timestamp |\n\n</details>\n\n### Deprecated sorting options:\n<details style=\"padding: 10px; background-color: #F6F7F8; border: 1px solid #AAA; border-radius: 5px;\">\n<summary style=\"cursor: pointer; outline: none\"><strong>Expand</strong></summary>\n\n| `FIELD_NAME` | Description |\n| :--- | :--- |\n| <del>`cntChildren`</del> | Number of direct children (**NOT** recursive; for rooms and folders only) |\n\n</details>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Sds-Date-Format": {
+        "enum": [
+          "UTC",
+          "LOCAL",
+          "OFFSET",
+          "EPOCH",
+          "LEET"
+        ],
+        "type": "string",
+        "description": "Date time format (cf. [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) & [leettime.de](http://leettime.de/))"
+      },
+      "search_string": {
+        "type": "string",
+        "description": "Search string"
+      },
+      "depth_level": {
+        "format": "int32",
+        "type": "integer",
+        "description": "* `0` - top level nodes only (default)\n\n* `-1` - full tree\n\n* `n` (any positive number) - include `n` levels starting from the current node"
+      },
+      "parent_id": {
+        "format": "int64",
+        "type": "integer",
+        "description": "Parent node ID.\n\nOnly rooms and folders can be parents.\n\nParent ID `0` or empty is the root node."
+      },
+      "filter": {
+        "type": "string",
+        "description": "Filter string"
+      },
+      "sort": {
+        "type": "string",
+        "description": "Sort string"
+      },
+      "offset": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range offset"
+      },
+      "limit": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Range limit.\n\nMaximum 500.\n\n For more results please use paging (`offset` + `limit`)."
+      },
+      "X-Sds-Auth-Token": {
+        "type": "string",
+        "description": "Authentication token"
+      }
+    },
+    "required": [
+      "search_string"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v4/nodes/search{?search_string,depth_level,parent_id,filter,sort,offset,limit}"
+    },
+    "headers": {
+      "X-Sds-Date-Format": {
+        "$": "X-Sds-Date-Format"
+      },
+      "X-Sds-Auth-Token": {
+        "$": "X-Sds-Auth-Token"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "List of nodes",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**items**: List of nodes",
+            [
+              "**range**: Range information",
+              {
+                "$ul": [
+                  "**limit**: Range limit. Maximum 500.",
+                  "**offset**: Range offset",
+                  "**total**: Total items available"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "406": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "412": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Error information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: HTTP status code",
+            "**debugInfo**: Debug information",
+            "**errorCode**: Internal error code",
+            "**message**: HTTP status code description"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

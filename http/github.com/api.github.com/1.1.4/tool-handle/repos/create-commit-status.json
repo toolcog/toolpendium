@@ -1,0 +1,134 @@
+{
+  "name": "repos_create-commit-status",
+  "description": "Users with push access in a repository can create commit statuses for a given SHA.\n\nNote: there is a limit of 1000 statuses per `sha` and `context` within a repository. Attempts to create more than 1000 statuses will result in a validation error.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "sha": {
+        "type": "string"
+      },
+      "body": {
+        "properties": {
+          "context": {
+            "default": "default",
+            "description": "A string label to differentiate this status from the status of other systems. This field is case-insensitive.",
+            "type": "string"
+          },
+          "description": {
+            "description": "A short description of the status.",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "description": "The state of the status.",
+            "enum": [
+              "error",
+              "failure",
+              "pending",
+              "success"
+            ],
+            "type": "string"
+          },
+          "target_url": {
+            "description": "The target URL to associate with this status. This URL will be linked from the GitHub UI to allow users to easily see the source of the status.  \nFor example, if your continuous integration system is posting build status, you would want to provide the deep link for the build output for this specific SHA:  \n`http://ci.example.com/user/repo/build/sha`",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "sha",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/statuses/{sha}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Status"
+        },
+        "The status of a commit.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**avatar_url**",
+            "**context**",
+            "**created_at**",
+            [
+              "**creator**: A GitHub user.",
+              {
+                "$ul": [
+                  "**avatar_url**",
+                  "**email**",
+                  "**events_url**",
+                  "**followers_url**",
+                  "**following_url**",
+                  "**gists_url**",
+                  "**gravatar_id**",
+                  "**html_url**",
+                  "**id**",
+                  "**login**",
+                  "**name**",
+                  "**node_id**",
+                  "**organizations_url**",
+                  "**received_events_url**",
+                  "**repos_url**",
+                  "**site_admin**",
+                  "**starred_at**",
+                  "**starred_url**",
+                  "**subscriptions_url**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**description**",
+            "**id**",
+            "**node_id**",
+            "**state**",
+            "**target_url**",
+            "**updated_at**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

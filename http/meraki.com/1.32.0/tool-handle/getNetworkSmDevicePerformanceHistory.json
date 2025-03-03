@@ -1,0 +1,97 @@
+{
+  "name": "getNetworkSmDevicePerformanceHistory",
+  "description": "Return historical records of various Systems Manager client metrics for desktop devices.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "networkId": {
+        "type": "string"
+      },
+      "deviceId": {
+        "type": "string"
+      },
+      "perPage": {
+        "type": "integer",
+        "description": "The number of entries per page returned. Acceptable range is 3 - 1000. Default is 1000."
+      },
+      "startingAfter": {
+        "type": "string",
+        "description": "A token used by the server to indicate the start of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      },
+      "endingBefore": {
+        "type": "string",
+        "description": "A token used by the server to indicate the end of the page. Often this is a timestamp or an ID but it is not limited to those. This parameter should not be defined by client applications. The link for the first, last, prev, or next page in the HTTP Link header should define it."
+      }
+    },
+    "required": [
+      "networkId",
+      "deviceId"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://api.meraki.com/api/v1/networks/{networkId}/sm/devices/{deviceId}/performanceHistory{?perPage,startingAfter,endingBefore}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**cpuPercentUsed**: The percentage of CPU used as a decimal format.",
+            [
+              "**diskUsage**: An object containing disk usage details.",
+              {
+                "$ul": [
+                  [
+                    "**c**: An object containing current disk usage details.",
+                    {
+                      "$ul": [
+                        "**space**: The available disk space.",
+                        "**used**: The used disk space."
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**memActive**: The active RAM on the device.",
+            "**memFree**: Memory that is not yet in use by the system.",
+            "**memInactive**: The inactive RAM on the device.",
+            "**memWired**: Memory used for core OS functions on the device.",
+            "**networkReceived**: Network bandwith received.",
+            "**networkSent**: Network bandwith transmitted.",
+            "**swapUsed**: The amount of space being used on the startup disk to swap unused files to and from RAM.",
+            "**ts**: The time at which the performance was measured."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

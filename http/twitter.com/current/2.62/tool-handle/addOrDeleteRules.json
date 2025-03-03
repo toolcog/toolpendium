@@ -1,0 +1,181 @@
+{
+  "name": "addOrDeleteRules",
+  "description": "Add or delete rules from a User's active rule set. Users can provide unique, optionally tagged rules to add. Users can delete their entire rule set or a subset specified by rule ids or values.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "dry_run": {
+        "type": "boolean",
+        "description": "Dry Run can be used with both the add and delete action, with the expected result given, but without actually taking any action in the system (meaning the end state will always be as it was when the request was submitted). This is particularly useful to validate rule changes."
+      },
+      "body": {
+        "$ref": "#/$defs/AddOrDeleteRulesRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AddOrDeleteRulesRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/AddRulesRequest"
+          },
+          {
+            "$ref": "#/$defs/DeleteRulesRequest"
+          }
+        ]
+      },
+      "AddRulesRequest": {
+        "description": "A request to add a user-specified stream filtering rule.",
+        "properties": {
+          "add": {
+            "items": {
+              "$ref": "#/$defs/RuleNoId"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "add"
+        ],
+        "type": "object"
+      },
+      "RuleNoId": {
+        "description": "A user-provided stream filtering rule.",
+        "properties": {
+          "tag": {
+            "$ref": "#/$defs/RuleTag"
+          },
+          "value": {
+            "$ref": "#/$defs/RuleValue"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "RuleTag": {
+        "description": "A tag meant for the labeling of user provided rules.",
+        "example": "Non-retweeted coffee Tweets",
+        "type": "string"
+      },
+      "RuleValue": {
+        "description": "The filterlang value of the rule.",
+        "example": "coffee -is:retweet",
+        "type": "string"
+      },
+      "DeleteRulesRequest": {
+        "description": "A response from deleting user-specified stream filtering rules.",
+        "properties": {
+          "delete": {
+            "description": "IDs and values of all deleted user-specified stream filtering rules.",
+            "properties": {
+              "ids": {
+                "description": "IDs of all deleted user-specified stream filtering rules.",
+                "items": {
+                  "$ref": "#/$defs/RuleId"
+                },
+                "type": "array"
+              },
+              "values": {
+                "description": "Values of all deleted user-specified stream filtering rules.",
+                "items": {
+                  "$ref": "#/$defs/RuleValue"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "delete"
+        ],
+        "type": "object"
+      },
+      "RuleId": {
+        "description": "Unique identifier of this rule.",
+        "example": "120897978112909812",
+        "pattern": "^[0-9]{1,19}$",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.twitter.com/2/tweets/search/stream/rules{?dry_run}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "A response from modifying user-specified stream filtering rules.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**data**: All user-specified stream filtering rules that were created.",
+            "**errors**",
+            [
+              "**meta**",
+              {
+                "$ul": [
+                  "**next_token**: The next token.",
+                  "**result_count**: Number of Rules in result set.",
+                  "**sent**",
+                  "**summary**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

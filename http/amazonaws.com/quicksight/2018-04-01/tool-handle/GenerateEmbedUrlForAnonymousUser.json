@@ -1,0 +1,432 @@
+{
+  "name": "GenerateEmbedUrlForAnonymousUser",
+  "description": "<p>Generates an embed URL that you can use to embed an Amazon QuickSight dashboard or visual in your website, without having to register any reader users. Before you use this action, make sure that you have configured the dashboards and permissions.</p> <p>The following rules apply to the generated URL:</p> <ul> <li> <p>It contains a temporary bearer token. It is valid for 5 minutes after it is generated. Once redeemed within this period, it cannot be re-used again.</p> </li> <li> <p>The URL validity period should not be confused with the actual session lifetime that can be customized using the <code> <a href=\"https://docs.aws.amazon.com/quicksight/latest/APIReference/API_GenerateEmbedUrlForAnonymousUser.html#QS-GenerateEmbedUrlForAnonymousUser-request-SessionLifetimeInMinutes\">SessionLifetimeInMinutes</a> </code> parameter. The resulting user session is valid for 15 minutes (minimum) to 10 hours (maximum). The default session duration is 10 hours.</p> </li> <li> <p>You are charged only when the URL is used or there is interaction with Amazon QuickSight.</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/quicksight/latest/user/embedded-analytics.html\">Embedded Analytics</a> in the <i>Amazon QuickSight User Guide</i>.</p> <p>For more information about the high-level steps for embedding and for an interactive demo of the ways you can customize embedding, visit the <a href=\"https://docs.aws.amazon.com/quicksight/latest/user/quicksight-dev-portal.html\">Amazon QuickSight Developer Portal</a>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "AwsAccountId": {
+        "type": "string",
+        "pattern": "^[0-9]{12}$",
+        "minLength": 12,
+        "maxLength": 12,
+        "description": "The ID for the Amazon Web Services account that contains the dashboard that you're embedding."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Namespace",
+          "AuthorizedResourceArns",
+          "ExperienceConfiguration"
+        ],
+        "properties": {
+          "SessionLifetimeInMinutes": {
+            "description": "How many minutes the session is valid. The session lifetime must be in [15-600] minutes range.",
+            "type": "integer",
+            "minimum": 15,
+            "maximum": 600
+          },
+          "Namespace": {
+            "description": "The Amazon QuickSight namespace that the anonymous user virtually belongs to. If you are not using an Amazon QuickSight custom namespace, set this to <code>default</code>.",
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._-]*$",
+            "maxLength": 64
+          },
+          "SessionTags": {
+            "description": "<p>The session tags used for row-level security. Before you use this parameter, make sure that you have configured the relevant datasets using the <code>DataSet$RowLevelPermissionTagConfiguration</code> parameter so that session tags can be used to provide row-level security.</p> <p>These are not the tags used for the Amazon Web Services resource tagging feature. For more information, see <a href=\"https://docs.aws.amazon.com/quicksight/latest/user/quicksight-dev-rls-tags.html\">Using Row-Level Security (RLS) with Tags</a>in the <i>Amazon QuickSight User Guide</i>.</p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SessionTag"
+            },
+            "minItems": 1,
+            "maxItems": 50
+          },
+          "AuthorizedResourceArns": {
+            "description": "The Amazon Resource Names (ARNs) for the Amazon QuickSight resources that the user is authorized to access during the lifetime of the session. If you choose <code>Dashboard</code> embedding experience, pass the list of dashboard ARNs in the account that you want the user to be able to view. Currently, you can pass up to 25 dashboard ARNs in each API call.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Arn"
+            }
+          },
+          "ExperienceConfiguration": {
+            "description": "The type of experience you want to embed. For anonymous users, you can embed Amazon QuickSight dashboards.",
+            "type": "object",
+            "properties": {
+              "Dashboard": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AnonymousUserDashboardEmbeddingConfiguration"
+                  },
+                  {
+                    "description": "The type of embedding experience. In this case, Amazon QuickSight dashboards."
+                  }
+                ]
+              },
+              "DashboardVisual": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AnonymousUserDashboardVisualEmbeddingConfiguration"
+                  },
+                  {
+                    "description": "The type of embedding experience. In this case, Amazon QuickSight visuals."
+                  }
+                ]
+              },
+              "QSearchBar": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AnonymousUserQSearchBarEmbeddingConfiguration"
+                  },
+                  {
+                    "description": "The Q search bar that you want to use for anonymous user embedding."
+                  }
+                ]
+              }
+            }
+          },
+          "AllowedDomains": {
+            "description": "<p>The domains that you want to add to the allow list for access to the generated URL that is then embedded. This optional parameter overrides the static domains that are configured in the Manage QuickSight menu in the Amazon QuickSight console. Instead, it allows only the domains that you include in this parameter. You can list up to three domains or subdomains in each API call.</p> <p>To include all subdomains under a specific domain to the allow list, use <code>*</code>. For example, <code>https://*.sapp.amazon.com</code> includes all subdomains under <code>https://sapp.amazon.com</code>.</p>",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/String"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "AwsAccountId",
+      "body"
+    ],
+    "$defs": {
+      "SessionTag": {
+        "type": "object",
+        "required": [
+          "Key",
+          "Value"
+        ],
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTagKey"
+              },
+              {
+                "description": "The key for the tag."
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SessionTagValue"
+              },
+              {
+                "description": "The value that you want to assign the tag."
+              }
+            ]
+          }
+        },
+        "description": "The key-value pair used for the row-level security tags feature."
+      },
+      "SessionTagKey": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "SessionTagValue": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "Arn": {
+        "type": "string"
+      },
+      "AnonymousUserDashboardEmbeddingConfiguration": {
+        "type": "object",
+        "required": [
+          "InitialDashboardId"
+        ],
+        "properties": {
+          "InitialDashboardId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShortRestrictiveResourceId"
+              },
+              {
+                "description": "<p>The dashboard ID for the dashboard that you want the user to see first. This ID is included in the output URL. When the URL in response is accessed, Amazon QuickSight renders this dashboard.</p> <p>The Amazon Resource Name (ARN) of this dashboard must be included in the <code>AuthorizedResourceArns</code> parameter. Otherwise, the request will fail with <code>InvalidParameterValueException</code>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Information about the dashboard that you want to embed."
+      },
+      "ShortRestrictiveResourceId": {
+        "type": "string",
+        "pattern": "[\\w\\-]+",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "AnonymousUserDashboardVisualEmbeddingConfiguration": {
+        "type": "object",
+        "required": [
+          "InitialDashboardVisualId"
+        ],
+        "properties": {
+          "InitialDashboardVisualId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DashboardVisualId"
+              },
+              {
+                "description": "<p>The visual ID for the visual that you want the user to see. This ID is included in the output URL. When the URL in response is accessed, Amazon QuickSight renders this visual.</p> <p>The Amazon Resource Name (ARN) of the dashboard that the visual belongs to must be included in the <code>AuthorizedResourceArns</code> parameter. Otherwise, the request will fail with <code>InvalidParameterValueException</code>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "The experience that you are embedding. You can use this object to generate a url that embeds a visual into your application."
+      },
+      "DashboardVisualId": {
+        "type": "object",
+        "required": [
+          "DashboardId",
+          "SheetId",
+          "VisualId"
+        ],
+        "properties": {
+          "DashboardId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShortRestrictiveResourceId"
+              },
+              {
+                "description": "The ID of the dashboard that has the visual that you want to embed. The <code>DashboardId</code> can be found in the <code>IDs for developers</code> section of the <code>Embed visual</code> pane of the visual's on-visual menu of the Amazon QuickSight console. You can also get the <code>DashboardId</code> with a <code>ListDashboards</code> API operation."
+              }
+            ]
+          },
+          "SheetId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShortRestrictiveResourceId"
+              },
+              {
+                "description": "The ID of the sheet that the has visual that you want to embed. The <code>SheetId</code> can be found in the <code>IDs for developers</code> section of the <code>Embed visual</code> pane of the visual's on-visual menu of the Amazon QuickSight console."
+              }
+            ]
+          },
+          "VisualId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ShortRestrictiveResourceId"
+              },
+              {
+                "description": "The ID of the visual that you want to embed. The <code>VisualID</code> can be found in the <code>IDs for developers</code> section of the <code>Embed visual</code> pane of the visual's on-visual menu of the Amazon QuickSight console."
+              }
+            ]
+          }
+        },
+        "description": "<p>A structure that contains the following elements:</p> <ul> <li> <p>The <code>DashboardId</code> of the dashboard that has the visual that you want to embed.</p> </li> <li> <p>The <code>SheetId</code> of the sheet that has the visual that you want to embed.</p> </li> <li> <p>The <code>VisualId</code> of the visual that you want to embed.</p> </li> </ul> <p>The <code>DashboardId</code>, <code>SheetId</code>, and <code>VisualId</code> can be found in the <code>IDs for developers</code> section of the <code>Embed visual</code> pane of the visual's on-visual menu of the Amazon QuickSight console. You can also get the <code>DashboardId</code> with a <code>ListDashboards</code> API operation.</p>"
+      },
+      "AnonymousUserQSearchBarEmbeddingConfiguration": {
+        "type": "object",
+        "required": [
+          "InitialTopicId"
+        ],
+        "properties": {
+          "InitialTopicId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RestrictiveResourceId"
+              },
+              {
+                "description": "<p>The QuickSight Q topic ID of the topic that you want the anonymous user to see first. This ID is included in the output URL. When the URL in response is accessed, Amazon QuickSight renders the Q search bar with this topic pre-selected.</p> <p>The Amazon Resource Name (ARN) of this Q topic must be included in the <code>AuthorizedResourceArns</code> parameter. Otherwise, the request will fail with <code>InvalidParameterValueException</code>.</p>"
+              }
+            ]
+          }
+        },
+        "description": "The settings that you want to use with the Q search bar."
+      },
+      "RestrictiveResourceId": {
+        "type": "string",
+        "pattern": "[\\w\\-]+",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "String": {
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://quicksight.us-east-1.amazonaws.com/accounts/{AwsAccountId}/embed-url/anonymous-user"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**EmbedUrl**",
+            "**Status**",
+            "**RequestId**",
+            "**AnonymousUserArn**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "487": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "name": "CreateImagesFromData",
+  "description": "This API accepts body content as multipart/form-data and application/octet-stream. When using multipart\r\nmultiple image files can be sent at once, with a maximum of 64 files",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The project id."
+      },
+      "tagIds": {
+        "items": {
+          "format": "uuid",
+          "nullable": false,
+          "type": "string"
+        },
+        "maxItems": 20,
+        "minItems": 0,
+        "type": "array",
+        "description": "The tags ids with which to tag each image. Limited to 20."
+      },
+      "Training-Key": {
+        "type": "string",
+        "description": "API key."
+      },
+      "body": {
+        "properties": {
+          "imageData": {
+            "description": "Binary image data. Supported formats are JPEG, GIF, PNG, and BMP. Supports images up to 6MB.",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "imageData"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "projectId",
+      "Training-Key",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://southcentralus.api.cognitive.microsoft.com/customvision/v3.0/training/projects/{projectId}/images{?tagIds}"
+    },
+    "headers": {
+      "Training-Key": {
+        "$": "Training-Key"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**images**: List of the image creation results.",
+            "**isBatchSuccessful**: True if all of the images in the batch were created successfully, otherwise false."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code.",
+            "**message**: A message explaining the error reported by the service."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

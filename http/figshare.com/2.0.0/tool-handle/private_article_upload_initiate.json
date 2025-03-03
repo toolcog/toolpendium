@@ -1,0 +1,113 @@
+{
+  "name": "private_article_upload_initiate",
+  "description": "Initiate a new file upload within the article. Either use the link property to point to an existing file that resides elsewhere and will not be uploaded to Figshare or use the other 3 parameters (md5, name, size).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "article_id": {
+        "format": "int64",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Article unique identifier"
+      },
+      "body": {
+        "$ref": "#/$defs/FileCreator"
+      }
+    },
+    "required": [
+      "article_id",
+      "body"
+    ],
+    "$defs": {
+      "FileCreator": {
+        "properties": {
+          "link": {
+            "description": "Url for an existing file that will not be uploaded to Figshare",
+            "example": "http://figshare.com/file.txt",
+            "type": "string"
+          },
+          "md5": {
+            "description": "MD5 sum pre-computed on client side.",
+            "example": "6c16e6e7d7587bd078e5117dda01d565",
+            "type": "string"
+          },
+          "name": {
+            "description": "File name including the extension; can be omitted only for linked files.",
+            "example": "test.py",
+            "type": "string"
+          },
+          "size": {
+            "description": "File size in bytes; can be omitted only for linked files.",
+            "example": 70,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object",
+        "x-tag": "articles"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.figshare.com/v2/account/articles/{article_id}/files"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**location**: Url for item"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: A machine friendly error code, used by the dev team to identify the error.",
+            "**message**: A human friendly message explaining the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

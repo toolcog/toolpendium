@@ -1,0 +1,278 @@
+{
+  "name": "repos_create-deployment",
+  "description": "Deployments offer a few configurable parameters with certain defaults.\n\nThe `ref` parameter can be any named branch, tag, or SHA. At GitHub we often deploy branches and verify them\nbefore we merge a pull request.\n\nThe `environment` parameter allows deployments to be issued to different runtime environments. Teams often have\nmultiple environments for verifying their applications, such as `production`, `staging`, and `qa`. This parameter\nmakes it easier to track which environments have requested deployments. The default environment is `production`.\n\nThe `auto_merge` parameter is used to ensure that the requested ref is not behind the repository's default branch. If\nthe ref _is_ behind the default branch for the repository, we will attempt to merge it for you. If the merge succeeds,\nthe API will return a successful merge commit. If merge conflicts prevent the merge from succeeding, the API will\nreturn a failure response.\n\nBy default, [commit statuses](https://docs.github.com/rest/commits/statuses) for every submitted context must be in a `success`\nstate. The `required_contexts` parameter allows you to specify a subset of contexts that must be `success`, or to\nspecify contexts that have not yet been submitted. You are not required to use commit statuses to deploy. If you do\nnot require any contexts or create any commit statuses, the deployment will always succeed.\n\nThe `payload` parameter is available for any extra information that a deployment system might need. It is a JSON text\nfield that will be passed on when a deployment event is dispatched.\n\nThe `task` parameter is used by the deployment system to allow different execution paths. In the web world this might\nbe `deploy:migrations` to run schema changes on the system. In the compiled world this could be a flag to compile an\napplication with debugging enabled.\n\nUsers with `repo` or `repo_deployment` scopes can create a deployment for a given ref.\n\n#### Merged branch response\nYou will see this response when GitHub automatically merges the base branch into the topic branch instead of creating\na deployment. This auto-merge happens when:\n*   Auto-merge option is enabled in the repository\n*   Topic branch does not include the latest changes on the base branch, which is `master` in the response example\n*   There are no merge conflicts\n\nIf there are no new commits in the base branch, a new request to create a deployment should give a successful\nresponse.\n\n#### Merge conflict response\nThis error happens when the `auto_merge` option is enabled and when the default branch (in this case `master`), can't\nbe merged into the branch that's being deployed (in this case `topic-branch`), due to merge conflicts.\n\n#### Failed commit status checks\nThis error happens when the `required_contexts` parameter indicates that one or more contexts need to have a `success`\nstatus for the commit to be deployed, but one or more of the required contexts do not have a state of `success`.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "body": {
+        "properties": {
+          "auto_merge": {
+            "default": true,
+            "description": "Attempts to automatically merge the default branch into the requested ref, if it's behind the default branch.",
+            "type": "boolean"
+          },
+          "description": {
+            "default": "",
+            "description": "Short description of the deployment.",
+            "nullable": true,
+            "type": "string"
+          },
+          "environment": {
+            "default": "production",
+            "description": "Name for the target deployment environment (e.g., `production`, `staging`, `qa`).",
+            "type": "string"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "default": "",
+                "description": "JSON payload with extra information about the deployment.",
+                "type": "string"
+              }
+            ]
+          },
+          "production_environment": {
+            "description": "Specifies if the given environment is one that end-users directly interact with. Default: `true` when `environment` is `production` and `false` otherwise.",
+            "type": "boolean"
+          },
+          "ref": {
+            "description": "The ref to deploy. This can be a branch, tag, or SHA.",
+            "type": "string"
+          },
+          "required_contexts": {
+            "description": "The [status](https://docs.github.com/rest/commits/statuses) contexts to verify against commit status checks. If you omit this parameter, GitHub verifies all unique contexts before creating a deployment. To bypass checking entirely, pass an empty array. Defaults to all unique contexts.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "task": {
+            "default": "deploy",
+            "description": "Specifies a task to execute (e.g., `deploy` or `deploy:migrations`).",
+            "type": "string"
+          },
+          "transient_environment": {
+            "default": false,
+            "description": "Specifies if the given environment is specific to the deployment and will no longer exist at some point in the future. Default: `false`",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ref"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://github.com//repos/{owner}/{repo}/deployments"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Deployment"
+        },
+        "A request for a specific ref(branch,sha,tag) to be deployed",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created_at**",
+            [
+              "**creator**: A GitHub user.",
+              {
+                "$ul": [
+                  "**avatar_url**",
+                  "**email**",
+                  "**events_url**",
+                  "**followers_url**",
+                  "**following_url**",
+                  "**gists_url**",
+                  "**gravatar_id**",
+                  "**html_url**",
+                  "**id**",
+                  "**login**",
+                  "**name**",
+                  "**node_id**",
+                  "**organizations_url**",
+                  "**received_events_url**",
+                  "**repos_url**",
+                  "**site_admin**",
+                  "**starred_at**",
+                  "**starred_url**",
+                  "**subscriptions_url**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**description**",
+            "**environment**: Name for the target deployment environment.",
+            "**id**: Unique identifier of the deployment",
+            "**node_id**",
+            "**original_environment**",
+            "**payload**",
+            [
+              "**performed_via_github_app**: GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+              {
+                "$ul": [
+                  "**client_id**",
+                  "**client_secret**",
+                  "**created_at**",
+                  "**description**",
+                  "**events**: The list of events for the GitHub app",
+                  "**external_url**",
+                  "**html_url**",
+                  "**id**: Unique identifier of the GitHub app",
+                  "**installations_count**: The number of installations associated with the GitHub app",
+                  "**name**: The name of the GitHub app",
+                  "**node_id**",
+                  [
+                    "**owner**: A GitHub user.",
+                    {
+                      "$ul": [
+                        "**avatar_url**",
+                        "**email**",
+                        "**events_url**",
+                        "**followers_url**",
+                        "**following_url**",
+                        "**gists_url**",
+                        "**gravatar_id**",
+                        "**html_url**",
+                        "**id**",
+                        "**login**",
+                        "**name**",
+                        "**node_id**",
+                        "**organizations_url**",
+                        "**received_events_url**",
+                        "**repos_url**",
+                        "**site_admin**",
+                        "**starred_at**",
+                        "**starred_url**",
+                        "**subscriptions_url**",
+                        "**type**",
+                        "**url**"
+                      ]
+                    }
+                  ],
+                  "**pem**",
+                  [
+                    "**permissions**: The set of permissions for the GitHub app",
+                    {
+                      "$ul": [
+                        "**checks**",
+                        "**contents**",
+                        "**deployments**",
+                        "**issues**",
+                        "**metadata**"
+                      ]
+                    }
+                  ],
+                  "**slug**: The slug name of the GitHub app",
+                  "**updated_at**",
+                  "**webhook_secret**"
+                ]
+              }
+            ],
+            "**production_environment**: Specifies if the given environment is one that end-users directly interact with. Default: false.",
+            "**ref**: The ref to deploy. This can be a branch, tag, or sha.",
+            "**repository_url**",
+            "**sha**",
+            "**statuses_url**",
+            "**task**: Parameter to specify a task to execute",
+            "**transient_environment**: Specifies if the given environment is will no longer exist at some point in the future. Default: false.",
+            "**updated_at**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "202": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

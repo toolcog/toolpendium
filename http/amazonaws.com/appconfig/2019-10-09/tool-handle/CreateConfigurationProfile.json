@@ -1,0 +1,245 @@
+{
+  "name": "CreateConfigurationProfile",
+  "description": "<p>Creates a configuration profile, which is information that enables AppConfig to access the configuration source. Valid configuration sources include the following:</p> <ul> <li> <p>Configuration data in YAML, JSON, and other formats stored in the AppConfig hosted configuration store</p> </li> <li> <p>Configuration data stored as objects in an Amazon Simple Storage Service (Amazon S3) bucket</p> </li> <li> <p>Pipelines stored in CodePipeline</p> </li> <li> <p>Secrets stored in Secrets Manager</p> </li> <li> <p>Standard and secure string parameters stored in Amazon Web Services Systems Manager Parameter Store</p> </li> <li> <p>Configuration data in SSM documents stored in the Systems Manager document store</p> </li> </ul> <p>A configuration profile includes the following information:</p> <ul> <li> <p>The URI location of the configuration data.</p> </li> <li> <p>The Identity and Access Management (IAM) role that provides access to the configuration data.</p> </li> <li> <p>A validator for the configuration data. Available validators include either a JSON Schema or an Amazon Web Services Lambda function.</p> </li> </ul> <p>For more information, see <a href=\"http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-creating-configuration-and-profile.html\">Create a Configuration and a Configuration Profile</a> in the <i>AppConfig User Guide</i>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "ApplicationId": {
+        "type": "string",
+        "pattern": "[a-z0-9]{4,7}",
+        "description": "The application ID."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Name",
+          "LocationUri"
+        ],
+        "properties": {
+          "Name": {
+            "description": "A name for the configuration profile.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "Description": {
+            "description": "A description of the configuration profile.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024
+          },
+          "LocationUri": {
+            "description": "<p>A URI to locate the configuration. You can specify the following:</p> <ul> <li> <p>For the AppConfig hosted configuration store and for feature flags, specify <code>hosted</code>.</p> </li> <li> <p>For an Amazon Web Services Systems Manager Parameter Store parameter, specify either the parameter name in the format <code>ssm-parameter://&lt;parameter name&gt;</code> or the ARN.</p> </li> <li> <p>For an Secrets Manager secret, specify the URI in the following format: <code>secrets-manager</code>://&lt;secret name&gt;.</p> </li> <li> <p>For an Amazon S3 object, specify the URI in the following format: <code>s3://&lt;bucket&gt;/&lt;objectKey&gt; </code>. Here is an example: <code>s3://my-bucket/my-app/us-east-1/my-config.json</code> </p> </li> <li> <p>For an SSM document, specify either the document name in the format <code>ssm-document://&lt;document name&gt;</code> or the Amazon Resource Name (ARN).</p> </li> </ul>",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "RetrievalRoleArn": {
+            "description": "<p>The ARN of an IAM role with permission to access the configuration at the specified <code>LocationUri</code>.</p> <important> <p>A retrieval role ARN is not required for configurations stored in the AppConfig hosted configuration store. It is required for all other sources that store your configuration. </p> </important>",
+            "type": "string",
+            "pattern": "^((arn):(aws|aws-cn|aws-iso|aws-iso-[a-z]{1}|aws-us-gov):(iam)::\\d{12}:role[/].*)$",
+            "minLength": 20,
+            "maxLength": 2048
+          },
+          "Validators": {
+            "description": "A list of methods for validating the configuration.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Validator"
+            },
+            "minItems": 0,
+            "maxItems": 2
+          },
+          "Tags": {
+            "description": "Metadata to assign to the configuration profile. Tags help organize and categorize your AppConfig resources. Each tag consists of a key and an optional value, both of which you define.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "Type": {
+            "description": "<p>The type of configurations contained in the profile. AppConfig supports <code>feature flags</code> and <code>freeform</code> configurations. We recommend you create feature flag configurations to enable or disable new features and freeform configurations to distribute configurations to an application. When calling this API, enter one of the following values for <code>Type</code>:</p> <p> <code>AWS.AppConfig.FeatureFlags</code> </p> <p> <code>AWS.Freeform</code> </p>",
+            "type": "string",
+            "pattern": "^[a-zA-Z\\.]+"
+          }
+        }
+      }
+    },
+    "required": [
+      "ApplicationId",
+      "body"
+    ],
+    "$defs": {
+      "Validator": {
+        "type": "object",
+        "required": [
+          "Type",
+          "Content"
+        ],
+        "properties": {
+          "Type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ValidatorType"
+              },
+              {
+                "description": "AppConfig supports validators of type <code>JSON_SCHEMA</code> and <code>LAMBDA</code> "
+              }
+            ]
+          },
+          "Content": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StringWithLengthBetween0And32768"
+              },
+              {
+                "description": "Either the JSON Schema content or the Amazon Resource Name (ARN) of an Lambda function."
+              }
+            ]
+          }
+        },
+        "description": "A validator provides a syntactic or semantic check to ensure the configuration that you want to deploy functions as intended. To validate your application configuration data, you provide a schema or an Amazon Web Services Lambda function that runs against the configuration. The configuration deployment or update can only proceed when the configuration data is valid."
+      },
+      "ValidatorType": {
+        "type": "string",
+        "enum": [
+          "JSON_SCHEMA",
+          "LAMBDA"
+        ]
+      },
+      "StringWithLengthBetween0And32768": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 32768,
+        "format": "password"
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://appconfig.us-east-1.amazonaws.com/applications/{ApplicationId}/configurationprofiles"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ApplicationId**",
+            "**Id**",
+            "**Name**",
+            "**Description**",
+            "**LocationUri**",
+            "**RetrievalRoleArn**",
+            "**Validators**",
+            "**Type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

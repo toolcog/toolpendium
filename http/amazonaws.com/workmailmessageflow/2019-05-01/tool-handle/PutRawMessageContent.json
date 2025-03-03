@@ -1,0 +1,223 @@
+{
+  "name": "PutRawMessageContent",
+  "description": "<p>Updates the raw content of an in-transit email message, in MIME format.</p> <p>This example describes how to update in-transit email message. For more information and examples for using this API, see <a href=\"https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html\"> Updating message content with AWS Lambda</a>.</p> <note> <p>Updates to an in-transit message only appear when you call <code>PutRawMessageContent</code> from an AWS Lambda function configured with a synchronous <a href=\"https://docs.aws.amazon.com/workmail/latest/adminguide/lambda.html#synchronous-rules\"> Run Lambda</a> rule. If you call <code>PutRawMessageContent</code> on a delivered or sent message, the message remains unchanged, even though <a href=\"https://docs.aws.amazon.com/workmail/latest/APIReference/API_messageflow_GetRawMessageContent.html\">GetRawMessageContent</a> returns an updated message. </p> </note>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "messageId": {
+        "type": "string",
+        "pattern": "[a-z0-9\\-]*",
+        "minLength": 1,
+        "maxLength": 120,
+        "description": "The identifier of the email message being updated."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "description": "<p>Provides the MIME content of the updated email message as an S3 object. All MIME content must meet the following criteria:</p> <ul> <li> <p>Each part of a multipart MIME message must be formatted properly.</p> </li> <li> <p>Attachments must be of a content type that Amazon SES supports. For more information, see <a href=\"https://docs.aws.amazon.com/ses/latest/DeveloperGuide/mime-types-appendix.html\">Unsupported Attachment Types</a>.</p> </li> <li> <p>If any of the MIME parts in a message contain content that is outside of the 7-bit ASCII character range, we recommend encoding that content.</p> </li> <li> <p>Per <a href=\"https://tools.ietf.org/html/rfc5321#section-4.5.3.1.6\">RFC 5321</a>, the maximum length of each line of text, including the &lt;CRLF&gt;, must not exceed 1,000 characters.</p> </li> <li> <p>The message must contain all the required header fields. Check the returned error message for more information.</p> </li> <li> <p>The value of immutable headers must remain unchanged. Check the returned error message for more information.</p> </li> <li> <p>Certain unique headers can only appear once. Check the returned error message for more information.</p> </li> </ul>",
+            "type": "object",
+            "properties": {
+              "s3Reference": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Reference"
+                  },
+                  {
+                    "description": "The S3 reference of an email message."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "messageId",
+      "body"
+    ],
+    "$defs": {
+      "S3Reference": {
+        "type": "object",
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/s3BucketIdType"
+              },
+              {
+                "description": "The S3 bucket name."
+              }
+            ]
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/s3KeyIdType"
+              },
+              {
+                "description": "The S3 key object name."
+              }
+            ]
+          },
+          "objectVersion": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/s3VersionType"
+              },
+              {
+                "description": "If you enable versioning for the bucket, you can specify the object version."
+              }
+            ]
+          }
+        },
+        "description": "<p>Amazon S3 object representing the updated message content, in MIME format.</p> <note> <p>The region for the S3 bucket containing the S3 object must match the region used for WorkMail operations. Also, for WorkMail to process an S3 object, it must have permission to access that object. For more information, see <a href=\"https://docs.aws.amazon.com/workmail/latest/adminguide/update-with-lambda.html\"> Updating message content with AWS Lambda</a>.</p> </note>"
+      },
+      "s3BucketIdType": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9\\-]*",
+        "minLength": 3,
+        "maxLength": 63
+      },
+      "s3KeyIdType": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9\\-/]*",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "s3VersionType": {
+        "type": "string",
+        "pattern": ".+",
+        "minLength": 1,
+        "maxLength": 1024
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://workmailmessageflow.us-east-1.amazonaws.com/messages/{messageId}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "name": "GetVaultItems",
+  "description": "Get all items for inside a Vault",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "vaultUuid": {
+        "pattern": "^[\\da-z]{26}$",
+        "type": "string",
+        "description": "The UUID of the Vault to fetch Items from"
+      },
+      "filter": {
+        "example": "title eq \"Some Item Name\"",
+        "type": "string",
+        "description": "Filter the Item collection based on Item name using SCIM eq filter"
+      }
+    },
+    "required": [
+      "vaultUuid"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://1password.local/vaults/{vaultUuid}/items{?filter}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**category**",
+            "**createdAt**",
+            "**favorite** (default: false)",
+            "**id**",
+            "**lastEditedBy**",
+            "**state**",
+            "**tags**",
+            "**title**",
+            "**updatedAt**",
+            "**urls**",
+            [
+              "**vault**",
+              {
+                "$ul": [
+                  "**id**"
+                ]
+              }
+            ],
+            "**version**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**message**: A message detailing the error",
+            "**status**: HTTP Status Code"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

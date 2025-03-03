@@ -1,0 +1,92 @@
+{
+  "name": "getParticipantsByConvId",
+  "description": "Performs a search for participants. The max number of participants is configurable. If more participants are available a search pointer is returned for consecutive calls.\nOauthScopes: READ_CONVERSATIONS",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "convId": {
+        "maxLength": 2048,
+        "type": "string",
+        "description": "The id of the conversation the participants are searched for."
+      },
+      "pageSize": {
+        "format": "int32",
+        "maximum": 25,
+        "minimum": 1,
+        "type": "number",
+        "description": "The page size of the hit list"
+      },
+      "name": {
+        "maxLength": 2048,
+        "type": "string",
+        "description": "Part of name to filter the results"
+      },
+      "type": {
+        "default": "REGULAR",
+        "enum": [
+          "REGULAR",
+          "MODERATOR",
+          "GUEST",
+          "FORMER",
+          "BOT"
+        ],
+        "maxLength": 2048,
+        "type": "string",
+        "description": "Type of participant to filter the results"
+      },
+      "searchPointer": {
+        "maxLength": 2048,
+        "type": "string",
+        "description": "Pointer for paged output. Add to consecutive request to get next page"
+      }
+    },
+    "required": [
+      "convId",
+      "pageSize"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://circuitsandbox.net/rest/v2/conversations/{convId}/participants{?pageSize,name,type,searchPointer}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**hasMore**: are more results available, then start another search with finer query",
+            "**participantList**: list of participants",
+            "**searchPointer**: pointer for stored search "
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

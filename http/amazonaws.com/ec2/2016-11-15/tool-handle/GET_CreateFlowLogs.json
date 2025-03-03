@@ -1,0 +1,423 @@
+{
+  "name": "GET_CreateFlowLogs",
+  "description": "<p>Creates one or more flow logs to capture information about IP traffic for a specific network interface, subnet, or VPC. </p> <p>Flow log data for a monitored network interface is recorded as flow log records, which are log events consisting of fields that describe the traffic flow. For more information, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-log-records\">Flow log records</a> in the <i>Amazon Virtual Private Cloud User Guide</i>.</p> <p>When publishing to CloudWatch Logs, flow log records are published to a log group, and each network interface has a unique log stream in the log group. When publishing to Amazon S3, flow log records for all of the monitored network interfaces are published to a single log file object that is stored in the specified bucket.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html\">VPC Flow Logs</a> in the <i>Amazon Virtual Private Cloud User Guide</i>.</p>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "DryRun": {
+        "type": "boolean",
+        "description": "Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is <code>DryRunOperation</code>. Otherwise, it is <code>UnauthorizedOperation</code>."
+      },
+      "ClientToken": {
+        "type": "string",
+        "description": "Unique, case-sensitive identifier that you provide to ensure the idempotency of the request. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html\">How to ensure idempotency</a>."
+      },
+      "DeliverLogsPermissionArn": {
+        "type": "string",
+        "description": "<p>The ARN of the IAM role that allows Amazon EC2 to publish flow logs to a CloudWatch Logs log group in your account.</p> <p>This parameter is required if the destination type is <code>cloud-watch-logs</code> and unsupported otherwise.</p>"
+      },
+      "DeliverCrossAccountRole": {
+        "type": "string",
+        "description": "The ARN of the IAM role that allows Amazon EC2 to publish flow logs across accounts."
+      },
+      "LogGroupName": {
+        "type": "string",
+        "description": "<p>The name of a new or existing CloudWatch Logs log group where Amazon EC2 publishes your flow logs.</p> <p>This parameter is valid only if the destination type is <code>cloud-watch-logs</code>.</p>"
+      },
+      "ResourceId": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/FlowLogResourceId"
+            },
+            {
+              "xml": {
+                "name": "item"
+              }
+            }
+          ]
+        },
+        "description": "<p>The IDs of the resources to monitor. For example, if the resource type is <code>VPC</code>, specify the IDs of the VPCs.</p> <p>Constraints: Maximum of 25 for transit gateway resource types. Maximum of 1000 for the other resource types.</p>"
+      },
+      "ResourceType": {
+        "type": "string",
+        "enum": [
+          "VPC",
+          "Subnet",
+          "NetworkInterface",
+          "TransitGateway",
+          "TransitGatewayAttachment"
+        ],
+        "description": "The type of resource to monitor."
+      },
+      "TrafficType": {
+        "type": "string",
+        "enum": [
+          "ACCEPT",
+          "REJECT",
+          "ALL"
+        ],
+        "description": "The type of traffic to monitor (accepted traffic, rejected traffic, or all traffic). This parameter is not supported for transit gateway resource types. It is required for the other resource types."
+      },
+      "LogDestinationType": {
+        "type": "string",
+        "enum": [
+          "cloud-watch-logs",
+          "s3",
+          "kinesis-data-firehose"
+        ],
+        "description": "<p>The type of destination for the flow log data.</p> <p>Default: <code>cloud-watch-logs</code> </p>"
+      },
+      "LogDestination": {
+        "type": "string",
+        "description": "<p>The destination for the flow log data. The meaning of this parameter depends on the destination type.</p> <ul> <li> <p>If the destination type is <code>cloud-watch-logs</code>, specify the ARN of a CloudWatch Logs log group. For example:</p> <p>arn:aws:logs:<i>region</i>:<i>account_id</i>:log-group:<i>my_group</i> </p> <p>Alternatively, use the <code>LogGroupName</code> parameter.</p> </li> <li> <p>If the destination type is <code>s3</code>, specify the ARN of an S3 bucket. For example:</p> <p>arn:aws:s3:::<i>my_bucket</i>/<i>my_subfolder</i>/</p> <p>The subfolder is optional. Note that you can't use <code>AWSLogs</code> as a subfolder name.</p> </li> <li> <p>If the destination type is <code>kinesis-data-firehose</code>, specify the ARN of a Kinesis Data Firehose delivery stream. For example:</p> <p>arn:aws:firehose:<i>region</i>:<i>account_id</i>:deliverystream:<i>my_stream</i> </p> </li> </ul>"
+      },
+      "LogFormat": {
+        "type": "string",
+        "description": "<p>The fields to include in the flow log record. List the fields in the order in which they should appear. If you omit this parameter, the flow log is created using the default format. If you specify this parameter, you must include at least one field. For more information about the available fields, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-log-records\">Flow log records</a> in the <i>Amazon VPC User Guide</i> or <a href=\"https://docs.aws.amazon.com/vpc/latest/tgw/tgw-flow-logs.html#flow-log-records\">Transit Gateway Flow Log records</a> in the <i>Amazon Web Services Transit Gateway Guide</i>.</p> <p>Specify the fields using the <code>${field-id}</code> format, separated by spaces. For the CLI, surround this parameter value with single quotes on Linux or double quotes on Windows.</p>"
+      },
+      "TagSpecification": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/TagSpecification"
+            },
+            {
+              "xml": {
+                "name": "item"
+              }
+            }
+          ]
+        },
+        "description": "The tags to apply to the flow logs."
+      },
+      "MaxAggregationInterval": {
+        "type": "integer",
+        "description": "<p>The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. The possible values are 60 seconds (1 minute) or 600 seconds (10 minutes). This parameter must be 60 seconds for transit gateway resource types.</p> <p>When a network interface is attached to a <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances\">Nitro-based instance</a>, the aggregation interval is always 60 seconds or less, regardless of the value that you specify.</p> <p>Default: 600</p>"
+      },
+      "DestinationOptions": {
+        "type": "object",
+        "properties": {
+          "FileFormat": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DestinationFileFormat"
+              },
+              {
+                "description": "The format for the flow log. The default is <code>plain-text</code>."
+              }
+            ]
+          },
+          "HiveCompatiblePartitions": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether to use Hive-compatible prefixes for flow logs stored in Amazon S3. The default is <code>false</code>."
+              }
+            ]
+          },
+          "PerHourPartition": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Indicates whether to partition the flow log per hour. This reduces the cost and response time for queries. The default is <code>false</code>."
+              }
+            ]
+          }
+        },
+        "description": "The destination options."
+      },
+      "Action": {
+        "type": "string",
+        "enum": [
+          "CreateFlowLogs"
+        ]
+      },
+      "Version": {
+        "type": "string",
+        "enum": [
+          "2016-11-15"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "ResourceId",
+      "ResourceType",
+      "Action",
+      "Version"
+    ],
+    "$defs": {
+      "FlowLogResourceId": {
+        "type": "string"
+      },
+      "TagSpecification": {
+        "type": "object",
+        "properties": {
+          "ResourceType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ResourceType"
+              },
+              {
+                "xml": {
+                  "name": "resourceType"
+                },
+                "description": "The type of resource to tag on creation."
+              }
+            ]
+          },
+          "Tags": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/TagList"
+              },
+              {
+                "xml": {
+                  "name": "Tag"
+                },
+                "description": "The tags to apply to the resource."
+              }
+            ]
+          }
+        },
+        "description": "<p>The tags to apply to a resource when the resource is being created. When you specify a tag, you must specify the resource type to tag, otherwise the request will fail.</p> <note> <p>The <code>Valid Values</code> lists all the resource types that can be tagged. However, the action you're using might not support tagging all of these resource types. If you try to tag a resource type that is unsupported for the action you're using, you'll get an error.</p> </note>"
+      },
+      "ResourceType": {
+        "type": "string",
+        "enum": [
+          "capacity-reservation",
+          "client-vpn-endpoint",
+          "customer-gateway",
+          "carrier-gateway",
+          "coip-pool",
+          "dedicated-host",
+          "dhcp-options",
+          "egress-only-internet-gateway",
+          "elastic-ip",
+          "elastic-gpu",
+          "export-image-task",
+          "export-instance-task",
+          "fleet",
+          "fpga-image",
+          "host-reservation",
+          "image",
+          "import-image-task",
+          "import-snapshot-task",
+          "instance",
+          "instance-event-window",
+          "internet-gateway",
+          "ipam",
+          "ipam-pool",
+          "ipam-scope",
+          "ipv4pool-ec2",
+          "ipv6pool-ec2",
+          "key-pair",
+          "launch-template",
+          "local-gateway",
+          "local-gateway-route-table",
+          "local-gateway-virtual-interface",
+          "local-gateway-virtual-interface-group",
+          "local-gateway-route-table-vpc-association",
+          "local-gateway-route-table-virtual-interface-group-association",
+          "natgateway",
+          "network-acl",
+          "network-interface",
+          "network-insights-analysis",
+          "network-insights-path",
+          "network-insights-access-scope",
+          "network-insights-access-scope-analysis",
+          "placement-group",
+          "prefix-list",
+          "replace-root-volume-task",
+          "reserved-instances",
+          "route-table",
+          "security-group",
+          "security-group-rule",
+          "snapshot",
+          "spot-fleet-request",
+          "spot-instances-request",
+          "subnet",
+          "subnet-cidr-reservation",
+          "traffic-mirror-filter",
+          "traffic-mirror-session",
+          "traffic-mirror-target",
+          "transit-gateway",
+          "transit-gateway-attachment",
+          "transit-gateway-connect-peer",
+          "transit-gateway-multicast-domain",
+          "transit-gateway-policy-table",
+          "transit-gateway-route-table",
+          "transit-gateway-route-table-announcement",
+          "volume",
+          "vpc",
+          "vpc-endpoint",
+          "vpc-endpoint-connection",
+          "vpc-endpoint-service",
+          "vpc-endpoint-service-permission",
+          "vpc-peering-connection",
+          "vpn-connection",
+          "vpn-gateway",
+          "vpc-flow-log",
+          "capacity-reservation-fleet",
+          "traffic-mirror-filter-rule",
+          "vpc-endpoint-connection-device-type",
+          "verified-access-instance",
+          "verified-access-group",
+          "verified-access-endpoint",
+          "verified-access-policy",
+          "verified-access-trust-provider",
+          "vpn-connection-device-type",
+          "vpc-block-public-access-exclusion",
+          "ipam-resource-discovery",
+          "ipam-resource-discovery-association",
+          "instance-connect-endpoint"
+        ]
+      },
+      "TagList": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Tag"
+            },
+            {
+              "xml": {
+                "name": "item"
+              }
+            }
+          ]
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "Key": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "xml": {
+                  "name": "key"
+                },
+                "description": "<p>The key of the tag.</p> <p>Constraints: Tag keys are case-sensitive and accept a maximum of 127 Unicode characters. May not begin with <code>aws:</code>.</p>"
+              }
+            ]
+          },
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/String"
+              },
+              {
+                "xml": {
+                  "name": "value"
+                },
+                "description": "<p>The value of the tag.</p> <p>Constraints: Tag values are case-sensitive and accept a maximum of 256 Unicode characters.</p>"
+              }
+            ]
+          }
+        },
+        "description": "Describes a tag."
+      },
+      "String": {
+        "type": "string"
+      },
+      "DestinationFileFormat": {
+        "type": "string",
+        "enum": [
+          "plain-text",
+          "parquet"
+        ]
+      },
+      "Boolean": {
+        "type": "boolean"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://ec2.us-east-1.amazonaws.com/#Action=CreateFlowLogs{?DryRun,ClientToken,DeliverLogsPermissionArn,DeliverCrossAccountRole,LogGroupName,ResourceId,ResourceType,TrafficType,LogDestinationType,LogDestination,LogFormat,TagSpecification,MaxAggregationInterval,DestinationOptions,Action,Version}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ClientToken**",
+            "**FlowLogIds**",
+            "**Unsuccessful**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "name": "createMultipartUpload",
+  "description": "Creates a multipart upload in the external storage provider, storing\na temporary reference to the external upload similar to /get-presigned-put.\n\nYou must have the correct permissions and CORS settings configured in your\nexternal provider. We support AWS S3 as the default. See:\n\nhttps://meta.discourse.org/t/-/210469#s3-multipart-direct-uploads-4.\n\nAn external file store must be set up and `enable_direct_s3_uploads` must\nbe set to true for this endpoint to function.\n\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "additionalProperties": false,
+        "properties": {
+          "file_name": {
+            "examples": [
+              "IMG_2021.jpeg"
+            ],
+            "type": "string"
+          },
+          "file_size": {
+            "description": "File size should be represented in bytes.",
+            "examples": [
+              4096
+            ],
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": false,
+            "properties": {
+              "sha1-checksum": {
+                "description": "The SHA1 checksum of the upload binary blob. Optionally\nbe provided and serves as an additional security check when\nlater processing the file in complete-external-upload endpoint.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "upload_type": {
+            "enum": [
+              "avatar",
+              "profile_background",
+              "card_background",
+              "custom_emoji",
+              "composer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "upload_type",
+          "file_name",
+          "file_size"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://discourse.local/uploads/create-multipart.json"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**external_upload_identifier**: The identifier of the multipart upload in the external",
+            "**key**: The path of the temporary file on the external storage",
+            "**unique_identifier**: A unique string that identifies the external upload."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

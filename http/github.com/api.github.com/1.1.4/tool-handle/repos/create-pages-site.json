@@ -1,0 +1,193 @@
+{
+  "name": "repos_create-pages-site",
+  "description": "Configures a GitHub Pages site. For more information, see \"[About GitHub Pages](/github/working-with-github-pages/about-github-pages).\"\n\nTo use this endpoint, you must be a repository administrator, maintainer, or have the 'manage GitHub Pages settings' permission. A token with the `repo` scope or Pages write permission is required. GitHub Apps must have the `administration:write` and `pages:write` permissions.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "body": {
+        "anyOf": [
+          {
+            "required": [
+              "source"
+            ]
+          },
+          {
+            "required": [
+              "build_type"
+            ]
+          }
+        ],
+        "description": "The source branch and directory used to publish your Pages site.",
+        "nullable": true,
+        "properties": {
+          "build_type": {
+            "description": "The process in which the Page will be built. Possible values are `\"legacy\"` and `\"workflow\"`.",
+            "enum": [
+              "legacy",
+              "workflow"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "description": "The source branch and directory used to publish your Pages site.",
+            "properties": {
+              "branch": {
+                "description": "The repository branch used to publish your site's source files.",
+                "type": "string"
+              },
+              "path": {
+                "default": "/",
+                "description": "The repository directory that includes the source files for the Pages site. Allowed paths are `/` or `/docs`. Default: `/`",
+                "enum": [
+                  "/",
+                  "/docs"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "branch"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.github.com/repos/{owner}/{repo}/pages"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GitHub Pages"
+        },
+        "The configuration for GitHub Pages for a repository.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**build_type**: The process in which the Page will be built.",
+            "**cname**: The Pages site's custom domain",
+            "**custom_404**: Whether the Page has a custom 404 page. (default: false)",
+            "**html_url**: The web address the Page can be accessed from.",
+            [
+              "**https_certificate**",
+              {
+                "$ul": [
+                  "**description**",
+                  "**domains**: Array of the domain set and its alternate name (if it is configured)",
+                  "**expires_at**",
+                  "**state**"
+                ]
+              }
+            ],
+            "**https_enforced**: Whether https is enabled on the domain",
+            "**pending_domain_unverified_at**: The timestamp when a pending domain becomes unverified.",
+            "**protected_domain_state**: The state if the domain is verified",
+            "**public**: Whether the GitHub Pages site is publicly visible. If set to `true`, the site is accessible to anyone on the internet. If set to `false`, the site will only be accessible to users who have at least `read` access to the repository that published the site.",
+            [
+              "**source**",
+              {
+                "$ul": [
+                  "**branch**",
+                  "**path**"
+                ]
+              }
+            ],
+            "**status**: The status of the most recent build of the Page.",
+            "**url**: The API address for accessing this Page resource."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "409": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Validation Error"
+        },
+        "Validation Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**errors**",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

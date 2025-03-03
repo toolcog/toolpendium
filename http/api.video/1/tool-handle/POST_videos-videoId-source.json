@@ -1,0 +1,178 @@
+{
+  "name": "POST_videos-videoId-source",
+  "description": "To upload a video to the videoId you created. Replace {videoId} with the id you'd like to use, {access_token} with your token, and /path/to/video.mp4 with the path to the video you'd like to upload. You can only upload your video to the videoId once.\n```bash\ncurl https://ws.api.video/videos/{videoId}/source \\\n  -H 'Authorization: Bearer {access_token}' \\\n  -F file=@/path/to/video.mp4\n\n  ```\nTutorials using [video upload](https://api.video/blog/endpoints/video-upload).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "videoId": {
+        "type": "string",
+        "description": "Enter the videoId you want to use to upload your video."
+      },
+      "Content-Range": {
+        "pattern": "^bytes [0-9]*-[0-9]*\\/[0-9]*$",
+        "type": "string",
+        "description": "Content-Range represents the range of bytes that will be returned as a result of the request. Byte ranges are inclusive, meaning that bytes 0-999 represents the first 1000 bytes in a file or object."
+      },
+      "body": {
+        "$ref": "#/$defs/video-upload-payload"
+      }
+    },
+    "required": [
+      "videoId"
+    ],
+    "$defs": {
+      "video-upload-payload": {
+        "properties": {
+          "file": {
+            "description": "The path to the video you would like to upload. The path must be local. If you want to use a video from an online source, you must use the \"/videos\" endpoint and add the \"source\" parameter when you create a new video.",
+            "example": "@/path/to/video.mp4",
+            "format": "binary",
+            "type": "string",
+            "x-client-chunk-upload": "true"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://ws.api.video/videos/{videoId}/source"
+    },
+    "headers": {
+      "Content-Range": {
+        "$": "Content-Range"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "video"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**assets**: Collection of details about the video object that you can use to work with the video object.",
+              {
+                "$ul": [
+                  "**hls**: This is the manifest URL. For HTTP Live Streaming (HLS), when a HLS video stream is initiated, the first file to download is the manifest. This file has the extension M3U8, and provides the video player with information about the various bitrates available for streaming.",
+                  "**iframe**: Code to use video from a third party website",
+                  "**mp4**: Available only if mp4Support is enabled. Raw mp4 url.",
+                  "**player**: Raw url of the player.",
+                  "**thumbnail**: Poster of the video."
+                ]
+              }
+            ],
+            "**description**: A description for the video content.",
+            "**metadata**: Metadata you can use to categorise and filter videos. Metadata is a list of dictionaries, where each dictionary represents a key value pair for categorising a video. [Dynamic Metadata](https://api.video/blog/endpoints/dynamic-metadata) allows you to define a key that allows any value pair.",
+            "**mp4Support**: This lets you know whether mp4 is supported. If enabled, an mp4 URL will be provided in the response for the video.",
+            "**panoramic**: Defines if video is panoramic.",
+            "**playerId**: The id of the player that will be applied on the video.",
+            "**public**: Defines if the content is publicly reachable or if a unique token is needed for each play session. Default is true. Tutorials on [private videos](https://api.video/blog/endpoints/private-videos).",
+            "**publishedAt**: The date and time the API created the video. Date and time are provided using ISO-8601 UTC format.",
+            [
+              "**source**: Source information about the video.",
+              {
+                "$ul": [
+                  [
+                    "**liveStream**: This appears if the video is from a Live Record.",
+                    {
+                      "$ul": [
+                        "**links**",
+                        "**liveStreamId**: The unique identifier for the live stream."
+                      ]
+                    }
+                  ],
+                  "**type**",
+                  "**uri**: The URL where the video is stored."
+                ]
+              }
+            ],
+            "**tags**: One array of tags (each tag is a string) in order to categorize a video. Tags may include spaces. ",
+            "**title**: The title of the video content.",
+            "**updatedAt**: The date and time the video was updated. Date and time are provided using ISO-8601 UTC format.",
+            "**videoId**: The unique identifier of the video object."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "BadRequest"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**name**",
+            "**problems**",
+            "**status**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "NotFound"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**name**",
+            "**status**",
+            "**title**",
+            "**type**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

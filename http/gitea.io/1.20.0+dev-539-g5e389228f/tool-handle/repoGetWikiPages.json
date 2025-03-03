@@ -1,0 +1,105 @@
+{
+  "name": "repoGetWikiPages",
+  "description": "Get all wiki pages",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "owner of the repo"
+      },
+      "repo": {
+        "type": "string",
+        "description": "name of the repo"
+      },
+      "page": {
+        "type": "integer",
+        "description": "page number of results to return (1-based)"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "page size of results"
+      }
+    },
+    "required": [
+      "owner",
+      "repo"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/repos/{owner}/{repo}/wiki/pages{?page,limit}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "WikiPageMetaData wiki page meta information",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**html_url**",
+            [
+              "**last_commit**: WikiCommit page commit/revision",
+              {
+                "$ul": [
+                  [
+                    "**author**",
+                    {
+                      "$ul": [
+                        "**date**",
+                        "**email**",
+                        "**name**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**commiter**",
+                    {
+                      "$ul": [
+                        "**date**",
+                        "**email**",
+                        "**name**"
+                      ]
+                    }
+                  ],
+                  "**message**",
+                  "**sha**"
+                ]
+              }
+            ],
+            "**sub_url**",
+            "**title**"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.title"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

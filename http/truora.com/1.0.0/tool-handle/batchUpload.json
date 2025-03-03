@@ -1,0 +1,102 @@
+{
+  "name": "batchUpload",
+  "description": "Upload multiple checks and associate them to the report. The inputs for these checks must be sent in an xlsx file, please use the following templates:\n\n**Person:** [Chile](https://app.truora.com/files/person/person-input-cl.xlsx), [Colombia](https://app.truora.com/files/person/person-input-co.xlsx), [Mexico](https://app.truora.com/files/person/person-input-mx.xlsx), [Peru](https://app.truora.com/files/person/person-input-pe.xlsx), [Costa Rica](https://app.truora.com/files/person/person-input-cr.xlsx), [Brazil](https://app.truora.com/files/person/person-input-br.xlsx)\n\n**Vehicle:** [Chile](https://app.truora.com/files/vehicle/vehicle-input-cl.xlsx), [Colombia](https://app.truora.com/files/vehicle/vehicle-input-co.xlsx), [Mexico](https://app.truora.com/files/vehicle/vehicle-input-mx.xlsx), [Peru](https://app.truora.com/files/vehicle/vehicle-input-pe.xlsx)\n\n**Company** [Colombia](https://app.truora.com/files/company/company-input-co.xlsx), [Mexico](https://app.truora.com/files/company/company-input-mx.xlsx), [Brazil](https://app.truora.com/files/company/company-input-br.xlsx)\n\nKeep in mind that we currently do not support batch uploads for custom check types. Background checks created by batch upload are processed with low priority.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "report_id": {
+        "type": "string",
+        "description": "The ID of the Report"
+      },
+      "body": {
+        "$ref": "#/components/schemas/BatchUploadInput",
+        "description": "The params required to batch upload"
+      }
+    },
+    "required": [
+      "report_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.truora.com/v1/reports/{report_id}/upload"
+    },
+    "body": {
+      "$": "body",
+      "encode": "multipart"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Reprents the report creation result",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**checks**: Path to background check list",
+            [
+              "**report**: Represents reports",
+              {
+                "$ul": [
+                  "**created_by**: name of the user who created the report",
+                  "**created_checks_count**: Amount of created checks. Returned only when a file is uploaded",
+                  "**creation_date**: Report creation date",
+                  "**has_data**: Indicates whether the report has an associated file",
+                  "**id**: Report ID",
+                  "**invalid_checks_count**: number of invalid rows in the uploaded file. Returned only when a file is uploaded",
+                  "**name**: Report name",
+                  "**size**: Uploaded file row count. Returned only when a file is uploaded",
+                  "**update_date**: Latest modification date of the report"
+                ]
+              }
+            ],
+            "**self**: Path to this resource"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "The error type is returned when an error occurred in the platform.\n\nError codes include:\n\n- 10404: resource was not found",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: Error code",
+            "**message**: Message describing the error"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

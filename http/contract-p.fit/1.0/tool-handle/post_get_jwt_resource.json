@@ -1,0 +1,109 @@
+{
+  "name": "post_get_jwt_resource",
+  "description": "## This endpoint is *deprecated* : use /auth/ephemeral and /auth/token instead\n\nThis endpoint requires authentication and requires the user to have the role **edit_users**: you can\nthen request a JWT on behalf of another user, specified in the request **username** attribute.\n\nThis endpoint has 2 modes depending on the presence or absence of the *roles* attribute in the request\ndata:\n\n## Regular token\n\nWhen sending only a **username**: a regular JWT Token bound to the given user is created and returned.\n\n## Temporary token\n\nWhen sending **username** AND a list **roles** of **role** (defined by the UID, optional the inbox to restrict access to):\na temporary token is created that will behave like a regular user with the given roles until the access token expires.\n\n**Permission required:** edit_users",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Fields": {
+        "format": "mask",
+        "type": "string",
+        "description": "An optional fields mask"
+      },
+      "body": {
+        "$ref": "#/$defs/TokenModelBase"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "TokenModelBase": {
+        "properties": {
+          "roles": {
+            "description": "the user roles",
+            "items": {
+              "$ref": "#/$defs/TokenRoleModel"
+            },
+            "type": "array"
+          },
+          "username": {
+            "description": "the user username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ],
+        "type": "object"
+      },
+      "TokenRoleModel": {
+        "properties": {
+          "document_id": {
+            "description": "limited to a document",
+            "type": "string"
+          },
+          "inbox": {
+            "example": "abcdef123456789abcdef123",
+            "maxLength": 24,
+            "minLength": 24,
+            "pattern": "[A-z0-9]",
+            "type": "string"
+          },
+          "role": {
+            "example": "abcdef123456789abcdef123",
+            "maxLength": 24,
+            "minLength": 24,
+            "pattern": "[A-z0-9]",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "//cfportal.contract-p.fit/api/auth/get_JWT"
+    },
+    "headers": {
+      "X-Fields": {
+        "$": "X-Fields"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**authentication_token**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

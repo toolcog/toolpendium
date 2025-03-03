@@ -1,0 +1,253 @@
+{
+  "name": "getSchedules",
+  "description": "Returns schedules for a defined set of channels over a requested period.\n\nSchedules are requested in hour blocks and returned grouped by the channel\nthey belong to.\n\nFor example, to load 12 hours of schedules for channels `4343` and `5234`,\non 21/2/2017 starting from 08:00.\n\n```\nchannels=4343,5234\ndate=2017-02-21\nhour=8\nduration=12\n```\n\nPlease remember that `date` and `hour` combined represent a normal datetime, \nso they should be converted to UTC on the client - this will help to avoid \nissues with EPG schedules near midnight.\n\nIf a channel id is passed which doesn't exist then this endpoint will\nreturn an empty schedule list for it. If instead we returned 404,\nthis would invalidate all other channel schedules in the same request\nwhich would be unfriendly for clients presenting these channel schedules.\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "channels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of channel ids to get schedules for."
+      },
+      "date": {
+        "format": "date",
+        "type": "string",
+        "description": "The date to target in ISO format, e.g. `2017-05-23` (converted to UTC - see main description).\n\nThe base hour requested will belong to this date.\n"
+      },
+      "hour": {
+        "format": "int32",
+        "maximum": 23,
+        "minimum": 0,
+        "type": "integer",
+        "description": "The base hour in the day, defined by the `date` parameter, you wish to load schedules for \n(converted to UTC - see main description).\n\nFrom 0 to 23, where 0 is midnight.\n"
+      },
+      "duration": {
+        "format": "int32",
+        "maximum": 24,
+        "minimum": -24,
+        "type": "integer",
+        "description": "The number of hours of schedules to load from the base `hour` parameter.\n\nThis may be negative or positive depending on whether you want to load past or future schedules.\n\nMinimum value is -24, maximum is 24. A value of zero is invalid.\n"
+      },
+      "intersect": {
+        "default": false,
+        "type": "boolean",
+        "description": "Flag indicating whether schedules should intersect or be contained in the\nprovided interval.\n\nIf set to `true`, the result will contain all schedules where either\nschedule start time or end time touches the provided interval.\n\nIf set to `false`, only schedules fully contained in the given period\nwill be returned.\n"
+      },
+      "device": {
+        "default": "web_browser",
+        "type": "string",
+        "description": "The type of device the content is targeting."
+      },
+      "sub": {
+        "type": "string",
+        "description": "The active subscription code."
+      },
+      "segments": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The list of segments to filter the response by."
+      },
+      "ff": {
+        "items": {
+          "enum": [
+            "all",
+            "idp",
+            "ldp",
+            "hb",
+            "rpt",
+            "cas",
+            "lrl",
+            "cd"
+          ],
+          "type": "string"
+        },
+        "type": "array",
+        "description": "The set of opt in feature flags which cause breaking changes to responses.\n\nWhile Rocket APIs look to avoid breaking changes under the active major version, the formats of responses\nmay need to evolve over this time.\n\nThese feature flags allow clients to select which response formats they expect and avoid breaking\nclients as these formats evolve under the current major version.\n\n### Flags\n\n- `all` - Enable all flags. Useful for testing. _Don't use in production_.\n- `idp` - Dynamic item detail pages with schedulable rows.\n- `ldp` - Dynamic list detail pages with schedulable rows.\n- `hb` - Hubble formatted image urls.\n- `rpt` - Updated resume point threshold logic.\n- `cas` - \"Custom Asset Search\", inlcude `customAssets` in search results.\n- `lrl` - Do not pre-populate related list if more than `max_list_prefetch` down the page.\n- `cd` - Custom Destination support.\n\nSee the `feature-flags.md` for available flag details.\n"
+      },
+      "lang": {
+        "type": "string",
+        "description": "Language code for the preferred language to be returned in the response.\n\nParameter value is case-insensitive and should be\n  - a valid 2 letter language code without region such as en, de\n  - or with region such as en_us, en_au\n\nIf undefined then defaults to 'en', unless the server has been configured\nwith a custom default.\n\nSee https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+      }
+    },
+    "required": [
+      "channels",
+      "date",
+      "hour",
+      "duration"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/schedules{?channels,date,hour,duration,intersect,device,sub,segments,ff,lang}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**channelId**: The id of the channel the schedules belong to.",
+            "**endDate**: The date and time this list of schedules ends.",
+            "**schedules**: The list of item schedules.",
+            "**startDate**: The date and time this list of schedules starts."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "415": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: An optional code classifying the error. Should be taken in the context of the http status code.",
+            "**message**: A description of the error."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

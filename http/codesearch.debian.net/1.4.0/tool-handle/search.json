@@ -1,0 +1,73 @@
+{
+  "name": "search",
+  "description": "Performs a search through the full Debian Code Search corpus, blocking until all results are available (might take a few seconds depending on the search query).\n\nSearch results are ordered by their ranking (best results come first).",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The search query, for example `who knows...` (literal) or `who knows\\.\\.\\.` (regular expression). See https://codesearch.debian.net/faq for more details about which keywords are supported. The regular expression flavor is RE2, see https://github.com/google/re2/blob/master/doc/syntax.txt"
+      },
+      "match_mode": {
+        "default": "regexp",
+        "enum": [
+          "literal",
+          "regexp"
+        ],
+        "type": "string",
+        "description": "Whether the query is to be interpreted as a literal (`literal`) instead of as an RE2 regular expression (`regexp`). Literal searches are faster and do not require escaping special characters, regular expression searches are more powerful."
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://codesearch.debian.net/api/v1/search{?query,match_mode}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A search result matching the specified query. You can use sources.debian.org to view the file contents. See https://github.com/Debian/dcs/blob/master/cmd/dcs-web/show/show.go for how to construct a sources.debian.org URL from a search result.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**context**: The full line containing the search result.",
+            "**context_after**: Up to 2 full lines after the search result (see `context`).",
+            "**context_before**: Up to 2 full lines before the search result (see `context`).",
+            "**line**: Line number containing the search result.",
+            "**package**: The Debian source package containing this search result, including the full Debian version number.",
+            "**path**: Path to the file containing the this search result, starting with `package`."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

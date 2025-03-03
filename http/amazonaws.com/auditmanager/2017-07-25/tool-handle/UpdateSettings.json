@@ -1,0 +1,294 @@
+{
+  "name": "UpdateSettings",
+  "description": " Updates Audit Manager settings for the current account. ",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "properties": {
+          "snsTopic": {
+            "description": " The Amazon Simple Notification Service (Amazon SNS) topic that Audit Manager sends notifications to. ",
+            "type": "string",
+            "pattern": "^arn:.*:sns:.*|NONE",
+            "minLength": 4,
+            "maxLength": 2048
+          },
+          "defaultAssessmentReportsDestination": {
+            "description": " The location where Audit Manager saves assessment reports for the given assessment. ",
+            "type": "object",
+            "properties": {
+              "destinationType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AssessmentReportDestinationType"
+                  },
+                  {
+                    "description": " The destination type, such as Amazon S3. "
+                  }
+                ]
+              },
+              "destination": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Url"
+                  },
+                  {
+                    "description": " The destination bucket where Audit Manager stores assessment reports. "
+                  }
+                ]
+              }
+            }
+          },
+          "defaultProcessOwners": {
+            "description": " A list of the default audit owners. ",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Role"
+            }
+          },
+          "kmsKey": {
+            "description": " The KMS key details. ",
+            "type": "string",
+            "pattern": "^arn:.*:kms:.*|DEFAULT",
+            "minLength": 7,
+            "maxLength": 2048
+          },
+          "evidenceFinderEnabled": {
+            "description": "<p>Specifies whether the evidence finder feature is enabled. Change this attribute to enable or disable evidence finder.</p> <important> <p>When you use this attribute to disable evidence finder, Audit Manager deletes the event data store that’s used to query your evidence data. As a result, you can’t re-enable evidence finder and use the feature again. Your only alternative is to <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeregisterAccount.html\">deregister</a> and then <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_RegisterAccount.html\">re-register</a> Audit Manager. </p> </important>",
+            "type": "boolean"
+          },
+          "deregistrationPolicy": {
+            "description": "<p>The deregistration policy for the data that's stored in Audit Manager. You can use this attribute to determine how your data is handled when you <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeregisterAccount.html\">deregister Audit Manager</a>.</p> <p>By default, Audit Manager retains evidence data for two years from the time of its creation. Other Audit Manager resources (including assessments, custom controls, and custom frameworks) remain in Audit Manager indefinitely, and are available if you <a href=\"https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_RegisterAccount.html\">re-register Audit Manager</a> in the future. For more information about data retention, see <a href=\"https://docs.aws.amazon.com/audit-manager/latest/userguide/data-protection.html\">Data Protection</a> in the <i>Audit Manager User Guide</i>.</p> <important> <p>If you choose to delete all data, this action permanently deletes all evidence data in your account within seven days. It also deletes all of the Audit Manager resources that you created, including assessments, custom controls, and custom frameworks. Your data will not be available if you re-register Audit Manager in the future.</p> </important>",
+            "type": "object",
+            "properties": {
+              "deleteResources": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/DeleteResources"
+                  },
+                  {
+                    "description": "<p>Specifies which Audit Manager data will be deleted when you deregister Audit Manager.</p> <ul> <li> <p>If you set the value to <code>ALL</code>, all of your data is deleted within seven days of deregistration.</p> </li> <li> <p>If you set the value to <code>DEFAULT</code>, none of your data is deleted at the time of deregistration. However, keep in mind that the Audit Manager data retention policy still applies. As a result, any evidence data will be deleted two years after its creation date. Your other Audit Manager resources will continue to exist indefinitely.</p> </li> </ul>"
+                  }
+                ]
+              }
+            }
+          },
+          "defaultExportDestination": {
+            "description": "The default s3 bucket where Audit Manager saves the files that you export from evidence finder.",
+            "type": "object",
+            "properties": {
+              "destinationType": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ExportDestinationType"
+                  },
+                  {
+                    "description": "The destination type, such as Amazon S3."
+                  }
+                ]
+              },
+              "destination": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/S3Url"
+                  },
+                  {
+                    "description": "The destination bucket where Audit Manager stores exported files."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "AssessmentReportDestinationType": {
+        "type": "string",
+        "enum": [
+          "S3"
+        ]
+      },
+      "S3Url": {
+        "type": "string",
+        "pattern": "^(S|s)3:\\/\\/[a-zA-Z0-9\\-\\.\\(\\)\\'\\*\\_\\!\\/]+$",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "Role": {
+        "type": "object",
+        "required": [
+          "roleType",
+          "roleArn"
+        ],
+        "properties": {
+          "roleType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleType"
+              },
+              {
+                "description": "<p> The type of customer persona. </p> <note> <p>In <code>CreateAssessment</code>, <code>roleType</code> can only be <code>PROCESS_OWNER</code>. </p> <p>In <code>UpdateSettings</code>, <code>roleType</code> can only be <code>PROCESS_OWNER</code>.</p> <p>In <code>BatchCreateDelegationByAssessment</code>, <code>roleType</code> can only be <code>RESOURCE_OWNER</code>.</p> </note>"
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/IamArn"
+              },
+              {
+                "description": " The Amazon Resource Name (ARN) of the IAM role. "
+              }
+            ]
+          }
+        },
+        "description": " The wrapper that contains the Audit Manager role information of the current user. This includes the role type and IAM Amazon Resource Name (ARN). "
+      },
+      "RoleType": {
+        "type": "string",
+        "enum": [
+          "PROCESS_OWNER",
+          "RESOURCE_OWNER"
+        ]
+      },
+      "IamArn": {
+        "type": "string",
+        "pattern": "^arn:.*:iam:.*",
+        "minLength": 20,
+        "maxLength": 2048
+      },
+      "DeleteResources": {
+        "type": "string",
+        "enum": [
+          "ALL",
+          "DEFAULT"
+        ]
+      },
+      "ExportDestinationType": {
+        "type": "string",
+        "enum": [
+          "S3"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PUT",
+    "url": {
+      "$uri": "http://auditmanager.us-east-1.amazonaws.com/settings"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**settings**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

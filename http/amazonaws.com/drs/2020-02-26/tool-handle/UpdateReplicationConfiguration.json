@@ -1,0 +1,485 @@
+{
+  "name": "UpdateReplicationConfiguration",
+  "description": "Allows you to update a ReplicationConfiguration by Source Server ID.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "sourceServerID"
+        ],
+        "properties": {
+          "associateDefaultSecurityGroup": {
+            "description": "Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration.",
+            "type": "boolean"
+          },
+          "autoReplicateNewDisks": {
+            "description": "Whether to allow the AWS replication agent to automatically replicate newly added disks.",
+            "type": "boolean"
+          },
+          "bandwidthThrottling": {
+            "description": "Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "createPublicIP": {
+            "description": "Whether to create a Public IP for the Recovery Instance by default.",
+            "type": "boolean"
+          },
+          "dataPlaneRouting": {
+            "description": "The data plane routing mechanism that will be used for replication.",
+            "type": "string",
+            "enum": [
+              "PRIVATE_IP",
+              "PUBLIC_IP"
+            ]
+          },
+          "defaultLargeStagingDiskType": {
+            "description": "The Staging Disk EBS volume type to be used during replication.",
+            "type": "string",
+            "enum": [
+              "GP2",
+              "GP3",
+              "ST1",
+              "AUTO"
+            ]
+          },
+          "ebsEncryption": {
+            "description": "The type of EBS encryption to be used during replication.",
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "CUSTOM",
+              "NONE"
+            ]
+          },
+          "ebsEncryptionKeyArn": {
+            "description": "The ARN of the EBS encryption key to be used during replication.",
+            "type": "string",
+            "pattern": "^arn:.{16,2044}$",
+            "minLength": 20,
+            "maxLength": 2048
+          },
+          "name": {
+            "description": "The name of the Replication Configuration.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128
+          },
+          "pitPolicy": {
+            "description": "The Point in time (PIT) policy to manage snapshots taken during replication.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PITPolicyRule"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          },
+          "replicatedDisks": {
+            "description": "The configuration of the disks of the Source Server to be replicated.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ReplicationConfigurationReplicatedDisk"
+            },
+            "minItems": 0,
+            "maxItems": 60
+          },
+          "replicationServerInstanceType": {
+            "description": "The instance type to be used for the replication server.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "replicationServersSecurityGroupsIDs": {
+            "description": "The security group IDs that will be used by the replication server.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SecurityGroupID"
+            },
+            "minItems": 0,
+            "maxItems": 32
+          },
+          "sourceServerID": {
+            "description": "The ID of the Source Server for this Replication Configuration.",
+            "type": "string",
+            "pattern": "^s-[0-9a-zA-Z]{17}$",
+            "minLength": 19,
+            "maxLength": 19
+          },
+          "stagingAreaSubnetId": {
+            "description": "The subnet to be used by the replication staging area.",
+            "type": "string",
+            "pattern": "^subnet-[0-9a-fA-F]{8,}$",
+            "minLength": 0,
+            "maxLength": 255
+          },
+          "stagingAreaTags": {
+            "description": "A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.",
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "useDedicatedReplicationServer": {
+            "description": "Whether to use a dedicated Replication Server in the replication staging area.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "PITPolicyRule": {
+        "type": "object",
+        "required": [
+          "interval",
+          "retentionDuration",
+          "units"
+        ],
+        "properties": {
+          "enabled": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Whether this rule is enabled or not."
+              }
+            ]
+          },
+          "interval": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StrictlyPositiveInteger"
+              },
+              {
+                "description": "How often, in the chosen units, a snapshot should be taken."
+              }
+            ]
+          },
+          "retentionDuration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/StrictlyPositiveInteger"
+              },
+              {
+                "description": "The duration to retain a snapshot for, in the chosen units."
+              }
+            ]
+          },
+          "ruleID": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositiveInteger"
+              },
+              {
+                "description": "The ID of the rule."
+              }
+            ]
+          },
+          "units": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PITPolicyRuleUnits"
+              },
+              {
+                "description": "The units used to measure the interval and retentionDuration."
+              }
+            ]
+          }
+        },
+        "description": "A rule in the Point in Time (PIT) policy representing when to take snapshots and how long to retain them for."
+      },
+      "Boolean": {
+        "type": "boolean"
+      },
+      "StrictlyPositiveInteger": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "PositiveInteger": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "PITPolicyRuleUnits": {
+        "type": "string",
+        "enum": [
+          "MINUTE",
+          "HOUR",
+          "DAY"
+        ]
+      },
+      "ReplicationConfigurationReplicatedDisk": {
+        "type": "object",
+        "properties": {
+          "deviceName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/BoundedString"
+              },
+              {
+                "description": "The name of the device."
+              }
+            ]
+          },
+          "iops": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositiveInteger"
+              },
+              {
+                "description": "The requested number of I/O operations per second (IOPS)."
+              }
+            ]
+          },
+          "isBootDisk": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Boolean"
+              },
+              {
+                "description": "Whether to boot from this disk or not."
+              }
+            ]
+          },
+          "optimizedStagingDiskType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReplicationConfigurationReplicatedDiskStagingDiskType"
+              },
+              {
+                "description": "The Staging Disk EBS volume type to be used during replication when <code>stagingDiskType</code> is set to Auto. This is a read-only field."
+              }
+            ]
+          },
+          "stagingDiskType": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/ReplicationConfigurationReplicatedDiskStagingDiskType"
+              },
+              {
+                "description": "The Staging Disk EBS volume type to be used during replication."
+              }
+            ]
+          },
+          "throughput": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PositiveInteger"
+              },
+              {
+                "description": "The throughput to use for the EBS volume in MiB/s. This parameter is valid only for gp3 volumes."
+              }
+            ]
+          }
+        },
+        "description": "The configuration of a disk of the Source Server to be replicated."
+      },
+      "BoundedString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "ReplicationConfigurationReplicatedDiskStagingDiskType": {
+        "type": "string",
+        "enum": [
+          "AUTO",
+          "GP2",
+          "GP3",
+          "IO1",
+          "SC1",
+          "ST1",
+          "STANDARD"
+        ]
+      },
+      "SecurityGroupID": {
+        "type": "string",
+        "pattern": "^sg-[0-9a-fA-F]{8,}$",
+        "minLength": 0,
+        "maxLength": 255
+      },
+      "TagValue": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://drs.us-east-1.amazonaws.com/UpdateReplicationConfiguration"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**associateDefaultSecurityGroup**",
+            "**autoReplicateNewDisks**",
+            "**bandwidthThrottling**",
+            "**createPublicIP**",
+            "**dataPlaneRouting**",
+            "**defaultLargeStagingDiskType**",
+            "**ebsEncryption**",
+            "**ebsEncryptionKeyArn**",
+            "**name**",
+            "**pitPolicy**",
+            "**replicatedDisks**",
+            "**replicationServerInstanceType**",
+            "**replicationServersSecurityGroupsIDs**",
+            "**sourceServerID**",
+            "**stagingAreaSubnetId**",
+            "**stagingAreaTags**",
+            "**useDedicatedReplicationServer**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

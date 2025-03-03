@@ -1,0 +1,323 @@
+{
+  "name": "QueryObjects",
+  "description": "Queries the specified pipeline for the names of objects that match the specified set of conditions.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "type": "string",
+        "description": "Pagination limit"
+      },
+      "marker": {
+        "type": "string",
+        "description": "Pagination token"
+      },
+      "X-Amz-Target": {
+        "type": "string",
+        "enum": [
+          "DataPipeline.QueryObjects"
+        ]
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "$ref": "#/$defs/QueryObjectsInput"
+      }
+    },
+    "required": [
+      "X-Amz-Target",
+      "body"
+    ],
+    "$defs": {
+      "QueryObjectsInput": {
+        "type": "object",
+        "required": [
+          "pipelineId",
+          "sphere"
+        ],
+        "title": "QueryObjectsInput",
+        "properties": {
+          "pipelineId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/id"
+              },
+              {
+                "description": "The ID of the pipeline."
+              }
+            ]
+          },
+          "query": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Query"
+              },
+              {
+                "description": "The query that defines the objects to be returned. The <code>Query</code> object can contain a maximum of ten selectors. The conditions in the query are limited to top-level String fields in the object. These filters can be applied to components, instances, and attempts."
+              }
+            ]
+          },
+          "sphere": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/string"
+              },
+              {
+                "description": "Indicates whether the query applies to components or instances. The possible values are: <code>COMPONENT</code>, <code>INSTANCE</code>, and <code>ATTEMPT</code>."
+              }
+            ]
+          },
+          "marker": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/string"
+              },
+              {
+                "description": "The starting point for the results to be returned. For the first call, this value should be empty. As long as there are more results, continue to call <code>QueryObjects</code> with the marker value from the previous call to retrieve the next set of results."
+              }
+            ]
+          },
+          "limit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/int"
+              },
+              {
+                "description": "The maximum number of object names that <code>QueryObjects</code> will return in a single call. The default value is 100. "
+              }
+            ]
+          }
+        },
+        "description": "Contains the parameters for QueryObjects."
+      },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
+      },
+      "Query": {
+        "type": "object",
+        "properties": {
+          "selectors": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SelectorList"
+              },
+              {
+                "description": "List of selectors that define the query. An object must satisfy all of the selectors to match the query."
+              }
+            ]
+          }
+        },
+        "description": "Defines the query to run against an object."
+      },
+      "SelectorList": {
+        "type": "array",
+        "description": "The list of Selectors that define queries on individual fields.",
+        "items": {
+          "$ref": "#/$defs/Selector"
+        }
+      },
+      "Selector": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/string"
+              },
+              {
+                "description": "The name of the field that the operator will be applied to. The field name is the \"key\" portion of the field definition in the pipeline definition syntax that is used by the AWS Data Pipeline API. If the field is not set on the object, the condition fails."
+              }
+            ]
+          },
+          "operator": {
+            "$ref": "#/$defs/Operator"
+          }
+        },
+        "description": "A comparision that is used to determine whether a query should return this object."
+      },
+      "string": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1024,
+        "x-pattern": "[\\u0020-\\uD7FF\\uE000-\\uFFFD\\uD800\\uDC00-\\uDBFF\\uDFFF\\r\\n\\t]*"
+      },
+      "Operator": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/OperatorType"
+              },
+              {
+                "description": "<p> The logical operation to be performed: equal (<code>EQ</code>), equal reference (<code>REF_EQ</code>), less than or equal (<code>LE</code>), greater than or equal (<code>GE</code>), or between (<code>BETWEEN</code>). Equal reference (<code>REF_EQ</code>) can be used only with reference fields. The other comparison types can be used only with String fields. The comparison types you can use apply only to certain object fields, as detailed below. </p> <p> The comparison operators EQ and REF_EQ act on the following fields: </p> <ul> <li>name</li> <li>@sphere</li> <li>parent</li> <li>@componentParent</li> <li>@instanceParent</li> <li>@status</li> <li>@scheduledStartTime</li> <li>@scheduledEndTime</li> <li>@actualStartTime</li> <li>@actualEndTime</li> </ul> <p> The comparison operators <code>GE</code>, <code>LE</code>, and <code>BETWEEN</code> act on the following fields: </p> <ul> <li>@scheduledStartTime</li> <li>@scheduledEndTime</li> <li>@actualStartTime</li> <li>@actualEndTime</li> </ul> <p>Note that fields beginning with the at sign (@) are read-only and set by the web service. When you name fields, you should choose names containing only alpha-numeric values, as symbols may be reserved by AWS Data Pipeline. User-defined fields that you add to a pipeline should prefix their name with the string \"my\".</p>"
+              }
+            ]
+          },
+          "values": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/stringList"
+              },
+              {
+                "description": "The value that the actual field value will be compared with."
+              }
+            ]
+          }
+        },
+        "description": "Contains a logical operation for comparing the value of a field with a specified value."
+      },
+      "OperatorType": {
+        "type": "string",
+        "enum": [
+          "EQ",
+          "REF_EQ",
+          "LE",
+          "GE",
+          "BETWEEN"
+        ]
+      },
+      "stringList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/string"
+        }
+      },
+      "int": {
+        "type": "integer"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://datapipeline.us-east-1.amazonaws.com/#X-Amz-Target=DataPipeline.QueryObjects{?limit,marker}"
+    },
+    "headers": {
+      "X-Amz-Target": {
+        "$": "X-Amz-Target"
+      },
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "Contains the output of QueryObjects.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**ids**",
+            "**marker**",
+            "**hasMoreResults**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

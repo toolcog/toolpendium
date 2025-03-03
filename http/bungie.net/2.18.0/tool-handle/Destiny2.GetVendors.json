@@ -1,0 +1,173 @@
+{
+  "name": "Destiny2_GetVendors",
+  "description": "Get currently available vendors from the list of vendors that can possibly have rotating inventory. Note that this does not include things like preview vendors and vendors-as-kiosks, neither of whom have rotating/dynamic inventories. Use their definitions as-is for those.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "characterId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "The Destiny Character ID of the character for whom we're getting vendor info."
+      },
+      "components": {
+        "items": {
+          "description": "Represents the possible components that can be returned from Destiny \"Get\" calls such as GetProfile, GetCharacter, GetVendor etc...\r\nWhen making one of these requests, you will pass one or more of these components as a comma separated list in the \"?components=\" querystring parameter. For instance, if you want baseline Profile data, Character Data, and character progressions, you would pass \"?components=Profiles,Characters,CharacterProgressions\" You may use either the numerical or string values.",
+          "format": "int32",
+          "type": "integer",
+          "x-enum-reference": {
+            "$ref": "#/components/schemas/schema2"
+          }
+        },
+        "type": "array",
+        "description": "A comma separated list of components to return (as strings or numeric values). See the DestinyComponentType enum for valid components to request. You must request at least one component to receive results."
+      },
+      "destinyMembershipId": {
+        "format": "int64",
+        "type": "integer",
+        "description": "Destiny membership ID of another user. You may be denied."
+      },
+      "filter": {
+        "format": "int32",
+        "type": "integer",
+        "description": "The filter of what vendors and items to return, if any."
+      },
+      "membershipType": {
+        "format": "int32",
+        "type": "integer",
+        "description": "A valid non-BungieNet membership type."
+      }
+    },
+    "required": [
+      "characterId",
+      "destinyMembershipId",
+      "membershipType"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.bungie.net/Platform/Destiny2/{membershipType}/Profile/{destinyMembershipId}/Character/{characterId}/Vendors/{?components,filter}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**DetailedErrorTrace**",
+            "**ErrorCode**",
+            "**ErrorStatus**",
+            "**Message**",
+            "**MessageData**",
+            [
+              "**Response**: A response containing all of the components for all requested vendors.",
+              {
+                "$ul": [
+                  [
+                    "**categories**",
+                    {
+                      "$ul": [
+                        "**data**",
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**currencyLookups**",
+                    {
+                      "$ul": [
+                        [
+                          "**data**: This component provides a quick lookup of every item the requested character has and how much of that item they have.\r",
+                          {
+                            "$ul": [
+                              "**itemQuantities**: A dictionary - keyed by the item's hash identifier (DestinyInventoryItemDefinition), and whose value is the amount of that item you have across all available inventory buckets for purchasing.\r"
+                            ]
+                          }
+                        ],
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ],
+                  "**itemComponents**: The set of item detail components, one set of item components per Vendor. These are keyed by the Vendor Hash, so you will get one Item Component Set per vendor returned.\r",
+                  [
+                    "**sales**",
+                    {
+                      "$ul": [
+                        "**data**",
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**stringVariables**",
+                    {
+                      "$ul": [
+                        [
+                          "**data**",
+                          {
+                            "$ul": [
+                              "**integerValuesByHash**"
+                            ]
+                          }
+                        ],
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**vendorGroups**",
+                    {
+                      "$ul": [
+                        [
+                          "**data**: This component returns references to all of the Vendors in the response, grouped by categorizations that Bungie has deemed to be interesting, in the order in which both the groups and the vendors within that group should be rendered.",
+                          {
+                            "$ul": [
+                              "**groups**: The ordered list of groups being returned."
+                            ]
+                          }
+                        ],
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ],
+                  [
+                    "**vendors**",
+                    {
+                      "$ul": [
+                        "**data**",
+                        "**disabled**: If true, this component is disabled.",
+                        "**privacy**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**ThrottleSeconds**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

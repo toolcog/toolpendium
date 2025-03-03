@@ -1,0 +1,408 @@
+{
+  "name": "CreateCalculatedAttributeDefinition",
+  "description": "Creates a new calculated attribute definition. After creation, new object data ingested into Customer Profiles will be included in the calculated attribute, which can be retrieved for a profile using the <a href=\"https://docs.aws.amazon.com/customerprofiles/latest/APIReference/API_GetCalculatedAttributeForProfile.html\">GetCalculatedAttributeForProfile</a> API. Defining a calculated attribute makes it available for all profiles within a domain. Each calculated attribute can only reference one <code>ObjectType</code> and at most, two fields from that <code>ObjectType</code>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "DomainName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "The unique name of the domain."
+      },
+      "CalculatedAttributeName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z_][a-zA-Z_0-9-]*$",
+        "minLength": 1,
+        "maxLength": 255,
+        "description": "The unique name of the calculated attribute."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "AttributeDetails",
+          "Statistic"
+        ],
+        "properties": {
+          "DisplayName": {
+            "description": "The display name of the calculated attribute.",
+            "type": "string",
+            "pattern": "^[a-zA-Z_][a-zA-Z_0-9-\\s]*$",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "Description": {
+            "description": "The description of the calculated attribute.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "AttributeDetails": {
+            "description": "Mathematical expression and a list of attribute items specified in that expression.",
+            "type": "object",
+            "properties": {
+              "Attributes": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/AttributeList"
+                  },
+                  {
+                    "description": "A list of attribute items specified in the mathematical expression."
+                  }
+                ]
+              },
+              "Expression": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/string1To255"
+                  },
+                  {
+                    "description": "Mathematical expression that is performed on attribute items provided in the attribute list. Each element in the expression should follow the structure of \\\"{ObjectTypeName.AttributeName}\\\"."
+                  }
+                ]
+              }
+            }
+          },
+          "Conditions": {
+            "description": "The conditions including range, object count, and threshold for the calculated attribute.",
+            "type": "object",
+            "properties": {
+              "Range": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Range"
+                  },
+                  {
+                    "description": "The relative time period over which data is included in the aggregation."
+                  }
+                ]
+              },
+              "ObjectCount": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ObjectCount"
+                  },
+                  {
+                    "description": "The number of profile objects used for the calculated attribute."
+                  }
+                ]
+              },
+              "Threshold": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/Threshold"
+                  },
+                  {
+                    "description": "The threshold for the calculated attribute."
+                  }
+                ]
+              }
+            }
+          },
+          "Statistic": {
+            "description": "The aggregation operation to perform for the calculated attribute.",
+            "type": "string",
+            "enum": [
+              "FIRST_OCCURRENCE",
+              "LAST_OCCURRENCE",
+              "COUNT",
+              "SUM",
+              "MINIMUM",
+              "MAXIMUM",
+              "AVERAGE",
+              "MAX_OCCURRENCE"
+            ]
+          },
+          "Tags": {
+            "description": "The tags used to organize, track, or control access for this resource.",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "DomainName",
+      "CalculatedAttributeName",
+      "body"
+    ],
+    "$defs": {
+      "AttributeList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/AttributeItem"
+        },
+        "minItems": 1,
+        "maxItems": 2
+      },
+      "AttributeItem": {
+        "type": "object",
+        "required": [
+          "Name"
+        ],
+        "properties": {
+          "Name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/attributeName"
+              },
+              {
+                "description": "The name of an attribute defined in a profile object type."
+              }
+            ]
+          }
+        },
+        "description": "The details of a single attribute item specified in the mathematical expression."
+      },
+      "attributeName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_.-]+$",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "string1To255": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "Range": {
+        "type": "object",
+        "required": [
+          "Value",
+          "Unit"
+        ],
+        "properties": {
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Value"
+              },
+              {
+                "description": "The amount of time of the specified unit."
+              }
+            ]
+          },
+          "Unit": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Unit"
+              },
+              {
+                "description": "The unit of time."
+              }
+            ]
+          }
+        },
+        "description": "The relative time period over which data is included in the aggregation."
+      },
+      "Value": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 366
+      },
+      "Unit": {
+        "type": "string",
+        "enum": [
+          "DAYS"
+        ]
+      },
+      "ObjectCount": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "Threshold": {
+        "type": "object",
+        "required": [
+          "Value",
+          "Operator"
+        ],
+        "properties": {
+          "Value": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/string1To255"
+              },
+              {
+                "description": "The value of the threshold."
+              }
+            ]
+          },
+          "Operator": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Operator"
+              },
+              {
+                "description": "The operator of the threshold."
+              }
+            ]
+          }
+        },
+        "description": "The threshold for the calculated attribute."
+      },
+      "Operator": {
+        "type": "string",
+        "enum": [
+          "EQUAL_TO",
+          "GREATER_THAN",
+          "LESS_THAN",
+          "NOT_EQUAL_TO"
+        ]
+      },
+      "TagValue": {
+        "type": "string",
+        "maxLength": 256
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://profile.us-east-1.amazonaws.com/domains/{DomainName}/calculated-attributes/{CalculatedAttributeName}"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**CalculatedAttributeName**",
+            "**DisplayName**",
+            "**Description**",
+            "**AttributeDetails**",
+            "**Conditions**",
+            "**Statistic**",
+            "**CreatedAt**",
+            "**LastUpdatedAt**",
+            "**Tags**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

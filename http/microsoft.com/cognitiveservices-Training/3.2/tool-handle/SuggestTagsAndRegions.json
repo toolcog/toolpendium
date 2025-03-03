@@ -1,0 +1,110 @@
+{
+  "name": "SuggestTagsAndRegions",
+  "description": "This API will get suggested tags and regions for an array/batch of untagged images along with confidences for the tags. It returns an empty array if no tags are found.\r\nThere is a limit of 64 images in the batch.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "projectId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "The project id."
+      },
+      "iterationId": {
+        "format": "uuid",
+        "type": "string",
+        "description": "IterationId to use for tag and region suggestion."
+      },
+      "imageIds": {
+        "items": {
+          "format": "uuid",
+          "nullable": false,
+          "type": "string"
+        },
+        "maxItems": 64,
+        "minItems": 0,
+        "type": "array",
+        "description": "Array of image ids tag suggestion are needed for. Use GetUntaggedImages API to get imageIds."
+      }
+    },
+    "required": [
+      "projectId",
+      "iterationId",
+      "imageIds"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://southcentralus.api.cognitive.microsoft.com/customvision/v3.2/training/projects/{projectId}/tagsandregions/suggestions{?iterationId,imageIds}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "Result of a suggested tags and regions request.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: Date this prediction was created.",
+            "**id**: Prediction Id.",
+            "**iteration**: Iteration Id.",
+            "**predictionUncertainty**: Uncertainty (entropy) of suggested tags or regions per image.",
+            "**predictions**: List of predictions.",
+            "**project**: Project Id."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.id"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The error code.",
+            "**message**: A message explaining the error reported by the service."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

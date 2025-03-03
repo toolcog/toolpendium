@@ -1,0 +1,244 @@
+{
+  "name": "writeDiscoverCatalogResult",
+  "description": "Should only called from worker, to write result from discover activity back to DB.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/SourceDiscoverSchemaWriteRequestBody"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "SourceDiscoverSchemaWriteRequestBody": {
+        "description": "to write this requested object to database.",
+        "properties": {
+          "catalog": {
+            "$ref": "#/$defs/AirbyteCatalog"
+          },
+          "configurationHash": {
+            "type": "string"
+          },
+          "connectorVersion": {
+            "type": "string"
+          },
+          "sourceId": {
+            "$ref": "#/$defs/SourceId"
+          }
+        },
+        "required": [
+          "catalog"
+        ],
+        "type": "object"
+      },
+      "AirbyteCatalog": {
+        "description": "describes the available schema (catalog).",
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/$defs/AirbyteStreamAndConfiguration"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "streams"
+        ],
+        "type": "object"
+      },
+      "AirbyteStreamAndConfiguration": {
+        "additionalProperties": false,
+        "description": "each stream is split in two parts; the immutable schema from source and mutable configuration for destination",
+        "properties": {
+          "config": {
+            "$ref": "#/$defs/AirbyteStreamConfiguration"
+          },
+          "stream": {
+            "$ref": "#/$defs/AirbyteStream"
+          }
+        },
+        "type": "object"
+      },
+      "AirbyteStreamConfiguration": {
+        "additionalProperties": false,
+        "description": "the mutable part of the stream to configure the destination",
+        "properties": {
+          "aliasName": {
+            "description": "Alias name to the stream to be used in the destination",
+            "type": "string"
+          },
+          "cursorField": {
+            "description": "Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "destinationSyncMode": {
+            "$ref": "#/$defs/DestinationSyncMode"
+          },
+          "fieldSelectionEnabled": {
+            "description": "Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.",
+            "type": "boolean"
+          },
+          "primaryKey": {
+            "description": "Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "selected": {
+            "description": "If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not",
+            "type": "boolean"
+          },
+          "selectedFields": {
+            "description": "Paths to the fields that will be included in the configured catalog. This must be set if `fieldSelectedEnabled` is set. An empty list indicates that no properties will be included.",
+            "items": {
+              "$ref": "#/$defs/SelectedFieldInfo"
+            },
+            "type": "array"
+          },
+          "suggested": {
+            "description": "Does the connector suggest that this stream be enabled by default?",
+            "type": "boolean"
+          },
+          "syncMode": {
+            "$ref": "#/$defs/SyncMode"
+          }
+        },
+        "required": [
+          "syncMode",
+          "destinationSyncMode"
+        ],
+        "type": "object"
+      },
+      "DestinationSyncMode": {
+        "enum": [
+          "append",
+          "overwrite",
+          "append_dedup"
+        ],
+        "type": "string"
+      },
+      "SelectedFieldInfo": {
+        "description": "Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called \"foo\", this will be [\"foo\"]. Use multiple path elements for nested schemas.",
+        "properties": {
+          "fieldPath": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SyncMode": {
+        "enum": [
+          "full_refresh",
+          "incremental"
+        ],
+        "type": "string"
+      },
+      "AirbyteStream": {
+        "additionalProperties": false,
+        "description": "the immutable schema defined by the source",
+        "properties": {
+          "defaultCursorField": {
+            "description": "Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "jsonSchema": {
+            "$ref": "#/$defs/StreamJsonSchema"
+          },
+          "name": {
+            "description": "Stream's name.",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.",
+            "type": "string"
+          },
+          "sourceDefinedCursor": {
+            "description": "If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
+            "type": "boolean"
+          },
+          "sourceDefinedPrimaryKey": {
+            "description": "If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "supportedSyncModes": {
+            "items": {
+              "$ref": "#/$defs/SyncMode"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "json_schema"
+        ],
+        "type": "object"
+      },
+      "StreamJsonSchema": {
+        "description": "Stream schema using Json Schema specs.",
+        "type": "object"
+      },
+      "SourceId": {
+        "format": "uuid",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://airbyte.local/v1/sources/write_discover_catalog_result"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**catalogId**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

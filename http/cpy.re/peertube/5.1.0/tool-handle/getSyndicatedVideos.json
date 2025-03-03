@@ -1,0 +1,184 @@
+{
+  "name": "getSyndicatedVideos",
+  "description": "List videos",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "format": {
+        "enum": [
+          "xml",
+          "rss",
+          "rss2",
+          "atom",
+          "atom1",
+          "json",
+          "json1"
+        ],
+        "type": "string",
+        "description": "format expected (we focus on making `rss` the most featureful ; it serves [Media RSS](https://www.rssboard.org/media-rss))"
+      },
+      "accountId": {
+        "type": "string",
+        "description": "limit listing to a specific account"
+      },
+      "accountName": {
+        "type": "string",
+        "description": "limit listing to a specific account"
+      },
+      "videoChannelId": {
+        "type": "string",
+        "description": "limit listing to a specific video channel"
+      },
+      "videoChannelName": {
+        "type": "string",
+        "description": "limit listing to a specific video channel"
+      },
+      "sort": {
+        "example": "-createdAt",
+        "type": "string",
+        "description": "Sort column"
+      },
+      "nsfw": {
+        "enum": [
+          "true",
+          "false"
+        ],
+        "type": "string",
+        "description": "whether to include nsfw videos, if any"
+      },
+      "isLocal": {
+        "type": "boolean",
+        "description": "**PeerTube >= 4.0** Display only local or remote videos"
+      },
+      "include": {
+        "enum": [
+          0,
+          1,
+          2,
+          4,
+          8
+        ],
+        "type": "integer",
+        "description": "**PeerTube >= 4.0** Include additional videos in results (can be combined using bitwise or operator)\n- `0` NONE\n- `1` NOT_PUBLISHED_STATE\n- `2` BLACKLISTED\n- `4` BLOCKED_OWNER\n- `8` FILES\n"
+      },
+      "privacyOneOf": {
+        "$ref": "#/components/schemas/VideoPrivacySet",
+        "description": "**PeerTube >= 4.0** Display only videos in this specific privacy/privacies"
+      },
+      "hasHLSFiles": {
+        "type": "boolean",
+        "description": "**PeerTube >= 4.0** Display only videos that have HLS files"
+      },
+      "hasWebtorrentFiles": {
+        "type": "boolean",
+        "description": "**PeerTube >= 4.0** Display only videos that have WebTorrent files"
+      }
+    },
+    "required": [
+      "format"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://peertube2.cpy.re/feeds/videos.{format}{?accountId,accountName,videoChannelId,videoChannelName,sort,nsfw,isLocal,include,privacyOneOf,hasHLSFiles,hasWebtorrentFiles}"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**content:encoded**: video description",
+            "**dc:creator**: publisher user name",
+            "**description**: video description",
+            [
+              "**enclosure**: main streamable file for the video",
+              {
+                "$ul": [
+                  "**length**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**guid**: video canonical URL",
+            "**link**: video watch page URL",
+            "**media:category**: video category (MRSS)",
+            [
+              "**media:community**: see [media:community](https://www.rssboard.org/media-rss#media-community) (MRSS)",
+              {
+                "$ul": [
+                  [
+                    "**media:statistics**",
+                    {
+                      "$ul": [
+                        "**views**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**media:description**",
+            [
+              "**media:embed**",
+              {
+                "$ul": [
+                  "**url**: video embed path, relative to the canonical URL domain (MRSS)"
+                ]
+              }
+            ],
+            "**media:group**: list of streamable files for the video. see [media:peerLink](https://www.rssboard.org/media-rss#media-peerlink) and [media:content](https://www.rssboard.org/media-rss#media-content) or  (MRSS)",
+            [
+              "**media:player**",
+              {
+                "$ul": [
+                  "**url**: video watch path, relative to the canonical URL domain (MRSS)"
+                ]
+              }
+            ],
+            "**media:rating**: see [media:rating](https://www.rssboard.org/media-rss#media-rating) (MRSS)",
+            [
+              "**media:thumbnail**",
+              {
+                "$ul": [
+                  "**height**",
+                  "**url**",
+                  "**width**"
+                ]
+              }
+            ],
+            "**media:title**: see [media:title](https://www.rssboard.org/media-rss#media-title) (MRSS). We only use `plain` titles.",
+            "**pubDate**: video publication date"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

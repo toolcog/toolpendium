@@ -1,0 +1,73 @@
+{
+  "name": "getEventAwards",
+  "description": "Gets a list of awards from the given event.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "event_key": {
+        "type": "string",
+        "description": "TBA Event Key, eg `2016nytr`"
+      }
+    },
+    "required": [
+      "event_key"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/event/{event_key}/awards"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**award_type**: Type of award given. See https://github.com/the-blue-alliance/the-blue-alliance/blob/master/consts/award_type.py#L6",
+            "**event_key**: The event_key of the event the award was won at.",
+            "**name**: The name of the award as provided by FIRST. May vary for the same award type.",
+            "**recipient_list**: A list of recipients of the award at the event. May have either a team_key or an awardee, both, or neither (in the case the award wasn't awarded at the event).",
+            "**year**: The year this award was won."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

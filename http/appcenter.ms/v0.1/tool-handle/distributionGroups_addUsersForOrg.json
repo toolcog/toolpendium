@@ -1,0 +1,117 @@
+{
+  "name": "distributionGroups_addUsersForOrg",
+  "description": "Accepts an array of user email addresses to get added to the specified group",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org_name": {
+        "type": "string",
+        "description": "The organization's name"
+      },
+      "distribution_group_name": {
+        "type": "string",
+        "description": "The name of the distribution group"
+      },
+      "body": {
+        "properties": {
+          "user_emails": {
+            "description": "The list of emails of the users",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "description": "list of user email addresses that should get added as members to the specified group"
+      }
+    },
+    "required": [
+      "org_name",
+      "distribution_group_name",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.appcenter.ms/v0.1/orgs/{org_name}/distribution_groups/{distribution_group_name}/members"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**code**: The code of the result",
+            "**invite_pending**: Whether the has accepted the invite. Available when an invite is pending, and the value will be \"true\".",
+            "**message**: The message of the result",
+            "**status**: The status code of the result",
+            "**user_email**: The email of the user"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**error**",
+              {
+                "$ul": [
+                  "**code**",
+                  "**message**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

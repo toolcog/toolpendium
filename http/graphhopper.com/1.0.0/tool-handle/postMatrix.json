@@ -1,0 +1,331 @@
+{
+  "name": "postMatrix",
+  "description": "\nThe [GET endpoint](#operation/getMatrix) has an URL length limitation, which hurts for many locations per request.\nIn those cases use this POST endpoint with a JSON as input. The only parameter in the URL will be the key.\nBoth request scenarios are identical except that all singular parameter names are named as their plural for a POST request.\nThe effected parameters are: `points`, `from_points`, `to_points`, and `out_arrays`. For the remaining parameters\nplease refer to the [guide of the GET endpoint](#operation/getMatrix).\n\n**Please note that in contrast to GET endpoint the points have to be specified as `[longitude, latitude]` array (in that order, similar to [GeoJson](http://geojson.org/geojson-spec.html#examples))**.\n\nFor example the query `point=10,11&point=20,22&vehicle=car` will be converted to the following JSON:\n```json\n{ \"points\": [[11,10], [22,20]], \"vehicle\": \"car\" }\n```\n\nA complete curl Example:\n```bash\ncurl -X POST -H \"Content-Type: application/json\" \"https://graphhopper.com/api/1/matrix?key=[YOUR_KEY]\" -d '{\"elevation\":false,\"out_arrays\":[\"weights\", \"times\"],\"from_points\":[[-0.087891,51.534377],[-0.090637,51.467697],[-0.171833,51.521241],[-0.211487,51.473685]],\"to_points\":[[-0.087891,51.534377],[-0.090637,51.467697],[-0.171833,51.521241],[-0.211487,51.473685]],\"vehicle\":\"car\"}'\n```\n",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/MatrixRequest"
+          },
+          {
+            "$ref": "#/$defs/SymmetricalMatrixRequest"
+          }
+        ]
+      }
+    },
+    "$defs": {
+      "MatrixRequest": {
+        "example": {
+          "from_point_hints": [
+            "Copenhagen Street",
+            "Richmond Avenue",
+            "White Lion Street"
+          ],
+          "from_points": [
+            [
+              -0.11379003524780275,
+              51.53664617804063
+            ],
+            [
+              -0.10866165161132814,
+              51.538621486960956
+            ],
+            [
+              -0.11059284210205078,
+              51.53245503603458
+            ]
+          ],
+          "out_arrays": [
+            "weights",
+            "times",
+            "distances"
+          ],
+          "to_point_hints": [
+            "Cannon",
+            "Cornhill"
+          ],
+          "to_points": [
+            [
+              -0.09576559066772462,
+              51.512882367963456
+            ],
+            [
+              -0.08797645568847656,
+              51.51317615367198
+            ]
+          ],
+          "vehicle": "car"
+        },
+        "properties": {
+          "fail_fast": {
+            "default": true,
+            "description": "Specifies whether or not the matrix calculation should return with an error as soon as possible in case some points cannot be found or some points are not connected. If set to `false` the time/weight/distance matrix will be calculated for all valid points and contain the `null` value for all entries that could not be calculated. The `hint` field of the response will also contain additional information about what went wrong (see its documentation).",
+            "type": "boolean"
+          },
+          "from_curbsides": {
+            "description": "See `curbsides`of symmetrical matrix",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "from_point_hints": {
+            "description": "See `point_hints`of symmetrical matrix",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "from_points": {
+            "description": "The starting points for the routes in an array of `[longitude,latitude]`. For instance, if you want to calculate three routes from point A such as A->1, A->2, A->3 then you have one `from_point` parameter and three `to_point` parameters.",
+            "items": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "out_arrays": {
+            "description": "Specifies which matrices should be included in the response. Specify one or more of the following options `weights`, `times`, `distances`. The units of the entries of `distances` are meters, of `times` are seconds and of `weights` is arbitrary and it can differ for different vehicles or versions of this API.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "snap_preventions": {
+            "description": "See `snap_preventions` of symmetrical matrix",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "to_curbsides": {
+            "description": "See `curbsides`of symmetrical matrix",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "to_point_hints": {
+            "description": "See `point_hints`of symmetrical matrix",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "to_points": {
+            "description": "The destination points for the routes in an array of `[longitude,latitude]`.",
+            "items": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "turn_costs": {
+            "default": false,
+            "description": "Specifies if turn restrictions should be considered. Enabling this option increases the matrix computation time. Only supported for motor vehicles and OpenStreetMap.",
+            "type": "boolean"
+          },
+          "vehicle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VehicleProfileId"
+              },
+              {
+                "description": "The vehicle profile for which the route should be calculated. Other vehicles are listed [here](#section/Map-Data-and-Routing-Profiles/OpenStreetMap) for the details."
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "VehicleProfileId": {
+        "default": "car",
+        "enum": [
+          "car",
+          "bike",
+          "foot",
+          "hike",
+          "mtb",
+          "racingbike",
+          "scooter",
+          "truck",
+          "small_truck"
+        ],
+        "type": "string"
+      },
+      "SymmetricalMatrixRequest": {
+        "example": {
+          "out_arrays": [
+            "weights",
+            "times",
+            "distances"
+          ],
+          "point_hints": [
+            "Copenhagen Street",
+            "Richmond Avenue",
+            "White Lion Street"
+          ],
+          "points": [
+            [
+              -0.11379003524780275,
+              51.53664617804063
+            ],
+            [
+              -0.10866165161132814,
+              51.538621486960956
+            ],
+            [
+              -0.11059284210205078,
+              51.53245503603458
+            ]
+          ],
+          "vehicle": "car"
+        },
+        "properties": {
+          "curbsides": {
+            "description": "Optional parameter. It specifies on which side a point should be relative to the driver when she leaves/arrives at a start/target/via point. You need to specify this parameter for either none or all points. Only supported for motor vehicles and OpenStreetMap.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "fail_fast": {
+            "default": true,
+            "description": "Specifies whether or not the matrix calculation should return with an error as soon as possible in case some points cannot be found or some points are not connected. If set to `false` the time/weight/distance matrix will be calculated for all valid points and contain the `null` value for all entries that could not be calculated. The `hint` field of the response will also contain additional information about what went wrong (see its documentation).",
+            "type": "boolean"
+          },
+          "out_arrays": {
+            "description": "Specifies which matrices should be included in the response. Specify one or more of the following options `weights`, `times`, `distances`. The units of the entries of `distances` are meters, of `times` are seconds and of `weights` is arbitrary and it can differ for different vehicles or versions of this API.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "point_hints": {
+            "description": "Optional parameter. Specifies a hint for each point in the `points` array to prefer a certain street for the closest location lookup. E.g. if there is an address or house with two or more neighboring streets you can control for which street the closest location is looked up.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "points": {
+            "description": "Specify multiple points for which the weight-, route-, time- or distance-matrix should be calculated as follows: `[longitude,latitude]`. In this case the origins are identical to the destinations. Thus, if there are N points, NxN entries are calculated. The order of the point parameter is important. Specify at least three points. Cannot be used together with `from_point` or `to_point.`.",
+            "items": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "snap_preventions": {
+            "description": "Optional parameter to avoid snapping to a certain road class or road environment. Current supported values `motorway`, `trunk`, `ferry`, `tunnel`, `bridge` and `ford`",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "turn_costs": {
+            "default": false,
+            "description": "Specifies if turn restrictions should be considered. Enabling this option increases the matrix computation time. Only supported for motor vehicles and OpenStreetMap.",
+            "type": "boolean"
+          },
+          "vehicle": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VehicleProfileId"
+              },
+              {
+                "description": "The vehicle profile for which the route should be calculated. Other vehicles are listed [here](#section/Map-Data-and-Routing-Profiles/OpenStreetMap) for the details."
+              }
+            ]
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://graphhopper.com/api/1/matrix"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**distances**: The distance matrix for the specified points in the same order as the time matrix. The distances are in meters. If `fail_fast=false` the matrix will contain `null` for connections that could not be found.",
+            "**hints**: Optional. Additional response data.",
+            [
+              "**info**: Additional information for your request",
+              {
+                "$ul": [
+                  "**copyrights**: Attribution according to our documentation is necessary if no white-label option included.",
+                  "**took**"
+                ]
+              }
+            ],
+            "**times**: The time matrix for the specified points in the order [[from1->to1, from1->to2, ...], [from2->to1, from2->to2, ...], ...]. The times are in seconds. If `fail_fast=false` the matrix will contain `null` for connections that could not be found.",
+            "**weights**: The weight matrix for the specified points in the same order as the time matrix. The weights for different vehicles can have a different unit but the weights array is perfectly suited as input for Vehicle Routing Problems as it is currently faster to calculate. If `fail_fast=false` the matrix will contain `null` for connections that could not be found."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "default": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**hints**: Optional error information.",
+            "**message**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

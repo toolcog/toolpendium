@@ -1,0 +1,301 @@
+{
+  "name": "scim_update-attribute-for-user",
+  "description": "Allows you to change a provisioned user's individual attributes. To change a user's values, you must provide a specific `Operations` JSON format that contains at least one of the `add`, `remove`, or `replace` operations. For examples and more information on the SCIM operations format, see the [SCIM specification](https://tools.ietf.org/html/rfc7644#section-3.5.2).\n\n**Note:** Complicated SCIM `path` selectors that include filters are not supported. For example, a `path` selector defined as `\"path\": \"emails[type eq \\\"work\\\"]\"` will not work.\n\n**Warning:** If you set `active:false` using the `replace` operation (as shown in the JSON example below), it removes the user from the organization, deletes the external identity, and deletes the associated `:scim_user_id`.\n\n```\n{\n  \"Operations\":[{\n    \"op\":\"replace\",\n    \"value\":{\n      \"active\":false\n    }\n  }]\n}\n```",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "org": {
+        "type": "string",
+        "description": "The organization name. The name is not case sensitive."
+      },
+      "scim_user_id": {
+        "type": "string",
+        "description": "The unique identifier of the SCIM user."
+      },
+      "body": {
+        "properties": {
+          "Operations": {
+            "description": "Set of operations to be performed",
+            "example": [
+              {
+                "op": "replace",
+                "value": {
+                  "active": false
+                }
+              }
+            ],
+            "items": {
+              "properties": {
+                "op": {
+                  "enum": [
+                    "add",
+                    "remove",
+                    "replace"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "active": {
+                          "nullable": true,
+                          "type": "boolean"
+                        },
+                        "externalId": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "familyName": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "givenName": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "userName": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    {
+                      "items": {
+                        "properties": {
+                          "primary": {
+                            "type": "boolean"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "op"
+              ],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "schemas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "Operations"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "org",
+      "scim_user_id",
+      "body"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://github.com//scim/v2/organizations/{org}/Users/{scim_user_id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "SCIM /Users"
+        },
+        "SCIM /Users provisioning endpoints",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**active**: The active status of the User.",
+            "**displayName**: The name of the user, suitable for display to end-users",
+            "**emails**: user emails",
+            "**externalId**: The ID of the User.",
+            "**groups**: associated groups",
+            "**id**: Unique identifier of an external identity",
+            [
+              "**meta**",
+              {
+                "$ul": [
+                  "**created**",
+                  "**lastModified**",
+                  "**location**",
+                  "**resourceType**"
+                ]
+              }
+            ],
+            [
+              "**name**",
+              {
+                "$ul": [
+                  "**familyName**",
+                  "**formatted**",
+                  "**givenName**"
+                ]
+              }
+            ],
+            "**operations**: Set of operations to be performed",
+            "**organization_id**: The ID of the organization.",
+            "**roles**",
+            "**schemas**: SCIM schema used.",
+            "**userName**: Configured by the admin. Could be an email, login, or username"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "404": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Scim Error"
+        },
+        "Scim Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**",
+            "**documentation_url**",
+            "**message**",
+            "**schemas**",
+            "**scimType**",
+            "**status**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Basic Error"
+        },
+        "Basic Error",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**documentation_url**",
+            "**message**",
+            "**status**",
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

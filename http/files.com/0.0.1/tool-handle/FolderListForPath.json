@@ -1,0 +1,124 @@
+{
+  "name": "FolderListForPath",
+  "description": "List Folders by path",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "cursor": {
+        "type": "string",
+        "description": "Send cursor to resume an existing list from the point at which you left off.  Get a cursor from an existing list via the X-Files-Cursor-Next header or the X-Files-Cursor-Prev header."
+      },
+      "per_page": {
+        "format": "int32",
+        "type": "integer",
+        "description": "Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended)."
+      },
+      "path": {
+        "type": "string",
+        "description": "Path to operate on."
+      },
+      "filter": {
+        "type": "string",
+        "description": "If specified, will filter folders/files list by this string.  Wildcards of `*` and `?` are acceptable here."
+      },
+      "preview_size": {
+        "type": "string",
+        "description": "Request a preview size.  Can be `small` (default), `large`, `xlarge`, or `pdf`."
+      },
+      "sort_by": {
+        "type": "object",
+        "description": "Search by field and direction. Valid fields are `path`, `size`, `modified_at_datetime`, `provided_modified_at`.  Valid directions are `asc` and `desc`.  Defaults to `{\"path\":\"asc\"}`."
+      },
+      "search": {
+        "type": "string",
+        "description": "If `search_all` is `true`, provide the search string here.  Otherwise, this parameter acts like an alias of `filter`."
+      },
+      "search_all": {
+        "type": "boolean",
+        "description": "Search entire site?  If set, we will ignore the folder path provided and search the entire site.  This is the same API used by the search bar in the UI.  Search results are a best effort, not real time, and not guaranteed to match every file.  This field should only be used for ad-hoc (human) searching, and not as part of an automated process."
+      },
+      "with_previews": {
+        "type": "boolean",
+        "description": "Include file previews?"
+      },
+      "with_priority_color": {
+        "type": "boolean",
+        "description": "Include file priority color information?"
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "//app.files.com/api/rest/v1/folders/{path}{?cursor,per_page,filter,preview_size,sort_by,search,search_all,with_previews,with_priority_color}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "List Folders by path",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**crc32**: File CRC32 checksum. This is sometimes delayed, so if you get a blank response, wait and try again.",
+            "**created_at**: File created date/time",
+            "**display_name**: File/Folder display name",
+            "**download_uri**: Link to download file. Provided only in response to a download request.",
+            "**is_locked**: Is this folder locked and unable to be modified?",
+            "**md5**: File MD5 checksum. This is sometimes delayed, so if you get a blank response, wait and try again.",
+            "**mime_type**: MIME Type.  This is determined by the filename extension and is not stored separately internally.",
+            "**mtime**: File last modified date/time, according to the server.  This is the timestamp of the last Files.com operation of the file, regardless of what modified timestamp was sent.",
+            "**path**: File/Folder path",
+            "**permissions**: A short string representing the current user's permissions.  Can be `r`,`w`,`d`, `l` or any combination",
+            [
+              "**preview**",
+              {
+                "$ul": [
+                  "**download_uri**: Link to download preview",
+                  "**id**: Preview ID",
+                  "**size**: Preview size",
+                  "**status**: Preview status.  Can be invalid, not_generated, generating, complete, or file_too_large",
+                  "**type**: Preview type. Can be image, pdf, pdf_native, video, or audio"
+                ]
+              }
+            ],
+            "**preview_id**: File preview ID",
+            "**priority_color**: Bookmark/priority color of file/folder",
+            "**provided_mtime**: File last modified date/time, according to the client who set it.  Files.com allows desktop, FTP, SFTP, and WebDAV clients to set modified at times.  This allows Desktop<->Cloud syncing to preserve modified at times.",
+            "**region**: Region location",
+            "**size**: File/Folder size",
+            "**subfolders_locked?**: Are subfolders locked and unable to be modified?",
+            "**type**: Type: `directory` or `file`."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

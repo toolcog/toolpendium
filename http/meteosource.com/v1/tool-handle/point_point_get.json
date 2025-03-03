@@ -1,0 +1,317 @@
+{
+  "name": "point_point_get",
+  "description": "## Current weather and forecast for single location\n\n### Location specification\nThe location of the weather data is the only parameter that is required and must be specified. There are two ways to do this:\n1. Specify the GPS coordinates of the location using the parameters `lat` and `lon`.\n2. **OR** specify the name of the place using the parameter `place_id`. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).\n\n*Note: For mountains, it is usually better to specify the `place_id` rather than the `lat` and `lon`. When you use `place_id`, you are guaranteed to receive forecasts for the precise elevation of the peak. When you specify the coordinates, the elevation can be less precise.*\n\n### Sections\nThe endpoint can return multiple sections of data. To obtain the best performance, we advise only requesting the sections you actually need. The available sections are as follows:\n\n* Current weather situation\n* Hourly forecast (for 24/48/96/168 hours, depending on the tier)\n* Daily forecast (for 7/10/30 days, depending on the tier)\n* Minutely precipitation forecast (for 60 minutes in the following hour, only for higher tiers)\n* Weather alerts (only for higher tiers)\n\nBy default, only the current and hourly sections are returned. The division into daily parts (morning, afternoon and evening) is only available for the first 7 days of the forecast. For details regarding available parameters, see the parameter description below.\n\n### Notes\n* **For a detailed description of variables (e.g. icons), please consult ⚠️ <a href=\"https://www.meteosource.com/documentation#description\" target=\"_blank\">description of variables</a> ⚠️ in Documentation or `Schema` of the response (link next to Example value in the Responses section below).**\n* Variables can be instantaneous, averaged, or accumulated over certain time. For example, `precipitation` forecast provides the precipitation accumulated until the next hour (data with timestamp as `12:00:00` is rain accumulated from `12:00:00` to `13:00:00`).\n* Do **not** make any assumptions about the number and ordering of the variables. New variables and sections may be introduced in the future. Always check the data are present before you try to use them.\n* The response contains an `Expires` header, which defines the point at which the API response will not change for the same request. We highly recommend using this to avoid unnecessary requests and **increase the performance of your app**.\n* Meteosource API supports HTTP compression. To enable it, simply add an `Accept-Encoding: gzip` header to your request.\n* When daylight saving time starts, one hourly record will be missing (typically `2:00:00 AM`). When daylight saving time ends, the hourly forecast will contain two records with duplicate times (typically `2:00:00 AM`).\n* The detailed description of weather alerts is only available in English. The alert category is translated into selected language.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "place_id": {
+        "description": "Identifier of a place. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).",
+        "title": "Place Id",
+        "type": "string"
+      },
+      "lat": {
+        "description": "Latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.4",
+        "title": "Lat",
+        "type": "string"
+      },
+      "lon": {
+        "description": "Longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.4",
+        "title": "Lon",
+        "type": "string"
+      },
+      "sections": {
+        "default": "current,hourly",
+        "description": "Sections to be included in the response. You can specify more section by separating the values with a comma. The available values are:\n\n* ``current``: Current weather situation\n* ``daily``: Forecasts for each whole day, without the daily parts\n* ``daily-parts``: Forecasts for each whole day, morning, afternoon and evening\n    * Important: forecast for the morning, afternoon and evening is available only for the first\n      7 days in the forecast\n* ``hourly``: Forecasts with hourly resolution\n* ``minutely``: Precipitation forecast with 1 minute resolution\n* ``alerts``: The weather alerts\n* ``all``: All sections\n",
+        "title": "Sections",
+        "type": "string"
+      },
+      "timezone": {
+        "description": "Timezone to be used for the date fields. If not specified, local timezone of the forecast location will be used.\nThe format is according to the tzinfo database, so values like `Europe/Prague` or `UTC` can be used.\nAlternatively you may use the value ``auto`` in which case the local timezone of the location is used.\nThe full list of valid timezone strings can be found [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).\n",
+        "title": "Timezone",
+        "type": "string"
+      },
+      "language": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Language"
+          }
+        ],
+        "default": "en",
+        "description": "The language of text summaries and place names (variable names are never translated). Available languages are:\n\n   * ``en``: English\n   * ``es``: Spanish\n   * ``fr``: French\n   * ``de``: German\n   * ``pl``: Polish\n   * ``pt``: Portuguese\n   * ``cs``: Czech\n"
+      },
+      "units": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/Units"
+          }
+        ],
+        "default": "auto",
+        "description": "Unit system to be used. The available values are:\n\n* `auto`: Select the system automatically, based on the forecast location.\n* `metric`: Metric (SI) units (`°C`, `mm/h`, `m/s`, `cm`, `km`, `hPa`).\n* `us`: Imperial units (`°F`, `in/h`, `mph`, `in`, `mi`, `Hg`).\n* `uk`: Same as ``metric``, except that visibility is in `miles` and wind speeds are in `mph`.\n* `ca`: Same as ``metric``, except that wind speeds are in `km/h` and pressure is in `kPa`.\n"
+      },
+      "key": {
+        "description": "Your unique API key. You can either specify it in this parameter, or set it in `X-API-Key` header.",
+        "title": "Key",
+        "type": "string"
+      }
+    },
+    "$defs": {
+      "Language": {
+        "description": "An enumeration.",
+        "enum": [
+          "cs",
+          "en",
+          "de",
+          "es",
+          "fr",
+          "pl",
+          "pt"
+        ],
+        "title": "Language",
+        "type": "string"
+      },
+      "Units": {
+        "description": "An enumeration.",
+        "enum": [
+          "auto",
+          "metric",
+          "us",
+          "uk",
+          "ca"
+        ],
+        "title": "Units",
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "/api/v1/premium/point{?place_id,lat,lon,sections,timezone,language,units,key}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Point_PointData"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**alerts**",
+              {
+                "$ul": [
+                  "**data**"
+                ]
+              }
+            ],
+            [
+              "**current**",
+              {
+                "$ul": [
+                  "**cloud_cover**: Percentage of sky covered by clouds.",
+                  "**dew_point**: Current dew point temperature.",
+                  "**feels_like**: Feels like temperature.",
+                  "**humidity**: Relative humidity.",
+                  "**icon**: String identifier of current weather icon, e.g. `light_rain`.",
+                  "**icon_num**: Numeric identifier of current weather icon. The following values can appear:",
+                  "**irradiance**: Global downward short-wave radiation flux.",
+                  "**ozone**: Total column of ozone.",
+                  [
+                    "**precipitation**",
+                    {
+                      "$ul": [
+                        "**total**: Current amount of precipitation.",
+                        "**type**: Precipitation type, may be one of:"
+                      ]
+                    }
+                  ],
+                  "**pressure**: Atmospheric pressure at mean sea level.",
+                  "**summary**: Short text summary of current weather, e.g. `Light rain`.",
+                  "**temperature**: Current temperature 2 metres above ground.",
+                  "**uv_index**: UV index, values from zero (low risk of harm) to 11+ (extreme risk of harm).",
+                  "**visibility**: Visibility.",
+                  [
+                    "**wind**",
+                    {
+                      "$ul": [
+                        "**angle**: Wind direction angle in degrees, 180° means wind from the south.",
+                        "**dir**: Wind direction in `N`, `NNE`, `NE`, ..., `NNW` format.",
+                        "**gusts**: Wind gust speed.",
+                        "**speed**: Wind speed 10 metres above the ground."
+                      ]
+                    }
+                  ],
+                  "**wind_chill**: Windchill temperature."
+                ]
+              }
+            ],
+            [
+              "**daily**",
+              {
+                "$ul": [
+                  "**data**"
+                ]
+              }
+            ],
+            "**elevation**: Elevation above sea level in metres (for units 'metric', 'uk', 'ca') or feet (for units 'us')",
+            [
+              "**hourly**",
+              {
+                "$ul": [
+                  "**data**"
+                ]
+              }
+            ],
+            "**lat**: Latitude of the point, always in the format <float><N/S>, for example ``23.5S``",
+            "**lon**: Longitude of the point, always in the format <float><E/W>, for example ``23.5W``",
+            [
+              "**minutely**",
+              {
+                "$ul": [
+                  "**data**",
+                  "**summary**: Text summary about upcoming precipitation."
+                ]
+              }
+            ],
+            "**timezone**: Name of the timezone in format like 'Europe/London'. Available only when the place is specified through place ID.",
+            "**units**: Unit system (metric, uk, ca or us)"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "402": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "HTTPValidationError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "429": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "GeneralRequestError"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

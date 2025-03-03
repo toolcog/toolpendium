@@ -1,0 +1,78 @@
+{
+  "name": "getTeamMediaByTag",
+  "description": "Gets a list of Media (videos / pictures) for the given team and tag.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "If-None-Match": {
+        "type": "string",
+        "description": "Value of the `ETag` header in the most recently cached response by the client."
+      },
+      "team_key": {
+        "type": "string",
+        "description": "TBA Team Key, eg `frc254`"
+      },
+      "media_tag": {
+        "type": "string",
+        "description": "Media Tag which describes the Media."
+      }
+    },
+    "required": [
+      "team_key",
+      "media_tag"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://www.thebluealliance.com/api/v3/team/{team_key}/media/tag/{media_tag}"
+    },
+    "headers": {
+      "If-None-Match": {
+        "$": "If-None-Match"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "The `Media` object contains a reference for most any media associated with a team or event on TBA.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**details**: If required, a JSON dict of additional media information.",
+            "**direct_url**: Direct URL to the media.",
+            "**foreign_key**: The key used to identify this media on the media site.",
+            "**preferred**: True if the media is of high quality.",
+            "**type**: String type of the media element.",
+            "**view_url**: The URL that leads to the full web page for the media, if one exists."
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,710 @@
+{
+  "name": "BulkSendV2CRUD_PostBulkSendList",
+  "description": "This method creates a bulk send list that you can use to send an envelope to up to 1,000 recipients at once.\n\n### Related topics\n\n- [How to bulk send envelopes](/docs/esign-rest-api/how-to/bulk-send-envelopes/)\n\n### Errors\n\n| Error code                                              | Description                                                                                                                                                                                                                                                                              |\n| :------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| BULK_SEND_MAX_COPIES_EXCEEDED                           | A bulk sending list cannot specify more than XXX copies in the mailing list. Call the settings API endpoint to find the maximum number of copies in a batch allowed for your account. In almost all cases, the default limit is 1000.                                                    |\n| BULK_SEND_RECIPIENT_IDS_MUST_BE_UNIQUE                  | No two recipientIds can be same within a bulkCopy. Same restriction as a regular envelope applies. Specify unique recipient IDs for each recipient within a bulkCopy (model for envelope in mailing list).                                                                               |\n| BULK_SEND_RECIPIENT_ID_REQUIRED                         | If no RoleName is present, recipientID is required in mailing list's bulkCopy. Add a roleName (that coalesces with template/envelope) or a recipientID.                                                                                                                                  |\n| BULK_SEND_RECIPIENT_NAME_REQUIRED                       | Recipient {0} has no name. Specify a name for the recipient.                                                                                                                                                                                                                             |\n| BULK_SEND_EMAIL_ADDRESS_REQUIRED_FOR_EMAIL_RECIPIENT    | Recipient {0} is an email recipient with no email address. Specify an email for the email recipient.                                                                                                                                                                                     |\n| BULK_SEND_FAX_NUMBER_REQUIRED_FOR_FAX_RECIPIENT         | Recipient {0} is a fax recipient with no fax number. Specify a fax number for the fax recipient.                                                                                                                                                                                         |\n| BULK_SEND_FAX_NUMBER_NOT_VALID                          | Recipient {0} specifies fax number {1}, which is not valid. Specify a valid fax number for the fax recipient.                                                                                                                                                                            |\n| BULK_SEND_EMAIL_ADDRESS_NOT_VALID                       | Recipient {0} specifies email address {1}, which is not a valid email address.  Specify a valid email address for the recipient.                                                                                                                                                         |\n| BULK_SEND_PHONE_NUMBER_REQURED_FOR_SMS_AUTH             | Recipient {0} specifies SMS auth, but no number was provided. Specify a phone number for the SMS auth recipient.                                                                                                                                                                         |\n| BULK_SEND_PHONE_NUMBER_INVALID_FOR_SMS_AUTH             | Recipient {0} specifies phone number {1} for SMS auth, which is not valid. Specify a valid phone number for the SMS auth recipient.                                                                                                                                                      |\n| BULK_SEND_ROLE_NAMES_MUST_BE_UNIQUE                     | Recipient role names cannot be duplicated; role {duplicateRecipientRole} appears multiple times. Use unique roleNames for recipients.                                                                                                                                                    |\n| BULK_SEND_CANNOT_USE_BOTH_ROLE_AND_ID_ON_SAME_RECIPIENT | Recipients cannot have both ID and Role; {0} has both. Specify a roleName or recipientId, but not both for the same recipient.                                                                                                                                                           |\n| BULK_SEND_CANNOT_USE_BOTH_ROLE_AND_ID_IN_SAME_LIST      | Cannot use both recipient role and ID in the same list. Specify a roleName or recipientId, but not both in the same list.                                                                                                                                                                |\n| BULK_SEND_INVALID_ID_CHECK_CONFIGURATION                | Recipient {0} specified SMS authentication, but no SMS auth settings were provided. Provide an SMS auth setting (proper ID configuration) if SMS auth is specified.                                                                                                                      |\n| BULK_SEND_INVALID_SBS_INPUT_CONFIGURATION               | Recipient {0} has more than one signature provider specified. Or signingProviderName is not specified. Or Signature provider : {0} is either unknown or not an available pen for this account. One or more SBS configuration is missing or invalid. The error details provide specifics. |\n| BULK_SEND_TAB_LABELS_MUST_BE_UNIQUE                     | Tab label {0} is duplicated. Needs to be unique. Use a unique tab label.                                                                                                                                                                                                                 |\n| BULK_SEND_TAB_LABEL_REQUIRED                            | Tab label is required. Specify a tab label.                                                                                                                                                                                                                                              |\n| BULK_SEND_TAB_VALUE_REQUIRED                            | Tab Label value is required. Specify a value for the tab label.                                                                                                                                                                                                                          |\n| BULK_SEND_ENVELOPE_CUSTOM_FIELD_NAME_MUST_BE_UNIQUE     | Custom fields must have distinct names. The field {0} appears more than once in a copy. Use unique names for custom fields.                                                                                                                                                              |\n| BULK_SEND_ENVELOPE_CUSTOM_FIELD_NAME_REQUIRED           | All custom fields must have names. Specify a name for the custom field.                                                                                                                                                                                                                  |\n| BULK_SEND_ENVELOPE_CUSTOM_FIELD_VALUE_REQUIRED          | Custom field {0} has no value. A custom field can have an empty value, but it cannot have a null value. Specify a value for the custom field.                                                                                                                                            |",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "string",
+        "description": "The ID of the account."
+      },
+      "body": {
+        "$ref": "#/$defs/bulkSendingList"
+      }
+    },
+    "required": [
+      "accountId"
+    ],
+    "$defs": {
+      "bulkSendingList": {
+        "description": "This object contains the details for the bulk send list.",
+        "properties": {
+          "bulkCopies": {
+            "description": "An array of `bulkCopy` objects. Each object represents an instance or copy of an envelope and contains details such as the recipient, custom fields, tabs, and other information.",
+            "items": {
+              "$ref": "#/$defs/bulkSendingCopy"
+            },
+            "type": "array"
+          },
+          "listId": {
+            "description": "The GUID of the bulk send list.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the bulk send list.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendingList",
+        "x-ms-summary": "This object contains the details for the bulk send list."
+      },
+      "bulkSendingCopy": {
+        "description": "This object contains the details to use for a specific copy, or instance, of the envelope. When you send an envelope by using a bulk send list, you can customize these properties for each instance.",
+        "properties": {
+          "customFields": {
+            "description": "The custom fields for this copy of the envelope.\n\n**Note:** These custom fields must also be included in the original envelope or template that you want to send.",
+            "items": {
+              "$ref": "#/$defs/bulkSendingCopyCustomField"
+            },
+            "type": "array"
+          },
+          "docGenFormFields": {
+            "description": "",
+            "items": {
+              "$ref": "#/$defs/bulksendingCopyDocGenFormField"
+            },
+            "type": "array"
+          },
+          "emailBlurb": {
+            "description": "The email body for this copy of the envelope.",
+            "type": "string"
+          },
+          "emailSubject": {
+            "description": "The email subject line for this copy of the envelope.\n\nFor information about adding merge field information to the email subject,\nsee [Template Email Subject Merge Fields](/docs/esign-rest-api/reference/templates/templates/create/).\n\n**Note:** The subject line is limited to 100 characters, including any merged fields.It is not truncated. It is an error if the text is longer than 100 characters.",
+            "type": "string"
+          },
+          "recipients": {
+            "description": "Information about the recipients associated with this copy of the envelope.",
+            "items": {
+              "$ref": "#/$defs/bulkSendingCopyRecipient"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendingCopy",
+        "x-ms-summary": "This object contains the details to use for a specific copy, or instance, of the envelope. When you send an envelope by using a bulk send list, you can customize these properties for each instance."
+      },
+      "bulkSendingCopyCustomField": {
+        "description": "This object contains details about a custom field for a bulk send copy. In a bulk send request, each custom field in the bulk send list must match a custom field in the envelope or template that you want to send.",
+        "properties": {
+          "name": {
+            "description": "The name of the custom field.",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value of the custom field.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendingCopyCustomField",
+        "x-ms-summary": "This object contains details about a custom field for a bulk send copy. In a bulk send request, each custom field in the bulk send list must match a custom field in the envelope or template that you want to send."
+      },
+      "bulksendingCopyDocGenFormField": {
+        "description": "",
+        "properties": {
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "value": {
+            "description": "Specifies the value of the tab. ",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulksendingCopyDocGenFormField",
+        "x-ms-summary": ""
+      },
+      "bulkSendingCopyRecipient": {
+        "description": "This object contains details about a bulk send recipient.",
+        "properties": {
+          "accessCode": {
+            "description": "If a value is provided, the recipient must enter the value as the access code to view and sign the envelope. \n\nMaximum Length: 50 characters and it must conform to the account's access code format setting.\n\nIf blank, but the signer `accessCode` property is set in the envelope, then that value is used.\n\nIf blank and the signer `accessCode` property is not set, then the access code is not required.",
+            "type": "string"
+          },
+          "clientUserId": {
+            "description": "Specifies whether the recipient is embedded or remote. \n\nIf the `clientUserId` property is not null then the recipient is embedded. Use this field to associate the signer with their userId in your app. Authenticating the user is the responsibility of your app when you use embedded signing.\n\nIf the `clientUserId` property is set and either `SignerMustHaveAccount` or `SignerMustLoginToSign` property of the account settings is set to  **true,** an error is generated on sending.\n\n**Note:** This property is not returned by the [listStatusChanges](/docs/esign-rest-api/reference/envelopes/envelopes/liststatuschanges/) endpoint.\n\nMaximum length: 100 characters. \n",
+            "type": "string"
+          },
+          "customFields": {
+            "description": "An optional array of strings that allows the sender to provide custom data about the recipient. This information is returned in the envelope status but otherwise not used by DocuSign. Each customField string can be a maximum of 100 characters.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "deliveryMethod": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "email": {
+            "description": "The recipient's email address.",
+            "type": "string"
+          },
+          "emailNotification": {
+            "$ref": "#/$defs/recipientEmailNotification"
+          },
+          "embeddedRecipientStartURL": {
+            "description": "Specifies a sender-provided valid URL string for redirecting an embedded recipient. When using this option, the embedded recipient still receives an email from DocuSign, just as a remote recipient would. When the document link in the email is clicked the recipient is redirected, through DocuSign, to the supplied URL to complete their actions. When routing to the URL, the sender's system (the server responding to the URL) must request a recipient token to launch a signing session. \n\nWhen `SIGN_AT_DOCUSIGN`, the recipient is directed to an embedded signing or viewing process directly at DocuSign. The signing or viewing action is initiated by the DocuSign system and the transaction activity and Certificate of Completion records will reflect this. In all other ways the process is identical to an embedded signing or viewing operation launched by a partner.\n\nIt is important to understand that in a typical embedded workflow, the authentication of an embedded recipient is the responsibility of the sending application. DocuSign expects that senders will follow their own processes for establishing the recipient's identity. In this workflow the recipient goes through the sending application before the embedded signing or viewing process is initiated. However, when the sending application sets `EmbeddedRecipientStartURL=SIGN_AT_DOCUSIGN`, the recipient goes directly to the embedded signing or viewing process, bypassing the sending application and any authentication steps the sending application would use. In this case, DocuSign recommends that you use one of the normal DocuSign authentication features (Access Code, Phone Authentication, SMS Authentication, etc.) to verify the identity of the recipient.\n\nIf the `clientUserId` property is NOT set, and the `embeddedRecipientStartURL` is set, DocuSign will ignore the redirect URL and launch the standard signing process for the email recipient. Information can be appended to the embedded recipient start URL using merge fields. The available merge fields items are: `envelopeId`, `recipientId`, `recipientName`, `recipientEmail`, and `customFields`. The `customFields` property must be set for the recipient or envelope. The merge fields are enclosed in double brackets. \n\n*Example*: \n\n`http://senderHost/[[mergeField1]]/ beginSigningSession? [[mergeField2]]&[[mergeField3]]` ",
+            "type": "string"
+          },
+          "faxNumber": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "hostEmail": {
+            "description": "The email address of the signing host.\nThis is the DocuSign user that is hosting the in-person signing session.\n\nRequired when `inPersonSigningType` is `inPersonSigner`.\nFor eNotary flow, use `email` instead.\n\nMaximum Length: 100 characters.\n",
+            "type": "string"
+          },
+          "hostName": {
+            "description": "The name of the signing host.\nThis is the DocuSign user that is hosting the in-person signing session.\n\nRequired when `inPersonSigningType` is `inPersonSigner`.\nFor eNotary flow, use `name` instead.\n\nMaximum Length: 100 characters.\n",
+            "type": "string"
+          },
+          "idCheckConfigurationName": {
+            "description": "The name of the authentication check to use. This value must match one of the authentication types that the account uses. The names of these authentication types appear in the web console sending interface in the Identify list for a recipient. This setting overrides any default authentication setting. Valid values are:\n\n- `Phone Auth $`: The recipient must authenticate by using two-factor authentication (2FA). You provide the phone number to use for 2FA in the `phoneAuthentication` object.\n- `SMS Auth $`: The recipient must authenticate via SMS. You provide the phone number to use in the `smsAuthentication` object.\n- `ID Check $`: The  recipient must answer detailed security questions. \n\n**Example:** Your account has ID Check and SMS Authentication available. In the web console Identify list, these appear as ID Check $ and SMS Auth $. To use ID Check in an envelope, the idCheckConfigurationName should be ID Check $. For SMS, you would use SMS Auth $, and you would also need to add a phone number to the smsAuthentication node.",
+            "type": "string"
+          },
+          "idCheckInformationInput": {
+            "$ref": "#/$defs/idCheckInformationInput"
+          },
+          "identificationMethod": {
+            "description": "",
+            "type": "string"
+          },
+          "identityVerification": {
+            "$ref": "#/$defs/recipientIdentityVerification"
+          },
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "note": {
+            "description": "A note sent to the recipient in the signing email.\nThis note is unique to this recipient.\nIn the user interface,\nit appears near the upper left corner\nof the document\non the signing screen.\n\nMaximum Length: 1000 characters.\n",
+            "type": "string"
+          },
+          "phoneAuthentication": {
+            "$ref": "#/$defs/recipientPhoneAuthentication"
+          },
+          "recipientId": {
+            "description": "Unique for the recipient. It is used by the tab element to indicate which recipient is to sign the Document.\n\n**Note:** Every recipient must be assigned either a `recipientId` or a `roleName` but not both. You cannot use `roleName` and `recipientId` in the same list.",
+            "type": "string"
+          },
+          "recipientSignatureProviders": {
+            "description": "The default signature provider is the DocuSign Electronic signature system. This parameter is used to specify one or more Standards Based Signature (digital signature) providers for the signer to use. [More information.](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/)",
+            "items": {
+              "$ref": "#/$defs/recipientSignatureProvider"
+            },
+            "type": "array"
+          },
+          "roleName": {
+            "description": "The name of the role associated with the recipient.\n\n**Note:** Every recipient must be assigned either a `recipientId` or a `roleName` but not both. You cannot use `roleName` and `recipientId` in the same list.",
+            "type": "string"
+          },
+          "signerName": {
+            "description": "The in-person signer's full legal name.\n\nRequired when `inPersonSigningType` is `inPersonSigner`.\nFor eNotary flow, use `name` instead.\n\nMaximum Length: 100 characters.\n",
+            "type": "string"
+          },
+          "signingGroupId": {
+            "description": "The ID of the [signing group](https://support.docusign.com/en/guides/ndse-user-guide-signing-groups).\n",
+            "type": "string"
+          },
+          "smsAuthentication": {
+            "$ref": "#/$defs/recipientSMSAuthentication"
+          },
+          "socialAuthentications": {
+            "description": "Deprecated.",
+            "items": {
+              "$ref": "#/$defs/socialAuthentication"
+            },
+            "type": "array"
+          },
+          "tabs": {
+            "description": "A list of tabs associated with the recipient. In a bulk send request, each of these recipient tabs must match a recipient tab on the envelope or template that you want to send. To match up, the `tabLabel` for this tab and the `tabLabel` for the corresponding tab on the envelope or template must be the same.\n\nFor example, if the envelope has a placeholder text tab with the `tabLabel` `childName`, you must assign the same `tabLabel` `childName` to the tab here that you are populating with that information.\n\n You can use the following types of tabs to match bulk send recipients to an envelope:\n\n- Text tabs\n- Radio group tabs (where the name of the `radioGroup` on the envelope is used as the `tabLabel` in the bulk send list)\n- List tabs",
+            "items": {
+              "$ref": "#/$defs/bulkSendingCopyTab"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendingCopyRecipient",
+        "x-ms-summary": "This object contains details about a bulk send recipient."
+      },
+      "recipientEmailNotification": {
+        "description": "Sets custom email subject and email body for individual\nrecipients. **Note:** You must explicitly set `supportedLanguage`\nif you use this feature.\n",
+        "properties": {
+          "emailBody": {
+            "description": "The body of the email message.",
+            "type": "string"
+          },
+          "emailBodyMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "emailSubject": {
+            "description": "The subject line for the email notification.",
+            "type": "string"
+          },
+          "emailSubjectMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "supportedLanguage": {
+            "description": "The language to use for the standard email format and signing view for a recipient.\n\nFor example, this setting determines the language of the recipient's email notification message. It also determines the language used for buttons and tabs in both the email notification and the signing experience.\n\n**Note:** This setting affects only DocuSign standard text. Any custom text that you enter for the `emailBody` and `emailSubject` of the notification is not translated, and appears exactly as you enter it.\n\nTo retrieve the possible values, use the [Accounts::listSupportedLanguages][ListLang] method.\n\n[ListLang]: /docs/esign-rest-api/reference/accounts/accounts/listsupportedlanguages/\n",
+            "type": "string"
+          },
+          "supportedLanguageMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientEmailNotification",
+        "x-ms-summary": "Sets custom email subject and email body for individual\nrecipients. **Note:** You must explicitly set `supportedLanguage`\nif you use this feature.\n"
+      },
+      "propertyMetadata": {
+        "description": "Metadata about a property.",
+        "properties": {
+          "options": {
+            "description": "An array of option strings supported by this setting.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rights": {
+            "description": "Indicates whether the property is editable. Valid values are:\n\n- `editable`\n- `read_only`",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "propertyMetadata",
+        "x-ms-summary": "Metadata about a property."
+      },
+      "idCheckInformationInput": {
+        "description": "A complex element that contains input information related to a recipient ID check.",
+        "properties": {
+          "addressInformationInput": {
+            "$ref": "#/$defs/addressInformationInput"
+          },
+          "dobInformationInput": {
+            "$ref": "#/$defs/dobInformationInput"
+          },
+          "ssn4InformationInput": {
+            "$ref": "#/$defs/ssn4InformationInput"
+          },
+          "ssn9InformationInput": {
+            "$ref": "#/$defs/ssn9InformationInput"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "idCheckInformationInput",
+        "x-ms-summary": "A complex element that contains input information related to a recipient ID check."
+      },
+      "addressInformationInput": {
+        "description": "Contains address input information.",
+        "properties": {
+          "addressInformation": {
+            "$ref": "#/$defs/addressInformation"
+          },
+          "displayLevelCode": {
+            "description": "Specifies the display level for the recipient. Valid values are:\n* `ReadOnly`\n* `Editable`\n* `DoNotDisplay`",
+            "type": "string"
+          },
+          "receiveInResponse": {
+            "description": "A Boolean value that specifies whether the information must be returned in the response.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "addressInformationInput",
+        "x-ms-summary": "Contains address input information."
+      },
+      "addressInformation": {
+        "description": "Contains address information.",
+        "properties": {
+          "address1": {
+            "description": "The first line of the user's address.\nMaximum length: 100 characters.",
+            "type": "string"
+          },
+          "address2": {
+            "description": "The second line of the user's address.\nMaximum length: 100 characters.",
+            "type": "string"
+          },
+          "city": {
+            "description": "The user's city. Maximum length: 40 characters.",
+            "type": "string"
+          },
+          "country": {
+            "description": "The user's country. Maximum length: 50 characters.",
+            "type": "string"
+          },
+          "fax": {
+            "description": "A fax number associated with the address, if one is available.",
+            "type": "string"
+          },
+          "phone": {
+            "description": "A phone number associated with the address.",
+            "type": "string"
+          },
+          "postalCode": {
+            "description": "The user's postal code. Maximum length: 20 characters.",
+            "type": "string"
+          },
+          "stateOrProvince": {
+            "description": "The user's state or province. Maximum length: 40 characters.",
+            "type": "string"
+          },
+          "zipPlus4": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "addressInformation",
+        "x-ms-summary": "Contains address information."
+      },
+      "dobInformationInput": {
+        "description": "Complex type containing:\n\n* dateOfBirth\n* displayLevelCode\n* receiveInResponse",
+        "properties": {
+          "dateOfBirth": {
+            "description": "Specifies the recipient's date, month, and year of birth.",
+            "type": "string"
+          },
+          "displayLevelCode": {
+            "description": "Specifies the display level for the recipient. Valid values are:\n* `ReadOnly`\n* `Editable`\n* `DoNotDisplay`",
+            "type": "string"
+          },
+          "receiveInResponse": {
+            "description": "A Boolean value that specifies whether the information must be returned in the response.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "dobInformationInput",
+        "x-ms-summary": "Complex type containing:\n\n* dateOfBirth\n* displayLevelCode\n* receiveInResponse"
+      },
+      "ssn4InformationInput": {
+        "description": "",
+        "properties": {
+          "displayLevelCode": {
+            "description": "Specifies the display level for the recipient. Valid values are:\n* `ReadOnly`\n* `Editable`\n* `DoNotDisplay`",
+            "type": "string"
+          },
+          "receiveInResponse": {
+            "description": "A Boolean value that specifies whether the information must be returned in the response.",
+            "type": "string"
+          },
+          "ssn4": {
+            "description": "The last four digits of the recipient's Social Security Number (SSN).",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "ssn4InformationInput",
+        "x-ms-summary": ""
+      },
+      "ssn9InformationInput": {
+        "description": "",
+        "properties": {
+          "displayLevelCode": {
+            "description": "Specifies the display level for the recipient. Valid values are:\n* `ReadOnly`\n* `Editable`\n* `DoNotDisplay`",
+            "type": "string"
+          },
+          "ssn9": {
+            "description": "The recipient's full Social Security Number (SSN).",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "ssn9InformationInput",
+        "x-ms-summary": ""
+      },
+      "recipientIdentityVerification": {
+        "description": "Specifies ID Verification applied on an envelope by workflow ID.\nSee the [list](/docs/esign-rest-api/reference/accounts/identityverifications/list/)\nmethod in the [IdentityVerifications](/docs/esign-rest-api/reference/accounts/identityverifications/) resource\nfor more information on how to retrieve workflow IDs available for an account.\nThis can be used in addition to other [recipient authentication](https://support.docusign.com/en/guides/ndse-user-guide-recipient-authentication) methods.",
+        "properties": {
+          "inputOptions": {
+            "description": "",
+            "items": {
+              "$ref": "#/$defs/recipientIdentityInputOption"
+            },
+            "type": "array"
+          },
+          "workflowId": {
+            "description": "ID of the Identity Verification worklow used to verify recipients' identity.\n\nThis ID must match one of the [workflowId](/docs/esign-rest-api/reference/accounts/identityverifications/list/) available to your account.",
+            "type": "string"
+          },
+          "workflowIdMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "workflowLabel": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientIdentityVerification",
+        "x-ms-summary": "Specifies ID Verification applied on an envelope by workflow ID.\nSee the [list](/docs/esign-rest-api/reference/accounts/identityverifications/list/)\nmethod in the [IdentityVerifications](/docs/esign-rest-api/reference/accounts/identityverifications/) resource\nfor more information on how to retrieve workflow IDs available for an account.\nThis can be used in addition to other [recipient authentication](https://support.docusign.com/en/guides/ndse-user-guide-recipient-authentication) methods."
+      },
+      "recipientIdentityInputOption": {
+        "description": "",
+        "properties": {
+          "name": {
+            "description": "",
+            "type": "string"
+          },
+          "phoneNumberList": {
+            "description": "",
+            "items": {
+              "$ref": "#/$defs/recipientIdentityPhoneNumber"
+            },
+            "type": "array"
+          },
+          "valueType": {
+            "description": "",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientIdentityInputOption",
+        "x-ms-summary": ""
+      },
+      "recipientIdentityPhoneNumber": {
+        "description": "",
+        "properties": {
+          "countryCode": {
+            "description": "The numeric country calling code for the phone number. For example, the country calling code for the US and Canada is 1. For the UK, the country calling code is 44.\n\nDo not include the + symbol.",
+            "type": "string"
+          },
+          "countryCodeLock": {
+            "description": "",
+            "type": "string"
+          },
+          "countryCodeMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "extension": {
+            "description": "The telephone extension, if any.",
+            "type": "string"
+          },
+          "extensionMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "number": {
+            "description": "The telephone number. Use only the digits `0`-`9`. Remove any non-numeric characters.\n\nDo not include the `countryCode`. For US, Canada, and other\n[North American Numbering Plan](https://en.wikipedia.org/wiki/North_American_Numbering_Plan) countries, do not include a leading `1` or `0`.",
+            "type": "string"
+          },
+          "numberMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientIdentityPhoneNumber",
+        "x-ms-summary": ""
+      },
+      "recipientPhoneAuthentication": {
+        "description": "A complex type that contains the elements:\n\n* `recipMayProvideNumber`: A Boolean value that specifies whether the recipient can use the phone number of their choice.\n* `senderProvidedNumbers`: A list of phone numbers that the recipient can use.\n* `recordVoicePrint`: Reserved for DocuSign.\n* `validateRecipProvidedNumber`: Reserved for DocuSign.",
+        "properties": {
+          "recipMayProvideNumber": {
+            "description": "Boolean. When **true,** the recipient can supply a phone number their choice.",
+            "type": "string"
+          },
+          "recipMayProvideNumberMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "recordVoicePrint": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "recordVoicePrintMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "senderProvidedNumbers": {
+            "description": "An array containing a list of phone numbers that the recipient can use for SMS text authentication. ",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "senderProvidedNumbersMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "validateRecipProvidedNumber": {
+            "description": " Reserved for DocuSign.",
+            "type": "string"
+          },
+          "validateRecipProvidedNumberMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientPhoneAuthentication",
+        "x-ms-summary": "A complex type that contains the elements:\n\n* `recipMayProvideNumber`: A Boolean value that specifies whether the recipient can use the phone number of their choice.\n* `senderProvidedNumbers`: A list of phone numbers that the recipient can use.\n* `recordVoicePrint`: Reserved for DocuSign.\n* `validateRecipProvidedNumber`: Reserved for DocuSign."
+      },
+      "recipientSignatureProvider": {
+        "description": "An Electronic or Standards Based Signature (digital signature) provider for the signer to use. [More information](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/).\n",
+        "properties": {
+          "sealDocumentsWithTabsOnly": {
+            "description": "By default, electronic seals apply on all documents in an envelope. If any of the documents has a `signHere` tab, then a visual representation of the electronic seal will show up in the final document. If not, the electronic seal will be visible in the metadata but not in the content of the document.\n\nTo apply electronic seals on specific documents only, you must enable the  `sealDocumentsWithTabsOnly` parameter. In this case, Electronic Seal applies only on documents that have `signHere` tabs set for the Electronic Seal recipient. Other documents won't be sealed. ",
+            "type": "string"
+          },
+          "sealName": {
+            "description": "Indicates the name of the electronic seal to apply on documents.\n",
+            "type": "string"
+          },
+          "signatureProviderName": {
+            "description": "The name of an Electronic or Standards Based Signature (digital signature) provider for the signer to use. For details, see [the current provider list](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/). You can also retrieve the list by using the [AccountSignatureProviders: List](/docs/esign-rest-api/reference/accounts/accountsignatureproviders/list/) method.\n\nExample: `universalsignaturepen_default`\n\n",
+            "type": "string"
+          },
+          "signatureProviderNameMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "signatureProviderOptions": {
+            "$ref": "#/$defs/recipientSignatureProviderOptions"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientSignatureProvider",
+        "x-ms-summary": "An Electronic or Standards Based Signature (digital signature) provider for the signer to use. [More information](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/).\n"
+      },
+      "recipientSignatureProviderOptions": {
+        "description": "Option settings for the signature provider. Different providers require or use different options. [The current provider list and the options they require.](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/)",
+        "properties": {
+          "cpfNumber": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          },
+          "cpfNumberMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "oneTimePassword": {
+            "description": "A pre-shared secret that the signer must enter to complete the signing process. Eg last six digits of the signer's government ID or Social Security number. Or a newly created pre-shared secret for the transaction. Note: some signature providers may require an exact (case-sensitive) match if alphabetic characters are included in the field.",
+            "type": "string"
+          },
+          "oneTimePasswordMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "signerRole": {
+            "description": "The role or capacity of the signing recipient. Examples: Manager, Approver, etc.",
+            "type": "string"
+          },
+          "signerRoleMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          },
+          "sms": {
+            "description": "The mobile phone number used to send the recipient an access code for the signing ceremony. Format: a string starting with +, then the country code followed by the full mobile phone number without any spaces or special characters. Omit leading zeroes before a city code. Examples: +14155551234, +97235551234, +33505551234.",
+            "type": "string"
+          },
+          "smsMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientSignatureProviderOptions",
+        "x-ms-summary": "Option settings for the signature provider. Different providers require or use different options. [The current provider list and the options they require.](/docs/esign-rest-api/esign101/concepts/standards-based-signatures/)"
+      },
+      "recipientSMSAuthentication": {
+        "description": "Contains the element senderProvidedNumbers which is an Array  of phone numbers the recipient can use for SMS text authentication.",
+        "properties": {
+          "senderProvidedNumbers": {
+            "description": "An array containing a list of phone numbers that the recipient can use for SMS text authentication. ",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "senderProvidedNumbersMetadata": {
+            "$ref": "#/$defs/propertyMetadata"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "recipientSMSAuthentication",
+        "x-ms-summary": "Contains the element senderProvidedNumbers which is an Array  of phone numbers the recipient can use for SMS text authentication."
+      },
+      "socialAuthentication": {
+        "description": "",
+        "properties": {
+          "authentication": {
+            "description": "Reserved for DocuSign.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "socialAuthentication",
+        "x-ms-summary": ""
+      },
+      "bulkSendingCopyTab": {
+        "description": "A tab associated with the bulk send recipient. In a bulk send request, each recipient tab must match a recipient tab on the envelope or template that you want to send. To match up, the `tabLabel` for this tab and the `tabLabel` for the corresponding tab on the envelope or template must be the same.\n\nFor example, if the envelope has a placeholder text tab with the `tabLabel` `childName`, you must assign the same `tabLabel` `childName` to the tab here that you are populating with that information.",
+        "properties": {
+          "initialValue": {
+            "description": "The initial value that you want to assign to the tab.",
+            "type": "string"
+          },
+          "tabLabel": {
+            "description": "The label associated with the recipient tab. In a bulk send request, the `tabLabel` for this tab and the `tabLabel` for the corresponding tab on the envelope or template must be the same.\n\nMaximum Length: 500 characters.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "x-ds-definition-name": "bulkSendingCopyTab",
+        "x-ms-summary": "A tab associated with the bulk send recipient. In a bulk send request, each recipient tab must match a recipient tab on the envelope or template that you want to send. To match up, the `tabLabel` for this tab and the `tabLabel` for the corresponding tab on the envelope or template must be the same.\n\nFor example, if the envelope has a placeholder text tab with the `tabLabel` `childName`, you must assign the same `tabLabel` `childName` to the tab here that you are populating with that information."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://www.docusign.net/restapi/v2.1/accounts/{accountId}/bulk_send_lists"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object contains the details for the bulk send list.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**bulkCopies**: An array of `bulkCopy` objects. Each object represents an instance or copy of an envelope and contains details such as the recipient, custom fields, tabs, and other information.",
+            "**listId**: The GUID of the bulk send list.",
+            "**name**: The name of the bulk send list."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "This object describes errors that occur. It is only valid for responses and ignored in requests.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errorCode**: The code associated with the error condition.",
+            "**message**: A brief message describing the error condition."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

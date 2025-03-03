@@ -1,0 +1,106 @@
+{
+  "name": "GET_suppression-bounces",
+  "description": "**This endpoint allows you to retrieve all of your bounces.**",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_time": {
+        "type": "integer",
+        "description": "Refers start of the time range in unix timestamp when a bounce was created (inclusive)."
+      },
+      "end_time": {
+        "type": "integer",
+        "description": "Refers end of the time range in unix timestamp when a bounce was created (inclusive)."
+      },
+      "Accept": {
+        "default": "application/json",
+        "type": "string"
+      },
+      "on-behalf-of": {
+        "default": "The subuser's username. This header generates the API call as if the subuser account was making the call.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "Accept"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "http://api.sendgrid.com/v3/suppression/bounces{?start_time,end_time}"
+    },
+    "headers": {
+      "Accept": {
+        "$": "Accept"
+      },
+      "on-behalf-of": {
+        "$": "on-behalf-of"
+      }
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Bounce Response list"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**created**: The unix timestamp for when the bounce record was created at SendGrid.",
+            "**email**: The email address that was added to the bounce list.",
+            "**reason**: The reason for the bounce. This typically will be a bounce code, an enhanced code, and a description.",
+            "**status**: Enhanced SMTP bounce response"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Global Error Response Schema"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**errors**",
+            "**id**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

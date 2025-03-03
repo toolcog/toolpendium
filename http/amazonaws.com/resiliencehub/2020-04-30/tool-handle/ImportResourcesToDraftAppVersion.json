@@ -1,0 +1,290 @@
+{
+  "name": "ImportResourcesToDraftAppVersion",
+  "description": "Imports resources to Resilience Hub application draft version from different input sources. For more information about the input sources supported by Resilience Hub, see <a href=\"https://docs.aws.amazon.com/resilience-hub/latest/userguide/discover-structure.html\">Discover the structure and describe your Resilience Hub application</a>.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "appArn"
+        ],
+        "properties": {
+          "appArn": {
+            "description": "Amazon Resource Name (ARN) of the Resilience Hub application. The format for this ARN is: arn:<code>partition</code>:resiliencehub:<code>region</code>:<code>account</code>:app/<code>app-id</code>. For more information about ARNs, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\"> Amazon Resource Names (ARNs)</a> in the <i>AWS General Reference</i> guide.",
+            "type": "string",
+            "pattern": "^arn:(aws|aws-cn|aws-iso|aws-iso-[a-z]{1}|aws-us-gov):[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:([a-z]{2}-((iso[a-z]{0,1}-)|(gov-)){0,1}[a-z]+-[0-9]):[0-9]{12}:[A-Za-z0-9/][A-Za-z0-9:_/+.-]{0,1023}$"
+          },
+          "eksSources": {
+            "description": "The input sources of the Amazon Elastic Kubernetes Service resources you need to import.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/EksSource"
+            }
+          },
+          "importStrategy": {
+            "description": "The import strategy you would like to set to import resources into Resilience Hub application.",
+            "type": "string",
+            "enum": [
+              "AddOnly",
+              "ReplaceAll"
+            ]
+          },
+          "sourceArns": {
+            "description": "The Amazon Resource Names (ARNs) for the resources.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Arn"
+            }
+          },
+          "terraformSources": {
+            "description": " A list of terraform file s3 URLs you need to import. ",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TerraformSource"
+            }
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "EksSource": {
+        "type": "object",
+        "required": [
+          "eksClusterArn",
+          "namespaces"
+        ],
+        "properties": {
+          "eksClusterArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "Amazon Resource Name (ARN) of the Amazon Elastic Kubernetes Service cluster. The format for this ARN is: arn:<code>aws</code>:eks:<code>region</code>:<code>account-id</code>:cluster/<code>cluster-name</code>. For more information about ARNs, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\"> Amazon Resource Names (ARNs)</a> in the <i>AWS General Reference</i> guide."
+              }
+            ]
+          },
+          "namespaces": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/EksNamespaceList"
+              },
+              {
+                "description": "The list of namespaces located on your Amazon Elastic Kubernetes Service cluster."
+              }
+            ]
+          }
+        },
+        "description": "The input source of the Amazon Elastic Kubernetes Service cluster."
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "^arn:(aws|aws-cn|aws-iso|aws-iso-[a-z]{1}|aws-us-gov):[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:([a-z]{2}-((iso[a-z]{0,1}-)|(gov-)){0,1}[a-z]+-[0-9]):[0-9]{12}:[A-Za-z0-9/][A-Za-z0-9:_/+.-]{0,1023}$"
+      },
+      "EksNamespaceList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EksNamespace"
+        }
+      },
+      "EksNamespace": {
+        "type": "string",
+        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
+        "minLength": 1,
+        "maxLength": 63
+      },
+      "TerraformSource": {
+        "type": "object",
+        "required": [
+          "s3StateFileUrl"
+        ],
+        "properties": {
+          "s3StateFileUrl": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/S3Url"
+              },
+              {
+                "description": " The URL of the Terraform s3 state file you need to import. "
+              }
+            ]
+          }
+        },
+        "description": " The Terraform s3 state file you need to import. "
+      },
+      "S3Url": {
+        "type": "string",
+        "pattern": "^((https://([^/]+)\\.s3((-|\\.)[^/]+)?\\.amazonaws\\.com(.cn)?)|(s3://([^/]+)))/\\S{1,2000}$",
+        "minLength": 0,
+        "maxLength": 2000
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://resiliencehub.us-east-1.amazonaws.com/import-resources-to-draft-app-version"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**appArn**",
+            "**appVersion**",
+            "**eksSources**",
+            "**sourceArns**",
+            "**status**",
+            "**terraformSources**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "486": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

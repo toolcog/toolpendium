@@ -1,0 +1,97 @@
+{
+  "name": "ipam_prefixes_available-ips_create",
+  "description": "A convenience method for returning available IP addresses within a prefix. By default, the number of IPs\nreturned will be equivalent to PAGINATE_COUNT. An arbitrary limit (up to MAX_PAGE_SIZE, if set) may be passed,\nhowever results will not be paginated.\n\nThe advisory lock decorator uses a PostgreSQL advisory lock to prevent this API from being\ninvoked in parallel, which results in a race condition where multiple insertions can occur.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "A unique integer value identifying this prefix."
+      },
+      "body": {
+        "$ref": "#/$defs/WritableAvailableIP"
+      }
+    },
+    "required": [
+      "id",
+      "body"
+    ],
+    "$defs": {
+      "WritableAvailableIP": {
+        "properties": {
+          "address": {
+            "minLength": 1,
+            "readOnly": true,
+            "title": "Address",
+            "type": "string"
+          },
+          "family": {
+            "readOnly": true,
+            "title": "Family",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://netboxdemo.com/api/ipam/prefixes/{id}/available-ips/"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**address**",
+            "**family**",
+            [
+              "**vrf**",
+              {
+                "$ul": [
+                  "**id**",
+                  "**name**",
+                  "**prefix_count**",
+                  "**rd**: Unique route distinguisher (as defined in RFC 4364)",
+                  "**url**"
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": "Item"
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

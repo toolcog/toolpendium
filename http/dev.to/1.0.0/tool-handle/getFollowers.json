@@ -1,0 +1,78 @@
+{
+  "name": "getFollowers",
+  "description": "This endpoint allows the client to retrieve a list of the followers they have.\n        \"Followers\" are users that are following other users on the website.\n        It supports pagination, each page will contain 80 followers by default.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "page": {
+        "default": 1,
+        "format": "int32",
+        "minimum": 1,
+        "type": "integer",
+        "description": "Pagination page"
+      },
+      "per_page": {
+        "default": 30,
+        "format": "int32",
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer",
+        "description": "Page size (the number of items to return per page). The default maximum value can be overridden by \"API_PER_PAGE_MAX\" environment variable."
+      },
+      "sort": {
+        "type": "string",
+        "description": "Default is 'created_at'. Specifies the sort order for the created_at param of the follow\n                                relationship. To sort by newest followers first (descending order) specify\n                                ?sort=-created_at."
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "GET",
+    "url": {
+      "$uri": "https://dev.to/api/api/followers/users{?page,per_page,sort}"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "List"
+        },
+        "A follower",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**id**",
+            "**name**: The follower's name",
+            "**path**: A path to the follower's profile",
+            "**profile_image**: Profile image (640x640)",
+            "**type_of**: user_follower by default",
+            "**user_id**: The follower's user id"
+          ]
+        },
+        {
+          "$each": "$.body.*",
+          "$as": "item",
+          "$block": [
+            {
+              "$h2": {
+                "$": "$.item.name"
+              }
+            },
+            {
+              "$lang": "json",
+              "$code": {
+                "$encode": "json",
+                "$indent": true,
+                "$content": {
+                  "$": "$.item"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

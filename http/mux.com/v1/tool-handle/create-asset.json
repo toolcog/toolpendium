@@ -1,0 +1,339 @@
+{
+  "name": "create-asset",
+  "description": "Create a new Mux Video asset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "body": {
+        "$ref": "#/$defs/CreateAssetRequest"
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "CreateAssetRequest": {
+        "properties": {
+          "encoding_tier": {
+            "description": "The encoding tier informs the cost, quality, and available platform features for the asset. By default the `smart` encoding tier is used.",
+            "enum": [
+              "smart",
+              "baseline"
+            ],
+            "type": "string",
+            "x-mux-doc-decorators": [
+              "hidden"
+            ]
+          },
+          "input": {
+            "description": "An array of objects that each describe an input file to be used to create the asset. As a shortcut, input can also be a string URL for a file when only one input file is used. See `input[].url` for requirements.",
+            "items": {
+              "$ref": "#/$defs/InputSettings"
+            },
+            "type": "array"
+          },
+          "master_access": {
+            "description": "Specify what level (if any) of support for master access. Master access can be enabled temporarily for your asset to be downloaded. See the [Download your videos guide](/guides/video/download-your-videos) for more information.",
+            "enum": [
+              "none",
+              "temporary"
+            ],
+            "type": "string"
+          },
+          "max_resolution_tier": {
+            "description": "Max resolution tier can be used to control the maximum `resolution_tier` your asset is encoded, stored, and streamed at. If not set, this defaults to `1080p`.",
+            "enum": [
+              "1080p",
+              "1440p",
+              "2160p"
+            ],
+            "type": "string"
+          },
+          "mp4_support": {
+            "description": "Specify what level (if any) of support for mp4 playback. In most cases you should use our default HLS-based streaming playback ({playback_id}.m3u8) which can automatically adjust to viewers' connection speeds, but an mp4 can be useful for some legacy devices or downloading for offline playback. See the [Download your videos guide](/guides/video/download-your-videos) for more information.",
+            "enum": [
+              "none",
+              "standard"
+            ],
+            "type": "string"
+          },
+          "normalize_audio": {
+            "default": false,
+            "description": "Normalize the audio track loudness level. This parameter is only applicable to on-demand (not live) assets.",
+            "format": "boolean",
+            "type": "boolean"
+          },
+          "passthrough": {
+            "description": "Arbitrary user-supplied metadata that will be included in the asset details and related webhooks. Can be used to store your own ID for a video along with the asset. **Max: 255 characters**.",
+            "type": "string"
+          },
+          "per_title_encode": {
+            "deprecated": true,
+            "format": "boolean",
+            "type": "boolean",
+            "x-mux-doc-decorators": [
+              "hidden"
+            ]
+          },
+          "playback_policy": {
+            "description": "An array of playback policy names that you want applied to this asset and available through `playback_ids`. Options include: `\"public\"` (anyone with the playback URL can stream the asset). And `\"signed\"` (an additional access token is required to play the asset). If no playback_policy is set, the asset will have no playback IDs and will therefore not be playable. For simplicity, a single string name can be used in place of the array in the case of only one playback policy.",
+            "items": {
+              "$ref": "#/$defs/PlaybackPolicy"
+            },
+            "type": "array"
+          },
+          "test": {
+            "description": "Marks the asset as a test asset when the value is set to true. A Test asset can help evaluate the Mux Video APIs without incurring any cost. There is no limit on number of test assets created. Test asset are watermarked with the Mux logo, limited to 10 seconds, deleted after 24 hrs.",
+            "format": "boolean",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "InputSettings": {
+        "description": "An array of objects that each describe an input file to be used to create the asset. As a shortcut, `input` can also be a string URL for a file when only one input file is used. See `input[].url` for requirements.",
+        "properties": {
+          "closed_captions": {
+            "description": "Indicates the track provides Subtitles for the Deaf or Hard-of-hearing (SDH). This optional parameter should be used for tracks with `type` of `text` and `text_type` set to `subtitles`.",
+            "type": "boolean"
+          },
+          "end_time": {
+            "description": "The time offset in seconds from the beginning of the video, indicating the clip's ending marker. The default value is the duration of the video when not included. This parameter is only applicable for creating clips when `input.url` has `mux://assets/{asset_id}` format.",
+            "format": "double",
+            "type": "number"
+          },
+          "generated_subtitles": {
+            "description": "Generate subtitle tracks using automatic speech recognition using this configuration. This may only be provided for the first input object (the main input file). For direct uploads, this first input should omit the url parameter, as the main input file is provided via the direct upload. This will create subtitles based on the audio track ingested from that main input file. Note that subtitle generation happens after initial ingest, so the generated tracks will be in the `preparing` state when the asset transitions to `ready`.",
+            "items": {
+              "$ref": "#/$defs/AssetGeneratedSubtitleSettings"
+            },
+            "type": "array"
+          },
+          "language_code": {
+            "description": "The language code value must be a valid [BCP 47](https://tools.ietf.org/html/bcp47) specification compliant value. For example, `en` for English or `en-US` for the US version of English. This parameter is required for `text` and `audio` track types.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the track containing a human-readable description. This value must be unique within each group of `text` or `audio` track types. The HLS manifest will associate a subtitle text track with this value. For example, the value should be \"English\" for a subtitle text track with `language_code` set to `en`. This optional parameter should be used only for `text` and `audio` type tracks. This parameter can be optionally provided for the first video input to denote the name of the muxed audio track if present. If this parameter is not included, Mux will auto-populate based on the `input[].language_code` value.",
+            "type": "string"
+          },
+          "overlay_settings": {
+            "description": "An object that describes how the image file referenced in URL should be placed over the video (i.e. watermarking). Ensure that the URL is active and persists the entire lifespan of the video object.",
+            "properties": {
+              "height": {
+                "description": "How tall the overlay should appear. Can be expressed as a percent (\"10%\") or as a pixel value (\"100px\"). If both width and height are left blank the height will be the true pixels of the image, applied as if the video has been scaled to fit a 1920x1080 frame. If width is supplied with no height, the height will scale proportionally to the width.",
+                "type": "string"
+              },
+              "horizontal_align": {
+                "description": "Where the horizontal positioning of the overlay/watermark should begin from.",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "type": "string"
+              },
+              "horizontal_margin": {
+                "description": "The distance from the horizontal_align starting point and the image's closest edge. Can be expressed as a percent (\"10%\") or as a pixel value (\"100px\"). Negative values will move the overlay offscreen. In the case of 'center', a positive value will shift the image towards the right and and a negative value will shift it towards the left.",
+                "type": "string"
+              },
+              "opacity": {
+                "description": "How opaque the overlay should appear, expressed as a percent. (Default 100%)",
+                "type": "string"
+              },
+              "vertical_align": {
+                "description": "Where the vertical positioning of the overlay/watermark should begin from. Defaults to `\"top\"`",
+                "enum": [
+                  "top",
+                  "middle",
+                  "bottom"
+                ],
+                "type": "string"
+              },
+              "vertical_margin": {
+                "description": "The distance from the vertical_align starting point and the image's closest edge. Can be expressed as a percent (\"10%\") or as a pixel value (\"100px\"). Negative values will move the overlay offscreen. In the case of 'middle', a positive value will shift the overlay towards the bottom and and a negative value will shift it towards the top.",
+                "type": "string"
+              },
+              "width": {
+                "description": "How wide the overlay should appear. Can be expressed as a percent (\"10%\") or as a pixel value (\"100px\"). If both width and height are left blank the width will be the true pixels of the image, applied as if the video has been scaled to fit a 1920x1080 frame. If height is supplied with no width, the width will scale proportionally to the height.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "passthrough": {
+            "description": "This optional parameter should be used tracks with `type` of `text` and `text_type` set to `subtitles`.",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "The time offset in seconds from the beginning of the video indicating the clip's starting marker. The default value is 0 when not included. This parameter is only applicable for creating clips when `input.url` has `mux://assets/{asset_id}` format.",
+            "format": "double",
+            "type": "number"
+          },
+          "text_type": {
+            "description": "Type of text track. This parameter only supports subtitles value. For more information on Subtitles / Closed Captions, [see this blog post](https://mux.com/blog/subtitles-captions-webvtt-hls-and-those-magic-flags/). This parameter is required for `text` type tracks.",
+            "enum": [
+              "subtitles"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "This parameter is required for `text` type tracks.",
+            "enum": [
+              "video",
+              "audio",
+              "text"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "description": "The URL of the file that Mux should download and use.\n* For the main input file, this should be the URL to the muxed file for Mux to download, for example an MP4, MOV, MKV, or TS file. Mux supports most audio/video file formats and codecs, but for fastest processing, you should [use standard inputs wherever possible](https://docs.mux.com/guides/video/minimize-processing-time).\n* For `audio` tracks, the URL is the location of the audio file for Mux to download, for example an M4A, WAV, or MP3 file. Mux supports most audio file formats and codecs, but for fastest processing, you should [use standard inputs wherever possible](https://docs.mux.com/guides/video/minimize-processing-time).\n* For `text` tracks, the URL is the location of subtitle/captions file. Mux supports [SubRip Text (SRT)](https://en.wikipedia.org/wiki/SubRip) and [Web Video Text Tracks](https://www.w3.org/TR/webvtt1/) formats for ingesting Subtitles and Closed Captions.\n* For Watermarking or Overlay, the URL is the location of the watermark image.\n* When creating clips from existing Mux assets, the URL is defined with `mux://assets/{asset_id}` template where `asset_id` is the Asset Identifier for creating the clip from.\nThe url property may be omitted on the first input object when providing asset settings for LiveStream and Upload objects, in order to configure settings related to the primary (live stream or direct upload) input.\n",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetGeneratedSubtitleSettings": {
+        "properties": {
+          "language_code": {
+            "default": "en",
+            "description": "The language to generate subtitles in.",
+            "enum": [
+              "en",
+              "en-US"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "description": "A name for this subtitle track.",
+            "type": "string"
+          },
+          "passthrough": {
+            "description": "Arbitrary metadata set for the subtitle track. Max 255 characters.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PlaybackPolicy": {
+        "description": "* `public` playback IDs are accessible by constructing an HLS URL like `https://stream.mux.com/${PLAYBACK_ID}`\n\n* `signed` playback IDs should be used with tokens `https://stream.mux.com/${PLAYBACK_ID}?token={TOKEN}`. See [Secure video playback](https://docs.mux.com/guides/video/secure-video-playback) for details about creating tokens.\n",
+        "enum": [
+          "public",
+          "signed"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://api.mux.com/video/v1/assets"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            [
+              "**data**",
+              {
+                "$ul": [
+                  "**aspect_ratio**: The aspect ratio of the asset in the form of `width:height`, for example `16:9`.",
+                  "**created_at**: Time the Asset was created, defined as a Unix timestamp (seconds since epoch).",
+                  "**duration**: The duration of the asset in seconds (max duration for a single asset is 12 hours).",
+                  "**encoding_tier**: The encoding tier informs the cost, quality, and available platform features for the asset. By default the `smart` encoding tier is used.",
+                  [
+                    "**errors**: Object that describes any errors that happened when processing this asset.",
+                    {
+                      "$ul": [
+                        "**messages**: Error messages with more details.",
+                        "**type**: The type of error that occurred for this asset."
+                      ]
+                    }
+                  ],
+                  "**id**: Unique identifier for the Asset. Max 255 characters.",
+                  "**is_live**: Indicates whether the live stream that created this asset is currently `active` and not in `idle` state. This is an optional parameter added when the asset is created from a live stream.",
+                  "**live_stream_id**: Unique identifier for the live stream. This is an optional parameter added when the asset is created from a live stream.",
+                  [
+                    "**master**: An object containing the current status of Master Access and the link to the Master MP4 file when ready. This object does not exist if `master_acess` is set to `none` and when the temporary URL expires.",
+                    {
+                      "$ul": [
+                        "**status**",
+                        "**url**: The temporary URL to the master version of the video, as an MP4 file. This URL will expire after 24 hours."
+                      ]
+                    }
+                  ],
+                  "**master_access** (default: none)",
+                  "**max_resolution_tier**: Max resolution tier can be used to control the maximum `resolution_tier` your asset is encoded, stored, and streamed at. If not set, this defaults to `1080p`.",
+                  "**max_stored_frame_rate**: The maximum frame rate that has been stored for the asset. The asset may be delivered at lower frame rates depending on the device and bandwidth, however it cannot be delivered at a higher value than is stored. This field may return -1 if the frame rate of the input cannot be reliably determined.",
+                  "**max_stored_resolution**: This field is deprecated. Please use `resolution_tier` instead. The maximum resolution that has been stored for the asset. The asset may be delivered at lower resolutions depending on the device and bandwidth, however it cannot be delivered at a higher value than is stored.",
+                  "**mp4_support** (default: none)",
+                  [
+                    "**non_standard_input_reasons**: An object containing one or more reasons the input file is non-standard. See [the guide on minimizing processing time](https://docs.mux.com/guides/video/minimize-processing-time) for more information on what a standard input is defined as. This object only exists on on-demand assets that have non-standard inputs, so if missing you can assume the input qualifies as standard.",
+                    {
+                      "$ul": [
+                        "**audio_codec**: The audio codec used on the input file. Non-AAC audio codecs are non-standard.",
+                        "**audio_edit_list**: Audio Edit List reason indicates that the input file's audio track contains a complex Edit Decision List.",
+                        "**pixel_aspect_ratio**: The video pixel aspect ratio of the input file.",
+                        "**unexpected_media_file_parameters**: A catch-all reason when the input file in created with non-standard encoding parameters.",
+                        "**unsupported_pixel_format**: The video pixel format, as a string, returned by libav. Considered non-standard if not one of yuv420p or yuvj420p.",
+                        "**video_bitrate**: The video bitrate of the input file is `high`. This parameter is present when the average bitrate of any key frame interval (also known as Group of Pictures or GOP) is higher than what's considered standard which typically is 16 Mbps.",
+                        "**video_codec**: The video codec used on the input file. For example, the input file encoded with `hevc` video codec is non-standard and the value of this parameter is `hevc`.",
+                        "**video_edit_list**: Video Edit List reason indicates that the input file's video track contains a complex Edit Decision List.",
+                        "**video_frame_rate**: The video frame rate of the input file. Video with average frames per second (fps) less than 5 or greater than 120 is non-standard. A `-1` frame rate value indicates Mux could not determine the frame rate of the video track.",
+                        "**video_gop_size**: The video key frame Interval (also called as Group of Picture or GOP) of the input file is `high`. This parameter is present when the gop is greater than 20 seconds.",
+                        "**video_resolution**: The video resolution of the input file. Video resolution higher than 2048 pixels on any one dimension (height or width) is considered non-standard, The resolution value is presented as `width` x `height` in pixels."
+                      ]
+                    }
+                  ],
+                  "**normalize_audio**: Normalize the audio track loudness level. This parameter is only applicable to on-demand (not live) assets. (default: false)",
+                  "**passthrough**: Arbitrary user-supplied metadata set for the asset. Max 255 characters.",
+                  "**per_title_encode**",
+                  "**playback_ids**: An array of Playback ID objects. Use these to create HLS playback URLs. See [Play your videos](https://docs.mux.com/guides/video/play-your-videos) for more details.",
+                  "**recording_times**: An array of individual live stream recording sessions. A recording session is created on each encoder connection during the live stream. Additionally any time slate media is inserted during brief interruptions in the live stream media or times when the live streaming software disconnects, a recording session representing the slate media will be added with a \"slate\" type.",
+                  "**resolution_tier**: The resolution tier that the asset was ingested at, affecting billing for ingest & storage. This field also represents the highest resolution tier that the content can be delivered at, however the actual resolution may be lower depending on the device, bandwidth, and exact resolution of the uploaded asset.",
+                  "**source_asset_id**: Asset Identifier of the video used as the source for creating the clip.",
+                  [
+                    "**static_renditions**: An object containing the current status of any static renditions (mp4s). The object does not exist if no static renditions have been requested. See [Download your videos](https://docs.mux.com/guides/video/download-your-videos) for more information.",
+                    {
+                      "$ul": [
+                        "**files**: Array of file objects.",
+                        "**status**: Indicates the status of downloadable MP4 versions of this asset. (default: disabled)"
+                      ]
+                    }
+                  ],
+                  "**status**: The status of the asset.",
+                  "**test**: True means this live stream is a test asset. A test asset can help evaluate the Mux Video APIs without incurring any cost. There is no limit on number of test assets created. Test assets are watermarked with the Mux logo, limited to 10 seconds, and deleted after 24 hrs.",
+                  "**tracks**: The individual media tracks that make up an asset.",
+                  "**upload_id**: Unique identifier for the Direct Upload. This is an optional parameter added when the asset is created from a direct upload."
+                ]
+              }
+            ]
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

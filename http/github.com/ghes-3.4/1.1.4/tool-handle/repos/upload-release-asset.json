@@ -1,0 +1,106 @@
+{
+  "name": "repos_upload-release-asset",
+  "description": "This endpoint makes use of [a Hypermedia relation](https://docs.github.com/enterprise-server@3.4/rest/overview/resources-in-the-rest-api#hypermedia) to determine which URL to access. The endpoint you call to upload release assets is specific to your release. Use the `upload_url` returned in\nthe response of the [Create a release endpoint](https://docs.github.com/enterprise-server@3.4/rest/releases/releases#create-a-release) to upload a release asset.\n\nYou need to use an HTTP client which supports [SNI](http://en.wikipedia.org/wiki/Server_Name_Indication) to make calls to this endpoint.\n\nMost libraries will set the required `Content-Length` header automatically. Use the required `Content-Type` header to provide the media type of the asset. For a list of media types, see [Media Types](https://www.iana.org/assignments/media-types/media-types.xhtml). For example: \n\n`application/zip`\n\nGitHub Enterprise Server expects the asset data in its raw binary form, rather than JSON. You will send the raw binary content of the asset as the request body. Everything else about the endpoint is the same as the rest of the API. For example,\nyou'll still need to pass your authentication to be able to upload an asset.\n\nWhen an upstream failure occurs, you will receive a `502 Bad Gateway` status. This may leave an empty asset with a state of `starter`. It can be safely deleted.\n\n**Notes:**\n*   GitHub Enterprise Server renames asset filenames that have special characters, non-alphanumeric characters, and leading or trailing periods. The \"[List assets for a release](https://docs.github.com/enterprise-server@3.4/rest/reference/repos#list-assets-for-a-release)\"\nendpoint lists the renamed filenames. For more information and help, contact [GitHub Enterprise Server Support](https://support.github.com/contact?tags=dotcom-rest-api).\n*   To find the `release_id` query the [`GET /repos/{owner}/{repo}/releases/latest` endpoint](https://docs.github.com/enterprise-server@3.4/rest/releases/releases#get-the-latest-release). \n*   If you upload an asset with the same filename as another uploaded asset, you'll receive an error and must delete the old file before you can re-upload the new asset.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "owner": {
+        "type": "string",
+        "description": "The account owner of the repository. The name is not case sensitive."
+      },
+      "repo": {
+        "type": "string",
+        "description": "The name of the repository. The name is not case sensitive."
+      },
+      "release_id": {
+        "type": "integer",
+        "description": "The unique identifier of the release."
+      },
+      "name": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "owner",
+      "repo",
+      "release_id",
+      "name"
+    ]
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "https://uploads.github.com/repos/{owner}/{repo}/releases/{release_id}/assets{?name,label}"
+    }
+  },
+  "responses": {
+    "201": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Release Asset"
+        },
+        "Data related to a release.",
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**browser_download_url**",
+            "**content_type**",
+            "**created_at**",
+            "**download_count**",
+            "**id**",
+            "**label**",
+            "**name**: The file name of the asset.",
+            "**node_id**",
+            "**size**",
+            "**state**: State of the release asset.",
+            "**updated_at**",
+            [
+              "**uploader**: A GitHub user.",
+              {
+                "$ul": [
+                  "**avatar_url**",
+                  "**email**",
+                  "**events_url**",
+                  "**followers_url**",
+                  "**following_url**",
+                  "**gists_url**",
+                  "**gravatar_id**",
+                  "**html_url**",
+                  "**id**",
+                  "**login**",
+                  "**name**",
+                  "**node_id**",
+                  "**organizations_url**",
+                  "**received_events_url**",
+                  "**repos_url**",
+                  "**site_admin**",
+                  "**starred_at**",
+                  "**starred_url**",
+                  "**subscriptions_url**",
+                  "**type**",
+                  "**url**"
+                ]
+              }
+            ],
+            "**url**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

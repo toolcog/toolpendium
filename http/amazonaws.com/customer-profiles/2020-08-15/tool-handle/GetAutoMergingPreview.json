@@ -1,0 +1,247 @@
+{
+  "name": "GetAutoMergingPreview",
+  "description": "<p>Tests the auto-merging settings of your Identity Resolution Job without merging your data. It randomly selects a sample of matching groups from the existing matching results, and applies the automerging settings that you provided. You can then view the number of profiles in the sample, the number of matches, and the number of profiles identified to be merged. This enables you to evaluate the accuracy of the attributes in your matching list. </p> <p>You can't view which profiles are matched and would be merged.</p> <important> <p>We strongly recommend you use this API to do a dry run of the automerging process before running the Identity Resolution Job. Include <b>at least</b> two matching attributes. If your matching list includes too few attributes (such as only <code>FirstName</code> or only <code>LastName</code>), there may be a large number of matches. This increases the chances of erroneous merges.</p> </important>",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "DomainName": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "The unique name of the domain."
+      },
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "Consolidation",
+          "ConflictResolution"
+        ],
+        "properties": {
+          "Consolidation": {
+            "description": "The matching criteria to be used during the auto-merging process. ",
+            "type": "object",
+            "properties": {
+              "MatchingAttributesList": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/MatchingAttributesList"
+                  },
+                  {
+                    "description": "A list of matching criteria."
+                  }
+                ]
+              }
+            }
+          },
+          "ConflictResolution": {
+            "description": "How the auto-merging process should resolve conflicts between different profiles.",
+            "type": "object",
+            "properties": {
+              "ConflictResolvingModel": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ConflictResolvingModel"
+                  },
+                  {
+                    "description": "<p>How the auto-merging process should resolve conflicts between different profiles.</p> <ul> <li> <p> <code>RECENCY</code>: Uses the data that was most recently updated.</p> </li> <li> <p> <code>SOURCE</code>: Uses the data from a specific source. For example, if a company has been aquired or two departments have merged, data from the specified source is used. If two duplicate profiles are from the same source, then <code>RECENCY</code> is used again.</p> </li> </ul>"
+                  }
+                ]
+              },
+              "SourceName": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/string1To255"
+                  },
+                  {
+                    "description": "The <code>ObjectType</code> name that is used to resolve profile merging conflicts when choosing <code>SOURCE</code> as the <code>ConflictResolvingModel</code>."
+                  }
+                ]
+              }
+            }
+          },
+          "MinAllowedConfidenceScoreForMerging": {
+            "description": "Minimum confidence score required for profiles within a matching group to be merged during the auto-merge process.",
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "required": [
+      "DomainName",
+      "body"
+    ],
+    "$defs": {
+      "MatchingAttributesList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/MatchingAttributes"
+        },
+        "minItems": 1,
+        "maxItems": 10
+      },
+      "MatchingAttributes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/string1To255"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      },
+      "string1To255": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "ConflictResolvingModel": {
+        "type": "string",
+        "enum": [
+          "RECENCY",
+          "SOURCE"
+        ]
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://profile.us-east-1.amazonaws.com/domains/{DomainName}/identity-resolution-jobs/auto-merging-preview"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**DomainName**",
+            "**NumberOfMatchesInSample**",
+            "**NumberOfProfilesInSample**",
+            "**NumberOfProfilesWillBeMerged**"
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

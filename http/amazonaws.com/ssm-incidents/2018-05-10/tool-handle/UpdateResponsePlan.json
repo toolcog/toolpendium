@@ -1,0 +1,580 @@
+{
+  "name": "UpdateResponsePlan",
+  "description": "Updates the specified response plan.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "X-Amz-Content-Sha256": {
+        "type": "string"
+      },
+      "X-Amz-Date": {
+        "type": "string"
+      },
+      "X-Amz-Algorithm": {
+        "type": "string"
+      },
+      "X-Amz-Credential": {
+        "type": "string"
+      },
+      "X-Amz-Security-Token": {
+        "type": "string"
+      },
+      "X-Amz-Signature": {
+        "type": "string"
+      },
+      "X-Amz-SignedHeaders": {
+        "type": "string"
+      },
+      "body": {
+        "type": "object",
+        "required": [
+          "arn"
+        ],
+        "properties": {
+          "actions": {
+            "description": "The actions that this response plan takes at the beginning of an incident.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Action"
+            },
+            "minItems": 0,
+            "maxItems": 1
+          },
+          "arn": {
+            "description": "The Amazon Resource Name (ARN) of the response plan.",
+            "type": "string",
+            "pattern": "^arn:aws(-cn|-us-gov)?:[a-z0-9-]*:[a-z0-9-]*:([0-9]{12})?:.+$",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "chatChannel": {
+            "description": "The Chatbot chat channel used for collaboration during an incident.",
+            "type": "object",
+            "properties": {
+              "chatbotSns": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/ChatbotSnsConfigurationSet"
+                  },
+                  {
+                    "description": "The Amazon SNS targets that Chatbot uses to notify the chat channel of updates to an incident. You can also make updates to the incident through the chat channel by using the Amazon SNS topics. "
+                  }
+                ]
+              },
+              "empty": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/EmptyChatChannel"
+                  },
+                  {
+                    "description": "Used to remove the chat channel from an incident record or response plan."
+                  }
+                ]
+              }
+            }
+          },
+          "clientToken": {
+            "description": "A token ensuring that the operation is called only once with the specified details.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 128
+          },
+          "displayName": {
+            "description": "The long format name of the response plan. The display name can't contain spaces.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "engagements": {
+            "description": "The Amazon Resource Name (ARN) for the contacts and escalation plans that the response plan engages during an incident.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/SsmContactsArn"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "incidentTemplateDedupeString": {
+            "description": "The string Incident Manager uses to prevent duplicate incidents from being created by the same incident in the same account.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "incidentTemplateImpact": {
+            "description": "<p>Defines the impact to the customers. Providing an impact overwrites the impact provided by a response plan.</p> <p class=\"title\"> <b>Possible impacts:</b> </p> <ul> <li> <p> <code>5</code> - Severe impact</p> </li> <li> <p> <code>4</code> - High impact</p> </li> <li> <p> <code>3</code> - Medium impact</p> </li> <li> <p> <code>2</code> - Low impact</p> </li> <li> <p> <code>1</code> - No impact</p> </li> </ul>",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "incidentTemplateNotificationTargets": {
+            "description": "The Amazon SNS targets that are notified when updates are made to an incident.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/NotificationTargetItem"
+            },
+            "minItems": 0,
+            "maxItems": 10
+          },
+          "incidentTemplateSummary": {
+            "description": "A brief summary of the incident. This typically contains what has happened, what's currently happening, and next steps.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 8000
+          },
+          "incidentTemplateTags": {
+            "description": "Tags to assign to the template. When the <code>StartIncident</code> API action is called, Incident Manager assigns the tags specified in the template to the incident. To call this action, you must also have permission to call the <code>TagResource</code> API action for the incident record resource.",
+            "type": "object",
+            "minProperties": 0,
+            "maxProperties": 50,
+            "additionalProperties": {
+              "$ref": "#/$defs/TagValue"
+            }
+          },
+          "incidentTemplateTitle": {
+            "description": "The short format name of the incident. The title can't contain spaces.",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "integrations": {
+            "description": "Information about third-party services integrated into the response plan.",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Integration"
+            },
+            "minItems": 0,
+            "maxItems": 1
+          }
+        }
+      }
+    },
+    "required": [
+      "body"
+    ],
+    "$defs": {
+      "Action": {
+        "type": "object",
+        "properties": {
+          "ssmAutomation": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmAutomation"
+              },
+              {
+                "description": "The Systems Manager automation document to start as the runbook at the beginning of the incident."
+              }
+            ]
+          }
+        },
+        "description": "The action that starts at the beginning of an incident. The response plan defines the action."
+      },
+      "SsmAutomation": {
+        "type": "object",
+        "required": [
+          "documentName",
+          "roleArn"
+        ],
+        "properties": {
+          "documentName": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmAutomationDocumentNameString"
+              },
+              {
+                "description": "The automation document's name."
+              }
+            ]
+          },
+          "documentVersion": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmAutomationDocumentVersionString"
+              },
+              {
+                "description": "The automation document's version to use when running."
+              }
+            ]
+          },
+          "dynamicParameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/DynamicSsmParameters"
+              },
+              {
+                "description": "The key-value pair to resolve dynamic parameter values when processing a Systems Manager Automation runbook."
+              }
+            ]
+          },
+          "parameters": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmParameters"
+              },
+              {
+                "description": "The key-value pair parameters to use when running the automation document."
+              }
+            ]
+          },
+          "roleArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/RoleArn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the role that the automation document will assume when running commands."
+              }
+            ]
+          },
+          "targetAccount": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/SsmTargetAccount"
+              },
+              {
+                "description": "The account that the automation document will be run in. This can be in either the management account or an application account."
+              }
+            ]
+          }
+        },
+        "description": "Details about the Systems Manager automation document that will be used as a runbook during an incident."
+      },
+      "SsmAutomationDocumentNameString": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_\\-.:/]{3,128}$"
+      },
+      "SsmAutomationDocumentVersionString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 128
+      },
+      "DynamicSsmParameters": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 200,
+        "additionalProperties": {
+          "$ref": "#/$defs/DynamicSsmParameterValue"
+        }
+      },
+      "DynamicSsmParameterValue": {
+        "type": "object",
+        "properties": {
+          "variable": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/VariableType"
+              },
+              {
+                "description": "Variable dynamic parameters. A parameter value is determined when an incident is created."
+              }
+            ]
+          }
+        },
+        "description": "The dynamic SSM parameter value."
+      },
+      "VariableType": {
+        "type": "string",
+        "enum": [
+          "INCIDENT_RECORD_ARN",
+          "INVOLVED_RESOURCES"
+        ]
+      },
+      "SsmParameters": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 200,
+        "additionalProperties": {
+          "$ref": "#/$defs/SsmParameterValues"
+        }
+      },
+      "SsmParameterValues": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SsmParameterValuesMemberString"
+        },
+        "minItems": 0,
+        "maxItems": 100
+      },
+      "SsmParameterValuesMemberString": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 512
+      },
+      "RoleArn": {
+        "type": "string",
+        "pattern": "^arn:aws(-cn|-us-gov)?:iam::([0-9]{12})?:role/.+$",
+        "minLength": 0,
+        "maxLength": 1000
+      },
+      "SsmTargetAccount": {
+        "type": "string",
+        "enum": [
+          "RESPONSE_PLAN_OWNER_ACCOUNT",
+          "IMPACTED_ACCOUNT"
+        ]
+      },
+      "ChatbotSnsConfigurationSet": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/SnsArn"
+        },
+        "minItems": 1,
+        "maxItems": 5
+      },
+      "SnsArn": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 1000
+      },
+      "EmptyChatChannel": {
+        "type": "object",
+        "properties": {},
+        "description": "Used to remove the chat channel from an incident record or response plan."
+      },
+      "SsmContactsArn": {
+        "type": "string",
+        "pattern": "^arn:aws(-cn|-us-gov)?:ssm-contacts:[a-z0-9-]*:([0-9]{12}):contact/[a-z0-9_-]+$",
+        "minLength": 0,
+        "maxLength": 2048
+      },
+      "NotificationTargetItem": {
+        "type": "object",
+        "properties": {
+          "snsTopicArn": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/Arn"
+              },
+              {
+                "description": "The Amazon Resource Name (ARN) of the SNS topic."
+              }
+            ]
+          }
+        },
+        "description": "The SNS targets that are notified when updates are made to an incident."
+      },
+      "Arn": {
+        "type": "string",
+        "pattern": "^arn:aws(-cn|-us-gov)?:[a-z0-9-]*:[a-z0-9-]*:([0-9]{12})?:.+$",
+        "minLength": 0,
+        "maxLength": 1000
+      },
+      "TagValue": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9 _=@:.+-/]*$",
+        "minLength": 0,
+        "maxLength": 256
+      },
+      "Integration": {
+        "type": "object",
+        "properties": {
+          "pagerDutyConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PagerDutyConfiguration"
+              },
+              {
+                "description": "Information about the PagerDuty service where the response plan creates an incident."
+              }
+            ]
+          }
+        },
+        "description": "Information about third-party services integrated into a response plan."
+      },
+      "PagerDutyConfiguration": {
+        "type": "object",
+        "required": [
+          "name",
+          "pagerDutyIncidentConfiguration",
+          "secretId"
+        ],
+        "properties": {
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PagerDutyConfigurationNameString"
+              },
+              {
+                "description": "The name of the PagerDuty configuration."
+              }
+            ]
+          },
+          "pagerDutyIncidentConfiguration": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PagerDutyIncidentConfiguration"
+              },
+              {
+                "description": "Details about the PagerDuty service associated with the configuration."
+              }
+            ]
+          },
+          "secretId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PagerDutyConfigurationSecretIdString"
+              },
+              {
+                "description": "The ID of the Amazon Web Services Secrets Manager secret that stores your PagerDuty key, either a General Access REST API Key or User Token REST API Key, and other user credentials."
+              }
+            ]
+          }
+        },
+        "description": "Details about the PagerDuty configuration for a response plan."
+      },
+      "PagerDutyConfigurationNameString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "PagerDutyIncidentConfiguration": {
+        "type": "object",
+        "required": [
+          "serviceId"
+        ],
+        "properties": {
+          "serviceId": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/PagerDutyIncidentConfigurationServiceIdString"
+              },
+              {
+                "description": "The ID of the PagerDuty service that the response plan associates with an incident when it launches."
+              }
+            ]
+          }
+        },
+        "description": "Details about the PagerDuty service where the response plan creates an incident."
+      },
+      "PagerDutyIncidentConfigurationServiceIdString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "PagerDutyConfigurationSecretIdString": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "POST",
+    "url": {
+      "$uri": "http://ssm-incidents.us-east-1.amazonaws.com/updateResponsePlan"
+    },
+    "headers": {
+      "X-Amz-Content-Sha256": {
+        "$": "X-Amz-Content-Sha256"
+      },
+      "X-Amz-Date": {
+        "$": "X-Amz-Date"
+      },
+      "X-Amz-Algorithm": {
+        "$": "X-Amz-Algorithm"
+      },
+      "X-Amz-Credential": {
+        "$": "X-Amz-Credential"
+      },
+      "X-Amz-Security-Token": {
+        "$": "X-Amz-Security-Token"
+      },
+      "X-Amz-Signature": {
+        "$": "X-Amz-Signature"
+      },
+      "X-Amz-SignedHeaders": {
+        "$": "X-Amz-SignedHeaders"
+      }
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "204": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "480": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "481": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "482": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "483": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "484": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    },
+    "485": {
+      "$encode": "markdown",
+      "$lang": "json",
+      "$code": {
+        "$encode": "json",
+        "$indent": true,
+        "$content": {
+          "$": "$.body"
+        }
+      }
+    }
+  }
+}

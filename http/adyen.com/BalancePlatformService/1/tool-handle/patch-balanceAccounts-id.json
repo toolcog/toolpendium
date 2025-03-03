@@ -1,0 +1,480 @@
+{
+  "name": "patch-balanceAccounts-id",
+  "description": "Updates a balance account.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "The unique identifier of the balance account."
+      },
+      "body": {
+        "$ref": "#/$defs/BalanceAccountUpdateRequest"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$defs": {
+      "BalanceAccountUpdateRequest": {
+        "properties": {
+          "accountHolderId": {
+            "description": "The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id) associated with the balance account.",
+            "type": "string"
+          },
+          "defaultCurrencyCode": {
+            "description": "The default currency code of this balance account, in three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) format. \nThe default value is **EUR**.",
+            "type": "string"
+          },
+          "description": {
+            "description": "A human-readable description of the balance account, maximum 300 characters. You can use this parameter to distinguish between multiple balance accounts under an account holder.",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "reference": {
+            "description": "Your reference to the balance account, maximum 150 characters.",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "status": {
+            "description": "The status of the balance account. Payment instruments linked to the balance account can only be used if the balance account status is **Active**.\n\nPossible values: **Active**, **Inactive**, **Closed**, **Suspended**.",
+            "enum": [
+              "Active",
+              "Closed",
+              "Inactive",
+              "Suspended"
+            ],
+            "type": "string"
+          },
+          "sweepConfigurations": {
+            "additionalProperties": {
+              "$ref": "#/$defs/SweepConfiguration"
+            },
+            "description": "Contains key-value pairs that specify [balance sweep per currency code](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__reqParam_sweepConfigurations).\n\nYou can update the balance account to add, update, or delete sweeps.\n\n* To add a sweep, send the currency code as a key and the configuration as the object.\n\n * To update a sweep, send the whole configuration with your updates.\n\n* To delete a sweep, set the value to **null**. For example, `\"EUR\": null`.",
+            "type": "object"
+          },
+          "timeZone": {
+            "description": "The [time zone](https://www.iana.org/time-zones) of the balance account. For example, **Europe/Amsterdam**.\nDefaults to the time zone of the account holder if no time zone is set. For possible values, see the [list of time zone codes](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SweepConfiguration": {
+        "properties": {
+          "balanceAccountId": {
+            "description": "The unique identifier of the destination or source [balance account](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/balanceAccounts__resParam_id).\n\n You can only use this for periodic sweep schedules such as `schedule.type` **daily** or **monthly**.",
+            "type": "string"
+          },
+          "id": {
+            "description": "The unique identifier of the sweep.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "merchantAccount": {
+            "description": "The merchant account that will be the source of funds. You can only use this if you are processing payments with Adyen. This can only be used for sweeps of `type` **pull** and `schedule.type` **balance**.",
+            "type": "string"
+          },
+          "schedule": {
+            "description": "The schedule when the `triggerAmount` is evaluated. If the balance meets the threshold, funds are pushed out of or pulled in to the balance account.",
+            "oneOf": [
+              {
+                "$ref": "#/$defs/CronSweepSchedule"
+              },
+              {
+                "$ref": "#/$defs/SweepSchedule"
+              }
+            ]
+          },
+          "status": {
+            "description": "The status of the sweep. If not provided, by default, this is set to **active**.\n\nPossible values: \n\n * **active**:  the sweep is enabled and funds will be pulled in or pushed out based on the defined configuration. \n\n * **inactive**: the sweep is disabled and cannot be triggered. \n\n",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "type": "string",
+            "x-enum": [
+              {
+                "description": "The sweep is enabled and funds will be pulled in or pushed out based on the defined configuration",
+                "value": "active"
+              },
+              {
+                "description": "The sweep is disabled and cannot be triggered.",
+                "value": "inactive"
+              }
+            ]
+          },
+          "sweepAmount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "targetAmount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "transferInstrumentId": {
+            "description": "The unique identifier of the destination or source [transfer instrument](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/transferInstruments__resParam_id).\n\nYou can also use this in combination with a `merchantAccount` and a `type` **pull** to start a direct debit request from the source transfer instrument. To use this feature, reach out to your Adyen contact.",
+            "type": "string"
+          },
+          "triggerAmount": {
+            "$ref": "#/$defs/Amount"
+          },
+          "type": {
+            "default": "push",
+            "description": "The direction of sweep, whether pushing out or pulling in funds to the balance account. If not provided, by default, this is set to **push**.\n\nPossible values:\n\n * **push**: _push out funds_ to a destination balance account or transfer instrument.\n\n * **pull**: _pull in funds_ from a source merchant account, transfer instrument, or balance account.",
+            "enum": [
+              "pull",
+              "push"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "schedule"
+        ],
+        "type": "object"
+      },
+      "CronSweepSchedule": {
+        "additionalProperties": false,
+        "properties": {
+          "cronExpression": {
+            "description": "A [cron expression](https://en.wikipedia.org/wiki/Cron#CRON_expression) that is used to set the sweep schedule. The schedule uses the time zone of the balance account. For example, **30 17 * * MON** schedules a sweep every Monday at 17:30.\n\nThe expression must have five values separated by a single space in the following order:\n\n* Minute: **0-59**\n\n* Hour: **0-23**\n\n* Day of the month: **1-31**\n\n* Month: **1-12** or **JAN-DEC**\n\n* Day of the week: **0-7** (0 and 7 are Sunday) or **MON-SUN**.\n\nThe following non-standard characters are supported: **&ast;**, **L**, **#**, **W** and **/**. See [crontab guru](https://crontab.guru/) for more examples.",
+            "type": "string"
+          },
+          "type": {
+            "description": "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a cron expression.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`. You can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.",
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+              "balance",
+              "cron"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "cronExpression"
+        ],
+        "type": "object"
+      },
+      "SweepSchedule": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "description": "The schedule type.\n\nPossible values:\n\n* **cron**: push out funds based on a cron expression.\n\n* **daily**: push out funds daily at 07:00 AM CET.\n\n* **weekly**: push out funds every Monday at 07:00 AM CET.\n\n* **monthly**: push out funds every first of the month at 07:00 AM CET.\n\n* **balance**: pull in funds instantly if the balance is less than or equal to the `triggerAmount`. You can only use this for sweeps of `type` **pull** and when the source is a `merchantAccount` or `transferInstrument`.",
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+              "balance",
+              "cron"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Amount": {
+        "properties": {
+          "currency": {
+            "description": "The three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes).",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "value": {
+            "description": "The amount of the transaction, in [minor units](https://docs.adyen.com/development-resources/currency-codes).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "value",
+          "currency"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "handler": "http",
+  "request": {
+    "method": "PATCH",
+    "url": {
+      "$uri": "https://balanceplatform-api-test.adyen.com/bcl/v1/balanceAccounts/{id}"
+    },
+    "body": {
+      "$": "body",
+      "encode": "json"
+    }
+  },
+  "responses": {
+    "200": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**accountHolderId**: The unique identifier of the [account holder](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/accountHolders__resParam_id) associated with the balance account.",
+            "**balances**: List of balances with the amount and currency.",
+            "**defaultCurrencyCode**: The default three-character [ISO currency code](https://docs.adyen.com/development-resources/currency-codes) of the balance account.",
+            "**description**: A human-readable description of the balance account, maximum 300 characters. You can use this parameter to distinguish between multiple balance accounts under an account holder.",
+            "**id**: The unique identifier of the balance account.",
+            "**paymentInstruments**: List of [payment instruments](https://docs.adyen.com/api-explorer/#/balanceplatform/latest/post/paymentInstruments) associated with the balance account.",
+            "**reference**: Your reference for the balance account, maximum 150 characters.",
+            "**status**: The status of the balance account, set to **Active** by default. ",
+            "**sweepConfigurations**: Contains key-value pairs that specify configurations for balance sweeps per currency code. A sweep pulls in or pushes out funds based on a defined schedule, amount, and a source (for pulling funds) or a destination (for pushing funds).",
+            "**timeZone**: The [time zone](https://www.iana.org/time-zones) of the balance account. For example, **Europe/Amsterdam**."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "400": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            [
+              "**response**",
+              {
+                "$ul": [
+                  "**paths**",
+                  [
+                    "**rootPath**",
+                    {
+                      "$ul": [
+                        "**content**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "401": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            [
+              "**response**",
+              {
+                "$ul": [
+                  "**paths**",
+                  [
+                    "**rootPath**",
+                    {
+                      "$ul": [
+                        "**content**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "403": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            [
+              "**response**",
+              {
+                "$ul": [
+                  "**paths**",
+                  [
+                    "**rootPath**",
+                    {
+                      "$ul": [
+                        "**content**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "422": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            [
+              "**response**",
+              {
+                "$ul": [
+                  "**paths**",
+                  [
+                    "**rootPath**",
+                    {
+                      "$ul": [
+                        "**content**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    },
+    "500": {
+      "$encode": "markdown",
+      "$block": [
+        {
+          "$h1": "Object"
+        },
+        "**Key properties:**",
+        {
+          "$ul": [
+            "**detail**: A human-readable explanation specific to this occurrence of the problem.",
+            "**errorCode**: A code that identifies the problem type.",
+            "**instance**: A unique URI that identifies the specific occurrence of the problem.",
+            "**invalidFields**: Detailed explanation of each validation error, when applicable.",
+            "**requestId**: A unique reference for the request, essentially the same as `pspReference`.",
+            [
+              "**response**",
+              {
+                "$ul": [
+                  "**paths**",
+                  [
+                    "**rootPath**",
+                    {
+                      "$ul": [
+                        "**content**"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "**status**: The HTTP status code.",
+            "**title**: A short, human-readable summary of the problem type.",
+            "**type**: A URI that identifies the problem type, pointing to human-readable documentation on this problem type."
+          ]
+        },
+        {
+          "$lang": "json",
+          "$code": {
+            "$encode": "json",
+            "$indent": true,
+            "$content": {
+              "$": "$.body"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
